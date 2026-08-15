@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800">
+  <rect width="1200" height="800" fill="#14110e"/>
+  <rect x="320" y="220" width="560" height="380" rx="8" fill="#6b4a2a"/>
+  <rect x="320" y="380" width="560" height="28" fill="#c9a227"/>
+  <rect x="580" y="220" width="28" height="380" fill="#c9a227"/>
+  <circle cx="594" cy="394" r="26" fill="#2a2118" stroke="#e7c27a" stroke-width="4"/>
+  <text x="600" y="160" text-anchor="middle" fill="#e7c27a" font-size="40" font-family="Georgia, serif">Sealed Crate</text>
+  <text x="600" y="680" text-anchor="middle" fill="#9a8b74" font-size="22" font-family="Georgia, serif">Black-sun wax seal</text>
+</svg>

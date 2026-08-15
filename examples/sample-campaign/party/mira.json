@@ -1,0 +1,10 @@
+{
+  "id": "mira",
+  "name": "Mira Vess",
+  "ac": 13,
+  "hp": 22,
+  "maxHp": 28,
+  "passivePerception": 16,
+  "classLevel": "Elf Wizard 5",
+  "notes": "Spellbook on her belt. Suspicious of the innkeeper."
+}

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1600 900">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#1b2430"/>
+      <stop offset="100%" stop-color="#3a2a22"/>
+    </linearGradient>
+  </defs>
+  <rect width="1600" height="900" fill="url(#sky)"/>
+  <rect x="0" y="620" width="1600" height="280" fill="#2a2118"/>
+  <path d="M0 640 C400 700 900 560 1600 680 L1600 900 L0 900 Z" fill="#3d2c1d"/>
+  <path d="M520 900 C700 520 900 520 1080 900" fill="#5a4330"/>
+  <circle cx="220" cy="200" r="36" fill="#e7c27a"/>
+  <g fill="#0f1612">
+    <path d="M80 640 L160 280 L240 640 Z"/>
+    <path d="M300 660 L410 200 L520 660 Z"/>
+    <path d="M1100 650 L1220 160 L1340 650 Z"/>
+    <path d="M1360 670 L1460 250 L1560 670 Z"/>
+  </g>
+  <text x="80" y="80" fill="#e7c27a" font-size="42" font-family="Georgia, serif">Forest Road</text>
+</svg>
