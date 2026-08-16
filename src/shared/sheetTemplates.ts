@@ -1,6 +1,11 @@
 export type SheetTemplateKind = 'blank' | 'player' | 'npc' | 'monster' | 'spell' | 'gear'
 
-const PLAYER = `# *Character Name*
+const PLAYER = `<!--
+  Party sheet template. Right-click Party/ → New player… (or copy into Party/ and rename).
+  Put the portrait in Party/Art/ as Character Name.png and keep AC/HP in sync with the statblock.
+  See docs/CAMPAIGN.md and docs/MARKDOWN.md.
+-->
+# *Character Name*
 
 > [!infobox]+
 > ![[Character Name.png]]
@@ -68,7 +73,12 @@ actions:
 \`\`\`
 `
 
-const NPC = `# *NPC Name*
+const NPC = `<!--
+  NPC sheet template. Right-click NPCs/ → New NPC… (or copy into NPCs/ and rename).
+  Portrait: NPCs/Art/NPC Name.png. Night sheets link with [[NPC Name]].
+  See docs/CAMPAIGN.md and docs/MARKDOWN.md.
+-->
+# *NPC Name*
 
 > [!infobox]+
 > ![[NPC Name.png]]
@@ -125,7 +135,12 @@ actions:
 \`\`\`
 `
 
-const MONSTER = `# Monster Name
+const MONSTER = `<!--
+  Bestiary template. Right-click Bestiary/ → New monster… (or copy into Bestiary/ and rename).
+  Art: Bestiary/Art/Monster Name.png. Prefer Add to Bestiary from Lookup for SRD creatures.
+  See docs/CAMPAIGN.md and docs/MARKDOWN.md.
+-->
+# Monster Name
 
 *One line: what it does at the table.*
 
@@ -172,7 +187,11 @@ actions:
 \`\`\`
 `
 
-const SPELL = `# Spell Name
+const SPELL = `<!--
+  Spell note template. Right-click Spells/ → New spell… or save from Lookup.
+  Field lines mirror WOTC/PHB dump format (see WOTC/README.md).
+-->
+# Spell Name
 
 Level 1 Evocation (Wizard)
 Casting Time: Action
@@ -185,7 +204,11 @@ What the spell does at the table.
 Using a Higher-Level Spell Slot. 
 `
 
-const GEAR = `# Item Name
+const GEAR = `<!--
+  Gear / magic item template. Right-click Gear/ → New gear… or save from Lookup.
+  Use Damage/Properties for weapons, Rarity/Attunement for magic items (WOTC/README.md).
+-->
+# Item Name
 
 Adventuring Gear
 Rarity: 

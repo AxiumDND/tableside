@@ -27,4 +27,6 @@ A Barovia three-shot with night sheets, portraits, maps, and combatant links rea
 
 Wikilinks still resolve by note name after a move. Portraits are `![[Name.png]]` in that folder’s Art subfolder.
 
-Night sheets (for example `Sessions/Session 3 — Night Sheet.md`) use headings like `## ⚔️ Combat …` plus `**Combatants:** [[Sheet]] · party` so **Add encounter** can load initiative. Authoring details: [docs/CAMPAIGN.md](../../docs/CAMPAIGN.md).
+Night sheets (for example `Sessions/Session 3 — Night Sheet.md`) use headings like `## ⚔️ Combat …` plus `**Combatants:** [[Sheet]] · party` so **Add to initiative** can load the tracker.
+
+Docs: [campaign authoring](../../docs/CAMPAIGN.md) · [at the table](../../docs/TABLE.md) · [markdown / statblocks](../../docs/MARKDOWN.md).

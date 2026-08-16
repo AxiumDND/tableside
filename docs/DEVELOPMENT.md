@@ -96,3 +96,29 @@ Format and placement of personal PHB/DMG text files: [WOTC/README.md](../WOTC/RE
 ## Packaging notes
 
 `electron-builder` ships `examples/bad-blood` as an extra resource. Product name is **Table DM** (`com.tabledm.app`). Installer target is Windows NSIS only today.
+
+## Where behavior lives
+
+| Concern | Start here |
+| --- | --- |
+| Window creation, IPC, campaign folder I/O | `src/main/index.ts` |
+| Preload bridge (`window.tabledm`) | `src/preload/index.ts` |
+| DM UI shell | `src/renderer/src/windows/DmApp.tsx` |
+| Player fullscreen view | `src/renderer/src/windows/PlayerApp.tsx` |
+| Night-sheet / combatant parsing | `src/renderer/src/lib/notes.ts` |
+| Statblock YAML | `src/renderer/src/lib/statblock.ts` |
+| SRD search index | `src/renderer/src/lib/srd.ts` + `data/srd/` |
+| WOTC text parse | `src/renderer/src/lib/wotcParse.ts`, `src/main/wotcLibrary.ts` |
+| Sheet templates | `src/shared/sheetTemplates.ts` |
+| Folder aliases / hidden files | `src/shared/campaignLayout.ts` |
+
+Author-facing contracts: [CAMPAIGN.md](CAMPAIGN.md), [MARKDOWN.md](MARKDOWN.md), [TABLE.md](TABLE.md).
+
+## Scripts notes
+
+- `scripts/fetch-srd.mjs` — network required; writes JSON under `src/renderer/src/data/srd/`. Commit the refreshed JSON if the SRD snapshot should update for everyone.
+- `scripts/tidy-bad-blood.mjs` — one-off migration helper for reshaping the Bad Blood example; not part of normal builds.
+
+## Docs maintenance
+
+When you change parsing or UI that authors rely on (combatant lines, callouts, templates, Lookup chips), update the matching doc in the same PR. Prefer examples copied from real Bad Blood / template patterns over abstract prose.

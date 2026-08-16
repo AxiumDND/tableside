@@ -1,5 +1,8 @@
-<!-- Copy into Party/, rename the file, then fill the blanks. -->
-
+<!--
+  Party sheet template. Right-click Party/ → New player… (or copy into Party/ and rename).
+  Put the portrait in Party/Art/ as Character Name.png and keep AC/HP in sync with the statblock.
+  See docs/CAMPAIGN.md and docs/MARKDOWN.md.
+-->
 # *Character Name*
 
 > [!infobox]+
@@ -28,9 +31,6 @@
 
 > [!gmonly]
 > How this kit bends the session. Secret hooks. What to flag if they forget a feature.
-
-> [!tip]
-> Spotlight beat you owe this player.
 
 ## Look & voice
 

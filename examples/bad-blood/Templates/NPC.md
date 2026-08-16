@@ -1,5 +1,8 @@
-<!-- Copy into NPCs/, rename the file, then fill the blanks. -->
-
+<!--
+  NPC sheet template. Right-click NPCs/ → New NPC… (or copy into NPCs/ and rename).
+  Portrait: NPCs/Art/NPC Name.png. Night sheets link with [[NPC Name]].
+  See docs/CAMPAIGN.md and docs/MARKDOWN.md.
+-->
 # *NPC Name*
 
 > [!infobox]+

@@ -1,5 +1,8 @@
-<!-- Copy into Bestiary/, rename the file, then fill the blanks. -->
-
+<!--
+  Bestiary template. Right-click Bestiary/ → New monster… (or copy into Bestiary/ and rename).
+  Art: Bestiary/Art/Monster Name.png. Prefer Add to Bestiary from Lookup for SRD creatures.
+  See docs/CAMPAIGN.md and docs/MARKDOWN.md.
+-->
 # Monster Name
 
 *One line: what it does at the table.*

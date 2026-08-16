@@ -22,4 +22,4 @@ Minimal one-night folder for trying Table DM without the full Bad Blood three-sh
 
 For a complete campaign (night sheets, combatants, maps, templates), use [Bad Blood](../bad-blood) or click **Sample** in the app.
 
-Authoring rules: [docs/CAMPAIGN.md](../../docs/CAMPAIGN.md).
+Authoring: [docs/CAMPAIGN.md](../../docs/CAMPAIGN.md) · UI: [docs/TABLE.md](../../docs/TABLE.md).

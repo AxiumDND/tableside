@@ -2,6 +2,12 @@
 
 How to structure a campaign folder so Table DM can find notes, art, and combatants.
 
+Also read:
+
+- [TABLE.md](TABLE.md) — DM console, combat, Lookup, player display
+- [MARKDOWN.md](MARKDOWN.md) — wikilinks, callouts, `statblock` field reference
+- [WOTC/README.md](../WOTC/README.md) — optional book text for Lookup
+
 ## Folder layout
 
 **New campaign** creates this layout (plus `Overview.md` and Templates). **Open campaign** reads any folder live and creates missing standard folders. Folder names match case-insensitively (`Party` / `party`, `NPCs` / `npcs`).
@@ -31,9 +37,32 @@ Reference/        tracker, locations, cheat sheets
 Archive/          recaps, transcripts, old drafts
 ```
 
-Aliases work for common renames: `PCs` → Party, `Equipment` / `Magic Items` → Gear, `Session Notes` → Sessions, and similar.
+### Folder aliases
 
-Book text for Lookup is **not** part of a campaign. Put PHB / DMG exports in the app `WOTC/` folder — see [WOTC/README.md](../WOTC/README.md).
+| You might name it | Treated as |
+| --- | --- |
+| `PCs`, `PC`, `The Party` | Party |
+| `NPC` | NPCs |
+| `Session Notes`, `Session` | Sessions |
+| `Handouts and Props` | Handouts |
+| `Assets` | Maps |
+| `Equipment`, `Magic Items` | Gear |
+| `Spell` | Spells |
+| `Z Archive` | Archive |
+
+Skipped directories (not shown / not scanned as notes): `.obsidian`, `.git`, `node_modules`, `WOTC`, `out`, `dist`, and similar.
+
+Book text for Lookup is **not** part of a campaign. Put PHB / DMG exports in the app `WOTC/` folder.
+
+## Creating notes in the app
+
+Right-click a folder in the file tree:
+
+- **New player / NPC / monster / spell / gear** — copies the matching Templates file and substitutes the name
+- **New note** — empty markdown
+- **Add files…** — import images, PDFs, or markdown into that folder
+
+Duplicate from a file’s context menu when you need a second vampire spawn sheet, etc.
 
 ## Wikilinks and images
 
@@ -47,11 +76,9 @@ Notes can stay in Obsidian. Table DM understands:
 
 Portrait files should match the character or creature name when possible. Click an image in a note, then **Show to players** — the player monitor fades it in on a black screen.
 
-Supported image types: `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`, `.bmp`.
+Supported image types: `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`, `.bmp`. Full rules: [MARKDOWN.md](MARKDOWN.md).
 
 ## Callouts
-
-Obsidian-style callouts render in the DM console:
 
 ```markdown
 > [!readaloud]
@@ -109,6 +136,8 @@ actions:
 ```
 ~~~~
 
+Field list and fallbacks: [MARKDOWN.md](MARKDOWN.md#statblock-fence).
+
 Templates under `Templates/` are a good starting point. You can also **Add to campaign** from Lookup (monster → Bestiary, spell → Spells, gear → Gear).
 
 ## Night sheets and combat
@@ -130,7 +159,9 @@ A **night sheet** is a session note with combat sections that feed the initiativ
 
 If there is no `Combatants:` line, Table DM still picks up wikilinks (and some bold table labels) to Party / NPCs / Bestiary notes in that section.
 
-On the night sheet, use **Add encounter** to load those sheets into Combat. **Add all players** pulls every PC sheet.
+On the night sheet, use **Add to initiative** / **Add encounter** to load those sheets into Combat. **Add all players** pulls every PC sheet.
+
+Suggested split: long prose in `Session N.md`, numbers and combatant lines in `Session N — Night Sheet.md`, cross-linked with wikilinks.
 
 ### Player initiative overlay
 
@@ -140,15 +171,17 @@ On the Combat panel, **Show to players** overlays order on the second monitor:
 - Enemies under half HP tagged **Bloodied**
 - PCs at 0 HP tagged unconscious; monsters/NPCs at 0 HP tagged dead
 
-HP edits stay on the DM console; the overlay never shows numbers.
+HP edits stay on the DM console; the overlay never shows numbers. Step-by-step UI: [TABLE.md](TABLE.md#combat-panel).
 
-## At the table
+## At the table (short)
 
 1. Open or create a campaign (or click **Sample** for Bad Blood).
 2. Open tonight’s session or night sheet from the file tree.
 3. Click a map or portrait → **Show to players**.
 4. When a fight starts, add the encounter (or combatants) → roll / enter initiative → advance turns.
 5. Use **Lookup** for conditions, spells, monsters, and weapons (SRD bundled; optional WOTC files extend it).
+
+Full UI walkthrough: [TABLE.md](TABLE.md).
 
 ## Examples
 
