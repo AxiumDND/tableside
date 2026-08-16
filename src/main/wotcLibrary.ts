@@ -30,9 +30,7 @@ function candidateFolders(): string[] {
 }
 
 async function writeReadme(folder: string): Promise<void> {
-  const readme = join(folder, 'README.txt')
-  if (existsSync(readme)) return
-  await writeFile(readme, WOTC_README, 'utf8')
+  await writeFile(join(folder, 'README.txt'), WOTC_README, 'utf8')
 }
 
 async function migrateLegacyName(root: string): Promise<void> {
