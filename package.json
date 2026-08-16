@@ -1,6 +1,6 @@
 {
   "name": "table-dm",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "In-person dual-monitor DM tool for 5e-compatible table games",
   "main": "./out/main/index.js",
   "author": "James",
