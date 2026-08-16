@@ -14,7 +14,7 @@ Compatible with fifth edition. Rules lookup uses the **System Reference Document
 - Optional initiative overlay on the player screen: order, whose turn, Bloodied (enemies under half HP)
 - Night sheets can pull NPC/PC statblocks into initiative
 - Offline search for conditions, spells, monsters, weapons, and common rules
-- Optional extra lookup from your own WOTC text files in `WOTC/` (PHB 2024 spell list now)
+- Optional extra lookup from your own WOTC text files in `WOTC/` (spells, equipment, magic items)
 - Add an SRD monster to the campaign Bestiary from Lookup
 
 ## Run it
@@ -65,7 +65,9 @@ Reference/        tracker, locations, cheat sheets
 Archive/          recaps, transcripts, old drafts
 ```
 
-Book text for Lookup is **not** part of a campaign. Put Player’s Handbook exports in the app `WOTC/` folder (or `%APPDATA%\table-dm\WOTC`). When those files are present, Lookup grows extra filters and searches that text. The SRD stays available either way.
+Book text for Lookup is **not** part of a campaign. Put Player’s Handbook and Dungeon Master’s Guide exports in the app `WOTC/` folder (or `%APPDATA%\table-dm\WOTC`). When those files are present, Lookup grows extra filters and searches that text. The SRD stays available either way.
+
+How to format the files — one `##` heading per spell, gear item, or magic item — is in [WOTC/README.md](WOTC/README.md). Filenames must contain `Spell`, `Equipment`, or `Magic Item` so Lookup knows which chip to add.
 
 Notes can stay in Obsidian. Use `[[Note Name]]` wikilinks and `![[Portrait.png]]` embeds. Put art in that folder's `Art/` subfolder; portrait files should match the character name. Combatants on a night sheet should be wikilinks to Party / NPCs / Bestiary sheets.
 
