@@ -3,16 +3,16 @@
 @theme {
   --font-ui: 'Segoe UI', 'Candara', system-ui, sans-serif;
   --font-display: 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
-  --color-ink: #0e0c0a;
-  --color-panel: #1a1612;
-  --color-panel-2: #241e18;
-  --color-line: #3a3024;
-  --color-amber: #d4a054;
-  --color-amber-dim: #8a6a34;
-  --color-parchment: #f3e6d0;
-  --color-muted: #9a8b74;
-  --color-blood: #c45c4a;
-  --color-moss: #6bbf7a;
+  --color-ink: #0b0d11;
+  --color-panel: #141820;
+  --color-panel-2: #1c222c;
+  --color-line: #343c4a;
+  --color-amber: #e6d38a;
+  --color-amber-dim: #9a8d58;
+  --color-parchment: #e6ebf2;
+  --color-muted: #8b95a6;
+  --color-blood: #e05b55;
+  --color-moss: #6ecb86;
 }
 
 html,
@@ -35,7 +35,7 @@ body,
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3a3024;
+  background: var(--color-line);
   border-radius: 999px;
 }
 
@@ -53,21 +53,21 @@ body,
 }
 
 .markdown-body h1 {
-  font-size: 1.45rem;
+  font-size: 1.7rem;
 }
 
 .markdown-body h2 {
-  font-size: 1.2rem;
+  font-size: 1.35rem;
 }
 
 .markdown-body h3 {
-  font-size: 1.05rem;
+  font-size: 1.15rem;
 }
 
 .markdown-body p,
 .markdown-body li {
-  line-height: 1.5;
-  color: #e8d9c0;
+  line-height: 1.6;
+  color: #d2dae6;
 }
 
 .markdown-body ul {
@@ -76,7 +76,7 @@ body,
 }
 
 .markdown-body code {
-  background: #2a231c;
+  background: #1a202a;
   padding: 0.1rem 0.35rem;
   border-radius: 4px;
   font-size: 0.9em;
@@ -84,6 +84,159 @@ body,
 
 .markdown-body hr {
   border: 0;
-  border-top: 1px solid #3a3024;
+  border-top: 1px solid var(--color-line);
   margin: 1rem 0;
+}
+
+.markdown-body img {
+  display: block;
+  max-width: 100%;
+}
+
+.markdown-body p:has(button img),
+.markdown-body li:has(button img) {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: flex-start;
+}
+
+.markdown-body table {
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  margin: 0.45rem 0 0.8rem;
+  width: 100%;
+}
+
+.markdown-body th,
+.markdown-body td {
+  border: 1px solid var(--color-line);
+  padding: 0.28rem 0.5rem;
+  vertical-align: top;
+}
+
+.markdown-body blockquote {
+  border-left: 3px solid var(--color-amber-dim);
+  margin: 0.6rem 0;
+  padding: 0.15rem 0 0.15rem 0.8rem;
+  color: #b8c2d0;
+}
+
+.combat-card-body > h1:first-child,
+.combat-card-body > h2:first-child,
+.combat-card-body h1:first-child,
+.combat-card-body h2:first-child {
+  margin-top: 0.15rem;
+}
+
+.combat-roster {
+  margin: 0.35rem 0 0.85rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid color-mix(in srgb, var(--color-blood) 35%, var(--color-line));
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--color-blood) 12%, var(--color-ink));
+  font-size: 0.92rem;
+}
+
+.combat-card-body table {
+  background: color-mix(in srgb, var(--color-ink) 55%, transparent);
+}
+
+.player-stage {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+.player-layer {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+.player-layer img {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.player-fade-in {
+  opacity: 0;
+  animation: player-fade-in 5s ease forwards;
+}
+
+.player-fade-out {
+  animation: player-fade-out 5s ease forwards;
+}
+
+.read-aloud-dot {
+  position: absolute;
+  z-index: 1;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-amber);
+}
+
+.read-aloud-body p,
+.markdown-body .read-aloud-body p,
+.markdown-body .read-aloud-body li {
+  font-family: var(--font-display);
+  color: var(--color-parchment);
+  font-size: 1.08rem;
+  line-height: 1.65;
+}
+
+.markdown-body .read-aloud-body p:first-child {
+  margin-top: 0;
+}
+
+.markdown-body .read-aloud-body p:last-child {
+  margin-bottom: 0;
+}
+
+.gm-only-body p,
+.markdown-body .gm-only-body p,
+.markdown-body .gm-only-body li {
+  color: #d5e0cc;
+  line-height: 1.6;
+}
+
+.markdown-body .gm-only-body p:first-child {
+  margin-top: 0;
+}
+
+.markdown-body .gm-only-body p:last-child {
+  margin-bottom: 0;
+}
+
+.markdown-body .callout-card-body p:first-child {
+  margin-top: 0;
+}
+
+.markdown-body .callout-card-body p:last-child {
+  margin-bottom: 0;
+}
+
+@keyframes player-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes player-fade-out {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
 }

@@ -1,6 +1,6 @@
 # Table DM
 
-A local Windows app for running **in-person** 5e-compatible games. Your laptop is the DM console. The second monitor is a clean player view for maps, art, and handouts.
+A local Windows app for running **in-person** 5e-compatible games. Your laptop is the DM console. The second monitor is a clean player view for maps and art — image only, nothing else.
 
 This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table.
 
@@ -9,11 +9,11 @@ Compatible with fifth edition. Rules lookup uses the **System Reference Document
 ## Features
 
 - Dual-window layout: DM console + fullscreen player display
-- Campaign folder with Markdown session notes, party cards, and a media library
-- Click a map or handout to push it to the player monitor
+- Campaign folder of Markdown notes (Obsidian-friendly wikilinks and `![[images]]`)
+- Click a map or portrait, then **Show to players** — 5 second fade-in on a black screen
+- Night sheets can pull NPC/PC statblocks into initiative
 - Offline search for conditions, spells, monsters, weapons, and common rules
-- Initiative tracker with HP on the DM side only
-- Optional name-only turn order on the player screen
+- Initiative tracker on the DM side only
 
 ## Run it
 
@@ -25,28 +25,44 @@ npm run dev
 
 After a production build (`npm run build`), use `npm start`.
 
+The folder name `D&D gaming` contains `&`, so if a script fails, run Electron via:
+
+```bash
+node ./node_modules/electron-vite/bin/electron-vite.js build
+node ./node_modules/electron/cli.js .
+```
+
 `fetch-srd` downloads a slim SRD 5.2 snapshot from the [Open5e API](https://api.open5e.com/) (`srd-2024`). You only need a network connection for that step.
 
-Two windows open. If you have a second monitor, the player window goes there fullscreen. If you only have one screen, drag the player window to the TV later, or use the **Player display** menu.
+Two windows open. If you have a second monitor, the player window goes there fullscreen.
 
-Click **Sample** to load the included Ember Road campaign and try sending *Forest Road* to the player screen.
+Click **Sample** to load **Bad Blood**, the included Barovia three-shot.
 
 ## Campaign folder
 
-Point the app at any folder. It will create this layout if needed:
+Point **Open campaign** at any folder. Table DM reads it live. A layout that works well at the table:
 
 ```
-campaign.json
-combat.json
-party/          one JSON file per PC
-npcs/           homebrew / named NPCs
-sessions/       Markdown run-of-show notes
-media/          maps, art, handouts (png, jpg, webp, gif, svg)
+campaign.json     campaign name (hidden in the file tree)
+combat.json       live initiative (hidden)
+Overview.md       hub note — opens first if present
+
+Sessions/         run guides and night sheets
+Party/            PC sheets (always loaded into combat)
+NPCs/             named NPCs with statblocks
+Bestiary/         creatures
+Templates/        blank Player, NPC, and Monster sheets
+Maps/             battle maps and location maps
+Scenes/           establishing shots
+Portraits/        character art
+Handouts/         letters and props
+Reference/        tracker, locations, cheat sheets
+Archive/          recaps, transcripts, old drafts
 ```
 
-Your Obsidian vault can wait. Later, the same `sessions/` idea can point at existing Markdown notes.
+Notes can stay in Obsidian. Use `[[Note Name]]` wikilinks and `![[Portrait.png]]` embeds. Portrait files should match the character name. Combatants on a night sheet should be wikilinks to Party / NPCs / Bestiary sheets.
 
-Do not put campaign notes or player data in this git repo.
+The app will not create empty `party/` or `media/` folders on open.
 
 ## Attribution
 

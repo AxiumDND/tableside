@@ -1,32 +1,63 @@
-import { useMemo, useState } from 'react'
-import type { Character, Combatant, CombatState } from '../../../shared/types'
-import { CharacterCard, combatantToBlock, MonsterStatBlock } from './StatBlock'
+import { useEffect, useMemo, useState } from 'react'
+import type { Combatant, CombatantKind, CombatState } from '../../../shared/types'
+import { abilityMod, formatMod, rollD20 } from '../lib/dice'
+import { statBlockToParsed } from '../lib/statblock'
+import { useDiceLog } from './DiceTray'
+import RollableStatBlock from './RollableStatBlock'
+import { combatantToBlock } from './StatBlock'
 
 function uid(): string {
   return crypto.randomUUID()
 }
 
+export function initiativeBonus(c: Combatant): number {
+  if (typeof c.statBlock?.initiativeBonus === 'number') return c.statBlock.initiativeBonus
+  if (typeof c.statBlock?.modifiers?.dexterity === 'number') return c.statBlock.modifiers.dexterity
+  if (typeof c.statBlock?.scores?.dexterity === 'number') return abilityMod(c.statBlock.scores.dexterity)
+  return 0
+}
+
 function sortCombat(list: Combatant[]): Combatant[] {
-  return [...list].sort((a, b) => b.initiative - a.initiative || a.name.localeCompare(b.name))
+  return [...list].sort(
+    (a, b) => b.initiative - a.initiative || initiativeBonus(b) - initiativeBonus(a) || a.name.localeCompare(b.name)
+  )
 }
 
 export default function CombatTracker({
-  party,
-  npcs,
   combat,
   onChange,
-  onSelectCharacter
+  onClose
 }: {
-  party: Character[]
-  npcs: Character[]
   combat: CombatState
   onChange: (next: CombatState) => void
-  onSelectCharacter?: (character: Character) => void
+  onClose?: () => void
 }) {
   const [draft, setDraft] = useState({ name: '', initiative: '', hp: '', ac: '' })
+  const [lastRoll, setLastRoll] = useState('')
+  const [viewedId, setViewedId] = useState<string | null>(null)
+  const [confirmClear, setConfirmClear] = useState(false)
+  const [confirmRemove, setConfirmRemove] = useState<Combatant | null>(null)
+  const dice = useDiceLog()
   const ordered = useMemo(() => sortCombat(combat.combatants), [combat.combatants])
-  const selected = ordered.find((c) => c.id === combat.activeId) ?? ordered[0] ?? null
-  const selectedBlock = selected ? combatantToBlock(selected) : null
+  const round = combat.round ?? 0
+  const started = round > 0
+  const turnId =
+    started && combat.activeId && ordered.some((c) => c.id === combat.activeId) ? combat.activeId : null
+  const viewed =
+    ordered.find((c) => c.id === viewedId) ?? ordered.find((c) => c.id === turnId) ?? ordered[0] ?? null
+  const viewedParsed = viewed ? statBlockToParsed(combatantToBlock(viewed) ?? { name: viewed.name }, viewed.name) : null
+
+  useEffect(() => {
+    if (!confirmClear && !confirmRemove) return
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') {
+        setConfirmClear(false)
+        setConfirmRemove(null)
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [confirmClear, confirmRemove])
 
   function update(partial: Partial<CombatState>): void {
     onChange({ ...combat, ...partial })
@@ -50,123 +81,210 @@ export default function CombatTracker({
       maxHp: hp,
       ac: Number(draft.ac || 10)
     }
-    update({ combatants: [...combat.combatants, next], activeId: combat.activeId ?? next.id })
+    update({ combatants: [...combat.combatants, next] })
     setDraft({ name: '', initiative: '', hp: '', ac: '' })
   }
 
-  function addCharacter(character: Character, kind: Combatant['kind']): void {
-    if (combat.combatants.some((c) => c.sourceId === character.id)) return
-    const next: Combatant = {
-      id: uid(),
-      name: character.name,
-      kind,
-      initiative: 0,
-      hp: character.hp,
-      maxHp: character.maxHp,
-      ac: character.ac,
-      notes: character.notes,
-      sourceId: character.id
-    }
-    update({ combatants: [...combat.combatants, next] })
+  function startCombat(): void {
+    if (ordered.length === 0) return
+    const first = ordered[0]
+    setViewedId(first.id)
+    update({ activeId: first.id, round: 1 })
   }
 
   function nextTurn(): void {
     if (ordered.length === 0) return
-    const idx = selected ? ordered.findIndex((c) => c.id === selected.id) : -1
-    const nxt = ordered[(idx + 1) % ordered.length]
-    update({ activeId: nxt.id })
+    if (!started || !turnId) {
+      startCombat()
+      return
+    }
+    const idx = ordered.findIndex((c) => c.id === turnId)
+    const nextIdx = (idx + 1) % ordered.length
+    const nxt = ordered[nextIdx]
+    update({
+      activeId: nxt.id,
+      round: nextIdx === 0 ? round + 1 : round
+    })
+  }
+
+  function rollOne(c: Combatant) {
+    const bonus = initiativeBonus(c)
+    return { ...rollD20(bonus, 'Init'), bonus }
+  }
+
+  function applyRolls(which: CombatantKind[] | 'all'): void {
+    const notes: string[] = []
+    const batch: { result: ReturnType<typeof rollD20>; source: string }[] = []
+    const next = combat.combatants.map((c) => {
+      if (which !== 'all' && !which.includes(c.kind)) return c
+      const rolled = rollOne(c)
+      const name = c.name.split('(')[0].trim()
+      notes.push(`${name} ${rolled.total} (${rolled.detail})`)
+      batch.push({ result: rolled, source: name })
+      return { ...c, initiative: rolled.total }
+    })
+    update({ combatants: next })
+    setLastRoll(notes.join(' · '))
+    dice.recordMany(batch)
+  }
+
+  function clearCombat(): void {
+    setLastRoll('')
+    setViewedId(null)
+    setConfirmClear(false)
+    setConfirmRemove(null)
+    update({ combatants: [], activeId: null, round: 0 })
+  }
+
+  function removeCombatant(id: string): void {
+    setConfirmRemove(null)
+    if (viewedId === id) setViewedId(null)
+    update({
+      combatants: combat.combatants.filter((x) => x.id !== id),
+      activeId: combat.activeId === id ? null : combat.activeId
+    })
   }
 
   return (
-    <section className="flex min-h-0 flex-col bg-ink">
+    <section className="flex min-h-0 w-[400px] shrink-0 flex-col border-l border-line bg-ink">
       <header className="border-b border-line px-3 py-2">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-lg text-amber">Table</h2>
-          <label className="flex items-center gap-2 text-xs text-muted">
-            <input
-              type="checkbox"
-              checked={combat.showOrderToPlayers}
-              onChange={(e) => update({ showOrderToPlayers: e.target.checked })}
-            />
-            Show order on player screen
-          </label>
+          <h2 className="font-display text-lg text-amber">Combat</h2>
+          <div className="flex items-center gap-3">
+            {onClose ? (
+              <button type="button" onClick={onClose} className="text-xs text-muted hover:text-amber">
+                Hide
+              </button>
+            ) : null}
+          </div>
         </div>
-      </header>
-
-      <div className="border-b border-line px-3 py-2">
-        <div className="mb-1 text-[11px] uppercase tracking-wider text-muted">Party</div>
-        <div className="grid grid-cols-2 gap-2">
-          {party.map((pc) => (
-            <div key={pc.id} className="space-y-1">
-              <CharacterCard character={pc} compact onSelect={() => onSelectCharacter?.(pc)} />
+        <div className="mt-2 flex flex-wrap items-center gap-2">
+          {started ? (
+            <div className="flex items-center gap-1">
               <button
                 type="button"
-                onClick={() => addCharacter(pc, 'pc')}
-                className="w-full text-[11px] text-amber hover:underline"
+                title="Previous round"
+                disabled={round <= 1}
+                onClick={() => update({ round: Math.max(1, round - 1) })}
+                className="rounded border border-line px-1.5 py-0.5 text-[11px] hover:border-amber disabled:text-muted"
               >
-                Add to combat
+                −
+              </button>
+              <span className="min-w-[4.5rem] text-center text-[11px] font-semibold text-amber">
+                Round {round}
+              </span>
+              <button
+                type="button"
+                title="Next round"
+                onClick={() => update({ round: round + 1 })}
+                className="rounded border border-line px-1.5 py-0.5 text-[11px] hover:border-amber"
+              >
+                +
               </button>
             </div>
-          ))}
-          {party.length === 0 ? <p className="text-xs text-muted">No PCs in party/</p> : null}
+          ) : (
+            <button
+              type="button"
+              disabled={ordered.length === 0}
+              onClick={startCombat}
+              className="rounded bg-amber px-2 py-1 text-[11px] font-semibold text-ink disabled:bg-line"
+            >
+              Start combat
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => applyRolls('all')}
+            className="rounded border border-line px-2 py-1 text-[11px] hover:border-amber"
+          >
+            Roll all
+          </button>
+          <button
+            type="button"
+            onClick={() => applyRolls(['npc', 'monster'])}
+            className="rounded border border-line px-2 py-1 text-[11px] hover:border-amber"
+          >
+            Roll NPCs
+          </button>
+          <button
+            type="button"
+            disabled={ordered.length === 0}
+            onClick={nextTurn}
+            className="text-[11px] text-amber hover:underline disabled:text-muted"
+          >
+            Next turn
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              if (combat.combatants.length === 0) {
+                clearCombat()
+                return
+              }
+              setConfirmClear(true)
+            }}
+            className="text-[11px] text-muted hover:text-blood"
+          >
+            Clear
+          </button>
         </div>
-        {npcs.length > 0 ? (
-          <div className="mt-2">
-            <div className="mb-1 text-[11px] uppercase tracking-wider text-muted">NPCs</div>
-            <div className="flex flex-wrap gap-1">
-              {npcs.map((npc) => (
-                <button
-                  key={npc.id}
-                  type="button"
-                  onClick={() => addCharacter(npc, 'npc')}
-                  className="rounded border border-line px-2 py-0.5 text-xs hover:border-amber"
-                >
-                  {npc.name}
-                </button>
-              ))}
-            </div>
-          </div>
-        ) : null}
-      </div>
+        {lastRoll ? <p className="mt-2 text-[11px] leading-snug text-muted">{lastRoll}</p> : null}
+      </header>
 
       <div className="min-h-0 flex-1 overflow-auto">
         <div className="flex items-center justify-between px-3 py-2">
           <h3 className="text-xs uppercase tracking-wider text-muted">Initiative</h3>
-          <div className="flex gap-2">
-            <button type="button" onClick={nextTurn} className="text-xs text-amber hover:underline">
-              Next turn
-            </button>
-            <button
-              type="button"
-              onClick={() => update({ combatants: [], activeId: null })}
-              className="text-xs text-muted hover:text-blood"
-            >
-              Clear
-            </button>
-          </div>
+          <p className="text-[10px] text-muted">PCs: type their roll · NPCs: Roll NPCs</p>
         </div>
         <ul>
           {ordered.map((c) => {
-            const active = c.id === (combat.activeId ?? ordered[0]?.id)
+            const onTurn = c.id === turnId
+            const inspecting = viewed?.id === c.id
             const ratio = c.maxHp > 0 ? c.hp / c.maxHp : 0
+            const bonus = initiativeBonus(c)
             return (
               <li
                 key={c.id}
-                className={`border-b border-line/60 px-3 py-2 ${active ? 'bg-panel-2' : ''}`}
+                className={`border-b border-line/60 px-3 py-2 ${onTurn ? 'bg-panel-2' : ''}`}
               >
                 <div className="flex items-center gap-2">
-                  <input
-                    value={c.initiative}
-                    onChange={(e) => patchCombatant(c.id, { initiative: Number(e.target.value) || 0 })}
-                    className="w-10 rounded bg-ink text-center text-sm"
-                  />
                   <button
                     type="button"
-                    onClick={() => update({ activeId: c.id })}
-                    className="flex-1 text-left font-medium"
+                    title={`Roll initiative 1d20${formatMod(bonus)}`}
+                    onClick={() => {
+                      const rolled = rollOne(c)
+                      patchCombatant(c.id, { initiative: rolled.total })
+                      const name = c.name.split('(')[0].trim()
+                      setLastRoll(`${name} ${rolled.total} (${rolled.detail})`)
+                      dice.record(rolled, name)
+                    }}
+                    className="shrink-0 rounded border border-line px-1.5 py-0.5 text-[11px] font-semibold text-amber hover:border-amber"
+                  >
+                    Roll
+                  </button>
+                  <input
+                    type="number"
+                    value={c.initiative}
+                    onChange={(e) =>
+                      patchCombatant(c.id, { initiative: Number(e.target.value) })
+                    }
+                    className="w-12 rounded border border-line bg-ink px-1 text-center text-sm"
+                    title="Initiative total — type a PC's roll here"
+                  />
+                  <span className="w-7 shrink-0 text-[11px] text-muted" title="Initiative bonus">
+                    {formatMod(bonus)}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setViewedId(c.id)}
+                    className={`min-w-0 flex-1 truncate text-left font-medium ${
+                      inspecting ? 'text-amber' : ''
+                    }`}
+                    title="Show stats and rolls — does not change whose turn it is"
                   >
                     {c.name}
                     <span className="ml-2 text-[10px] uppercase text-muted">{c.kind}</span>
+                    {onTurn ? <span className="ml-2 text-[10px] uppercase text-amber">Turn</span> : null}
                   </button>
                   <span className="text-xs text-muted">AC {c.ac}</span>
                   <button type="button" onClick={() => patchCombatant(c.id, { hp: c.hp - 1 })}>
@@ -181,12 +299,8 @@ export default function CombatTracker({
                   <button
                     type="button"
                     className="text-muted hover:text-blood"
-                    onClick={() =>
-                      update({
-                        combatants: combat.combatants.filter((x) => x.id !== c.id),
-                        activeId: combat.activeId === c.id ? null : combat.activeId
-                      })
-                    }
+                    title={`Remove ${c.name}`}
+                    onClick={() => setConfirmRemove(c)}
                   >
                     ×
                   </button>
@@ -195,6 +309,10 @@ export default function CombatTracker({
             )
           })}
         </ul>
+
+        {ordered.length === 0 ? (
+          <p className="px-3 py-6 text-sm text-muted">Add a fight from a night sheet, or type a combatant below.</p>
+        ) : null}
 
         <form
           className="grid grid-cols-12 gap-1 px-3 py-2 text-xs"
@@ -232,14 +350,88 @@ export default function CombatTracker({
           </button>
         </form>
 
-        {selectedBlock ? (
+        {viewedParsed ? (
           <div className="border-t border-line p-3">
-            <MonsterStatBlock block={selectedBlock} />
+            <RollableStatBlock key={viewed?.id} block={viewedParsed} hideToolbar />
           </div>
-        ) : (
-          <p className="px-3 py-6 text-sm text-muted">Add combatants, or send a monster from Lookup.</p>
-        )}
+        ) : null}
       </div>
+
+      {confirmClear ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 p-4"
+          onClick={() => setConfirmClear(false)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="clear-combat-title"
+            className="w-full max-w-sm rounded border border-line bg-panel p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="clear-combat-title" className="font-display text-lg text-amber">
+              Clear combat?
+            </h3>
+            <p className="mt-2 text-sm text-parchment/90">
+              This removes everyone from the initiative tracker. You cannot undo it.
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmClear(false)}
+                className="rounded border border-line px-3 py-1.5 text-sm hover:border-amber"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={clearCombat}
+                className="rounded bg-blood px-3 py-1.5 text-sm font-semibold text-parchment"
+              >
+                Clear tracker
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {confirmRemove ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 p-4"
+          onClick={() => setConfirmRemove(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="remove-combatant-title"
+            className="w-full max-w-sm rounded border border-line bg-panel p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="remove-combatant-title" className="font-display text-lg text-amber">
+              Remove {confirmRemove.name}?
+            </h3>
+            <p className="mt-2 text-sm text-parchment/90">
+              Are you sure you want to take them off the initiative tracker?
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setConfirmRemove(null)}
+                className="rounded border border-line px-3 py-1.5 text-sm hover:border-amber"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => removeCombatant(confirmRemove.id)}
+                className="rounded bg-blood px-3 py-1.5 text-sm font-semibold text-parchment"
+              >
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </section>
   )
 }

@@ -35,6 +35,8 @@ export interface StatBlock {
   languages?: string
   immunities?: string
   resistances?: string
+  vulnerabilities?: string
+  conditionImmunities?: string
   traits?: StatAction[]
   actions?: StatAction[]
   bonusActions?: StatAction[]
@@ -70,6 +72,7 @@ export interface Combatant {
 export interface CombatState {
   combatants: Combatant[]
   activeId: string | null
+  round: number
   showOrderToPlayers: boolean
 }
 
@@ -84,6 +87,14 @@ export interface SessionFile {
   name: string
 }
 
+export interface CampaignTreeNode {
+  name: string
+  relativePath: string
+  type: 'dir' | 'file'
+  ext?: string
+  children?: CampaignTreeNode[]
+}
+
 export interface CampaignInfo {
   folder: string
   name: string
@@ -92,6 +103,7 @@ export interface CampaignInfo {
   party: Character[]
   npcs: Character[]
   combat: CombatState
+  tree: CampaignTreeNode[]
 }
 
 export interface DisplayInfo {
@@ -118,6 +130,7 @@ export interface PlayerState {
 export const emptyCombat = (): CombatState => ({
   combatants: [],
   activeId: null,
+  round: 0,
   showOrderToPlayers: true
 })
 

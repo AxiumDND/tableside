@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { CampaignInfo, Character, CombatState, DisplayInfo, PlayerState } from '../shared/types'
+import type { SheetTemplateKind } from '../shared/sheetTemplates'
 
 const api = {
   getDisplays: (): Promise<DisplayInfo[]> => ipcRenderer.invoke('app:displays'),
@@ -25,10 +26,32 @@ const api = {
     ipcRenderer.invoke('campaign:read-session', relativePath),
   saveSession: (relativePath: string, markdown: string): Promise<void> =>
     ipcRenderer.invoke('campaign:save-session', relativePath, markdown),
+  readFile: (relativePath: string): Promise<string> =>
+    ipcRenderer.invoke('campaign:read-file', relativePath),
+  saveFile: (relativePath: string, contents: string): Promise<void> =>
+    ipcRenderer.invoke('campaign:save-file', relativePath, contents),
   saveCharacter: (folder: 'party' | 'npcs', character: Character): Promise<CampaignInfo | null> =>
     ipcRenderer.invoke('campaign:save-character', folder, character),
   saveCombat: (combat: CombatState): Promise<CampaignInfo | null> =>
-    ipcRenderer.invoke('campaign:save-combat', combat)
+    ipcRenderer.invoke('campaign:save-combat', combat),
+  createNote: (
+    folder: string,
+    name: string,
+    template?: SheetTemplateKind
+  ): Promise<{ campaign: CampaignInfo; path: string } | null> =>
+    ipcRenderer.invoke('campaign:create-note', folder, name, template),
+  duplicateFile: (
+    relativePath: string,
+    name?: string
+  ): Promise<{ campaign: CampaignInfo; path: string } | null> =>
+    ipcRenderer.invoke('campaign:duplicate-file', relativePath, name),
+  addFiles: (folder: string): Promise<{ campaign: CampaignInfo; paths: string[] } | null> =>
+    ipcRenderer.invoke('campaign:add-files', folder),
+  saveToBestiary: (
+    name: string,
+    contents: string
+  ): Promise<{ campaign: CampaignInfo; path: string; existed: boolean } | null> =>
+    ipcRenderer.invoke('campaign:save-to-bestiary', name, contents)
 }
 
 export type TableDmApi = typeof api
