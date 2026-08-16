@@ -138,7 +138,7 @@ export interface AppSettings {
   dmBounds?: { x: number; y: number; width: number; height: number }
   lastOpenPath?: string
   lastOpenKind?: string
-  rightPanel?: 'combat' | 'lookup' | null
+  rightPanel?: 'combat' | 'lookup' | 'help' | null
   showPlayerPreview?: boolean
 }
 

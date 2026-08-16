@@ -82,8 +82,9 @@ export default function GettingStarted({
       </div>
 
       <p className="text-[12px] leading-relaxed text-muted">
-        Campaign folders are ordinary Markdown on disk (Obsidian-friendly). Authoring details live in the repo under{' '}
-        <span className="text-parchment/70">docs/CAMPAIGN.md</span> and <span className="text-parchment/70">docs/TABLE.md</span>.
+        Open <span className="text-amber">Help</span> in the header for night-sheet and Lookup recipes. Campaign folders
+        are ordinary Markdown on disk (Obsidian-friendly) — see{' '}
+        <span className="text-parchment/70">docs/RECIPES.md</span> in the repo for the same steps in writing.
       </p>
     </div>
   )

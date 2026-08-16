@@ -29,4 +29,4 @@ Wikilinks still resolve by note name after a move. Portraits are `![[Name.png]]`
 
 Night sheets (for example `Sessions/Session 3 — Night Sheet.md`) use headings like `## ⚔️ Combat …` plus `**Combatants:** [[Sheet]] · party` so **Add to initiative** can load the tracker.
 
-Docs: [campaign authoring](../../docs/CAMPAIGN.md) · [at the table](../../docs/TABLE.md) · [markdown / statblocks](../../docs/MARKDOWN.md).
+Docs: [recipes](../../docs/RECIPES.md) · [campaign authoring](../../docs/CAMPAIGN.md) · [at the table](../../docs/TABLE.md) · [markdown / statblocks](../../docs/MARKDOWN.md). In the app, open **Help**.

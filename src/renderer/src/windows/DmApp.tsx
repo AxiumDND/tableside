@@ -15,6 +15,7 @@ import CampaignFiles, {
 } from '../components/CampaignFiles'
 import CombatTracker from '../components/CombatTracker'
 import DiceTray, { DiceLogProvider } from '../components/DiceTray'
+import HelpPanel from '../components/HelpPanel'
 import PlayerPreview from '../components/PlayerPreview'
 import RulesSearch from '../components/RulesSearch'
 import SessionNotes, { type EncounterAddItem } from '../components/SessionNotes'
@@ -66,7 +67,7 @@ export default function DmApp() {
   const [campaign, setCampaign] = useState<CampaignInfo | null>(null)
   const [player, setPlayer] = useState<PlayerState>(emptyPlayerState())
   const [displays, setDisplays] = useState<DisplayInfo[]>([])
-  const [rightPanel, setRightPanel] = useState<'combat' | 'lookup' | null>(null)
+  const [rightPanel, setRightPanel] = useState<'combat' | 'lookup' | 'help' | null>(null)
   const [openPath, setOpenPath] = useState('')
   const [openKind, setOpenKind] = useState<FileKind>('note')
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
@@ -86,7 +87,12 @@ export default function DmApp() {
     setDisplays(screens)
     setPlayerDisplayId(prefs.playerDisplayId ?? '')
     setShowPlayerPreview(prefs.showPlayerPreview !== false)
-    if (prefs.rightPanel === 'combat' || prefs.rightPanel === 'lookup' || prefs.rightPanel === null) {
+    if (
+      prefs.rightPanel === 'combat' ||
+      prefs.rightPanel === 'lookup' ||
+      prefs.rightPanel === 'help' ||
+      prefs.rightPanel === null
+    ) {
       setRightPanel(prefs.rightPanel ?? null)
     }
     if (info && !openPath) {
@@ -424,6 +430,15 @@ export default function DmApp() {
         >
           Lookup
         </button>
+        <button
+          type="button"
+          onClick={() => changeRightPanel((open) => (open === 'help' ? null : 'help'))}
+          className={`rounded px-3 py-1 text-sm ${
+            rightPanel === 'help' ? 'bg-amber font-semibold text-ink' : 'border border-line hover:border-amber'
+          }`}
+        >
+          Help
+        </button>
         <button type="button" onClick={newCampaign} className="rounded border border-line px-3 py-1 text-sm hover:border-amber">
           New campaign
         </button>
@@ -550,6 +565,7 @@ export default function DmApp() {
             />
           </div>
         ) : null}
+        {rightPanel === 'help' ? <HelpPanel onClose={() => changeRightPanel(null)} /> : null}
       </div>
     </div>
     </DiceLogProvider>
