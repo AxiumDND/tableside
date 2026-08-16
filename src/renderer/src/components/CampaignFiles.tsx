@@ -12,6 +12,7 @@ import {
 } from '../../../shared/campaignLayout'
 import type { SheetTemplateKind } from '../../../shared/sheetTemplates'
 import { IMAGE_EXT, campaignFileUrl } from '../lib/images'
+import { parentFolderLabel, searchCampaignFiles } from '../lib/campaignSearch'
 
 export { campaignFileUrl }
 
@@ -41,28 +42,6 @@ function folderKind(name: string): 'party' | 'npcs' | 'bestiary' | 'spells' | 'g
   if (isGearFolderName(name)) return 'gear'
   if (isSessionsFolderName(name)) return 'sessions'
   return null
-}
-
-function filterTree(nodes: CampaignTreeNode[], query: string): CampaignTreeNode[] {
-  const q = query.trim().toLowerCase()
-  if (!q) return nodes
-  const walk = (list: CampaignTreeNode[]): CampaignTreeNode[] => {
-    const out: CampaignTreeNode[] = []
-    for (const node of list) {
-      if (node.type === 'file') {
-        if (node.name.toLowerCase().includes(q) || node.relativePath.toLowerCase().includes(q)) {
-          out.push(node)
-        }
-        continue
-      }
-      const children = walk(node.children ?? [])
-      if (children.length > 0 || node.name.toLowerCase().includes(q)) {
-        out.push({ ...node, children })
-      }
-    }
-    return out
-  }
-  return walk(nodes)
 }
 
 type MenuTarget =
@@ -141,6 +120,44 @@ function TreeNode({
   )
 }
 
+function SearchHitRow({
+  node,
+  selected,
+  onOpen,
+  onMenu
+}: {
+  node: CampaignTreeNode
+  selected?: string
+  onOpen: (node: CampaignTreeNode) => void
+  onMenu: (event: React.MouseEvent, node: CampaignTreeNode) => void
+}) {
+  const kind = fileKind(node)
+  const isSelected = selected === node.relativePath
+  const folder = parentFolderLabel(node.relativePath)
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(node)}
+      onContextMenu={(event) => onMenu(event, node)}
+      className={`flex w-full items-center gap-2 rounded px-2 py-1.5 text-left text-[13px] ${
+        isSelected ? 'bg-amber/20 text-amber' : 'hover:bg-panel-2'
+      }`}
+    >
+      {kind === 'image' ? (
+        <img src={campaignFileUrl(node.relativePath)} alt="" className="h-7 w-7 shrink-0 rounded object-cover" />
+      ) : (
+        <span className="w-8 shrink-0 text-[10px] uppercase text-muted">
+          {kind === 'character' ? 'pc' : kind === 'note' ? 'md' : kind === 'pdf' ? 'pdf' : node.ext?.slice(1)}
+        </span>
+      )}
+      <span className="min-w-0 flex-1">
+        <span className="block truncate font-medium">{displayName(node.name)}</span>
+        {folder ? <span className="block truncate text-[11px] text-muted">{folder}</span> : null}
+      </span>
+    </button>
+  )
+}
+
 function MenuItem({
   label,
   onClick
@@ -176,8 +193,9 @@ export default function CampaignFiles({
   const [prompt, setPrompt] = useState<PromptState | null>(null)
   const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
-  const [filter, setFilter] = useState('')
-  const inputRef = useRef<HTMLInputElement>(null)
+  const [query, setQuery] = useState('')
+  const promptInputRef = useRef<HTMLInputElement>(null)
+  const searchInputRef = useRef<HTMLInputElement>(null)
 
   const count = useMemo(() => {
     const walk = (nodes: CampaignTreeNode[]): number =>
@@ -185,12 +203,13 @@ export default function CampaignFiles({
     return walk(tree)
   }, [tree])
 
-  const visibleTree = useMemo(() => filterTree(tree, filter), [tree, filter])
+  const searching = query.trim().length > 0
+  const searchHits = useMemo(() => searchCampaignFiles(tree, query), [tree, query])
 
   useEffect(() => {
     if (!prompt) return
-    inputRef.current?.focus()
-    inputRef.current?.select()
+    promptInputRef.current?.focus()
+    promptInputRef.current?.select()
   }, [prompt])
 
   useEffect(() => {
@@ -203,6 +222,28 @@ export default function CampaignFiles({
       window.removeEventListener('scroll', close, true)
     }
   }, [menu])
+
+  useEffect(() => {
+    const typing = (target: EventTarget | null): boolean =>
+      target instanceof HTMLElement &&
+      (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
+
+    const onKey = (e: KeyboardEvent): void => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+        searchInputRef.current?.select()
+        return
+      }
+      if (e.key === '/' && !typing(e.target)) {
+        e.preventDefault()
+        searchInputRef.current?.focus()
+        searchInputRef.current?.select()
+      }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [])
 
   function openMenu(event: React.MouseEvent, node?: CampaignTreeNode): void {
     event.preventDefault()
@@ -271,28 +312,71 @@ export default function CampaignFiles({
 
   return (
     <aside className="flex min-h-0 flex-1 flex-col bg-ink">
-      <header
-        className="border-b border-line px-3 py-2"
-        onContextMenu={(event) => openMenu(event)}
-      >
+      <header className="border-b border-line px-3 py-2" onContextMenu={(event) => openMenu(event)}>
         <div className="font-display text-amber">Files</div>
         <div className="truncate text-[11px] text-muted">
           {campaignName} · {count} files · right-click to add
         </div>
-        <input
-          value={filter}
-          onChange={(event) => setFilter(event.target.value)}
-          placeholder="Filter files…"
-          className="mt-2 w-full rounded border border-line bg-ink px-2 py-1 text-[12px] outline-none focus:border-amber"
-        />
+        <div className="relative mt-2">
+          <input
+            ref={searchInputRef}
+            value={query}
+            onChange={(event) => setQuery(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') {
+                if (query) {
+                  event.preventDefault()
+                  setQuery('')
+                } else {
+                  searchInputRef.current?.blur()
+                }
+              }
+            }}
+            placeholder="Search notes, maps, art…"
+            title="Search campaign files (Ctrl+F or /)"
+            className="w-full rounded border border-line bg-ink py-1 pl-2 pr-7 text-[12px] outline-none focus:border-amber"
+          />
+          {query ? (
+            <button
+              type="button"
+              onClick={() => {
+                setQuery('')
+                searchInputRef.current?.focus()
+              }}
+              className="absolute right-1 top-1/2 -translate-y-1/2 rounded px-1.5 text-[11px] text-muted hover:text-amber"
+              title="Clear search"
+            >
+              ×
+            </button>
+          ) : null}
+        </div>
+        {searching ? (
+          <div className="mt-1 text-[11px] text-muted">
+            {searchHits.length === 0
+              ? 'No matches'
+              : `${searchHits.length} match${searchHits.length === 1 ? '' : 'es'}`}
+          </div>
+        ) : null}
       </header>
       <nav className="min-h-0 flex-1 overflow-auto py-1" onContextMenu={(event) => openMenu(event)}>
-        {visibleTree.length === 0 ? (
-          <p className="px-3 py-4 text-xs text-muted">
-            {filter.trim() ? 'No files match that filter.' : 'Open a campaign to see its folders.'}
-          </p>
+        {searching ? (
+          searchHits.length === 0 ? (
+            <p className="px-3 py-4 text-xs text-muted">No files match “{query.trim()}”.</p>
+          ) : (
+            searchHits.map(({ node }) => (
+              <SearchHitRow
+                key={node.relativePath}
+                node={node}
+                selected={selected}
+                onOpen={onOpen}
+                onMenu={openMenu}
+              />
+            ))
+          )
+        ) : tree.length === 0 ? (
+          <p className="px-3 py-4 text-xs text-muted">Open a campaign to see its folders.</p>
         ) : (
-          visibleTree.map((node) => (
+          tree.map((node) => (
             <TreeNode
               key={node.relativePath}
               node={node}
@@ -372,7 +456,7 @@ export default function CampaignFiles({
                   : 'Creates an empty markdown note.'}
             </p>
             <input
-              ref={inputRef}
+              ref={promptInputRef}
               value={name}
               onChange={(event) => setName(event.target.value)}
               onKeyDown={(event) => {
