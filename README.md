@@ -11,13 +11,13 @@ Compatible with fifth edition. Rules lookup uses the **System Reference Document
 - Dual-window layout: DM console + fullscreen player display
 - Campaign folder of Markdown notes (Obsidian-friendly wikilinks and `![[images]]`)
 - Click a map or portrait, then **Show to players** — 5 second fade-in on a black screen
-- Optional initiative overlay on the player screen: order, whose turn, Bloodied (enemies under half HP)
-- Night sheets can pull NPC/PC statblocks into initiative
+- Optional initiative overlay on the player screen: order, whose turn, Bloodied (enemies under half HP), 0 HP statuses
+- Night sheets can pull NPC/PC/Bestiary statblocks into initiative
 - Offline search for conditions, spells, monsters, weapons, and common rules
 - Optional extra lookup from your own WOTC text files in `WOTC/` (spells, equipment, magic items)
 - Add a monster, spell, or gear item from Lookup into the campaign Bestiary, Spells, or Gear folder
 
-## Run it
+## Quick start
 
 ```bash
 npm install
@@ -25,61 +25,64 @@ npm run build
 npm start
 ```
 
-The folder name `D&D gaming` contains `&`, so if a script fails, run Electron via:
+For day-to-day development with hot reload:
 
 ```bash
-node ./node_modules/electron-vite/bin/electron-vite.js build
-node ./node_modules/electron/cli.js .
+npm install
+npm run dev
 ```
-
-`npm run fetch-srd` is only needed if you want to refresh the bundled SRD snapshot from the [Open5e API](https://api.open5e.com/) (`srd-2024`).
 
 Two windows open. If you have a second monitor, the player window goes there fullscreen.
 
 Click **Sample** to load **Bad Blood**, the included Barovia three-shot. Table DM copies it into your user data folder so combat and notes do not write back into the git repo.
 
-## Campaign folder
-
-**New campaign** creates this folder layout in an empty directory (plus `Overview.md` and Templates). **Open campaign** reads any folder live and fills in missing standard folders. Names are matched case-insensitively (`Party` / `party`, `NPCs` / `npcs`).
-
-```
-campaign.json     campaign name (hidden in the file tree)
-combat.json       live initiative (hidden)
-Overview.md       hub note — opens first if present
-
-Sessions/         run guides and night sheets
-  Art/            establishing shots
-Party/            PC sheets (Add all players)
-  Art/            PC portraits
-NPCs/             named people
-  Art/            NPC portraits
-Bestiary/         creatures
-  Art/            creature art
-Spells/           campaign copies of spells (edit after Lookup)
-Gear/             weapons, equipment, and magic items
-Maps/
-  Art/            battle and location maps
-  Print/          print-and-play PDFs
-Handouts/         letters and props
-  Art/            letter images
-Templates/        blank Player, NPC, Monster, Spell, and Gear sheets
-Reference/        tracker, locations, cheat sheets
-Archive/          recaps, transcripts, old drafts
-```
-
-Book text for Lookup is **not** part of a campaign. Put Player’s Handbook and Dungeon Master’s Guide exports in the app `WOTC/` folder (or `%APPDATA%\table-dm\WOTC`). When those files are present, Lookup grows extra filters and searches that text. The SRD stays available either way.
-
-How to format the files — one `##` heading per spell, gear item, or magic item — is in [WOTC/README.md](WOTC/README.md). Filenames must contain `Spell`, `Equipment`, or `Magic Item` so Lookup knows which chip to add.
-
-Notes can stay in Obsidian. Use `[[Note Name]]` wikilinks and `![[Portrait.png]]` embeds. Put art in that folder's `Art/` subfolder; portrait files should match the character name. Combatants on a night sheet should be wikilinks to Party / NPCs / Bestiary sheets.
-
-## Installer
+### Installer (Windows)
 
 ```bash
 npm run dist
 ```
 
 Writes a Windows NSIS installer to `dist/`.
+
+`npm run fetch-srd` is only needed if you want to refresh the bundled SRD snapshot from the [Open5e API](https://api.open5e.com/) (`srd-2024`).
+
+## Docs
+
+| Doc | Audience |
+| --- | --- |
+| [docs/CAMPAIGN.md](docs/CAMPAIGN.md) | DMs — folder layout, callouts, night sheets, combatants, images |
+| [WOTC/README.md](WOTC/README.md) | Optional PHB / DMG lookup file formats |
+| [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Contributors — scripts, architecture, CI |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Pull request expectations |
+| [ATTRIBUTION.md](ATTRIBUTION.md) | SRD / Open5e licensing |
+
+## Campaign folders
+
+Campaigns are ordinary folders on disk. **New campaign** scaffolds the standard layout; **Open campaign** reads any folder and fills in missing pieces.
+
+```
+Overview.md       hub note
+Sessions/         run guides and night sheets (+ Art/)
+Party/            PC sheets (+ Art/)
+NPCs/             named people (+ Art/)
+Bestiary/         creatures (+ Art/)
+Spells/           campaign spell copies
+Gear/             weapons, equipment, magic items
+Maps/             Art/ + Print/
+Handouts/         letters and props (+ Art/)
+Templates/        blank sheets
+Reference/        trackers and cheat sheets
+Archive/          recaps and old drafts
+```
+
+Full authoring guide (wikilinks, callouts, `statblock` fences, night-sheet combat lines): **[docs/CAMPAIGN.md](docs/CAMPAIGN.md)**.
+
+Book text for Lookup is **not** part of a campaign. Put Player’s Handbook and Dungeon Master’s Guide exports in the app `WOTC/` folder (or `%APPDATA%\table-dm\WOTC`). When those files are present, Lookup grows extra filters and searches that text. The SRD stays available either way. Filenames must contain `Spell`, `Equipment`, or `Magic Item` — details in [WOTC/README.md](WOTC/README.md).
+
+### Examples
+
+- [examples/bad-blood](examples/bad-blood) — full three-shot (also the in-app **Sample**)
+- [examples/sample-campaign](examples/sample-campaign) — minimal one-night folder
 
 ## Attribution
 
