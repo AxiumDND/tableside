@@ -35,6 +35,7 @@ PDFs open in the center pane for you; they are not sent to the player display as
 ## File tree
 
 - Click a note, image, or PDF to open it.
+- **Search** under Files finds notes, maps, and art by name (also `Ctrl+F` or `/`). Results are a flat ranked list with folder paths — `Esc` clears.
 - **Right-click** a folder (or empty tree area) to create notes from Templates, or **Add files…** to import into that folder.
 - Right-click a file to **Duplicate…** or add files beside it.
 - Creating **New player / NPC / monster / spell / gear** uses `Templates/Player.md` (etc.) when present, then fills in the name you type.

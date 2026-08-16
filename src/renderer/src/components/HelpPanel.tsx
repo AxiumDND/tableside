@@ -163,7 +163,7 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
               Editing: <Code>Ctrl+S</Code> save, <Code>Esc</Code> cancel
             </li>
             <li>Right-click the file tree to create from Templates or import files</li>
-            <li>Filter the file tree from the search box under Files</li>
+            <li>Filter/search the file tree with the box under Files (`Ctrl+F` or `/`)</li>
             <li>
               Repo docs: <Code>docs/TABLE.md</Code>, <Code>docs/CAMPAIGN.md</Code>, <Code>docs/RECIPES.md</Code>
             </li>
