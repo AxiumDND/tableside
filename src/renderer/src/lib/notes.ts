@@ -89,7 +89,7 @@ export function campaignFolderOf(notePath: string): string {
       pathHasFolder(p, 'party') ||
       pathHasFolder(p, 'npcs') ||
       pathHasFolder(p, 'bestiary') ||
-      /^(sessions|maps|scenes|portraits|handouts|reference|archive|assets)$/i.test(p)
+      /^(sessions|maps|handouts|reference|archive|assets|templates)$/i.test(p)
   )
   if (idx > 0) return parts.slice(0, idx).join('/')
   return ''
@@ -133,6 +133,18 @@ export function partyNotes(fromPath: string, notes: CampaignNote[]): CampaignNot
     if (/roster/i.test(n.stem)) return false
     return isPartyFolderPath(path)
   })
+}
+
+export function allPartyNotes(notes: CampaignNote[]): CampaignNote[] {
+  return notes
+    .filter((n) => isPartyFolderPath(n.relativePath) && !/roster/i.test(n.stem))
+    .sort((a, b) => sheetDisplayName(a.stem).localeCompare(sheetDisplayName(b.stem)))
+}
+
+export function bestiaryNotes(notes: CampaignNote[]): CampaignNote[] {
+  return notes
+    .filter((n) => pathHasFolder(n.relativePath, 'bestiary') && !/^(bestiary|index|readme)$/i.test(n.stem))
+    .sort((a, b) => sheetDisplayName(a.stem).localeCompare(sheetDisplayName(b.stem)))
 }
 
 function kindForNote(note: CampaignNote): EncounterCombatantRef['kind'] {

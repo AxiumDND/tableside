@@ -6,7 +6,11 @@ export const SKIP_DIR_NAMES = new Set([
   '.DS_Store',
   'Thumbs.db',
   'out',
-  'dist'
+  'dist',
+  'WOTC',
+  'wotc',
+  'WOTC Files',
+  'WOTC FIles'
 ])
 
 export const HIDDEN_FILE_NAMES = new Set(['campaign.json', 'combat.json', 'readme.md'])
@@ -16,24 +20,31 @@ export const FOLDER_ORDER = [
   'party',
   'npcs',
   'bestiary',
-  'templates',
   'maps',
-  'scenes',
-  'portraits',
   'handouts',
+  'templates',
   'reference',
   'archive'
 ] as const
+
+export const STANDARD_LAYOUT: { canonical: string; name: string; extras: string[] }[] = [
+  { canonical: 'sessions', name: 'Sessions', extras: ['Art'] },
+  { canonical: 'party', name: 'Party', extras: ['Art'] },
+  { canonical: 'npcs', name: 'NPCs', extras: ['Art'] },
+  { canonical: 'bestiary', name: 'Bestiary', extras: ['Art'] },
+  { canonical: 'maps', name: 'Maps', extras: ['Art', 'Print'] },
+  { canonical: 'handouts', name: 'Handouts', extras: ['Art'] },
+  { canonical: 'templates', name: 'Templates', extras: [] },
+  { canonical: 'reference', name: 'Reference', extras: [] },
+  { canonical: 'archive', name: 'Archive', extras: [] }
+]
 
 export const DEFAULT_OPEN_FOLDERS = new Set([
   'sessions',
   'party',
   'npcs',
   'bestiary',
-  'templates',
   'maps',
-  'scenes',
-  'portraits',
   'handouts',
   'the party',
   "pc's",
@@ -57,9 +68,11 @@ const FOLDER_ALIASES: Record<string, string> = {
   pc: 'party',
   npcs: 'npcs',
   npc: 'npcs',
+  'session notes': 'sessions',
+  session: 'sessions',
   'handouts and props': 'handouts',
   'handouts props': 'handouts',
-  assets: 'scenes',
+  assets: 'maps',
   'z archive': 'archive',
   archive: 'archive'
 }
@@ -84,6 +97,10 @@ export function isNpcFolderName(name: string): boolean {
 
 export function isBestiaryFolderName(name: string): boolean {
   return canonicalFolder(name) === 'bestiary'
+}
+
+export function isSessionsFolderName(name: string): boolean {
+  return canonicalFolder(name) === 'sessions'
 }
 
 export function pathHasFolder(path: string, kind: 'party' | 'npcs' | 'bestiary'): boolean {

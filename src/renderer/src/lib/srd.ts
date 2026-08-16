@@ -8,7 +8,7 @@ import rules from '../data/srd/rules.json'
 import type { StatBlock } from '../../../shared/types'
 import { parsedToBestiaryMarkdown, statBlockToParsed } from './statblock'
 
-export type SrdKind = 'spell' | 'monster' | 'condition' | 'weapon' | 'rule'
+export type SrdKind = 'spell' | 'monster' | 'condition' | 'weapon' | 'rule' | 'book' | 'gear'
 
 export interface SrdRecord {
   id: string
@@ -17,6 +17,8 @@ export interface SrdRecord {
   searchText: string
   summary: string
   data: Record<string, unknown>
+  source?: string
+  sourceLabel?: string
 }
 
 function asList<T>(value: unknown): T[] {
@@ -37,47 +39,64 @@ function monsterSummary(m: Record<string, unknown>): string {
     .join(' · ')
 }
 
+export const SRD_SOURCE = 'srd'
+export const SRD_SOURCE_LABEL = 'SRD 5.2.1'
+
+function withSrdSource<T extends SrdRecord>(record: Omit<T, 'source' | 'sourceLabel'>): T {
+  return { ...record, source: SRD_SOURCE, sourceLabel: SRD_SOURCE_LABEL } as T
+}
+
 export const srdRecords: SrdRecord[] = [
-  ...asList<Record<string, unknown>>(spells).map((s) => ({
-    id: String(s.id),
-    name: String(s.name),
-    kind: 'spell' as const,
-    searchText: [s.name, s.school, s.desc, (s.classes as string[] | undefined)?.join(' ')].filter(Boolean).join(' '),
-    summary: spellSummary(s),
-    data: s
-  })),
-  ...asList<Record<string, unknown>>(monsters).map((m) => ({
-    id: String(m.id),
-    name: String(m.name),
-    kind: 'monster' as const,
-    searchText: [m.name, m.type, m.size, m.alignment].filter(Boolean).join(' '),
-    summary: monsterSummary(m),
-    data: m
-  })),
-  ...resolvedConditions.map((c) => ({
-    id: String(c.id),
-    name: String(c.name),
-    kind: 'condition' as const,
-    searchText: `${c.name} ${c.desc}`,
-    summary: 'Condition',
-    data: c
-  })),
-  ...asList<Record<string, unknown>>(weapons).map((w) => ({
-    id: String(w.id),
-    name: String(w.name),
-    kind: 'weapon' as const,
-    searchText: [w.name, w.category, w.properties, w.desc].filter(Boolean).join(' '),
-    summary: [w.damage, w.properties].filter(Boolean).join(' · '),
-    data: w
-  })),
-  ...asList<Record<string, unknown>>(rules).map((r) => ({
-    id: String(r.id),
-    name: String(r.name),
-    kind: 'rule' as const,
-    searchText: [r.name, r.desc, (r.tags as string[] | undefined)?.join(' ')].filter(Boolean).join(' '),
-    summary: ((r.tags as string[] | undefined) ?? []).join(' · ') || 'Rule',
-    data: r
-  }))
+  ...asList<Record<string, unknown>>(spells).map((s) =>
+    withSrdSource({
+      id: String(s.id),
+      name: String(s.name),
+      kind: 'spell' as const,
+      searchText: [s.name, s.school, s.desc, (s.classes as string[] | undefined)?.join(' ')].filter(Boolean).join(' '),
+      summary: spellSummary(s),
+      data: s
+    })
+  ),
+  ...asList<Record<string, unknown>>(monsters).map((m) =>
+    withSrdSource({
+      id: String(m.id),
+      name: String(m.name),
+      kind: 'monster' as const,
+      searchText: [m.name, m.type, m.size, m.alignment].filter(Boolean).join(' '),
+      summary: monsterSummary(m),
+      data: m
+    })
+  ),
+  ...resolvedConditions.map((c) =>
+    withSrdSource({
+      id: String(c.id),
+      name: String(c.name),
+      kind: 'condition' as const,
+      searchText: `${c.name} ${c.desc}`,
+      summary: 'Condition',
+      data: c
+    })
+  ),
+  ...asList<Record<string, unknown>>(weapons).map((w) =>
+    withSrdSource({
+      id: String(w.id),
+      name: String(w.name),
+      kind: 'weapon' as const,
+      searchText: [w.name, w.category, w.properties, w.desc].filter(Boolean).join(' '),
+      summary: [w.damage, w.properties].filter(Boolean).join(' · '),
+      data: w
+    })
+  ),
+  ...asList<Record<string, unknown>>(rules).map((r) =>
+    withSrdSource({
+      id: String(r.id),
+      name: String(r.name),
+      kind: 'rule' as const,
+      searchText: [r.name, r.desc, (r.tags as string[] | undefined)?.join(' ')].filter(Boolean).join(' '),
+      summary: ((r.tags as string[] | undefined) ?? []).join(' · ') || 'Rule',
+      data: r
+    })
+  )
 ]
 
 const search = new MiniSearch<SrdRecord>({
@@ -90,19 +109,64 @@ const search = new MiniSearch<SrdRecord>({
   }
 })
 
-search.addAll(srdRecords)
+let extraRecords: SrdRecord[] = []
+const byId = new Map<string, SrdRecord>()
 
-const byId = new Map(srdRecords.map((r) => [r.id, r]))
+function rebuildIndex(): void {
+  search.removeAll()
+  byId.clear()
+  for (const record of [...srdRecords, ...extraRecords]) {
+    byId.set(record.id, record)
+  }
+  search.addAll([...byId.values()])
+}
 
-export function searchSrd(query: string, kind?: SrdKind | 'all'): SrdRecord[] {
+rebuildIndex()
+
+function allRecords(): SrdRecord[] {
+  return [...srdRecords, ...extraRecords]
+}
+
+function preferBookOverSrd(records: SrdRecord[]): SrdRecord[] {
+  const chosen = new Map<string, SrdRecord>()
+  const extrasFirst = [
+    ...records.filter((r) => r.source && r.source !== 'srd'),
+    ...records.filter((r) => !r.source || r.source === 'srd')
+  ]
+  for (const record of extrasFirst) {
+    const key = `${record.kind}:${record.name.toLowerCase()}`
+    if (!chosen.has(key)) chosen.set(key, record)
+  }
+  return [...chosen.values()]
+}
+
+function matchesFilter(record: SrdRecord, kind?: SrdKind | 'all' | string): boolean {
+  if (!kind || kind === 'all') return true
+  if (kind.startsWith('source:')) return record.source === kind.slice('source:'.length)
+  return record.kind === kind
+}
+
+export function setExtraRecords(records: SrdRecord[]): void {
+  extraRecords = records
+  rebuildIndex()
+}
+
+export function getExtraRecords(): SrdRecord[] {
+  return extraRecords
+}
+
+export function searchSrd(query: string, kind?: SrdKind | 'all' | string): SrdRecord[] {
   const q = query.trim()
   if (!q) {
-    const seed = srdRecords.filter((r) => r.kind === 'condition' || r.kind === 'rule')
-    return (kind && kind !== 'all' ? seed.filter((r) => r.kind === kind) : seed).slice(0, 12)
+    const pool = allRecords()
+    const seed = kind && kind !== 'all'
+      ? pool.filter((r) => matchesFilter(r, kind))
+      : pool.filter((r) => r.kind === 'condition' || r.kind === 'rule')
+    return preferBookOverSrd(seed).slice(0, 12)
   }
   const hits = search.search(q)
   const records = hits.map((h) => byId.get(String(h.id))).filter((r): r is SrdRecord => Boolean(r))
-  return kind && kind !== 'all' ? records.filter((r) => r.kind === kind) : records
+  return preferBookOverSrd(records.filter((r) => matchesFilter(r, kind)))
 }
 
 export function getSrd(id: string): SrdRecord | undefined {
@@ -151,6 +215,14 @@ export const srdCounts = {
   conditions: resolvedConditions.length,
   weapons: asList(weapons).length,
   rules: asList(rules).length
+}
+
+export function lookupCounts(): { spells: number; monsters: number; extras: number } {
+  return {
+    spells: srdCounts.spells + extraRecords.filter((r) => r.kind === 'spell').length,
+    monsters: srdCounts.monsters + extraRecords.filter((r) => r.kind === 'monster').length,
+    extras: extraRecords.length
+  }
 }
 
 export const SRD_ATTRIBUTION =

@@ -8,3 +8,8 @@ Thumbs.db
 .vscode
 .env
 .campaign-local
+examples/**/combat.json
+/WOTC/*
+!/WOTC/README.md
+/WOTC Files/
+/WOTC FIles/

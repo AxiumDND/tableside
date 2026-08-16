@@ -18,8 +18,16 @@ import DiceTray, { DiceLogProvider } from '../components/DiceTray'
 import PlayerPreview from '../components/PlayerPreview'
 import RulesSearch from '../components/RulesSearch'
 import SessionNotes, { type EncounterAddItem } from '../components/SessionNotes'
+import { combatToPlayerInitiative } from '../lib/combat'
 import { flattenImages, imageTitle, isImagePath, isPdfPath } from '../lib/images'
-import { flattenNotes, partyNotes, sameCombatantName, sheetDisplayName } from '../lib/notes'
+import {
+  allPartyNotes,
+  bestiaryNotes,
+  flattenNotes,
+  partyNotes,
+  sameCombatantName,
+  sheetDisplayName
+} from '../lib/notes'
 import { monsterToStatBlock, srdMonsterToBestiaryMarkdown, type SrdRecord } from '../lib/srd'
 import { extractStatblock, fallbackStatblock, parsedToStatBlock, type ParsedStatblock } from '../lib/statblock'
 import { APP_VERSION } from '../../../shared/version'
@@ -62,21 +70,33 @@ export default function DmApp() {
   const [openKind, setOpenKind] = useState<FileKind>('note')
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [history, setHistory] = useState<{ path: string; kind: FileKind }[]>([])
+  const [playerDisplayId, setPlayerDisplayId] = useState<number | ''>('')
+  const [showPlayerPreview, setShowPlayerPreview] = useState(true)
 
   const refresh = useCallback(async () => {
-    const [info, state, screens] = await Promise.all([
+    const [info, state, screens, prefs] = await Promise.all([
       window.tabledm.getCampaign(),
       window.tabledm.getPlayerState(),
-      window.tabledm.getDisplays()
+      window.tabledm.getDisplays(),
+      window.tabledm.getSettings()
     ])
     setCampaign(info)
     setPlayer(state)
     setDisplays(screens)
+    setPlayerDisplayId(prefs.playerDisplayId ?? '')
+    setShowPlayerPreview(prefs.showPlayerPreview !== false)
+    if (prefs.rightPanel === 'combat' || prefs.rightPanel === 'lookup' || prefs.rightPanel === null) {
+      setRightPanel(prefs.rightPanel ?? null)
+    }
     if (info && !openPath) {
-      const note = firstNote(info.tree)
-      if (note) {
-        setOpenPath(note)
-        setOpenKind('note')
+      const remembered =
+        prefs.lastOpenPath && findTreeNode(info.tree, prefs.lastOpenPath)
+          ? prefs.lastOpenPath
+          : firstNote(info.tree)
+      if (remembered) {
+        const node = findTreeNode(info.tree, remembered)
+        setOpenPath(remembered)
+        setOpenKind(node ? fileKind(node) : 'note')
       }
     }
   }, [openPath])
@@ -93,10 +113,20 @@ export default function DmApp() {
     setOpenKind('note')
     setSelectedImage(null)
     setHistory([])
+    void window.tabledm.saveSettings({
+      lastOpenPath: note || undefined,
+      lastOpenKind: note ? 'note' : undefined
+    })
   }
 
   async function openFolder(): Promise<void> {
     const info = await window.tabledm.pickCampaignFolder()
+    applyCampaign(info)
+    setPlayer(await window.tabledm.getPlayerState())
+  }
+
+  async function newCampaign(): Promise<void> {
+    const info = await window.tabledm.newCampaign()
     applyCampaign(info)
     setPlayer(await window.tabledm.getPlayerState())
   }
@@ -119,6 +149,7 @@ export default function DmApp() {
     setOpenPath(path)
     setOpenKind(kind)
     setSelectedImage(kind === 'image' ? path : null)
+    void window.tabledm.saveSettings({ lastOpenPath: path, lastOpenKind: kind })
   }
 
   function goBack(): void {
@@ -128,6 +159,7 @@ export default function DmApp() {
     setOpenPath(prev.path)
     setOpenKind(prev.kind)
     setSelectedImage(prev.kind === 'image' ? prev.path : null)
+    void window.tabledm.saveSettings({ lastOpenPath: prev.path, lastOpenKind: prev.kind })
   }
 
   async function openTreeFile(node: CampaignTreeNode): Promise<void> {
@@ -158,7 +190,12 @@ export default function DmApp() {
     for (const pc of partyNotes(from, notes)) {
       const text = await window.tabledm.readFile(pc.relativePath)
       const parsed = extractStatblock(text)?.block ?? fallbackStatblock(pc.relativePath, text)
-      items.push({ block: parsed, kind: 'pc', sourceId: pc.relativePath, name: parsed.name })
+      items.push({
+        block: parsed,
+        kind: 'pc',
+        sourceId: pc.relativePath,
+        name: sheetDisplayName(pc.relativePath)
+      })
       seen.add(parsed.name.toLowerCase())
     }
     for (const pc of campaign.party) {
@@ -217,18 +254,48 @@ export default function DmApp() {
     void addEncounterItems([{ block, kind: 'npc', sourceId, name }])
   }
 
-  async function addEncounterItems(items: EncounterAddItem[], extra?: Combatant): Promise<void> {
-    const party = await loadPartyItems()
+  function nextCopyName(base: string, existing: Combatant[]): string {
+    if (!existing.some((c) => c.name === base)) return base
+    let n = 2
+    while (existing.some((c) => c.name === `${base} ${n}`)) n += 1
+    return `${base} ${n}`
+  }
+
+  function addPartyToCombat(): void {
+    void addEncounterItems([])
+  }
+
+  async function addBestiaryToCombat(notePath: string): Promise<void> {
+    const text = await window.tabledm.readFile(notePath)
+    const parsed = extractStatblock(text)?.block ?? fallbackStatblock(notePath, text)
+    const live = campaign?.combat ?? emptyCombat()
+    const name = nextCopyName(sheetDisplayName(notePath), live.combatants)
+    await addEncounterItems(
+      [{ block: parsed, kind: 'monster', sourceId: `${notePath}#${name}`, name }],
+      undefined,
+      false
+    )
+  }
+
+  async function addEncounterItems(
+    items: EncounterAddItem[],
+    extra?: Combatant,
+    includeParty = true
+  ): Promise<void> {
+    const party = includeParty ? await loadPartyItems() : []
     const combined = [...party, ...items]
     const combat = campaign?.combat ?? emptyCombat()
     const next = [...combat.combatants]
     let added = 0
     for (const item of combined) {
-      const existing = next.find(
-        (c) =>
-          (c.sourceId && item.sourceId && c.sourceId === item.sourceId) ||
-          sameCombatantName(c.name, item.name)
-      )
+      const existing =
+        item.kind === 'monster'
+          ? next.find((c) => c.sourceId && item.sourceId && c.sourceId === item.sourceId)
+          : next.find(
+              (c) =>
+                (c.sourceId && item.sourceId && c.sourceId === item.sourceId) ||
+                sameCombatantName(c.name, item.name)
+            )
       if (existing) {
         if (existing.name !== item.name) {
           existing.name = item.name
@@ -261,7 +328,7 @@ export default function DmApp() {
         activeId: combat.activeId
       })
     }
-    setRightPanel('combat')
+    changeRightPanel('combat')
   }
 
   function openNote(notePath: string): void {
@@ -272,6 +339,27 @@ export default function DmApp() {
   }
 
   const combat = campaign?.combat ?? emptyCombat()
+
+  useEffect(() => {
+    const live = campaign?.combat
+    if (!live) {
+      void window.tabledm.setPlayerInitiative({ entries: [], show: false, round: 0 })
+      return
+    }
+    void window.tabledm.setPlayerInitiative({
+      entries: combatToPlayerInitiative(live),
+      show: Boolean(live.showOrderToPlayers && live.combatants.length > 0),
+      round: live.round
+    })
+  }, [campaign?.combat])
+
+  function changeRightPanel(next: typeof rightPanel | ((prev: typeof rightPanel) => typeof rightPanel)): void {
+    setRightPanel((prev) => {
+      const value = typeof next === 'function' ? next(prev) : next
+      void window.tabledm.saveSettings({ rightPanel: value })
+      return value
+    })
+  }
 
   useEffect(() => {
     const typing = (target: EventTarget | null): boolean =>
@@ -314,11 +402,7 @@ export default function DmApp() {
         <button
           type="button"
           onClick={() => {
-            setRightPanel((open) => {
-              if (open === 'combat') return null
-              void addEncounterItems([])
-              return 'combat'
-            })
+            changeRightPanel((open) => (open === 'combat' ? null : 'combat'))
           }}
           className={`rounded px-3 py-1 text-sm ${
             rightPanel === 'combat' ? 'bg-amber font-semibold text-ink' : 'border border-line hover:border-amber'
@@ -329,12 +413,15 @@ export default function DmApp() {
         </button>
         <button
           type="button"
-          onClick={() => setRightPanel((open) => (open === 'lookup' ? null : 'lookup'))}
+          onClick={() => changeRightPanel((open) => (open === 'lookup' ? null : 'lookup'))}
           className={`rounded px-3 py-1 text-sm ${
             rightPanel === 'lookup' ? 'bg-amber font-semibold text-ink' : 'border border-line hover:border-amber'
           }`}
         >
           Lookup
+        </button>
+        <button type="button" onClick={newCampaign} className="rounded border border-line px-3 py-1 text-sm hover:border-amber">
+          New campaign
         </button>
         <button type="button" onClick={openFolder} className="rounded border border-line px-3 py-1 text-sm hover:border-amber">
           Open campaign
@@ -345,9 +432,12 @@ export default function DmApp() {
         {displays.length > 1 ? (
           <select
             className="rounded border border-line bg-ink px-2 py-1 text-xs"
-            defaultValue=""
+            value={playerDisplayId}
             onChange={(e) => {
-              if (e.target.value) void window.tabledm.placePlayerOnDisplay(Number(e.target.value))
+              if (!e.target.value) return
+              const id = Number(e.target.value)
+              setPlayerDisplayId(id)
+              void window.tabledm.placePlayerOnDisplay(id)
             }}
           >
             <option value="">Player display…</option>
@@ -375,6 +465,18 @@ export default function DmApp() {
 
       <div className="flex min-h-0 flex-1">
         <div className="flex w-64 shrink-0 flex-col border-r border-line">
+          <PlayerPreview
+            state={player}
+            hidden={!showPlayerPreview}
+            onClear={() => void clearPlayer()}
+            onToggle={() => {
+              setShowPlayerPreview((open) => {
+                const next = !open
+                void window.tabledm.saveSettings({ showPlayerPreview: next })
+                return next
+              })
+            }}
+          />
           {campaign ? (
             <CampaignFiles
               tree={campaign.tree}
@@ -391,7 +493,6 @@ export default function DmApp() {
           ) : (
             <div className="flex-1 bg-ink px-3 py-4 text-xs text-muted">Open a campaign to see files.</div>
           )}
-          <PlayerPreview state={player} onClear={() => void clearPlayer()} />
           <DiceTray />
         </div>
         <SessionNotes
@@ -417,8 +518,19 @@ export default function DmApp() {
         {rightPanel === 'combat' ? (
           <CombatTracker
             combat={combat}
+            bestiary={
+              campaign
+                ? bestiaryNotes(flattenNotes(campaign.tree)).map((note) => ({
+                    path: note.relativePath,
+                    name: sheetDisplayName(note.stem)
+                  }))
+                : []
+            }
+            partyCount={campaign ? allPartyNotes(flattenNotes(campaign.tree)).length : 0}
+            onAddParty={addPartyToCombat}
+            onAddBestiary={(path) => void addBestiaryToCombat(path)}
             onChange={(next) => void saveCombat(next)}
-            onClose={() => setRightPanel(null)}
+            onClose={() => changeRightPanel(null)}
           />
         ) : null}
         {rightPanel === 'lookup' ? (
@@ -427,7 +539,7 @@ export default function DmApp() {
               onAddMonster={addMonster}
               onAddToBestiary={addMonsterToBestiary}
               canAddToBestiary={Boolean(campaign)}
-              onClose={() => setRightPanel(null)}
+              onClose={() => changeRightPanel(null)}
             />
           </div>
         ) : null}

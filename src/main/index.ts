@@ -1,9 +1,10 @@
 import { app, BrowserWindow, dialog, ipcMain, net, protocol, screen, shell } from 'electron'
 import { existsSync } from 'node:fs'
-import { copyFile, mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
+import { copyFile, cp, mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
 import { join, normalize, relative, basename, dirname, extname } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import type {
+  AppSettings,
   CampaignInfo,
   CampaignTreeNode,
   Character,
@@ -13,13 +14,18 @@ import type {
   PlayerState,
   SessionFile
 } from '../shared/types'
-import { emptyCombat, emptyPlayerState } from '../shared/types'
+import { emptyCombat, emptyPlayerState, emptySettings } from '../shared/types'
 import { APP_VERSION } from '../shared/version'
 import {
   SKIP_DIR_NAMES,
+  STANDARD_LAYOUT,
+  canonicalFolder,
   folderOrderIndex,
   isBestiaryFolderName,
   isHiddenCampaignFile,
+  isNpcFolderName,
+  isPartyFolderName,
+  isSessionsFolderName,
   pathHasFolder
 } from '../shared/campaignLayout'
 import {
@@ -30,6 +36,7 @@ import {
   sanitizeFileName,
   type SheetTemplateKind
 } from '../shared/sheetTemplates'
+import { loadWotcLibrary, openWotcFolder } from './wotcLibrary'
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -48,6 +55,9 @@ let dmWindow: BrowserWindow | null = null
 let playerWindow: BrowserWindow | null = null
 let campaignFolder: string | null = null
 let playerState: PlayerState = emptyPlayerState()
+let settings: AppSettings = emptySettings()
+let allowQuit = false
+let boundsTimer: ReturnType<typeof setTimeout> | null = null
 
 const IMAGE_EXT = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.bmp'])
 const FILE_MIME: Record<string, string> = {
@@ -65,23 +75,47 @@ function settingsPath(): string {
   return join(app.getPath('userData'), 'settings.json')
 }
 
-async function readSettings(): Promise<{ campaignFolder?: string }> {
+async function readSettings(): Promise<AppSettings> {
   try {
-    return JSON.parse(await readFile(settingsPath(), 'utf8'))
+    return { ...emptySettings(), ...JSON.parse(await readFile(settingsPath(), 'utf8')) }
   } catch {
-    return {}
+    return emptySettings()
   }
 }
 
-async function writeSettings(next: { campaignFolder?: string }): Promise<void> {
+async function writeSettings(next: AppSettings): Promise<void> {
+  settings = next
   await mkdir(app.getPath('userData'), { recursive: true })
   await writeFile(settingsPath(), JSON.stringify(next, null, 2), 'utf8')
 }
 
-function sampleCampaignPath(): string {
+async function patchSettings(partial: AppSettings): Promise<AppSettings> {
+  await writeSettings({ ...settings, ...partial })
+  return settings
+}
+
+function samePath(a: string, b: string): boolean {
+  return normalize(a).toLowerCase() === normalize(b).toLowerCase()
+}
+
+function sampleSourcePath(): string {
   return app.isPackaged
     ? join(process.resourcesPath, 'examples', 'bad-blood')
     : join(__dirname, '../../examples/bad-blood')
+}
+
+function sampleWorkingPath(): string {
+  return join(app.getPath('userData'), 'samples', 'bad-blood')
+}
+
+async function ensureSampleWorkingCopy(): Promise<string> {
+  const source = sampleSourcePath()
+  const dest = sampleWorkingPath()
+  if (!existsSync(dest)) {
+    await mkdir(dirname(dest), { recursive: true })
+    await cp(source, dest, { recursive: true })
+  }
+  return dest
 }
 
 function rendererUrl(hash: string): string {
@@ -91,10 +125,22 @@ function rendererUrl(hash: string): string {
   return `${pathToFileURL(join(__dirname, '../renderer/index.html')).href}#/${hash}`
 }
 
+function scheduleBoundsSave(): void {
+  if (!dmWindow || dmWindow.isMaximized()) return
+  if (boundsTimer) clearTimeout(boundsTimer)
+  boundsTimer = setTimeout(() => {
+    if (!dmWindow) return
+    void patchSettings({ dmBounds: dmWindow.getBounds() })
+  }, 400)
+}
+
 function createDmWindow(): void {
+  const bounds = settings.dmBounds
   dmWindow = new BrowserWindow({
-    width: 1480,
-    height: 920,
+    width: bounds?.width ?? 1480,
+    height: bounds?.height ?? 920,
+    x: bounds?.x,
+    y: bounds?.y,
     minWidth: 1100,
     minHeight: 720,
     show: false,
@@ -110,6 +156,18 @@ function createDmWindow(): void {
   })
 
   dmWindow.on('ready-to-show', () => dmWindow?.show())
+  dmWindow.on('moved', scheduleBoundsSave)
+  dmWindow.on('resized', scheduleBoundsSave)
+  dmWindow.on('close', (event) => {
+    if (allowQuit) return
+    event.preventDefault()
+    dmWindow?.webContents.send('app:will-close')
+    setTimeout(() => {
+      if (allowQuit || !dmWindow) return
+      allowQuit = true
+      dmWindow.close()
+    }, 2000)
+  })
   dmWindow.on('closed', () => {
     dmWindow = null
     playerWindow?.close()
@@ -123,6 +181,10 @@ function createDmWindow(): void {
 
 function playerBounds() {
   const displays = screen.getAllDisplays()
+  const preferred = settings.playerDisplayId
+    ? displays.find((d) => d.id === settings.playerDisplayId)
+    : undefined
+  if (preferred) return preferred.bounds
   const primary = screen.getPrimaryDisplay()
   const secondary = displays.find((d) => d.id !== primary.id)
   return (secondary ?? primary).bounds
@@ -283,11 +345,81 @@ async function listTree(root: string, dir: string, depth = 0): Promise<CampaignT
   return sortNodes(nodes)
 }
 
+async function findChildDir(
+  root: string,
+  match: (name: string) => boolean,
+  fallback: string
+): Promise<string> {
+  if (!existsSync(root)) return join(root, fallback)
+  const entries = await readdir(root, { withFileTypes: true })
+  const found = entries.find((entry) => entry.isDirectory() && match(entry.name))
+  return join(root, found?.name ?? fallback)
+}
+
+async function existingCanonicalDir(root: string, canonical: string): Promise<string | null> {
+  if (!existsSync(root)) return null
+  const entries = await readdir(root, { withFileTypes: true })
+  const found = entries.find((entry) => entry.isDirectory() && canonicalFolder(entry.name) === canonical)
+  return found ? join(root, found.name) : null
+}
+
+async function campaignHasCoreFolders(root: string): Promise<boolean> {
+  for (const key of ['sessions', 'party', 'npcs', 'bestiary']) {
+    if (await existingCanonicalDir(root, key)) return true
+  }
+  return false
+}
+
+async function ensureCampaignLayout(root: string): Promise<void> {
+  for (const item of STANDARD_LAYOUT) {
+    const dir = (await existingCanonicalDir(root, item.canonical)) ?? join(root, item.name)
+    await ensureDir(dir)
+    for (const extra of item.extras) {
+      await ensureDir(join(dir, extra))
+    }
+  }
+}
+
+async function seedNewCampaignFiles(root: string): Promise<void> {
+  const title = basename(root)
+  const overview = join(root, 'Overview.md')
+  if (!existsSync(overview)) {
+    await writeFile(
+      overview,
+      `# ${title}\n\nOpen **Sessions** for tonight's notes. Put portraits in each folder's **Art** subfolder.\n`,
+      'utf8'
+    )
+  }
+  const campaignPath = join(root, 'campaign.json')
+  if (!existsSync(campaignPath)) {
+    await writeJson(campaignPath, { name: title })
+  }
+  const templatesDir = (await existingCanonicalDir(root, 'templates')) ?? join(root, 'Templates')
+  await ensureDir(templatesDir)
+  const seeds: { file: string; kind: Exclude<SheetTemplateKind, 'blank'> }[] = [
+    { file: 'Player.md', kind: 'player' },
+    { file: 'NPC.md', kind: 'npc' },
+    { file: 'Monster.md', kind: 'monster' }
+  ]
+  const existing = new Set((await readdir(templatesDir)).map((name) => name.toLowerCase()))
+  for (const seed of seeds) {
+    if (TEMPLATE_FILE_NAMES[seed.kind].some((name) => existing.has(name))) continue
+    await writeFile(join(templatesDir, seed.file), FALLBACK_TEMPLATES[seed.kind], 'utf8')
+  }
+}
+
+async function prepareCampaignFolder(root: string): Promise<void> {
+  const hadCore = await campaignHasCoreFolders(root)
+  await ensureCampaignLayout(root)
+  if (!hadCore) await seedNewCampaignFiles(root)
+}
+
 async function listSessions(dir: string): Promise<SessionFile[]> {
   if (!existsSync(dir)) return []
   const files = (await readdir(dir)).filter((f) => f.endsWith('.md')).sort().reverse()
+  const folderName = basename(dir)
   return files.map((file) => ({
-    relativePath: file,
+    relativePath: `${folderName}/${file}`.replaceAll('\\', '/'),
     name: file.replace(/\.md$/, '').replace(/[-_]/g, ' ')
   }))
 }
@@ -310,9 +442,9 @@ async function loadCampaign(folder: string): Promise<CampaignInfo> {
     folder,
     name,
     media,
-    sessions: await listSessions(join(folder, 'sessions')),
-    party: await listJsonCharacters(join(folder, 'party')),
-    npcs: await listJsonCharacters(join(folder, 'npcs')),
+    sessions: await listSessions(await findChildDir(folder, isSessionsFolderName, 'Sessions')),
+    party: await listJsonCharacters(await findChildDir(folder, isPartyFolderName, 'Party')),
+    npcs: await listJsonCharacters(await findChildDir(folder, isNpcFolderName, 'NPCs')),
     combat,
     tree: await listTree(folder, folder)
   }
@@ -461,12 +593,13 @@ async function addCampaignFiles(folder: string): Promise<{ campaign: CampaignInf
 
 async function setCampaignFolder(folder: string | null): Promise<CampaignInfo | null> {
   campaignFolder = folder
-  await writeSettings({ campaignFolder: folder ?? undefined })
+  await patchSettings({ campaignFolder: folder ?? undefined })
   if (!folder) {
     playerState = { ...emptyPlayerState() }
     sendPlayerState()
     return null
   }
+  await prepareCampaignFolder(folder)
   const info = await loadCampaign(folder)
     playerState = {
       ...playerState,
@@ -491,20 +624,41 @@ function registerIpc(): void {
     return playerState
   })
 
-  ipcMain.handle('player:set-initiative', (_e, entries: PlayerState['initiative'], show: boolean) => {
-    playerState = { ...playerState, initiative: entries, showInitiative: show }
-    sendPlayerState()
-    return playerState
-  })
+  ipcMain.handle(
+    'player:set-initiative',
+    (
+      _e,
+      payload: { entries: PlayerState['initiative']; show: boolean; round?: number }
+    ) => {
+      playerState = {
+        ...playerState,
+        initiative: payload.entries ?? [],
+        showInitiative: Boolean(payload.show),
+        initiativeRound: Number(payload.round ?? 0)
+      }
+      sendPlayerState()
+      return playerState
+    }
+  )
 
   ipcMain.handle('player:get-state', () => playerState)
 
   ipcMain.handle('player:place-on-display', (_e, displayId: number) => {
     const display = screen.getAllDisplays().find((d) => d.id === displayId)
     if (!display || !playerWindow) return listDisplays()
+    void patchSettings({ playerDisplayId: displayId })
     playerWindow.setBounds(display.bounds)
     playerWindow.setFullScreen(true)
     return listDisplays()
+  })
+
+  ipcMain.handle('app:get-settings', () => settings)
+
+  ipcMain.handle('app:save-settings', (_e, partial: AppSettings) => patchSettings(partial ?? {}))
+
+  ipcMain.on('app:confirm-close', () => {
+    allowQuit = true
+    dmWindow?.close()
   })
 
   ipcMain.handle('campaign:pick-folder', async () => {
@@ -516,18 +670,23 @@ function registerIpc(): void {
     return setCampaignFolder(result.filePaths[0])
   })
 
-  ipcMain.handle('campaign:open-sample', async () => setCampaignFolder(sampleCampaignPath()))
+  ipcMain.handle('campaign:new', async () => {
+    const result = await dialog.showOpenDialog(dmWindow ?? undefined, {
+      title: 'New campaign folder',
+      properties: ['openDirectory', 'createDirectory']
+    })
+    if (result.canceled || !result.filePaths[0]) return null
+    await ensureCampaignLayout(result.filePaths[0])
+    await seedNewCampaignFiles(result.filePaths[0])
+    return setCampaignFolder(result.filePaths[0])
+  })
+
+  ipcMain.handle('campaign:open-sample', async () =>
+    setCampaignFolder(await ensureSampleWorkingCopy())
+  )
 
   ipcMain.handle('campaign:get', async () => {
     if (!campaignFolder) return null
-    return loadCampaign(campaignFolder)
-  })
-
-  ipcMain.handle('campaign:save-name', async (_e, name: string) => {
-    if (!campaignFolder) return null
-    await writeJson(join(campaignFolder, 'campaign.json'), { name })
-    playerState = { ...playerState, campaignTitle: name }
-    sendPlayerState()
     return loadCampaign(campaignFolder)
   })
 
@@ -539,28 +698,6 @@ function registerIpc(): void {
   ipcMain.handle('campaign:save-file', async (_e, relativePath: string, markdown: string) => {
     if (!campaignFolder) return
     await writeFile(safeJoin(campaignFolder, relativePath), markdown, 'utf8')
-  })
-
-  ipcMain.handle('campaign:read-session', async (_e, relativePath: string) => {
-    if (!campaignFolder) return ''
-    const path = relativePath.includes('/') || relativePath.includes('\\')
-      ? relativePath
-      : join('sessions', relativePath)
-    return readFile(safeJoin(campaignFolder, path), 'utf8')
-  })
-
-  ipcMain.handle('campaign:save-session', async (_e, relativePath: string, markdown: string) => {
-    if (!campaignFolder) return
-    const path = relativePath.includes('/') || relativePath.includes('\\')
-      ? relativePath
-      : join('sessions', relativePath)
-    await writeFile(safeJoin(campaignFolder, path), markdown, 'utf8')
-  })
-
-  ipcMain.handle('campaign:save-character', async (_e, folder: 'party' | 'npcs', character: Character) => {
-    if (!campaignFolder) return null
-    await writeJson(safeJoin(campaignFolder, folder, `${character.id}.json`), character)
-    return loadCampaign(campaignFolder)
   })
 
   ipcMain.handle('campaign:save-combat', async (_e, combat: CombatState) => {
@@ -584,6 +721,9 @@ function registerIpc(): void {
   )
 
   ipcMain.handle('campaign:add-files', async (_e, folder: string) => addCampaignFiles(folder ?? ''))
+
+  ipcMain.handle('wotc:load', () => loadWotcLibrary())
+  ipcMain.handle('wotc:open-folder', () => openWotcFolder())
 }
 
 app.whenReady().then(async () => {
@@ -614,9 +754,14 @@ app.whenReady().then(async () => {
 
   registerIpc()
 
-  const settings = await readSettings()
+  settings = await readSettings()
   if (settings.campaignFolder && existsSync(settings.campaignFolder)) {
-    campaignFolder = settings.campaignFolder
+    campaignFolder = samePath(settings.campaignFolder, sampleSourcePath())
+      ? await ensureSampleWorkingCopy()
+      : settings.campaignFolder
+    if (campaignFolder !== settings.campaignFolder) {
+      await patchSettings({ campaignFolder })
+    }
     const info = await loadCampaign(campaignFolder)
     playerState = {
       ...emptyPlayerState(),

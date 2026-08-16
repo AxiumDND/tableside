@@ -113,10 +113,14 @@ export interface DisplayInfo {
   primary: boolean
 }
 
+export type CombatantCondition = 'bloodied' | 'unconscious' | 'dead'
+
 export interface PlayerInitiativeEntry {
   id: string
   name: string
   active: boolean
+  bloodied?: boolean
+  condition?: CombatantCondition | null
 }
 
 export interface PlayerState {
@@ -125,13 +129,24 @@ export interface PlayerState {
   campaignTitle: string
   initiative: PlayerInitiativeEntry[]
   showInitiative: boolean
+  initiativeRound?: number
+}
+
+export interface AppSettings {
+  campaignFolder?: string
+  playerDisplayId?: number
+  dmBounds?: { x: number; y: number; width: number; height: number }
+  lastOpenPath?: string
+  lastOpenKind?: string
+  rightPanel?: 'combat' | 'lookup' | null
+  showPlayerPreview?: boolean
 }
 
 export const emptyCombat = (): CombatState => ({
   combatants: [],
   activeId: null,
   round: 0,
-  showOrderToPlayers: true
+  showOrderToPlayers: false
 })
 
 export const emptyPlayerState = (): PlayerState => ({
@@ -139,5 +154,8 @@ export const emptyPlayerState = (): PlayerState => ({
   imageTitle: '',
   campaignTitle: 'Table DM',
   initiative: [],
-  showInitiative: false
+  showInitiative: false,
+  initiativeRound: 0
 })
+
+export const emptySettings = (): AppSettings => ({})

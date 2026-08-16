@@ -1,15 +1,24 @@
 {
   "name": "table-dm",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "In-person dual-monitor DM tool for 5e-compatible table games",
   "main": "./out/main/index.js",
   "author": "James",
   "license": "MIT",
+  "homepage": "https://github.com/AxiumDND/table-dm",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/AxiumDND/table-dm.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AxiumDND/table-dm/issues"
+  },
   "scripts": {
     "dev": "node ./node_modules/electron-vite/bin/electron-vite.js dev",
     "build": "node ./node_modules/electron-vite/bin/electron-vite.js build",
     "preview": "node ./node_modules/electron-vite/bin/electron-vite.js preview",
     "start": "node ./node_modules/electron/cli.js .",
+    "dist": "node ./node_modules/electron-vite/bin/electron-vite.js build && electron-builder --win",
     "fetch-srd": "node scripts/fetch-srd.mjs"
   },
   "dependencies": {
@@ -25,9 +34,36 @@
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.2",
     "electron": "^37.3.1",
+    "electron-builder": "^26.15.3",
     "electron-vite": "^4.0.0",
     "tailwindcss": "^4.1.12",
     "typescript": "^5.9.2",
     "vite": "^7.1.3"
+  },
+  "build": {
+    "appId": "com.tabledm.app",
+    "productName": "Table DM",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "out/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "examples/bad-blood",
+        "to": "examples/bad-blood"
+      }
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
   }
 }
