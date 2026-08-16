@@ -34,11 +34,12 @@ PDFs open in the center pane for you; they are not sent to the player display as
 
 ## File tree
 
-- Click a note, image, or PDF to open it.
-- **Search** under Files finds notes, maps, and art by name (also `Ctrl+F` or `/`). Results are a flat ranked list with folder paths — `Esc` clears.
-- **Right-click** a folder (or empty tree area) to create notes from Templates, or **Add files…** to import into that folder.
-- Right-click a file to **Duplicate…** or add files beside it.
-- Creating **New player / NPC / monster / spell / gear** uses `Templates/Player.md` (etc.) when present, then fills in the name you type.
+- Click a note, image, or PDF to open it. Folders start collapsed; the folder that holds the open file (and its parents) stay expanded. `Art/` stays collapsed — portraits load from there onto the `.md` sheets.
+- **Search** (hidden until you click it next to Files, or press `Ctrl+F` / `/`) finds notes, maps, and art by name. Results are a flat ranked list with folder paths — `Esc` clears, then hides the box.
+- **Right-click** a folder (or empty tree area) to create notes from Templates, or **Add files…** to import into that folder. Gear has **Weapons**, **Armor**, **Equipment**, and **Magic Items** — right-click the subsection to add a note there.
+- Right-click a file to **Duplicate…**, add files beside it, or **Delete…** (asks first).
+- Creating **New player / NPC / monster / spell / gear / night sheet / map** uses `Templates/Player.md` (etc.) when present, then fills in the name you type.
+- **New map…** lets you choose an existing campaign image or **Load image…**. Loaded files are copied into that folder’s `Art/` (usually `Maps/Art/`) and named to match the map.
 - `campaign.json`, `combat.json`, and `README.md` stay hidden from the tree.
 
 Navigation: **← Back** in the note header, **Alt+←**, or mouse back button.
@@ -49,6 +50,7 @@ Navigation: **← Back** in the note header, **Alt+←**, or mouse back button.
 - **Links** — heading jump list for long session notes.
 - Wikilinks open other notes; images stay clickable for **Show to players**.
 - Sheets with a `statblock` (Party / NPCs / Bestiary) open in sheet view with **Add to combat**.
+- Map notes (` ```map ` fence) show **Pan / Pin / Token / Fog** — extra controls open as a submenu under the selected tool. Pins stay DM-only. Tokens (Party / NPCs / Bestiary portraits) scale together; Large/Huge stay 2×/3× a Medium token. **Show to players** follows crop, fog, and tokens.
 - Night-sheet combat sections show **Add to initiative** when combatants resolve — see [CAMPAIGN.md](CAMPAIGN.md).
 
 ## Combat panel
@@ -80,8 +82,8 @@ State saves to `combat.json` in the campaign folder.
 Offline MiniSearch over the bundled SRD 5.2.1 snapshot (conditions, spells, monsters, weapons, rules).
 
 - Filter chips narrow the category.
-- Monster results can **Add to combat**.
-- With a campaign open, **Add to Bestiary / Spells / Gear** writes a campaign markdown note (skipped if a same-named note already exists).
+- Monster results can **Add to combat**. Lookup shows the bundled D&D-fantasy default portrait when one exists.
+- With a campaign open, **Add to Bestiary / Spells / Gear** writes a campaign markdown note (skipped if a same-named note already exists). Adding a monster also copies its default portrait into `Bestiary/Art/` if the campaign does not already have one.
 - Optional WOTC files add chips like PHB 2024 / PHB Gear / DMG Items — [WOTC/README.md](../WOTC/README.md). Use **Open WOTC folder** in Lookup to jump to the writable location.
 
 Step-by-step save flow: [RECIPES.md](RECIPES.md#lookup--campaign-note).

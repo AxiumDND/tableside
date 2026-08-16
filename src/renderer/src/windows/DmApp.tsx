@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import type {
   CampaignInfo,
   CampaignTreeNode,
   CombatState,
   Combatant,
   DisplayInfo,
+  PlayerMapView,
   PlayerState,
   RecentCampaign
 } from '../../../shared/types'
@@ -30,7 +31,7 @@ import {
   sameCombatantName,
   sheetDisplayName
 } from '../lib/notes'
-import { libraryFolderFor, recordToCampaignMarkdown } from '../lib/lookupNotes'
+import { libraryFolderFor, recordToCampaignMarkdown, gearSubfolderFor } from '../lib/lookupNotes'
 import { monsterToStatBlock, type SrdRecord } from '../lib/srd'
 import { extractStatblock, fallbackStatblock, parsedToStatBlock, type ParsedStatblock } from '../lib/statblock'
 import { APP_VERSION } from '../../../shared/version'
@@ -76,6 +77,11 @@ export default function DmApp() {
   const [playerDisplayId, setPlayerDisplayId] = useState<number | ''>('')
   const [showPlayerPreview, setShowPlayerPreview] = useState(true)
   const [recentCampaigns, setRecentCampaigns] = useState<RecentCampaign[]>([])
+  const playerSrcRef = useRef(player.imageSrc)
+  const mapLiveRef = useRef<{ src: string; title: string; view: PlayerMapView } | null>(null)
+  const playerLiveRef = useRef(false)
+  const skipRestoredCombatShow = useRef(true)
+  playerSrcRef.current = player.imageSrc
 
   const refresh = useCallback(async () => {
     const [info, state, screens, prefs] = await Promise.all([
@@ -112,7 +118,12 @@ export default function DmApp() {
   }, [openPath])
 
   useEffect(() => {
-    refresh()
+    playerLiveRef.current = false
+    void window.tabledm.clearPlayer().then(setPlayer)
+  }, [])
+
+  useEffect(() => {
+    void refresh()
     return window.tabledm.onPlayerState(setPlayer)
   }, [refresh])
 
@@ -123,6 +134,9 @@ export default function DmApp() {
     setOpenKind('note')
     setSelectedImage(null)
     setHistory([])
+    playerLiveRef.current = false
+    skipRestoredCombatShow.current = true
+    void window.tabledm.clearPlayer().then(setPlayer)
     void window.tabledm.saveSettings({
       lastOpenPath: note || undefined,
       lastOpenKind: note ? 'note' : undefined
@@ -190,10 +204,26 @@ export default function DmApp() {
   async function showSelectedToPlayers(): Promise<void> {
     const path = selectedImage ?? (openKind === 'image' ? openPath : null)
     if (!path) return
-    setPlayer(await window.tabledm.showImage(campaignFileUrl(path), imageTitle(path)))
+    const src = path.startsWith('tabledm://') ? path : campaignFileUrl(path)
+    const title = path.startsWith('tabledm://srd-portrait')
+      ? decodeURIComponent(new URL(path).searchParams.get('name') ?? 'Monster')
+      : imageTitle(path)
+    const live = mapLiveRef.current
+    const mapView = live?.src === src ? live.view : null
+    playerLiveRef.current = true
+    setPlayer(await window.tabledm.showImage(src, title, mapView))
+  }
+
+  function handleMapLiveView(imagePath: string, view: PlayerMapView): void {
+    const src = campaignFileUrl(imagePath)
+    const title = imageTitle(imagePath)
+    mapLiveRef.current = { src, title, view }
+    if (!playerLiveRef.current || playerSrcRef.current !== src) return
+    void window.tabledm.showImage(src, title, view).then(setPlayer)
   }
 
   async function clearPlayer(): Promise<void> {
+    playerLiveRef.current = false
     setPlayer(await window.tabledm.clearPlayer())
   }
 
@@ -264,7 +294,8 @@ export default function DmApp() {
     const result = await window.tabledm.saveToCampaignLibrary(
       folder,
       record.name,
-      recordToCampaignMarkdown(record)
+      recordToCampaignMarkdown(record),
+      gearSubfolderFor(record)
     )
     if (!result) return
     setCampaign(result.campaign)
@@ -367,16 +398,19 @@ export default function DmApp() {
 
   useEffect(() => {
     const live = campaign?.combat
-    if (!live) {
-      void window.tabledm.setPlayerInitiative({ entries: [], show: false, round: 0 })
+    const entries = live ? combatToPlayerInitiative(live) : []
+    const round = live?.round ?? 0
+    if (skipRestoredCombatShow.current) {
+      if (campaign) skipRestoredCombatShow.current = false
+      void window.tabledm.setPlayerInitiative({ entries, show: false, round })
       return
     }
     void window.tabledm.setPlayerInitiative({
-      entries: combatToPlayerInitiative(live),
-      show: Boolean(live.showOrderToPlayers && live.combatants.length > 0),
-      round: live.round
+      entries,
+      show: Boolean(live?.showOrderToPlayers && live.combatants.length > 0),
+      round
     })
-  }, [campaign?.combat])
+  }, [campaign, campaign?.combat])
 
   function changeRightPanel(next: typeof rightPanel | ((prev: typeof rightPanel) => typeof rightPanel)): void {
     setRightPanel((prev) => {
@@ -537,10 +571,18 @@ export default function DmApp() {
             <CampaignFiles
               tree={campaign.tree}
               campaignName={campaign.name}
-              selected={selectedImage ?? openPath}
+              selected={openPath}
               onOpen={(node) => void openTreeFile(node)}
               onTreeChange={(info, path) => {
                 setCampaign(info)
+                setHistory((stack) => stack.filter((item) => findTreeNode(info.tree, item.path)))
+                if (path === '') {
+                  setOpenPath('')
+                  setOpenKind('note')
+                  setSelectedImage(null)
+                  void window.tabledm.saveSettings({ lastOpenPath: undefined, lastOpenKind: undefined })
+                  return
+                }
                 if (!path) return
                 const node = findTreeNode(info.tree, path)
                 navigateTo(path, node ? fileKind(node) : 'note')
@@ -560,7 +602,8 @@ export default function DmApp() {
           selectedImage={selectedImage}
           disabled={!campaign}
           onSelectImage={setSelectedImage}
-          onShowToPlayers={selectedImage || openKind === 'image' ? () => void showSelectedToPlayers() : undefined}
+          onShowToPlayers={() => void showSelectedToPlayers()}
+          onMapLiveView={handleMapLiveView}
           onOpenNote={openNote}
           onBack={history.length > 0 ? goBack : undefined}
           backLabel={

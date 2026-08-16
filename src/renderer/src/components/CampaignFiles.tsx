@@ -1,23 +1,23 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import type { CampaignInfo, CampaignTreeNode } from '../../../shared/types'
+import type { CampaignInfo, CampaignTreeNode, CreateNoteMapImage } from '../../../shared/types'
 import {
-  DEFAULT_OPEN_FOLDERS,
-  canonicalFolder,
+  folderRevealsOpenFile,
   isBestiaryFolderName,
   isGearFolderName,
+  isMapsFolderName,
   isNpcFolderName,
   isPartyFolderName,
   isSessionsFolderName,
   isSpellsFolderName
 } from '../../../shared/campaignLayout'
-import type { SheetTemplateKind } from '../../../shared/sheetTemplates'
-import { IMAGE_EXT, campaignFileUrl } from '../lib/images'
+import { mapArtRelativeFolder } from '../../../shared/mapCreate'
+import { sanitizeFileName, type SheetTemplateKind } from '../../../shared/sheetTemplates'
+import { IMAGE_EXT, campaignFileUrl, flattenImages } from '../lib/images'
 import { parentFolderLabel, searchCampaignFiles } from '../lib/campaignSearch'
 
 export { campaignFileUrl }
 
 const NOTE_EXT = new Set(['.md', '.txt', '.markdown'])
-const DEFAULT_OPEN = DEFAULT_OPEN_FOLDERS
 
 export type FileKind = 'note' | 'image' | 'character' | 'pdf' | 'other'
 
@@ -34,13 +34,33 @@ function displayName(name: string): string {
   return name.replace(/\.(md|markdown|txt|json|png|jpe?g|webp|gif|svg|bmp|pdf)$/i, '').replace(/[-_]/g, ' ')
 }
 
-function folderKind(name: string): 'party' | 'npcs' | 'bestiary' | 'spells' | 'gear' | 'sessions' | null {
+function fileNameOf(path: string): string {
+  return path.replaceAll('\\', '/').split('/').pop() ?? path
+}
+
+function fileExt(path: string): string {
+  const name = fileNameOf(path)
+  const dot = name.lastIndexOf('.')
+  return dot === -1 ? '' : name.slice(dot)
+}
+
+function folderKind(name: string): 'party' | 'npcs' | 'bestiary' | 'spells' | 'gear' | 'sessions' | 'maps' | null {
   if (isPartyFolderName(name)) return 'party'
   if (isNpcFolderName(name)) return 'npcs'
   if (isBestiaryFolderName(name)) return 'bestiary'
   if (isSpellsFolderName(name)) return 'spells'
   if (isGearFolderName(name)) return 'gear'
   if (isSessionsFolderName(name)) return 'sessions'
+  if (isMapsFolderName(name)) return 'maps'
+  return null
+}
+
+function folderKindForPath(path: string): ReturnType<typeof folderKind> {
+  const parts = path.replaceAll('\\', '/').split('/').filter(Boolean)
+  for (const part of parts) {
+    const kind = folderKind(part)
+    if (kind) return kind
+  }
   return null
 }
 
@@ -51,6 +71,7 @@ type MenuTarget =
 type PromptState =
   | { kind: 'create'; folder: string; template: SheetTemplateKind; title: string }
   | { kind: 'duplicate'; from: string; title: string; defaultName: string }
+  | { kind: 'delete'; path: string; title: string; fileName: string }
 
 function TreeNode({
   node,
@@ -65,15 +86,17 @@ function TreeNode({
   onOpen: (node: CampaignTreeNode) => void
   onMenu: (event: React.MouseEvent, node: CampaignTreeNode) => void
 }) {
-  const [open, setOpen] = useState(DEFAULT_OPEN.has(canonicalFolder(node.name)) || depth === 0)
+  const [userOpen, setUserOpen] = useState(false)
   const isSelected = selected === node.relativePath
+  const open =
+    node.type === 'dir' && (userOpen || folderRevealsOpenFile(node.relativePath, node.name, selected))
 
   if (node.type === 'dir') {
     return (
       <div>
         <button
           type="button"
-          onClick={() => setOpen((value) => !value)}
+          onClick={() => setUserOpen((value) => !value)}
           onContextMenu={(event) => onMenu(event, node)}
           className="flex w-full items-center gap-1 rounded px-2 py-1 text-left text-[13px] text-parchment/90 hover:bg-panel-2"
           style={{ paddingLeft: 8 + depth * 12 }}
@@ -192,8 +215,10 @@ export default function CampaignFiles({
   const [menu, setMenu] = useState<MenuTarget | null>(null)
   const [prompt, setPrompt] = useState<PromptState | null>(null)
   const [name, setName] = useState('')
+  const [mapImage, setMapImage] = useState<CreateNoteMapImage | null>(null)
   const [busy, setBusy] = useState(false)
   const [query, setQuery] = useState('')
+  const [searchOpen, setSearchOpen] = useState(false)
   const promptInputRef = useRef<HTMLInputElement>(null)
   const searchInputRef = useRef<HTMLInputElement>(null)
 
@@ -205,9 +230,18 @@ export default function CampaignFiles({
 
   const searching = query.trim().length > 0
   const searchHits = useMemo(() => searchCampaignFiles(tree, query), [tree, query])
+  const campaignImages = useMemo(() => {
+    const all = flattenImages(tree)
+    return [...all].sort((a, b) => {
+      const aMap = /(?:^|\/)maps\//i.test(a.relativePath) ? 0 : 1
+      const bMap = /(?:^|\/)maps\//i.test(b.relativePath) ? 0 : 1
+      if (aMap !== bMap) return aMap - bMap
+      return a.relativePath.localeCompare(b.relativePath, undefined, { sensitivity: 'base' })
+    })
+  }, [tree])
 
   useEffect(() => {
-    if (!prompt) return
+    if (!prompt || prompt.kind === 'delete') return
     promptInputRef.current?.focus()
     promptInputRef.current?.select()
   }, [prompt])
@@ -224,6 +258,12 @@ export default function CampaignFiles({
   }, [menu])
 
   useEffect(() => {
+    if (!searchOpen) return
+    searchInputRef.current?.focus()
+    searchInputRef.current?.select()
+  }, [searchOpen])
+
+  useEffect(() => {
     const typing = (target: EventTarget | null): boolean =>
       target instanceof HTMLElement &&
       (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
@@ -231,19 +271,27 @@ export default function CampaignFiles({
     const onKey = (e: KeyboardEvent): void => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'f') {
         e.preventDefault()
-        searchInputRef.current?.focus()
-        searchInputRef.current?.select()
+        if (searchOpen) {
+          searchInputRef.current?.focus()
+          searchInputRef.current?.select()
+        } else {
+          setSearchOpen(true)
+        }
         return
       }
       if (e.key === '/' && !typing(e.target)) {
         e.preventDefault()
-        searchInputRef.current?.focus()
-        searchInputRef.current?.select()
+        setSearchOpen(true)
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [])
+  }, [searchOpen])
+
+  function hideSearch(): void {
+    setQuery('')
+    setSearchOpen(false)
+  }
 
   function openMenu(event: React.MouseEvent, node?: CampaignTreeNode): void {
     event.preventDefault()
@@ -261,10 +309,12 @@ export default function CampaignFiles({
       monster: 'New monster',
       spell: 'New spell',
       gear: 'New gear',
-      nightsheet: 'New night sheet'
+      nightsheet: 'New night sheet',
+      map: 'New map'
     }
     setPrompt({ kind: 'create', folder, template, title: titles[template] })
     setName('')
+    setMapImage(null)
     setMenu(null)
   }
 
@@ -281,6 +331,16 @@ export default function CampaignFiles({
     setMenu(null)
   }
 
+  function startDelete(node: CampaignTreeNode): void {
+    setPrompt({
+      kind: 'delete',
+      path: node.relativePath,
+      title: 'Delete file',
+      fileName: node.name
+    })
+    setMenu(null)
+  }
+
   async function addFiles(folder: string): Promise<void> {
     setMenu(null)
     const result = await window.tabledm.addFiles(folder)
@@ -288,14 +348,35 @@ export default function CampaignFiles({
     onTreeChange?.(result.campaign, result.paths[0])
   }
 
+  async function loadMapImage(): Promise<void> {
+    const picked = await window.tabledm.pickImageFile()
+    if (!picked) return
+    setMapImage({ kind: 'import', filePath: picked.filePath })
+  }
+
   async function submitPrompt(): Promise<void> {
     if (!prompt || busy) return
+    if (prompt.kind === 'delete') {
+      setBusy(true)
+      try {
+        const result = await window.tabledm.deleteFile(prompt.path)
+        if (result) {
+          const closed = selected === prompt.path ? '' : undefined
+          onTreeChange?.(result.campaign, closed)
+        }
+        setPrompt(null)
+      } finally {
+        setBusy(false)
+      }
+      return
+    }
     const value = name.trim()
     if (!value) return
     setBusy(true)
     try {
       if (prompt.kind === 'create') {
-        const result = await window.tabledm.createNote(prompt.folder, value, prompt.template)
+        const image = prompt.template === 'map' ? mapImage : null
+        const result = await window.tabledm.createNote(prompt.folder, value, prompt.template, image)
         if (result) onTreeChange?.(result.campaign, result.path)
       } else {
         const result = await window.tabledm.duplicateFile(prompt.from, value)
@@ -308,54 +389,65 @@ export default function CampaignFiles({
   }
 
   const folderPath = menu?.kind === 'node' && menu.node.type === 'dir' ? menu.node.relativePath : ''
-  const folderHint = menu?.kind === 'node' && menu.node.type === 'dir' ? folderKind(menu.node.name) : null
+  const folderHint = folderPath ? folderKindForPath(folderPath) : null
 
   return (
     <aside className="flex min-h-0 flex-1 flex-col bg-ink">
       <header className="border-b border-line px-3 py-2" onContextMenu={(event) => openMenu(event)}>
-        <div className="font-display text-amber">Files</div>
+        <div className="flex items-baseline justify-between gap-2">
+          <div className="font-display text-amber">Files</div>
+          <button
+            type="button"
+            onClick={() => (searchOpen ? hideSearch() : setSearchOpen(true))}
+            className="text-[11px] text-muted hover:text-amber"
+            title={searchOpen ? 'Hide file search' : 'Search campaign files (Ctrl+F or /)'}
+          >
+            {searchOpen ? 'Hide search' : 'Search'}
+          </button>
+        </div>
         <div className="truncate text-[11px] text-muted">
           {campaignName} · {count} files · right-click to add
         </div>
-        <div className="relative mt-2">
-          <input
-            ref={searchInputRef}
-            value={query}
-            onChange={(event) => setQuery(event.target.value)}
-            onKeyDown={(event) => {
-              if (event.key === 'Escape') {
-                if (query) {
-                  event.preventDefault()
-                  setQuery('')
-                } else {
-                  searchInputRef.current?.blur()
-                }
-              }
-            }}
-            placeholder="Search notes, maps, art…"
-            title="Search campaign files (Ctrl+F or /)"
-            className="w-full rounded border border-line bg-ink py-1 pl-2 pr-7 text-[12px] outline-none focus:border-amber"
-          />
-          {query ? (
-            <button
-              type="button"
-              onClick={() => {
-                setQuery('')
-                searchInputRef.current?.focus()
-              }}
-              className="absolute right-1 top-1/2 -translate-y-1/2 rounded px-1.5 text-[11px] text-muted hover:text-amber"
-              title="Clear search"
-            >
-              ×
-            </button>
-          ) : null}
-        </div>
-        {searching ? (
-          <div className="mt-1 text-[11px] text-muted">
-            {searchHits.length === 0
-              ? 'No matches'
-              : `${searchHits.length} match${searchHits.length === 1 ? '' : 'es'}`}
-          </div>
+        {searchOpen ? (
+          <>
+            <div className="relative mt-2">
+              <input
+                ref={searchInputRef}
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Escape') {
+                    event.preventDefault()
+                    if (query) setQuery('')
+                    else hideSearch()
+                  }
+                }}
+                placeholder="Search notes, maps, art…"
+                title="Search campaign files (Ctrl+F or /)"
+                className="w-full rounded border border-line bg-ink py-1 pl-2 pr-7 text-[12px] outline-none focus:border-amber"
+              />
+              {query ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQuery('')
+                    searchInputRef.current?.focus()
+                  }}
+                  className="absolute right-1 top-1/2 -translate-y-1/2 rounded px-1.5 text-[11px] text-muted hover:text-amber"
+                  title="Clear search"
+                >
+                  ×
+                </button>
+              ) : null}
+            </div>
+            {searching ? (
+              <div className="mt-1 text-[11px] text-muted">
+                {searchHits.length === 0
+                  ? 'No matches'
+                  : `${searchHits.length} match${searchHits.length === 1 ? '' : 'es'}`}
+              </div>
+            ) : null}
+          </>
         ) : null}
       </header>
       <nav className="min-h-0 flex-1 overflow-auto py-1" onContextMenu={(event) => openMenu(event)}>
@@ -378,7 +470,7 @@ export default function CampaignFiles({
         ) : (
           tree.map((node) => (
             <TreeNode
-              key={node.relativePath}
+              key={`${node.relativePath}::${(selected ?? '').replaceAll('\\', '/').split('/')[0]}`}
               node={node}
               depth={0}
               selected={selected}
@@ -406,6 +498,7 @@ export default function CampaignFiles({
                   void addFiles(slash === -1 ? '' : path.slice(0, slash))
                 }}
               />
+              <MenuItem label="Delete…" onClick={() => startDelete(menu.node)} />
             </>
           ) : (
             <>
@@ -427,6 +520,9 @@ export default function CampaignFiles({
               {folderHint === 'sessions' || !folderHint ? (
                 <MenuItem label="New night sheet…" onClick={() => startCreate(folderPath, 'nightsheet')} />
               ) : null}
+              {folderHint === 'maps' || !folderHint ? (
+                <MenuItem label="New map…" onClick={() => startCreate(folderPath, 'map')} />
+              ) : null}
               <MenuItem label="New note…" onClick={() => startCreate(folderPath, 'blank')} />
               <MenuItem label="Add files…" onClick={() => void addFiles(folderPath)} />
             </>
@@ -440,8 +536,13 @@ export default function CampaignFiles({
           onClick={() => !busy && setPrompt(null)}
         >
           <form
-            className="w-full max-w-sm rounded border border-line bg-panel p-4"
+            className={`w-full rounded border border-line bg-panel p-4 ${
+              prompt.kind === 'create' && prompt.template === 'map' ? 'max-w-md' : 'max-w-sm'
+            }`}
             onClick={(event) => event.stopPropagation()}
+            onKeyDown={(event) => {
+              if (event.key === 'Escape') setPrompt(null)
+            }}
             onSubmit={(event) => {
               event.preventDefault()
               void submitPrompt()
@@ -449,22 +550,68 @@ export default function CampaignFiles({
           >
             <h3 className="font-display text-lg text-amber">{prompt.title}</h3>
             <p className="mt-1 text-[11px] text-muted">
-              {prompt.kind === 'create' && prompt.template !== 'blank'
-                ? 'Uses the matching Templates file if you have one.'
-                : prompt.kind === 'duplicate'
-                  ? 'Creates a copy next to the original.'
-                  : 'Creates an empty markdown note.'}
+              {prompt.kind === 'delete'
+                ? `Remove ${prompt.fileName} from this campaign. This cannot be undone.`
+                : prompt.kind === 'create' && prompt.template === 'map'
+                  ? 'Pick a campaign image, or load one — loaded files go in this folder’s Art/ and are named after the map.'
+                  : prompt.kind === 'create' && prompt.template !== 'blank'
+                    ? 'Uses the matching Templates file if you have one.'
+                    : prompt.kind === 'duplicate'
+                      ? 'Creates a copy next to the original.'
+                      : 'Creates an empty markdown note.'}
             </p>
-            <input
-              ref={promptInputRef}
-              value={name}
-              onChange={(event) => setName(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === 'Escape') setPrompt(null)
-              }}
-              placeholder={prompt.kind === 'duplicate' ? prompt.defaultName : 'Name'}
-              className="mt-3 w-full rounded border border-line bg-ink px-2 py-1.5 text-sm outline-none focus:border-amber"
-            />
+            {prompt.kind === 'delete' ? null : (
+              <input
+                ref={promptInputRef}
+                value={name}
+                onChange={(event) => setName(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === 'Escape') setPrompt(null)
+                }}
+                placeholder={prompt.kind === 'duplicate' ? prompt.defaultName : 'Name'}
+                className="mt-3 w-full rounded border border-line bg-ink px-2 py-1.5 text-sm outline-none focus:border-amber"
+              />
+            )}
+            {prompt.kind === 'create' && prompt.template === 'map' ? (
+              <div className="mt-3 space-y-2">
+                <label className="block text-[11px] text-muted">
+                  Map image
+                  <select
+                    value={mapImage?.kind === 'existing' ? mapImage.path : ''}
+                    onChange={(event) => {
+                      const path = event.target.value
+                      setMapImage(path ? { kind: 'existing', path } : null)
+                    }}
+                    className="mt-1 w-full rounded border border-line bg-ink px-2 py-1.5 text-sm text-parchment outline-none focus:border-amber"
+                  >
+                    <option value="">Choose an existing image…</option>
+                    {campaignImages.map((img) => (
+                      <option key={img.relativePath} value={img.relativePath}>
+                        {img.relativePath}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() => void loadMapImage()}
+                    className="rounded border border-line px-2.5 py-1 text-xs hover:border-amber"
+                  >
+                    Load image…
+                  </button>
+                  {mapImage?.kind === 'import' ? (
+                    <span className="min-w-0 truncate text-[11px] text-muted">
+                      {fileNameOf(mapImage.filePath)}
+                      {name.trim()
+                        ? ` → ${mapArtRelativeFolder(prompt.folder)}/${sanitizeFileName(name)}${fileExt(mapImage.filePath)}`
+                        : ` → ${mapArtRelativeFolder(prompt.folder)}/ (named after the map)`}
+                    </span>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
             <div className="mt-3 flex justify-end gap-2">
               <button
                 type="button"
@@ -476,10 +623,16 @@ export default function CampaignFiles({
               </button>
               <button
                 type="submit"
-                disabled={busy || !name.trim()}
+                disabled={busy || (prompt.kind !== 'delete' && !name.trim())}
                 className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-ink disabled:bg-line"
               >
-                {busy ? 'Working…' : prompt.kind === 'duplicate' ? 'Duplicate' : 'Create'}
+                {busy
+                  ? 'Working…'
+                  : prompt.kind === 'delete'
+                    ? 'Delete'
+                    : prompt.kind === 'duplicate'
+                      ? 'Duplicate'
+                      : 'Create'}
               </button>
             </div>
           </form>

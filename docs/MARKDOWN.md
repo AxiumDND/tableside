@@ -70,6 +70,55 @@ Fallback: wikilinks in the section to Party / NPCs / Bestiary notes, and bold la
 
 `party` means every note under `Party/` (roster-named notes skipped).
 
+## Map notes
+
+A note with a fenced `map` block opens as a map view (image fills the center). Pins are **DM-only**. Tokens (party, NPC, and monster portraits) **show on the player screen**. Scroll to zoom, drag to pan (or use **Pan**). **Show to players** sends the image, the current crop, fog of war, and tokens — the player screen follows as you zoom, pan, paint, or move tokens.
+
+Put the picture in `Maps/Art/`. Right-click **Maps/** → **New map…** to pick an existing campaign image, or **Load image…** to copy a file into that folder’s `Art/` named after the note.
+
+~~~~markdown
+```map
+image: Crypt Level 1.jpg
+pins:
+  - id: a
+    x: 0.22
+    y: 0.31
+    label: A1
+    heading: Room A — Entry
+tokens:
+  - id: jasper
+    kind: pc
+    source: Party/PC — Jasper Alderwick.md
+    x: 0.48
+    y: 0.62
+    label: Jasper
+  - id: dire-wolf
+    kind: monster
+    source: Bestiary/Dire Wolf.md
+    x: 0.62
+    y: 0.40
+    space: large
+    label: Dire Wolf
+tokenScale: 0.05
+```
+~~~~
+
+- `image` — filename, resolved like `![[…]]` (same folder, then `Art/`).
+- `x` / `y` — 0 to 1 across the image (not pixels).
+- `heading` — matches a `##` in **this** file. Clicking the pin shows that section.
+- Click **Pin**. Pins start **locked** — **Unlock pins** before **Add pin**, **Edit pin**, or **Delete pin**. The exception is an empty map: you can place the first pin while locked. **Edit pin** changes label/heading (**Save**); unlock to drag. **Delete pin** removes a pin you click.
+- Click **Token** for the token submenu: pick a Party / NPC / Bestiary sheet, then click the map. The sheet’s portrait is cropped to a circle (initials if there is no image); the name sits under the token. Party sheets named `PC — …` still pick up `Art/Character Name.png`. Drag to move. **Size** (or Shift+scroll) scales every token at once — Medium is the base size; Large is 2×, Huge 3×, Gargantuan 4×, Tiny ½×, from the creature’s `size` on its sheet. Drop the same monster more than once for multiples. **Delete token** removes the selected one. Tokens are stored in the same `map` fence (`kind` is `pc`, `npc`, or `monster`; `space` is the size category; `tokenScale` is the shared Medium diameter).
+- Click **Fog** for hide / reveal, brush size, **Cover all**, and **Clear fog**. Players see solid black over tokens in hidden areas; you see a translucent overlay with tokens still grabable on top. Fog is stored in the same `map` fence (`fog` / `fogSize`).
+- **Pan** is the default: drag to move, scroll or the **Zoom** slider to zoom, **Fit** resets. **Show to players** follows crop, fog, and tokens — pins stay DM-only.
+
+Room writeups stay in the same markdown file:
+
+```markdown
+## Room A — Entry
+
+Read-aloud, checks, loot.
+```
+
 ## Statblock fence
 
 Primary form — YAML-like fields inside a fenced block:
@@ -165,6 +214,8 @@ Facts in that table surface in the sheet chrome. Keep the combat numbers in sync
 | `Monster.md` / `Creature.md` | Bestiary sheet |
 | `Spell.md` | Spells note |
 | `Gear.md` / `Item.md` / `Equipment.md` | Gear note |
+| `Night Sheet.md` / `nightsheet.md` | Night sheet |
+| `Map.md` | Map note (image + DM pins + tokens) |
 
 **New campaign** writes these from built-in fallbacks if missing. Leading HTML comments (`<!-- … -->`) are stripped when filling a new note from a template.
 

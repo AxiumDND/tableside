@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, net, protocol, screen, shell } from 'electron'
-import { existsSync } from 'node:fs'
-import { copyFile, cp, mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
+import { existsSync, readdirSync } from 'node:fs'
+import { copyFile, cp, mkdir, readdir, readFile, stat, unlink, writeFile } from 'node:fs/promises'
 import { join, normalize, relative, basename, dirname, extname } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import type {
@@ -9,6 +9,7 @@ import type {
   CampaignTreeNode,
   Character,
   CombatState,
+  CreateNoteMapImage,
   DisplayInfo,
   MediaItem,
   PlayerState,
@@ -16,13 +17,17 @@ import type {
   SessionFile
 } from '../shared/types'
 import { emptyCombat, emptyPlayerState, emptySettings } from '../shared/types'
+import { mapArtRelativeFolder, setMapFenceImage } from '../shared/mapCreate'
 import { APP_VERSION } from '../shared/version'
 import {
   LIBRARY_FOLDER_NAMES,
   SKIP_DIR_NAMES,
   STANDARD_LAYOUT,
   canonicalFolder,
+  folderMatchesCanonical,
   folderOrderIndex,
+  gearSectionIndex,
+  campaignTreeGroup,
   isHiddenCampaignFile,
   isNpcFolderName,
   isPartyFolderName,
@@ -71,6 +76,41 @@ const FILE_MIME: Record<string, string> = {
   '.gif': 'image/gif',
   '.svg': 'image/svg+xml',
   '.bmp': 'image/bmp'
+}
+
+let srdPortraitCache: Map<string, string> | null = null
+
+function foldPortraitStem(name: string): string {
+  return name
+    .toLowerCase()
+    .replace(/[—–−]/g, '-')
+    .replace(/\s+/g, ' ')
+    .replace(/\.[^.]+$/, '')
+    .trim()
+}
+
+function srdPortraitsDir(): string {
+  return app.isPackaged
+    ? join(process.resourcesPath, 'srd-portraits')
+    : join(__dirname, '../../resources/srd-portraits')
+}
+
+function loadSrdPortraitCache(): Map<string, string> {
+  if (srdPortraitCache) return srdPortraitCache
+  srdPortraitCache = new Map()
+  const dir = srdPortraitsDir()
+  if (!existsSync(dir)) return srdPortraitCache
+  for (const name of readdirSync(dir)) {
+    const ext = extname(name).toLowerCase()
+    if (!IMAGE_EXT.has(ext)) continue
+    srdPortraitCache.set(foldPortraitStem(name), join(dir, name))
+  }
+  return srdPortraitCache
+}
+
+function findSrdPortraitFile(name: string): string | null {
+  if (!name.trim()) return null
+  return loadSrdPortraitCache().get(foldPortraitStem(name)) ?? null
 }
 
 function settingsPath(): string {
@@ -312,10 +352,14 @@ function extOf(name: string): string {
 
 function sortNodes(nodes: CampaignTreeNode[]): CampaignTreeNode[] {
   return nodes.sort((a, b) => {
-    if (a.type !== b.type) return a.type === 'dir' ? -1 : 1
+    const group = campaignTreeGroup(a.type, a.name) - campaignTreeGroup(b.type, b.name)
+    if (group) return group
     const ai = folderOrderIndex(a.name)
     const bi = folderOrderIndex(b.name)
     if (ai !== bi) return ai - bi
+    const ga = gearSectionIndex(a.name)
+    const gb = gearSectionIndex(b.name)
+    if (ga !== gb) return ga - gb
     return a.name.localeCompare(b.name)
   })
 }
@@ -361,7 +405,7 @@ async function findChildDir(
 async function existingCanonicalDir(root: string, canonical: string): Promise<string | null> {
   if (!existsSync(root)) return null
   const entries = await readdir(root, { withFileTypes: true })
-  const found = entries.find((entry) => entry.isDirectory() && canonicalFolder(entry.name) === canonical)
+  const found = entries.find((entry) => entry.isDirectory() && folderMatchesCanonical(entry.name, canonical))
   return found ? join(root, found.name) : null
 }
 
@@ -404,7 +448,8 @@ async function seedNewCampaignFiles(root: string): Promise<void> {
     { file: 'Monster.md', kind: 'monster' },
     { file: 'Spell.md', kind: 'spell' },
     { file: 'Gear.md', kind: 'gear' },
-    { file: 'Night Sheet.md', kind: 'nightsheet' }
+    { file: 'Night Sheet.md', kind: 'nightsheet' },
+    { file: 'Map.md', kind: 'map' }
   ]
   const existing = new Set((await readdir(templatesDir)).map((name) => name.toLowerCase()))
   for (const seed of seeds) {
@@ -471,6 +516,27 @@ function toPosix(path: string): string {
   return path.replaceAll('\\', '/')
 }
 
+async function resolveCreateMapImage(
+  noteFolder: string,
+  title: string,
+  choice: CreateNoteMapImage
+): Promise<string | null> {
+  if (!campaignFolder) return null
+  if (choice.kind === 'existing') {
+    const rel = toPosix(choice.path).replace(/^\/+/, '')
+    return rel || null
+  }
+  const source = choice.filePath
+  const ext = extname(source).toLowerCase()
+  if (!existsSync(source) || !IMAGE_EXT.has(ext)) return null
+  const artRel = mapArtRelativeFolder(noteFolder)
+  const artDir = safeJoin(campaignFolder, artRel)
+  await ensureDir(artDir)
+  const destName = uniqueFileName(artDir, `${sanitizeFileName(title)}${ext}`)
+  await copyFile(source, join(artDir, destName))
+  return destName
+}
+
 async function findTemplateSource(root: string, kind: Exclude<SheetTemplateKind, 'blank'>): Promise<string> {
   const wanted = new Set(TEMPLATE_FILE_NAMES[kind])
   const walk = async (dir: string, depth: number): Promise<string | null> => {
@@ -506,20 +572,23 @@ async function findLayoutFolder(canonical: CampaignLibraryFolder): Promise<strin
   const fallback = LIBRARY_FOLDER_NAMES[canonical]
   if (!campaignFolder) return fallback
   const entries = await readdir(campaignFolder, { withFileTypes: true })
-  const match = entries.find((entry) => entry.isDirectory() && canonicalFolder(entry.name) === canonical)
+  const match = entries.find((entry) => entry.isDirectory() && folderMatchesCanonical(entry.name, canonical))
   return match?.name ?? fallback
 }
 
 async function saveToCampaignLibrary(
   folderKey: CampaignLibraryFolder,
   name: string,
-  contents: string
+  contents: string,
+  subfolder?: string | null
 ): Promise<{ campaign: CampaignInfo; path: string; existed: boolean } | null> {
   if (!campaignFolder) return null
   const body = contents.trim()
   if (!body) return null
   const folder = await findLayoutFolder(folderKey)
-  const destDir = safeJoin(campaignFolder, folder)
+  const destDir = subfolder
+    ? safeJoin(campaignFolder, folder, subfolder)
+    : safeJoin(campaignFolder, folder)
   await ensureDir(destDir)
   const template: SheetTemplateKind =
     folderKey === 'bestiary' ? 'monster' : folderKey === 'spells' ? 'spell' : 'gear'
@@ -530,13 +599,26 @@ async function saveToCampaignLibrary(
     return { campaign: await loadCampaign(campaignFolder), path: relativePath, existed: true }
   }
   await writeFile(dest, body.endsWith('\n') ? body : `${body}\n`, 'utf8')
+  if (folderKey === 'bestiary') await copySrdPortraitToArt(name, destDir)
   return { campaign: await loadCampaign(campaignFolder), path: relativePath, existed: false }
+}
+
+async function copySrdPortraitToArt(name: string, noteDir: string): Promise<void> {
+  const source = findSrdPortraitFile(name)
+  if (!source || !campaignFolder) return
+  const artDir = join(noteDir, 'Art')
+  await ensureDir(artDir)
+  const destName = `${sanitizeFileName(name)}${extname(source)}`
+  const dest = join(artDir, destName)
+  if (existsSync(dest)) return
+  await copyFile(source, dest)
 }
 
 async function createCampaignNote(
   folder: string,
   name: string,
-  template: SheetTemplateKind
+  template: SheetTemplateKind,
+  mapImage?: CreateNoteMapImage | null
 ): Promise<{ campaign: CampaignInfo; path: string } | null> {
   if (!campaignFolder) return null
   const destDir = folder ? safeJoin(campaignFolder, folder) : campaignFolder
@@ -548,7 +630,12 @@ async function createCampaignNote(
   if (template !== 'blank') {
     body = fillTemplate(await findTemplateSource(campaignFolder, template), template, title)
   }
+  if (template === 'map' && mapImage) {
+    const imageFile = await resolveCreateMapImage(folder, title.replace(/^pc\s*[—–-]\s*/i, ''), mapImage)
+    if (imageFile) body = setMapFenceImage(body, imageFile)
+  }
   await writeFile(dest, body, 'utf8')
+  if (template === 'monster') await copySrdPortraitToArt(title.replace(/^pc\s*[—–-]\s*/i, ''), destDir)
   const relativePath = toPosix(relative(campaignFolder, dest))
   return { campaign: await loadCampaign(campaignFolder), path: relativePath }
 }
@@ -600,6 +687,20 @@ async function addCampaignFiles(folder: string): Promise<{ campaign: CampaignInf
   return { campaign: await loadCampaign(campaignFolder), paths }
 }
 
+async function deleteCampaignFile(
+  relativePath: string
+): Promise<{ campaign: CampaignInfo; path: string } | null> {
+  if (!campaignFolder) return null
+  const dest = safeJoin(campaignFolder, relativePath)
+  if (!existsSync(dest)) {
+    return { campaign: await loadCampaign(campaignFolder), path: relativePath }
+  }
+  const info = await stat(dest)
+  if (!info.isFile()) return null
+  await unlink(dest)
+  return { campaign: await loadCampaign(campaignFolder), path: toPosix(relative(campaignFolder, dest)) }
+}
+
 async function rememberRecentCampaign(folder: string, name: string): Promise<void> {
   const entry: RecentCampaign = { folder, name }
   const prior = (settings.recentCampaigns ?? []).filter((item) => !samePath(item.folder, folder))
@@ -617,7 +718,7 @@ async function setCampaignFolder(folder: string | null): Promise<CampaignInfo | 
   await prepareCampaignFolder(folder)
   const info = await loadCampaign(folder)
   playerState = {
-    ...playerState,
+    ...emptyPlayerState(),
     campaignTitle: info.name
   }
   sendPlayerState()
@@ -628,14 +729,22 @@ async function setCampaignFolder(folder: string | null): Promise<CampaignInfo | 
 function registerIpc(): void {
   ipcMain.handle('app:displays', () => listDisplays())
 
-  ipcMain.handle('player:show-image', (_e, payload: { src: string; title: string }) => {
-    playerState = { ...playerState, imageSrc: payload.src, imageTitle: payload.title }
-    sendPlayerState()
-    return playerState
-  })
+  ipcMain.handle(
+    'player:show-image',
+    (_e, payload: { src: string; title: string; mapView?: PlayerState['mapView'] }) => {
+      playerState = {
+        ...playerState,
+        imageSrc: payload.src,
+        imageTitle: payload.title,
+        mapView: payload.mapView ?? null
+      }
+      sendPlayerState()
+      return playerState
+    }
+  )
 
   ipcMain.handle('player:clear', () => {
-    playerState = { ...playerState, imageSrc: null, imageTitle: '' }
+    playerState = { ...playerState, imageSrc: null, imageTitle: '', mapView: null }
     sendPlayerState()
     return playerState
   })
@@ -730,14 +839,33 @@ function registerIpc(): void {
 
   ipcMain.handle(
     'campaign:create-note',
-    async (_e, folder: string, name: string, template: SheetTemplateKind = 'blank') =>
-      createCampaignNote(folder ?? '', name, template)
+    async (
+      _e,
+      folder: string,
+      name: string,
+      template: SheetTemplateKind = 'blank',
+      mapImage?: CreateNoteMapImage | null
+    ) => createCampaignNote(folder ?? '', name, template, mapImage)
   )
+
+  ipcMain.handle('campaign:pick-image', async () => {
+    const result = await dialog.showOpenDialog(dmWindow ?? undefined, {
+      title: 'Load map image',
+      properties: ['openFile'],
+      filters: [
+        { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'svg'] },
+        { name: 'All files', extensions: ['*'] }
+      ]
+    })
+    if (result.canceled || !result.filePaths[0]) return null
+    const filePath = result.filePaths[0]
+    return { filePath, fileName: basename(filePath) }
+  })
 
   ipcMain.handle(
     'campaign:save-to-library',
-    async (_e, folder: CampaignLibraryFolder, name: string, contents: string) =>
-      saveToCampaignLibrary(folder, name, contents)
+    async (_e, folder: CampaignLibraryFolder, name: string, contents: string, subfolder?: string | null) =>
+      saveToCampaignLibrary(folder, name, contents, subfolder)
   )
 
   ipcMain.handle('campaign:duplicate-file', async (_e, relativePath: string, name?: string) =>
@@ -745,6 +873,10 @@ function registerIpc(): void {
   )
 
   ipcMain.handle('campaign:add-files', async (_e, folder: string) => addCampaignFiles(folder ?? ''))
+
+  ipcMain.handle('campaign:delete-file', async (_e, relativePath: string) =>
+    deleteCampaignFile(relativePath)
+  )
 
   ipcMain.handle('wotc:load', () => loadWotcLibrary())
   ipcMain.handle('wotc:open-folder', () => openWotcFolder())
@@ -756,6 +888,18 @@ app.whenReady().then(async () => {
   protocol.handle('tabledm', async (request) => {
     try {
       const url = new URL(request.url)
+      if (url.hostname === 'srd-portrait') {
+        const name = url.searchParams.get('name') ?? ''
+        const full = findSrdPortraitFile(name)
+        if (!full) return new Response('Not found', { status: 404 })
+        const response = await net.fetch(pathToFileURL(full).href)
+        const mime = FILE_MIME[extname(full).toLowerCase()]
+        if (!mime) return response
+        const headers = new Headers(response.headers)
+        headers.set('Content-Type', mime)
+        headers.set('Content-Disposition', 'inline')
+        return new Response(response.body, { status: response.status, headers })
+      }
       if (!campaignFolder || (url.hostname !== 'media' && url.hostname !== 'file')) {
         return new Response('Not found', { status: 404 })
       }

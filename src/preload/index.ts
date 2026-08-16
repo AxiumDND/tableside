@@ -1,5 +1,13 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { AppSettings, CampaignInfo, CombatState, DisplayInfo, PlayerState } from '../shared/types'
+import type {
+  AppSettings,
+  CampaignInfo,
+  CombatState,
+  CreateNoteMapImage,
+  DisplayInfo,
+  PlayerMapView,
+  PlayerState
+} from '../shared/types'
 import type { CampaignLibraryFolder } from '../shared/campaignLayout'
 import type { SheetTemplateKind } from '../shared/sheetTemplates'
 import type { WotcLibrary } from '../shared/wotc'
@@ -21,8 +29,8 @@ const api = {
   },
   placePlayerOnDisplay: (displayId: number): Promise<DisplayInfo[]> =>
     ipcRenderer.invoke('player:place-on-display', displayId),
-  showImage: (src: string, title: string): Promise<PlayerState> =>
-    ipcRenderer.invoke('player:show-image', { src, title }),
+  showImage: (src: string, title: string, mapView?: PlayerMapView | null): Promise<PlayerState> =>
+    ipcRenderer.invoke('player:show-image', { src, title, mapView: mapView ?? null }),
   clearPlayer: (): Promise<PlayerState> => ipcRenderer.invoke('player:clear'),
   setPlayerInitiative: (payload: {
     entries: PlayerState['initiative']
@@ -50,9 +58,12 @@ const api = {
   createNote: (
     folder: string,
     name: string,
-    template?: SheetTemplateKind
+    template?: SheetTemplateKind,
+    mapImage?: CreateNoteMapImage | null
   ): Promise<{ campaign: CampaignInfo; path: string } | null> =>
-    ipcRenderer.invoke('campaign:create-note', folder, name, template),
+    ipcRenderer.invoke('campaign:create-note', folder, name, template, mapImage ?? null),
+  pickImageFile: (): Promise<{ filePath: string; fileName: string } | null> =>
+    ipcRenderer.invoke('campaign:pick-image'),
   duplicateFile: (
     relativePath: string,
     name?: string
@@ -60,12 +71,17 @@ const api = {
     ipcRenderer.invoke('campaign:duplicate-file', relativePath, name),
   addFiles: (folder: string): Promise<{ campaign: CampaignInfo; paths: string[] } | null> =>
     ipcRenderer.invoke('campaign:add-files', folder),
+  deleteFile: (
+    relativePath: string
+  ): Promise<{ campaign: CampaignInfo; path: string } | null> =>
+    ipcRenderer.invoke('campaign:delete-file', relativePath),
   saveToCampaignLibrary: (
     folder: CampaignLibraryFolder,
     name: string,
-    contents: string
+    contents: string,
+    subfolder?: string | null
   ): Promise<{ campaign: CampaignInfo; path: string; existed: boolean } | null> =>
-    ipcRenderer.invoke('campaign:save-to-library', folder, name, contents),
+    ipcRenderer.invoke('campaign:save-to-library', folder, name, contents, subfolder ?? null),
   loadWotcLibrary: (): Promise<WotcLibrary> => ipcRenderer.invoke('wotc:load'),
   openWotcFolder: (): Promise<string> => ipcRenderer.invoke('wotc:open-folder')
 }
