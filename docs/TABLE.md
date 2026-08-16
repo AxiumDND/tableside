@@ -82,7 +82,7 @@ State saves to `combat.json` in the campaign folder.
 Offline MiniSearch over the bundled SRD 5.2.1 snapshot (conditions, spells, monsters, weapons, rules).
 
 - Filter chips narrow the category.
-- Monster results can **Add to combat**. Lookup shows the bundled D&D-fantasy default portrait when one exists.
+- Monster results can **Add to combat**. Lookup shows the bundled D&D-fantasy default portrait when one exists. Weapons and gear show still-life item art the same way.
 - With a campaign open, **Add to Bestiary / Spells / Gear** writes a campaign markdown note (skipped if a same-named note already exists). Adding a monster also copies its default portrait into `Bestiary/Art/` if the campaign does not already have one.
 - Optional WOTC files add chips like PHB 2024 / PHB Gear / DMG Items — [WOTC/README.md](../WOTC/README.md). Use **Open WOTC folder** in Lookup to jump to the writable location.
 

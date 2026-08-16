@@ -4,6 +4,7 @@ import monsters from '../data/srd/monsters.json'
 import conditions from '../data/srd/conditions.json'
 import conditionsFallback from '../data/srd/conditions-fallback.json'
 import weapons from '../data/srd/weapons.json'
+import items from '../data/srd/items.json'
 import rules from '../data/srd/rules.json'
 import type { StatBlock } from '../../../shared/types'
 import { parsedToBestiaryMarkdown, statBlockToParsed } from './statblock'
@@ -37,6 +38,10 @@ function monsterSummary(m: Record<string, unknown>): string {
   return [m.size, m.type, m.cr != null ? `CR ${m.cr}` : null, m.ac != null ? `AC ${m.ac}` : null, m.hp != null ? `HP ${m.hp}` : null]
     .filter(Boolean)
     .join(' · ')
+}
+
+function itemSummary(item: Record<string, unknown>): string {
+  return [item.category, item.damage, item.cost ? `${item.cost} gp` : null].filter(Boolean).join(' · ')
 }
 
 export const SRD_SOURCE = 'srd'
@@ -85,6 +90,16 @@ export const srdRecords: SrdRecord[] = [
       searchText: [w.name, w.category, w.properties, w.desc].filter(Boolean).join(' '),
       summary: [w.damage, w.properties].filter(Boolean).join(' · '),
       data: w
+    })
+  ),
+  ...asList<Record<string, unknown>>(items).map((item) =>
+    withSrdSource({
+      id: String(item.id),
+      name: String(item.name),
+      kind: 'gear' as const,
+      searchText: [item.name, item.category, item.desc].filter(Boolean).join(' '),
+      summary: itemSummary(item),
+      data: item
     })
   ),
   ...asList<Record<string, unknown>>(rules).map((r) =>
@@ -236,6 +251,7 @@ export const srdCounts = {
   monsters: asList(monsters).length,
   conditions: resolvedConditions.length,
   weapons: asList(weapons).length,
+  items: asList(items).length,
   rules: asList(rules).length
 }
 

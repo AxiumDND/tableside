@@ -77,7 +77,7 @@ function spellMarkdown(record: SrdRecord): string {
 function itemMarkdown(record: SrdRecord): string {
   const data = record.data
   const category = fieldValue(data, 'category') || String(data.category ?? '').trim()
-  const lines = [`# ${record.name}`]
+  const lines = [`# ${record.name}`, '', `> [!infobox]+`, `> ![[${record.name}.webp]]`, '']
   if (category && !category.includes('[object')) lines.push(category)
   for (const key of ITEM_FIELDS) {
     const value = fieldValue(data, key)

@@ -4,7 +4,7 @@ A local Windows app for running **in-person** 5e-compatible games. Your laptop i
 
 This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table.
 
-Compatible with fifth edition. Rules lookup uses the **System Reference Document 5.2** (2024 rules), already bundled. Current release: **1.1.1**.
+Compatible with fifth edition. Rules lookup uses the **System Reference Document 5.2** (2024 rules), already bundled. Current release: **1.1.2**.
 
 ## Features
 
