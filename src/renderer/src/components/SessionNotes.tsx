@@ -21,6 +21,7 @@ import {
   splitCombatCardContent,
   splitCalloutBlocks,
   isCombatHeading,
+  missingCombatantTokens,
   type CampaignNote,
   type NightEncounter
 } from '../lib/notes'
@@ -80,7 +81,9 @@ export default function SessionNotes({
   onAddEncounter,
   onNewCampaign,
   onOpenCampaign,
-  onOpenSample
+  onOpenSample,
+  recentCampaigns,
+  onOpenRecent
 }: {
   path: string
   kind: FileKind
@@ -99,6 +102,8 @@ export default function SessionNotes({
   onNewCampaign?: () => void
   onOpenCampaign?: () => void
   onOpenSample?: () => void
+  recentCampaigns?: import('../../../shared/types').RecentCampaign[]
+  onOpenRecent?: (folder: string) => void
 }) {
   const [markdown, setMarkdown] = useState('')
   const [original, setOriginal] = useState('')
@@ -412,6 +417,7 @@ export default function SessionNotes({
           <CombatCard
             adding={Boolean(encounter && addingId === encounter.id)}
             onAdd={encounter && onAddEncounter ? () => void addEncounter(encounter) : undefined}
+            missing={missingCombatantTokens(section.markdown, path, noteIndex)}
           >
             {renderMarkdown(card, `${key}-card`)}
           </CombatCard>
@@ -545,6 +551,8 @@ export default function SessionNotes({
             onNewCampaign={onNewCampaign}
             onOpenCampaign={onOpenCampaign}
             onOpenSample={onOpenSample}
+            recentCampaigns={recentCampaigns}
+            onOpenRecent={onOpenRecent}
           />
         ) : kind === 'image' && imageUrl ? (
           <div className="flex h-full flex-col items-center justify-center gap-3">

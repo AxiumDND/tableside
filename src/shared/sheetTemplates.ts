@@ -1,4 +1,4 @@
-export type SheetTemplateKind = 'blank' | 'player' | 'npc' | 'monster' | 'spell' | 'gear'
+export type SheetTemplateKind = 'blank' | 'player' | 'npc' | 'monster' | 'spell' | 'gear' | 'nightsheet'
 
 const PLAYER = `<!--
   Party sheet template. Right-click Party/ → New player… (or copy into Party/ and rename).
@@ -221,12 +221,41 @@ Cost:
 What it does, or any house-rule notes.
 `
 
+const NIGHTSHEET = `<!--
+  Night sheet template. Right-click Sessions/ → New night sheet…
+  Link Party / NPCs / Bestiary sheets in Combatants lines. See docs/RECIPES.md.
+-->
+# Session Name — Night Sheet
+
+*Numbers and cues for behind the screen. Prose lives in [[Session Name]].*
+
+> [!abstract] Tonight at a glance
+> Beat one → beat two → **the fight** → fallout.
+
+## ⚔️ Combat 1 — name the encounter
+
+**Combatants:** [[Monster Name]] · party
+
+| | |
+|---|---|
+| **Monster Name** | AC · HP · key attacks |
+
+- Telegraph:
+- Cut if running long:
+
+## After
+
+- Loot / clue:
+- Hook for next session:
+`
+
 export const FALLBACK_TEMPLATES: Record<Exclude<SheetTemplateKind, 'blank'>, string> = {
   player: PLAYER,
   npc: NPC,
   monster: MONSTER,
   spell: SPELL,
-  gear: GEAR
+  gear: GEAR,
+  nightsheet: NIGHTSHEET
 }
 
 export const TEMPLATE_PLACEHOLDERS: Record<Exclude<SheetTemplateKind, 'blank'>, string> = {
@@ -234,7 +263,8 @@ export const TEMPLATE_PLACEHOLDERS: Record<Exclude<SheetTemplateKind, 'blank'>, 
   npc: 'NPC Name',
   monster: 'Monster Name',
   spell: 'Spell Name',
-  gear: 'Item Name'
+  gear: 'Item Name',
+  nightsheet: 'Session Name'
 }
 
 export const TEMPLATE_FILE_NAMES: Record<Exclude<SheetTemplateKind, 'blank'>, string[]> = {
@@ -242,7 +272,8 @@ export const TEMPLATE_FILE_NAMES: Record<Exclude<SheetTemplateKind, 'blank'>, st
   npc: ['npc.md'],
   monster: ['monster.md', 'creature.md'],
   spell: ['spell.md'],
-  gear: ['gear.md', 'item.md', 'equipment.md']
+  gear: ['gear.md', 'item.md', 'equipment.md'],
+  nightsheet: ['night sheet.md', 'nightsheet.md']
 }
 
 export function displayTitle(fileStem: string): string {

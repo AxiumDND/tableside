@@ -15,6 +15,7 @@ Table DM is an Electron + React + TypeScript app built with [electron-vite](http
 | `npm install` | Install dependencies |
 | `npm run dev` | Hot-reload Electron app (DM + player windows) |
 | `npm run build` | Compile main, preload, and renderer into `out/` |
+| `npm test` | Run Vitest unit tests (parsers, combat helpers) |
 | `npm start` | Run the built app (`electron .`) |
 | `npm run preview` | electron-vite preview |
 | `npm run dist` | Build + Windows NSIS installer in `dist/` |
@@ -91,7 +92,9 @@ Format and placement of personal PHB/DMG text files: [WOTC/README.md](../WOTC/RE
 
 ## CI
 
-[`.github/workflows/build.yml`](../.github/workflows/build.yml) runs `npm ci` and `npm run build` on `windows-latest` for pushes and pull requests to `main`.
+[`.github/workflows/build.yml`](../.github/workflows/build.yml) runs `npm ci`, `npm test`, and `npm run build` on `windows-latest` for pushes and pull requests to `main`.
+
+[`.github/workflows/release.yml`](../.github/workflows/release.yml) builds the Windows NSIS installer and publishes a GitHub Release when you push a `v*` tag (for example `git tag v1.0.7 && git push origin v1.0.7`).
 
 ## Packaging notes
 

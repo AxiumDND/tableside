@@ -4,7 +4,7 @@ A local Windows app for running **in-person** 5e-compatible games. Your laptop i
 
 This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table.
 
-Compatible with fifth edition. Rules lookup uses the **System Reference Document 5.2** (2024 rules), already bundled.
+Compatible with fifth edition. Rules lookup uses the **System Reference Document 5.2** (2024 rules), already bundled. Current release: **1.0.7**.
 
 ## Features
 
@@ -12,10 +12,11 @@ Compatible with fifth edition. Rules lookup uses the **System Reference Document
 - Campaign folder of Markdown notes (Obsidian-friendly wikilinks and `![[images]]`)
 - Click a map or portrait, then **Show to players** — 5 second fade-in on a black screen
 - Optional initiative overlay on the player screen: order, whose turn, Bloodied (enemies under half HP), 0 HP statuses
-- Night sheets can pull NPC/PC/Bestiary statblocks into initiative
+- Night sheets can pull NPC/PC/Bestiary statblocks into initiative (missing links warned; NPCs auto-roll)
 - Offline search for conditions, spells, monsters, weapons, and common rules
 - Optional extra lookup from your own WOTC text files in `WOTC/` (spells, equipment, magic items)
 - Add a monster, spell, or gear item from Lookup into the campaign Bestiary, Spells, or Gear folder
+- In-app **Help**, recent campaigns, file-tree filter, and table hotkeys (`Alt+S` / `Alt+T` / `Alt+X`)
 
 ## Quick start
 

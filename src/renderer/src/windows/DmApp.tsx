@@ -5,7 +5,8 @@ import type {
   CombatState,
   Combatant,
   DisplayInfo,
-  PlayerState
+  PlayerState,
+  RecentCampaign
 } from '../../../shared/types'
 import { emptyCombat, emptyPlayerState } from '../../../shared/types'
 import CampaignFiles, {
@@ -19,7 +20,7 @@ import HelpPanel from '../components/HelpPanel'
 import PlayerPreview from '../components/PlayerPreview'
 import RulesSearch from '../components/RulesSearch'
 import SessionNotes, { type EncounterAddItem } from '../components/SessionNotes'
-import { combatToPlayerInitiative } from '../lib/combat'
+import { combatToPlayerInitiative, advanceCombatTurn, rollInitiativeFor } from '../lib/combat'
 import { flattenImages, imageTitle, isImagePath, isPdfPath } from '../lib/images'
 import {
   allPartyNotes,
@@ -74,6 +75,7 @@ export default function DmApp() {
   const [history, setHistory] = useState<{ path: string; kind: FileKind }[]>([])
   const [playerDisplayId, setPlayerDisplayId] = useState<number | ''>('')
   const [showPlayerPreview, setShowPlayerPreview] = useState(true)
+  const [recentCampaigns, setRecentCampaigns] = useState<RecentCampaign[]>([])
 
   const refresh = useCallback(async () => {
     const [info, state, screens, prefs] = await Promise.all([
@@ -87,6 +89,7 @@ export default function DmApp() {
     setDisplays(screens)
     setPlayerDisplayId(prefs.playerDisplayId ?? '')
     setShowPlayerPreview(prefs.showPlayerPreview !== false)
+    setRecentCampaigns(prefs.recentCampaigns ?? [])
     if (
       prefs.rightPanel === 'combat' ||
       prefs.rightPanel === 'lookup' ||
@@ -130,18 +133,29 @@ export default function DmApp() {
     const info = await window.tabledm.pickCampaignFolder()
     applyCampaign(info)
     setPlayer(await window.tabledm.getPlayerState())
+    setRecentCampaigns((await window.tabledm.getSettings()).recentCampaigns ?? [])
   }
 
   async function newCampaign(): Promise<void> {
     const info = await window.tabledm.newCampaign()
     applyCampaign(info)
     setPlayer(await window.tabledm.getPlayerState())
+    setRecentCampaigns((await window.tabledm.getSettings()).recentCampaigns ?? [])
   }
 
   async function openSample(): Promise<void> {
     const info = await window.tabledm.openSampleCampaign()
     applyCampaign(info)
     setPlayer(await window.tabledm.getPlayerState())
+    setRecentCampaigns((await window.tabledm.getSettings()).recentCampaigns ?? [])
+  }
+
+  async function openRecent(folder: string): Promise<void> {
+    const info = await window.tabledm.openCampaignPath(folder)
+    applyCampaign(info)
+    setPlayer(await window.tabledm.getPlayerState())
+    const prefs = await window.tabledm.getSettings()
+    setRecentCampaigns(prefs.recentCampaigns ?? [])
   }
 
   function navigateTo(path: string, kind: FileKind): void {
@@ -332,9 +346,10 @@ export default function DmApp() {
       added += 1
     }
     if (added > 0) {
+      const withInit = rollInitiativeFor(next, 'unrolled-npcs')
       await saveCombat({
         ...combat,
-        combatants: next,
+        combatants: withInit,
         activeId: combat.activeId
       })
     }
@@ -377,9 +392,31 @@ export default function DmApp() {
       (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
 
     const onKey = (e: KeyboardEvent): void => {
-      if (!e.altKey || e.key !== 'ArrowLeft' || typing(e.target)) return
-      e.preventDefault()
-      goBack()
+      if (typing(e.target)) return
+      if (e.altKey && e.key === 'ArrowLeft') {
+        e.preventDefault()
+        goBack()
+        return
+      }
+      if (!(e.altKey && !e.ctrlKey && !e.metaKey)) return
+      const key = e.key.toLowerCase()
+      if (key === 's') {
+        e.preventDefault()
+        void showSelectedToPlayers()
+        return
+      }
+      if (key === 'x') {
+        e.preventDefault()
+        void clearPlayer()
+        return
+      }
+      if (key === 't') {
+        e.preventDefault()
+        const live = campaign?.combat
+        if (!live || live.combatants.length === 0) return
+        changeRightPanel('combat')
+        void saveCombat(advanceCombatTurn(live))
+      }
     }
     const onMouse = (e: MouseEvent): void => {
       if (e.button !== 3) return
@@ -392,7 +429,7 @@ export default function DmApp() {
       window.removeEventListener('keydown', onKey)
       window.removeEventListener('mouseup', onMouse)
     }
-  }, [history, openPath, openKind])
+  }, [history, openPath, openKind, campaign?.combat, selectedImage])
 
   return (
     <DiceLogProvider>
@@ -536,6 +573,8 @@ export default function DmApp() {
           onNewCampaign={() => void newCampaign()}
           onOpenCampaign={() => void openFolder()}
           onOpenSample={() => void openSample()}
+          recentCampaigns={recentCampaigns}
+          onOpenRecent={(folder) => void openRecent(folder)}
         />
         {rightPanel === 'combat' ? (
           <CombatTracker

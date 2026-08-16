@@ -7,6 +7,7 @@ import {
   isGearFolderName,
   isNpcFolderName,
   isPartyFolderName,
+  isSessionsFolderName,
   isSpellsFolderName
 } from '../../../shared/campaignLayout'
 import type { SheetTemplateKind } from '../../../shared/sheetTemplates'
@@ -32,13 +33,36 @@ function displayName(name: string): string {
   return name.replace(/\.(md|markdown|txt|json|png|jpe?g|webp|gif|svg|bmp|pdf)$/i, '').replace(/[-_]/g, ' ')
 }
 
-function folderKind(name: string): 'party' | 'npcs' | 'bestiary' | 'spells' | 'gear' | null {
+function folderKind(name: string): 'party' | 'npcs' | 'bestiary' | 'spells' | 'gear' | 'sessions' | null {
   if (isPartyFolderName(name)) return 'party'
   if (isNpcFolderName(name)) return 'npcs'
   if (isBestiaryFolderName(name)) return 'bestiary'
   if (isSpellsFolderName(name)) return 'spells'
   if (isGearFolderName(name)) return 'gear'
+  if (isSessionsFolderName(name)) return 'sessions'
   return null
+}
+
+function filterTree(nodes: CampaignTreeNode[], query: string): CampaignTreeNode[] {
+  const q = query.trim().toLowerCase()
+  if (!q) return nodes
+  const walk = (list: CampaignTreeNode[]): CampaignTreeNode[] => {
+    const out: CampaignTreeNode[] = []
+    for (const node of list) {
+      if (node.type === 'file') {
+        if (node.name.toLowerCase().includes(q) || node.relativePath.toLowerCase().includes(q)) {
+          out.push(node)
+        }
+        continue
+      }
+      const children = walk(node.children ?? [])
+      if (children.length > 0 || node.name.toLowerCase().includes(q)) {
+        out.push({ ...node, children })
+      }
+    }
+    return out
+  }
+  return walk(nodes)
 }
 
 type MenuTarget =
@@ -152,6 +176,7 @@ export default function CampaignFiles({
   const [prompt, setPrompt] = useState<PromptState | null>(null)
   const [name, setName] = useState('')
   const [busy, setBusy] = useState(false)
+  const [filter, setFilter] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
   const count = useMemo(() => {
@@ -159,6 +184,8 @@ export default function CampaignFiles({
       nodes.reduce((sum, node) => sum + (node.type === 'file' ? 1 : walk(node.children ?? [])), 0)
     return walk(tree)
   }, [tree])
+
+  const visibleTree = useMemo(() => filterTree(tree, filter), [tree, filter])
 
   useEffect(() => {
     if (!prompt) return
@@ -192,7 +219,8 @@ export default function CampaignFiles({
       npc: 'New NPC',
       monster: 'New monster',
       spell: 'New spell',
-      gear: 'New gear'
+      gear: 'New gear',
+      nightsheet: 'New night sheet'
     }
     setPrompt({ kind: 'create', folder, template, title: titles[template] })
     setName('')
@@ -251,12 +279,20 @@ export default function CampaignFiles({
         <div className="truncate text-[11px] text-muted">
           {campaignName} · {count} files · right-click to add
         </div>
+        <input
+          value={filter}
+          onChange={(event) => setFilter(event.target.value)}
+          placeholder="Filter files…"
+          className="mt-2 w-full rounded border border-line bg-ink px-2 py-1 text-[12px] outline-none focus:border-amber"
+        />
       </header>
       <nav className="min-h-0 flex-1 overflow-auto py-1" onContextMenu={(event) => openMenu(event)}>
-        {tree.length === 0 ? (
-          <p className="px-3 py-4 text-xs text-muted">Open a campaign to see its folders.</p>
+        {visibleTree.length === 0 ? (
+          <p className="px-3 py-4 text-xs text-muted">
+            {filter.trim() ? 'No files match that filter.' : 'Open a campaign to see its folders.'}
+          </p>
         ) : (
-          tree.map((node) => (
+          visibleTree.map((node) => (
             <TreeNode
               key={node.relativePath}
               node={node}
@@ -303,6 +339,9 @@ export default function CampaignFiles({
               ) : null}
               {folderHint === 'gear' || !folderHint ? (
                 <MenuItem label="New gear…" onClick={() => startCreate(folderPath, 'gear')} />
+              ) : null}
+              {folderHint === 'sessions' || !folderHint ? (
+                <MenuItem label="New night sheet…" onClick={() => startCreate(folderPath, 'nightsheet')} />
               ) : null}
               <MenuItem label="New note…" onClick={() => startCreate(folderPath, 'blank')} />
               <MenuItem label="Add files…" onClick={() => void addFiles(folderPath)} />

@@ -105,6 +105,8 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
               </>,
               <>
                 Open the night sheet → <span className="text-amber">Add to initiative</span> on that section.
+                Missing wikilinks show a warning on the card. NPCs/monsters at initiative 0 are rolled
+                automatically.
               </>,
               <>
                 In Combat, roll or type init, press Start, optionally{' '}
@@ -149,9 +151,19 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
               <Code>Alt+←</Code> or mouse back — previous note
             </li>
             <li>
+              <Code>Alt+S</Code> — Show selected image to players
+            </li>
+            <li>
+              <Code>Alt+X</Code> — Clear player screen
+            </li>
+            <li>
+              <Code>Alt+T</Code> — Next combat turn (opens Combat if needed)
+            </li>
+            <li>
               Editing: <Code>Ctrl+S</Code> save, <Code>Esc</Code> cancel
             </li>
             <li>Right-click the file tree to create from Templates or import files</li>
+            <li>Filter the file tree from the search box under Files</li>
             <li>
               Repo docs: <Code>docs/TABLE.md</Code>, <Code>docs/CAMPAIGN.md</Code>, <Code>docs/RECIPES.md</Code>
             </li>

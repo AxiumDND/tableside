@@ -132,6 +132,11 @@ export interface PlayerState {
   initiativeRound?: number
 }
 
+export interface RecentCampaign {
+  folder: string
+  name: string
+}
+
 export interface AppSettings {
   campaignFolder?: string
   playerDisplayId?: number
@@ -140,6 +145,7 @@ export interface AppSettings {
   lastOpenKind?: string
   rightPanel?: 'combat' | 'lookup' | 'help' | null
   showPlayerPreview?: boolean
+  recentCampaigns?: RecentCampaign[]
 }
 
 export const emptyCombat = (): CombatState => ({

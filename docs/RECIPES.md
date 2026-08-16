@@ -37,11 +37,11 @@ Prefer a short **Night Sheet** for numbers and combatant lines, and keep long pr
 ### At the table
 
 1. Open the night sheet.
-2. On the combat section, press **Add to initiative** (loads linked sheets; skips names already in Combat).
+2. On the combat section, press **Add to initiative** (loads linked sheets; skips names already in Combat). Unresolved `[[links]]` show a warning on the card. Newly added NPCs/monsters at initiative 0 are rolled automatically.
 3. Open **Combat** in the header if it is not already open.
-4. Roll initiative (d20 on each row) or type PC totals from the table.
-5. **Start** combat, advance turns, adjust HP.
-6. Optionally **Show to players** on the Combat panel to overlay order (Bloodied / 0 HP tags, no numbers).
+4. Type PC totals from the table (NPCs may already be rolled). Use **Roll all** / **Roll NPCs** if you need to re-roll.
+5. **Start** combat, advance turns (`Alt+T`), adjust HP.
+6. Optionally **Show to players** on the Combat panel (`Alt+S` for the image) to overlay order (Bloodied / 0 HP tags, no numbers).
 
 ### If Add to initiative does nothing
 

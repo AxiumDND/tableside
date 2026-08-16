@@ -36,6 +36,8 @@ const api = {
     return () => ipcRenderer.removeListener('player:state', listener)
   },
   pickCampaignFolder: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:pick-folder'),
+  openCampaignPath: (folder: string): Promise<CampaignInfo | null> =>
+    ipcRenderer.invoke('campaign:open-path', folder),
   newCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:new'),
   openSampleCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:open-sample'),
   getCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:get'),
