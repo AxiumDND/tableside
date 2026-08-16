@@ -518,6 +518,9 @@ export default function DmApp() {
           }
           onAddNpcToCombat={addNpcFromSheet}
           onAddEncounter={addEncounterItems}
+          onNewCampaign={() => void newCampaign()}
+          onOpenCampaign={() => void openFolder()}
+          onOpenSample={() => void openSample()}
         />
         {rightPanel === 'combat' ? (
           <CombatTracker

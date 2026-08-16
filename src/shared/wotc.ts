@@ -185,4 +185,11 @@ CHECKLIST
 4. Field names match the examples above, including the colon.
 5. Open Lookup — a new chip should appear, and a search for the first entry
    should find it.
+
+TROUBLESHOOTING
+---------------
+- No chip: fix the filename keywords, then close and reopen Lookup.
+- Chip but no hits: use ## headings per entry; save as UTF-8 .md/.txt.
+- Wrong chip: avoid mixing Spell and Equipment in the same filename.
+- Full guide with examples: see WOTC/README.md in the Table DM repo.
 `

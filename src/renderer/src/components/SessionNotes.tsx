@@ -27,6 +27,7 @@ import {
 import { extractStatblock, fallbackStatblock, isNpcSheet, type ParsedStatblock } from '../lib/statblock'
 import CalloutCard from './CalloutCard'
 import CombatCard from './CombatCard'
+import GettingStarted from './GettingStarted'
 import GmOnly from './GmOnly'
 import ReadAloud from './ReadAloud'
 import NpcSheet from './NpcSheet'
@@ -76,7 +77,10 @@ export default function SessionNotes({
   onBack,
   backLabel,
   onAddNpcToCombat,
-  onAddEncounter
+  onAddEncounter,
+  onNewCampaign,
+  onOpenCampaign,
+  onOpenSample
 }: {
   path: string
   kind: FileKind
@@ -92,6 +96,9 @@ export default function SessionNotes({
   backLabel?: string
   onAddNpcToCombat?: (block: ParsedStatblock, notePath: string) => void
   onAddEncounter?: (items: EncounterAddItem[]) => void
+  onNewCampaign?: () => void
+  onOpenCampaign?: () => void
+  onOpenSample?: () => void
 }) {
   const [markdown, setMarkdown] = useState('')
   const [original, setOriginal] = useState('')
@@ -533,7 +540,12 @@ export default function SessionNotes({
       ) : (
       <div className="min-h-0 flex-1 overflow-auto p-3">
         {!path ? (
-          <p className="text-sm text-muted">Open a campaign, then pick a file from the left.</p>
+          <GettingStarted
+            hasCampaign={!disabled}
+            onNewCampaign={onNewCampaign}
+            onOpenCampaign={onOpenCampaign}
+            onOpenSample={onOpenSample}
+          />
         ) : kind === 'image' && imageUrl ? (
           <div className="flex h-full flex-col items-center justify-center gap-3">
             <img src={imageUrl} alt={imageTitle(path)} className="max-h-[70vh] max-w-full object-contain" />

@@ -50,7 +50,9 @@ Writes a Windows NSIS installer to `dist/`.
 
 | Doc | Audience |
 | --- | --- |
-| [docs/CAMPAIGN.md](docs/CAMPAIGN.md) | DMs — folder layout, callouts, night sheets, combatants, images |
+| [docs/TABLE.md](docs/TABLE.md) | DMs — console layout, combat, Lookup, player display |
+| [docs/CAMPAIGN.md](docs/CAMPAIGN.md) | DMs — folder layout, night sheets, combatants, images |
+| [docs/MARKDOWN.md](docs/MARKDOWN.md) | DMs — wikilinks, callouts, `statblock` fields |
 | [WOTC/README.md](WOTC/README.md) | Optional PHB / DMG lookup file formats |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Contributors — scripts, architecture, CI |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Pull request expectations |
@@ -75,7 +77,7 @@ Reference/        trackers and cheat sheets
 Archive/          recaps and old drafts
 ```
 
-Full authoring guide (wikilinks, callouts, `statblock` fences, night-sheet combat lines): **[docs/CAMPAIGN.md](docs/CAMPAIGN.md)**.
+Full authoring guide: **[docs/CAMPAIGN.md](docs/CAMPAIGN.md)**. At-the-table UI: **[docs/TABLE.md](docs/TABLE.md)**. Markdown/`statblock` reference: **[docs/MARKDOWN.md](docs/MARKDOWN.md)**.
 
 Book text for Lookup is **not** part of a campaign. Put Player’s Handbook and Dungeon Master’s Guide exports in the app `WOTC/` folder (or `%APPDATA%\table-dm\WOTC`). When those files are present, Lookup grows extra filters and searches that text. The SRD stays available either way. Filenames must contain `Spell`, `Equipment`, or `Magic Item` — details in [WOTC/README.md](WOTC/README.md).
 

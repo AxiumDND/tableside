@@ -161,3 +161,17 @@ Rules:
 3. One `##` heading per entry.
 4. Field names match the examples above, including the colon.
 5. Open Lookup — a new chip should appear, and a search for the first entry should find it.
+
+## Troubleshooting
+
+| Symptom | Likely fix |
+| --- | --- |
+| No new chip in Lookup | Filename must contain `Spell`, `Equipment`/`Gear`, or `Magic Item`/`Dungeon Master`. Restart Lookup (close panel or app). |
+| Chip appears, search empty | Entries need `## Name` headings (or the looser spell dump format). Confirm the file is `.md` / `.txt` and UTF-8. |
+| Wrong chip | Rename the file so only the intended keyword matches (avoid putting both `Spell` and `Equipment` in one name). |
+| Edits not picked up | Close and reopen Lookup after saving. The app reads the folder when the panel loads. |
+| Cannot find the folder | In Lookup, use the control that opens the WOTC folder; installed builds prefer `%APPDATA%\table-dm\WOTC`. |
+
+Do **not** commit copyrighted PHB/DMG text into the git repo. This `WOTC/` directory is for local files only; `.gitignore` may still track the README — keep book dumps untracked or outside the repo.
+
+More on Lookup at the table: [docs/TABLE.md](../docs/TABLE.md#lookup-panel).
