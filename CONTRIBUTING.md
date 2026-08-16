@@ -5,7 +5,7 @@ Thanks for helping with Table DM.
 ## Before you change code
 
 1. Read [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for setup, scripts, and where code lives.
-2. Skim [docs/CAMPAIGN.md](docs/CAMPAIGN.md), [docs/MARKDOWN.md](docs/MARKDOWN.md), and [docs/TABLE.md](docs/TABLE.md) if your change touches notes, combatants, images, Lookup, or folder names — authors rely on those contracts.
+2. Skim [docs/CAMPAIGN.md](docs/CAMPAIGN.md), [docs/MARKDOWN.md](docs/MARKDOWN.md), [docs/TABLE.md](docs/TABLE.md), and [docs/RECIPES.md](docs/RECIPES.md) if your change touches notes, combatants, images, Lookup, or folder names — authors rely on those contracts. Keep the in-app **Help** panel (`HelpPanel.tsx`) aligned with RECIPES when those flows change.
 3. Keep WOTC book text out of the repo. Document formats in [WOTC/README.md](WOTC/README.md) only.
 
 ## Pull requests
@@ -22,6 +22,7 @@ Thanks for helping with Table DM.
 | --- | --- |
 | [README.md](README.md) | Product overview + quick start |
 | [docs/TABLE.md](docs/TABLE.md) | Running a session in the UI |
+| [docs/RECIPES.md](docs/RECIPES.md) | Night sheet + Lookup save recipes |
 | [docs/CAMPAIGN.md](docs/CAMPAIGN.md) | Campaign folder contract |
 | [docs/MARKDOWN.md](docs/MARKDOWN.md) | Note / statblock syntax |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Contributor / architecture notes |

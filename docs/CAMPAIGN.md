@@ -5,6 +5,7 @@ How to structure a campaign folder so Table DM can find notes, art, and combatan
 Also read:
 
 - [TABLE.md](TABLE.md) — DM console, combat, Lookup, player display
+- [RECIPES.md](RECIPES.md) — night sheet → initiative, Lookup → campaign note (also in-app **Help**)
 - [MARKDOWN.md](MARKDOWN.md) — wikilinks, callouts, `statblock` field reference
 - [WOTC/README.md](../WOTC/README.md) — optional book text for Lookup
 
@@ -162,6 +163,8 @@ If there is no `Combatants:` line, Table DM still picks up wikilinks (and some b
 On the night sheet, use **Add to initiative** / **Add encounter** to load those sheets into Combat. **Add all players** pulls every PC sheet.
 
 Suggested split: long prose in `Session N.md`, numbers and combatant lines in `Session N — Night Sheet.md`, cross-linked with wikilinks.
+
+Full recipe (prep + troubleshooting): [RECIPES.md](RECIPES.md#night-sheet--initiative).
 
 ### Player initiative overlay
 

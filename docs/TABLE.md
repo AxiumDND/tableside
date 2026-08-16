@@ -6,10 +6,10 @@ How the DM console and player window work during a session.
 
 | Area | Role |
 | --- | --- |
-| Header | Campaign name, Combat / Lookup panels, New / Open / Sample, player display picker, Clear |
+| Header | Campaign name, Combat / Lookup / Help panels, New / Open / Sample, player display picker, Clear |
 | Left column | Mini **Players see** preview, campaign file tree, dice tray |
 | Center | Open note, image, or PDF |
-| Right (optional) | Combat tracker or Lookup |
+| Right (optional) | Combat tracker, Lookup, or Help |
 
 Two Electron windows open: the DM console, and a fullscreen **player** window (preferably on a second monitor).
 
@@ -82,6 +82,12 @@ Offline MiniSearch over the bundled SRD 5.2.1 snapshot (conditions, spells, mons
 - Monster results can **Add to combat**.
 - With a campaign open, **Add to Bestiary / Spells / Gear** writes a campaign markdown note (skipped if a same-named note already exists).
 - Optional WOTC files add chips like PHB 2024 / PHB Gear / DMG Items — [WOTC/README.md](../WOTC/README.md). Use **Open WOTC folder** in Lookup to jump to the writable location.
+
+Step-by-step save flow: [RECIPES.md](RECIPES.md#lookup--campaign-note).
+
+## Help panel
+
+**Help** in the header opens a side panel with the same short recipes (quick start, night sheet → initiative, Lookup → campaign, shortcuts). Prefer that at the table; use [RECIPES.md](RECIPES.md) when writing docs or campaign notes offline.
 
 ## Dice tray
 
