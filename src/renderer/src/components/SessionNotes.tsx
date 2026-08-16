@@ -127,10 +127,22 @@ export default function SessionNotes({
     () => (kind === 'note' && !editing ? parseNightEncounters(markdown, path, noteIndex) : []),
     [kind, editing, markdown, path, noteIndex]
   )
+  async function flushOpenNote(targetPath = pathRef.current): Promise<void> {
+    if (!targetPath || markdownRef.current === originalRef.current) return
+    try {
+      await window.tabledm.saveFile(targetPath, markdownRef.current)
+      originalRef.current = markdownRef.current
+      setOriginal(markdownRef.current)
+      setSaveError('')
+    } catch {
+      setSaveError('Could not save this file.')
+    }
+  }
+
   useEffect(() => {
     const prevPath = pathRef.current
-    if (prevPath && prevPath !== path && markdownRef.current !== originalRef.current) {
-      void window.tabledm.saveFile(prevPath, markdownRef.current)
+    if (prevPath && prevPath !== path) {
+      void flushOpenNote(prevPath)
     }
     pathRef.current = path
     setEditing(false)
@@ -169,6 +181,26 @@ export default function SessionNotes({
   useEffect(() => {
     if (editing) editorRef.current?.focus()
   }, [editing])
+
+  useEffect(() => {
+    const onHidden = (): void => {
+      void flushOpenNote()
+    }
+    const onVis = (): void => {
+      if (document.visibilityState === 'hidden') void flushOpenNote()
+    }
+    window.addEventListener('beforeunload', onHidden)
+    document.addEventListener('visibilitychange', onVis)
+    const offClose = window.tabledm.onWillClose(async () => {
+      await flushOpenNote()
+      window.tabledm.confirmClose()
+    })
+    return () => {
+      window.removeEventListener('beforeunload', onHidden)
+      document.removeEventListener('visibilitychange', onVis)
+      offClose()
+    }
+  }, [])
 
   useEffect(() => {
     if (!editing) return

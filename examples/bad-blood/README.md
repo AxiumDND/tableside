@@ -4,14 +4,21 @@ Open this folder in Table DM (or click **Sample**).
 
 ## Folder layout
 
-- **Sessions/** — run guides and night sheets (use these at the table)
-- **Party/** — PC sheets; Combat always loads everyone here
-- **NPCs/** — named characters with portraits and statblocks
+- **Sessions/** — run guides and night sheets
+  - **Art/** — establishing shots
+- **Party/** — PC sheets; Combat → Add all players
+  - **Art/** — PC portraits
+- **NPCs/** — named people
+  - **Art/** — NPC portraits
 - **Bestiary/** — creatures
-- **Templates/** — blank Player, NPC, and Monster sheets to copy
-- **Handouts/** — letters and props to show players
-- **Maps/** · **Scenes/** · **Portraits/** — art for the player screen
+  - **Art/** — creature art
+- **Maps/**
+  - **Art/** — battle and location maps
+  - **Print/** — print-and-play PDFs
+- **Handouts/** — letters and props
+  - **Art/** — letter images
+- **Templates/** — blank Player, NPC, and Monster sheets
 - **Reference/** — tracker, locations, cheat sheets
 - **Archive/** — recaps, transcripts, old drafts (keep closed)
 
-Wikilinks still resolve by note name after a move. Portraits are `![[Name.png]]`.
+Wikilinks still resolve by note name after a move. Portraits are `![[Name.png]]` in that folder's Art subfolder.

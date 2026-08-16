@@ -1,16 +1,33 @@
 import { contextBridge, ipcRenderer } from 'electron'
-import type { CampaignInfo, Character, CombatState, DisplayInfo, PlayerState } from '../shared/types'
+import type { AppSettings, CampaignInfo, CombatState, DisplayInfo, PlayerState } from '../shared/types'
 import type { SheetTemplateKind } from '../shared/sheetTemplates'
+import type { WotcLibrary } from '../shared/wotc'
 
 const api = {
   getDisplays: (): Promise<DisplayInfo[]> => ipcRenderer.invoke('app:displays'),
+  getSettings: (): Promise<AppSettings> => ipcRenderer.invoke('app:get-settings'),
+  saveSettings: (partial: AppSettings): Promise<AppSettings> =>
+    ipcRenderer.invoke('app:save-settings', partial),
+  onWillClose: (callback: () => void | Promise<void>) => {
+    const listener = () => {
+      void callback()
+    }
+    ipcRenderer.on('app:will-close', listener)
+    return () => ipcRenderer.removeListener('app:will-close', listener)
+  },
+  confirmClose: (): void => {
+    ipcRenderer.send('app:confirm-close')
+  },
   placePlayerOnDisplay: (displayId: number): Promise<DisplayInfo[]> =>
     ipcRenderer.invoke('player:place-on-display', displayId),
   showImage: (src: string, title: string): Promise<PlayerState> =>
     ipcRenderer.invoke('player:show-image', { src, title }),
   clearPlayer: (): Promise<PlayerState> => ipcRenderer.invoke('player:clear'),
-  setPlayerInitiative: (entries: PlayerState['initiative'], show: boolean): Promise<PlayerState> =>
-    ipcRenderer.invoke('player:set-initiative', entries, show),
+  setPlayerInitiative: (payload: {
+    entries: PlayerState['initiative']
+    show: boolean
+    round?: number
+  }): Promise<PlayerState> => ipcRenderer.invoke('player:set-initiative', payload),
   getPlayerState: (): Promise<PlayerState> => ipcRenderer.invoke('player:get-state'),
   onPlayerState: (callback: (state: PlayerState) => void) => {
     const listener = (_event: unknown, state: PlayerState) => callback(state)
@@ -18,20 +35,13 @@ const api = {
     return () => ipcRenderer.removeListener('player:state', listener)
   },
   pickCampaignFolder: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:pick-folder'),
+  newCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:new'),
   openSampleCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:open-sample'),
   getCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:get'),
-  saveCampaignName: (name: string): Promise<CampaignInfo | null> =>
-    ipcRenderer.invoke('campaign:save-name', name),
-  readSession: (relativePath: string): Promise<string> =>
-    ipcRenderer.invoke('campaign:read-session', relativePath),
-  saveSession: (relativePath: string, markdown: string): Promise<void> =>
-    ipcRenderer.invoke('campaign:save-session', relativePath, markdown),
   readFile: (relativePath: string): Promise<string> =>
     ipcRenderer.invoke('campaign:read-file', relativePath),
   saveFile: (relativePath: string, contents: string): Promise<void> =>
     ipcRenderer.invoke('campaign:save-file', relativePath, contents),
-  saveCharacter: (folder: 'party' | 'npcs', character: Character): Promise<CampaignInfo | null> =>
-    ipcRenderer.invoke('campaign:save-character', folder, character),
   saveCombat: (combat: CombatState): Promise<CampaignInfo | null> =>
     ipcRenderer.invoke('campaign:save-combat', combat),
   createNote: (
@@ -51,7 +61,9 @@ const api = {
     name: string,
     contents: string
   ): Promise<{ campaign: CampaignInfo; path: string; existed: boolean } | null> =>
-    ipcRenderer.invoke('campaign:save-to-bestiary', name, contents)
+    ipcRenderer.invoke('campaign:save-to-bestiary', name, contents),
+  loadWotcLibrary: (): Promise<WotcLibrary> => ipcRenderer.invoke('wotc:load'),
+  openWotcFolder: (): Promise<string> => ipcRenderer.invoke('wotc:open-folder')
 }
 
 export type TableDmApi = typeof api

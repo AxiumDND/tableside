@@ -7,6 +7,9 @@
 Thumbs.db
 Desktop.ini
 
+# Live table state — Sample writes this into AppData, not the repo
+combat.json
+
 # Session audio — GitHub rejects files over 100MB (these recordings are ~150–160MB each)
 *.m4a
 *.mp3

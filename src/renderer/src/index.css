@@ -174,6 +174,111 @@ body,
   animation: player-fade-out 5s ease forwards;
 }
 
+.player-init {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 6;
+  display: flex;
+  width: min(28rem, 38%);
+  flex-direction: column;
+  gap: 0.65rem;
+  padding: 1.15rem 1.2rem 1.2rem;
+  background: linear-gradient(90deg, rgba(5, 4, 3, 0.88) 0%, rgba(5, 4, 3, 0.72) 70%, transparent 100%);
+  pointer-events: none;
+}
+
+.player-init-round {
+  flex-shrink: 0;
+  font-family: var(--font-display);
+  font-size: 1.15rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-amber);
+}
+
+.player-init-list {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  list-style: none;
+}
+
+.player-init-item {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.7rem;
+  border-left: 3px solid transparent;
+  padding: 0.45rem 0.7rem;
+  color: var(--color-parchment);
+  font-size: 1.2rem;
+  line-height: 1.25;
+}
+
+.player-init-item.is-turn {
+  border-left-color: var(--color-amber);
+  background: color-mix(in srgb, var(--color-amber) 16%, transparent);
+  color: var(--color-amber);
+}
+
+.player-init-item.is-bloodied:not(.is-turn) {
+  color: #f0c9c6;
+}
+
+.player-init-item.is-dead .player-init-name,
+.player-init-item.is-unconscious .player-init-name {
+  text-decoration: line-through;
+}
+
+.player-init-item.is-dead:not(.is-turn),
+.player-init-item.is-unconscious:not(.is-turn) {
+  color: #c4a09c;
+}
+
+.player-init-name {
+  min-width: 0;
+  font-weight: 600;
+}
+
+.player-init-tag {
+  flex-shrink: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-amber);
+}
+
+.player-init-tag.is-blood {
+  color: var(--color-blood);
+}
+
+.player-stage-compact .player-init {
+  width: 42%;
+  padding: 0.35rem 0.4rem;
+  gap: 0.2rem;
+}
+
+.player-stage-compact .player-init-round {
+  font-size: 0.55rem;
+}
+
+.player-stage-compact .player-init-item {
+  padding: 0.12rem 0.25rem;
+  font-size: 0.55rem;
+}
+
+.player-stage-compact .player-init-tag {
+  font-size: 0.4rem;
+}
+
 .read-aloud-dot {
   position: absolute;
   z-index: 1;

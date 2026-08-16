@@ -10,7 +10,8 @@ interface Layer {
 }
 
 export default function PlayerView({
-  state
+  state,
+  compact
 }: {
   state: PlayerState
   compact?: boolean
@@ -46,8 +47,10 @@ export default function PlayerView({
     return () => clearTimeout(t)
   }, [layers.at(-1)?.id])
 
+  const showInit = state.showInitiative && state.initiative.length > 0
+
   return (
-    <div className="player-stage">
+    <div className={`player-stage${compact ? ' player-stage-compact' : ''}`}>
       {layers.map((layer, index) => {
         const top = index === layers.length - 1
         const fadeIn = top && !clearing && (index > 0 || Boolean(layer.fromBlack))
@@ -61,6 +64,39 @@ export default function PlayerView({
           </div>
         )
       })}
+      {showInit ? (
+        <div className="player-init" aria-label="Initiative order">
+          <div className="player-init-round">
+            {state.initiativeRound && state.initiativeRound > 0 ? `Round ${state.initiativeRound}` : 'Initiative'}
+          </div>
+          <ol className="player-init-list">
+            {state.initiative.map((entry) => (
+              <li
+                key={entry.id}
+                className={`player-init-item${entry.active ? ' is-turn' : ''}${
+                  entry.condition === 'dead'
+                    ? ' is-dead'
+                    : entry.condition === 'unconscious'
+                      ? ' is-unconscious'
+                      : entry.condition === 'bloodied' || entry.bloodied
+                        ? ' is-bloodied'
+                        : ''
+                }`}
+              >
+                <span className="player-init-name">{entry.name}</span>
+                {entry.active ? <span className="player-init-tag">Turn</span> : null}
+                {entry.condition === 'dead' ? <span className="player-init-tag is-blood">Dead</span> : null}
+                {entry.condition === 'unconscious' ? (
+                  <span className="player-init-tag is-blood">Unconscious</span>
+                ) : null}
+                {entry.condition === 'bloodied' || (entry.bloodied && !entry.condition) ? (
+                  <span className="player-init-tag is-blood">Bloodied</span>
+                ) : null}
+              </li>
+            ))}
+          </ol>
+        </div>
+      ) : null}
     </div>
   )
 }

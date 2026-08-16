@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Combatant, CombatantKind, CombatState } from '../../../shared/types'
-import { abilityMod, formatMod, rollD20 } from '../lib/dice'
+import { combatantCondition, initiativeBonus, sortCombatants } from '../lib/combat'
+import { formatMod, rollD20 } from '../lib/dice'
 import { statBlockToParsed } from '../lib/statblock'
 import { useDiceLog } from './DiceTray'
 import RollableStatBlock from './RollableStatBlock'
@@ -10,35 +11,31 @@ function uid(): string {
   return crypto.randomUUID()
 }
 
-export function initiativeBonus(c: Combatant): number {
-  if (typeof c.statBlock?.initiativeBonus === 'number') return c.statBlock.initiativeBonus
-  if (typeof c.statBlock?.modifiers?.dexterity === 'number') return c.statBlock.modifiers.dexterity
-  if (typeof c.statBlock?.scores?.dexterity === 'number') return abilityMod(c.statBlock.scores.dexterity)
-  return 0
-}
-
-function sortCombat(list: Combatant[]): Combatant[] {
-  return [...list].sort(
-    (a, b) => b.initiative - a.initiative || initiativeBonus(b) - initiativeBonus(a) || a.name.localeCompare(b.name)
-  )
-}
-
 export default function CombatTracker({
   combat,
+  bestiary = [],
+  partyCount = 0,
+  onAddParty,
+  onAddBestiary,
   onChange,
   onClose
 }: {
   combat: CombatState
+  bestiary?: { path: string; name: string }[]
+  partyCount?: number
+  onAddParty?: () => void
+  onAddBestiary?: (path: string) => void
   onChange: (next: CombatState) => void
   onClose?: () => void
 }) {
   const [draft, setDraft] = useState({ name: '', initiative: '', hp: '', ac: '' })
+  const [beastQuery, setBeastQuery] = useState('')
   const [lastRoll, setLastRoll] = useState('')
   const [viewedId, setViewedId] = useState<string | null>(null)
   const [confirmClear, setConfirmClear] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState<Combatant | null>(null)
   const dice = useDiceLog()
-  const ordered = useMemo(() => sortCombat(combat.combatants), [combat.combatants])
+  const ordered = useMemo(() => sortCombatants(combat.combatants), [combat.combatants])
   const round = combat.round ?? 0
   const started = round > 0
   const turnId =
@@ -46,6 +43,11 @@ export default function CombatTracker({
   const viewed =
     ordered.find((c) => c.id === viewedId) ?? ordered.find((c) => c.id === turnId) ?? ordered[0] ?? null
   const viewedParsed = viewed ? statBlockToParsed(combatantToBlock(viewed) ?? { name: viewed.name }, viewed.name) : null
+  const partyInCombat = combat.combatants.filter((c) => c.kind === 'pc').length
+  const beasts = useMemo(() => {
+    const q = beastQuery.trim().toLowerCase()
+    return q ? bestiary.filter((b) => b.name.toLowerCase().includes(q)) : bestiary
+  }, [bestiary, beastQuery])
 
   useEffect(() => {
     if (!confirmClear && !confirmRemove) return
@@ -133,7 +135,7 @@ export default function CombatTracker({
     setViewedId(null)
     setConfirmClear(false)
     setConfirmRemove(null)
-    update({ combatants: [], activeId: null, round: 0 })
+    update({ combatants: [], activeId: null, round: 0, showOrderToPlayers: false })
   }
 
   function removeCombatant(id: string): void {
@@ -216,6 +218,19 @@ export default function CombatTracker({
           </button>
           <button
             type="button"
+            disabled={ordered.length === 0}
+            onClick={() => update({ showOrderToPlayers: !combat.showOrderToPlayers })}
+            className={`rounded px-2 py-1 text-[11px] ${
+              combat.showOrderToPlayers
+                ? 'bg-amber font-semibold text-ink'
+                : 'border border-line hover:border-amber'
+            }`}
+            title="Superimpose initiative over the player image"
+          >
+            {combat.showOrderToPlayers ? 'Showing to players' : 'Show to players'}
+          </button>
+          <button
+            type="button"
             onClick={() => {
               if (combat.combatants.length === 0) {
                 clearCombat()
@@ -242,6 +257,7 @@ export default function CombatTracker({
             const inspecting = viewed?.id === c.id
             const ratio = c.maxHp > 0 ? c.hp / c.maxHp : 0
             const bonus = initiativeBonus(c)
+            const condition = combatantCondition(c)
             return (
               <li
                 key={c.id}
@@ -278,16 +294,22 @@ export default function CombatTracker({
                     type="button"
                     onClick={() => setViewedId(c.id)}
                     className={`min-w-0 flex-1 truncate text-left font-medium ${
-                      inspecting ? 'text-amber' : ''
-                    }`}
+                      inspecting ? 'text-amber' : condition ? 'text-blood' : ''
+                    } ${condition === 'dead' || condition === 'unconscious' ? 'line-through' : ''}`}
                     title="Show stats and rolls — does not change whose turn it is"
                   >
                     {c.name}
                     <span className="ml-2 text-[10px] uppercase text-muted">{c.kind}</span>
                     {onTurn ? <span className="ml-2 text-[10px] uppercase text-amber">Turn</span> : null}
+                    {condition === 'dead' ? (
+                      <span className="ml-2 text-[10px] uppercase text-blood">Dead</span>
+                    ) : null}
+                    {condition === 'unconscious' ? (
+                      <span className="ml-2 text-[10px] uppercase text-blood">Unconscious</span>
+                    ) : null}
                   </button>
                   <span className="text-xs text-muted">AC {c.ac}</span>
-                  <button type="button" onClick={() => patchCombatant(c.id, { hp: c.hp - 1 })}>
+                  <button type="button" onClick={() => patchCombatant(c.id, { hp: Math.max(0, c.hp - 1) })}>
                     −
                   </button>
                   <span className={`w-12 text-center text-sm ${ratio <= 0.3 ? 'text-blood' : ''}`}>
@@ -311,8 +333,51 @@ export default function CombatTracker({
         </ul>
 
         {ordered.length === 0 ? (
-          <p className="px-3 py-6 text-sm text-muted">Add a fight from a night sheet, or type a combatant below.</p>
+          <p className="px-3 py-3 text-sm text-muted">Add the party, then pick creatures from the Bestiary.</p>
         ) : null}
+
+        <div className="border-t border-line px-3 py-2">
+          {onAddParty ? (
+            <button
+              type="button"
+              onClick={onAddParty}
+              disabled={partyCount > 0 && partyInCombat >= partyCount}
+              className="w-full rounded bg-amber px-3 py-1.5 text-sm font-semibold text-ink disabled:bg-line disabled:text-muted"
+            >
+              {partyCount > 0 && partyInCombat >= partyCount ? 'Party added' : 'Add all players'}
+            </button>
+          ) : null}
+          {bestiary.length > 0 ? (
+            <div className="mt-3">
+              <h3 className="text-xs uppercase tracking-wider text-muted">Bestiary</h3>
+              {bestiary.length > 8 ? (
+                <input
+                  value={beastQuery}
+                  onChange={(e) => setBeastQuery(e.target.value)}
+                  placeholder="Filter creatures…"
+                  className="mt-1 w-full rounded border border-line bg-panel-2 px-2 py-1 text-xs"
+                />
+              ) : null}
+              <ul className="mt-1 max-h-40 overflow-auto">
+                {beasts.map((beast) => (
+                  <li key={beast.path}>
+                    <button
+                      type="button"
+                      onClick={() => onAddBestiary?.(beast.path)}
+                      className="flex w-full items-center justify-between border-b border-line/50 px-1 py-1.5 text-left text-sm hover:text-amber"
+                    >
+                      <span className="truncate">{beast.name}</span>
+                      <span className="text-[11px] text-muted">Add</span>
+                    </button>
+                  </li>
+                ))}
+                {beasts.length === 0 ? (
+                  <li className="py-2 text-xs text-muted">No matching creatures</li>
+                ) : null}
+              </ul>
+            </div>
+          ) : null}
+        </div>
 
         <form
           className="grid grid-cols-12 gap-1 px-3 py-2 text-xs"
