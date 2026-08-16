@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Combatant, CombatantKind, CombatState } from '../../../shared/types'
-import { combatantCondition, initiativeBonus, sortCombatants } from '../lib/combat'
+import { advanceCombatTurn, combatantCondition, initiativeBonus, sortCombatants } from '../lib/combat'
 import { formatMod, rollD20 } from '../lib/dice'
 import { statBlockToParsed } from '../lib/statblock'
 import { useDiceLog } from './DiceTray'
@@ -96,17 +96,9 @@ export default function CombatTracker({
 
   function nextTurn(): void {
     if (ordered.length === 0) return
-    if (!started || !turnId) {
-      startCombat()
-      return
-    }
-    const idx = ordered.findIndex((c) => c.id === turnId)
-    const nextIdx = (idx + 1) % ordered.length
-    const nxt = ordered[nextIdx]
-    update({
-      activeId: nxt.id,
-      round: nextIdx === 0 ? round + 1 : round
-    })
+    const next = advanceCombatTurn(combat)
+    if (next.activeId) setViewedId(next.activeId)
+    onChange(next)
   }
 
   function rollOne(c: Combatant) {

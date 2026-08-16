@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { RecentCampaign } from '../../../shared/types'
 
 function Step({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -13,12 +14,16 @@ export default function GettingStarted({
   hasCampaign,
   onNewCampaign,
   onOpenCampaign,
-  onOpenSample
+  onOpenSample,
+  recentCampaigns = [],
+  onOpenRecent
 }: {
   hasCampaign: boolean
   onNewCampaign?: () => void
   onOpenCampaign?: () => void
   onOpenSample?: () => void
+  recentCampaigns?: RecentCampaign[]
+  onOpenRecent?: (folder: string) => void
 }) {
   return (
     <div className="mx-auto flex max-w-xl flex-col gap-4 py-6 text-parchment">
@@ -65,15 +70,37 @@ export default function GettingStarted({
         </div>
       ) : null}
 
+      {!hasCampaign && recentCampaigns.length > 0 ? (
+        <div className="rounded border border-line/80 bg-ink/40 px-3 py-2.5">
+          <div className="text-sm font-semibold text-amber">Recent campaigns</div>
+          <ul className="mt-2 space-y-1">
+            {recentCampaigns.map((item) => (
+              <li key={item.folder}>
+                <button
+                  type="button"
+                  onClick={() => onOpenRecent?.(item.folder)}
+                  className="w-full truncate rounded px-1.5 py-1 text-left text-[13px] text-parchment/90 hover:bg-panel-2 hover:text-amber"
+                  title={item.folder}
+                >
+                  {item.name}
+                  <span className="mt-0.5 block truncate text-[11px] text-muted">{item.folder}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       <div className="grid gap-2">
         <Step title="1. Show the table">
-          Click a map or portrait in a note, then <span className="text-amber">Show to players</span>. The
-          player window fades it in on black.
+          Click a map or portrait in a note, then <span className="text-amber">Show to players</span> (or{' '}
+          <span className="text-amber">Alt+S</span>).
         </Step>
         <Step title="2. Run combat">
           Open <span className="text-amber">Combat</span>. Use night-sheet{' '}
-          <span className="text-amber">Add to initiative</span>, or <span className="text-amber">Add all players</span>{' '}
-          plus the Bestiary list. Optionally overlay initiative on the player screen.
+          <span className="text-amber">Add to initiative</span> (NPCs auto-roll), or{' '}
+          <span className="text-amber">Add all players</span> plus the Bestiary list. Next turn:{' '}
+          <span className="text-amber">Alt+T</span>.
         </Step>
         <Step title="3. Look up rules">
           <span className="text-amber">Lookup</span> searches the bundled SRD. Drop optional PHB/DMG text in the

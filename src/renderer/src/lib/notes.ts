@@ -422,6 +422,26 @@ export function parseNightEncounters(
   return encounters
 }
 
+export function missingCombatantTokens(
+  sectionMarkdown: string,
+  notePath: string,
+  notes: CampaignNote[]
+): string[] {
+  const combatantsLine =
+    /\*\*Combatants:\*\*\s*(.+)/i.exec(sectionMarkdown) ?? /^Combatants:\s*(.+)/im.exec(sectionMarkdown)
+  if (!combatantsLine) return []
+  const missing: string[] = []
+  for (const token of combatantsLine[1].split(/\s*[·|,;]\s*/)) {
+    const raw = token.trim()
+    if (!raw || /^party$/i.test(raw)) continue
+    if (combatantFromQuery(raw, notePath, notes)) continue
+    const wiki = /\[\[([^\]\n]+)\]\]/.exec(raw)
+    const label = wiki ? parseWiki(wiki[1]).target : raw.replace(/\*+/g, '').trim()
+    if (label) missing.push(label)
+  }
+  return missing
+}
+
 export function linkWikiNotes(markdown: string, notePath: string, notes: CampaignNote[]): string {
   return markdown.replace(/(^|[^!])\[\[([^\]\n]+)\]\]/g, (all, prefix: string, raw: string) => {
     const { target, alias } = parseWiki(raw)

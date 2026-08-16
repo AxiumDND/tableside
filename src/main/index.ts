@@ -12,6 +12,7 @@ import type {
   DisplayInfo,
   MediaItem,
   PlayerState,
+  RecentCampaign,
   SessionFile
 } from '../shared/types'
 import { emptyCombat, emptyPlayerState, emptySettings } from '../shared/types'
@@ -402,7 +403,8 @@ async function seedNewCampaignFiles(root: string): Promise<void> {
     { file: 'NPC.md', kind: 'npc' },
     { file: 'Monster.md', kind: 'monster' },
     { file: 'Spell.md', kind: 'spell' },
-    { file: 'Gear.md', kind: 'gear' }
+    { file: 'Gear.md', kind: 'gear' },
+    { file: 'Night Sheet.md', kind: 'nightsheet' }
   ]
   const existing = new Set((await readdir(templatesDir)).map((name) => name.toLowerCase()))
   for (const seed of seeds) {
@@ -598,6 +600,12 @@ async function addCampaignFiles(folder: string): Promise<{ campaign: CampaignInf
   return { campaign: await loadCampaign(campaignFolder), paths }
 }
 
+async function rememberRecentCampaign(folder: string, name: string): Promise<void> {
+  const entry: RecentCampaign = { folder, name }
+  const prior = (settings.recentCampaigns ?? []).filter((item) => !samePath(item.folder, folder))
+  await patchSettings({ recentCampaigns: [entry, ...prior].slice(0, 8) })
+}
+
 async function setCampaignFolder(folder: string | null): Promise<CampaignInfo | null> {
   campaignFolder = folder
   await patchSettings({ campaignFolder: folder ?? undefined })
@@ -608,11 +616,12 @@ async function setCampaignFolder(folder: string | null): Promise<CampaignInfo | 
   }
   await prepareCampaignFolder(folder)
   const info = await loadCampaign(folder)
-    playerState = {
-      ...playerState,
-      campaignTitle: info.name
-    }
+  playerState = {
+    ...playerState,
+    campaignTitle: info.name
+  }
   sendPlayerState()
+  await rememberRecentCampaign(folder, info.name)
   return info
 }
 
@@ -675,6 +684,11 @@ function registerIpc(): void {
     })
     if (result.canceled || !result.filePaths[0]) return null
     return setCampaignFolder(result.filePaths[0])
+  })
+
+  ipcMain.handle('campaign:open-path', async (_e, folder: string) => {
+    if (!folder || !existsSync(folder)) return null
+    return setCampaignFolder(folder)
   })
 
   ipcMain.handle('campaign:new', async () => {

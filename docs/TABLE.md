@@ -99,6 +99,9 @@ Bottom of the left column: quick d4–d20 buttons plus a custom expression field
 | --- | --- |
 | Alt+← | Back in note history |
 | Mouse back (button 4) | Back in note history |
+| Alt+S | Show selected image to players |
+| Alt+X | Clear player screen |
+| Alt+T | Next combat turn (opens Combat) |
 | Ctrl+S (while editing) | Save note |
 | Esc (while editing) | Cancel edit (prompts if dirty) |
 | Esc (dialogs) | Dismiss confirm dialogs |
