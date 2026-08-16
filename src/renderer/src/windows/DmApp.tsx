@@ -28,7 +28,8 @@ import {
   sameCombatantName,
   sheetDisplayName
 } from '../lib/notes'
-import { monsterToStatBlock, srdMonsterToBestiaryMarkdown, type SrdRecord } from '../lib/srd'
+import { libraryFolderFor, recordToCampaignMarkdown } from '../lib/lookupNotes'
+import { monsterToStatBlock, type SrdRecord } from '../lib/srd'
 import { extractStatblock, fallbackStatblock, parsedToStatBlock, type ParsedStatblock } from '../lib/statblock'
 import { APP_VERSION } from '../../../shared/version'
 
@@ -237,10 +238,13 @@ export default function DmApp() {
     })
   }
 
-  async function addMonsterToBestiary(record: SrdRecord): Promise<'added' | 'exists' | void> {
-    const result = await window.tabledm.saveToBestiary(
+  async function saveLookupToCampaign(record: SrdRecord): Promise<'added' | 'exists' | void> {
+    const folder = libraryFolderFor(record)
+    if (!folder) return
+    const result = await window.tabledm.saveToCampaignLibrary(
+      folder,
       record.name,
-      srdMonsterToBestiaryMarkdown(record.data)
+      recordToCampaignMarkdown(record)
     )
     if (!result) return
     setCampaign(result.campaign)
@@ -537,8 +541,8 @@ export default function DmApp() {
           <div className={`flex min-h-0 ${SIDE_PANEL_WIDTH} shrink-0 flex-col`}>
             <RulesSearch
               onAddMonster={addMonster}
-              onAddToBestiary={addMonsterToBestiary}
-              canAddToBestiary={Boolean(campaign)}
+              onSaveToCampaign={saveLookupToCampaign}
+              canSaveToCampaign={Boolean(campaign)}
               onClose={() => changeRightPanel(null)}
             />
           </div>

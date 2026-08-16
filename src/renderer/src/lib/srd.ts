@@ -127,17 +127,39 @@ function allRecords(): SrdRecord[] {
   return [...srdRecords, ...extraRecords]
 }
 
-function preferBookOverSrd(records: SrdRecord[]): SrdRecord[] {
-  const chosen = new Map<string, SrdRecord>()
-  const extrasFirst = [
-    ...records.filter((r) => r.source && r.source !== 'srd'),
-    ...records.filter((r) => !r.source || r.source === 'srd')
-  ]
-  for (const record of extrasFirst) {
-    const key = `${record.kind}:${record.name.toLowerCase()}`
-    if (!chosen.has(key)) chosen.set(key, record)
+function nameKey(record: SrdRecord): string {
+  return `${record.kind}:${record.name.toLowerCase()}`
+}
+
+function isSrd(record: SrdRecord): boolean {
+  return !record.source || record.source === 'srd'
+}
+
+function groupSameName(records: SrdRecord[]): SrdRecord[] {
+  const groups = new Map<string, SrdRecord[]>()
+  const order: string[] = []
+  for (const record of records) {
+    const key = nameKey(record)
+    const group = groups.get(key)
+    if (!group) {
+      groups.set(key, [record])
+      order.push(key)
+      continue
+    }
+    if (!group.some((existing) => existing.id === record.id)) group.push(record)
   }
-  return [...chosen.values()]
+  const out: SrdRecord[] = []
+  for (const key of order) {
+    const group = groups.get(key) ?? []
+    group.sort((a, b) => {
+      const aSrd = isSrd(a) ? 0 : 1
+      const bSrd = isSrd(b) ? 0 : 1
+      if (aSrd !== bSrd) return aSrd - bSrd
+      return (a.sourceLabel ?? '').localeCompare(b.sourceLabel ?? '')
+    })
+    out.push(...group)
+  }
+  return out
 }
 
 function matchesFilter(record: SrdRecord, kind?: SrdKind | 'all' | string): boolean {
@@ -162,11 +184,11 @@ export function searchSrd(query: string, kind?: SrdKind | 'all' | string): SrdRe
     const seed = kind && kind !== 'all'
       ? pool.filter((r) => matchesFilter(r, kind))
       : pool.filter((r) => r.kind === 'condition' || r.kind === 'rule')
-    return preferBookOverSrd(seed).slice(0, 12)
+    return groupSameName(seed).slice(0, 12)
   }
   const hits = search.search(q)
   const records = hits.map((h) => byId.get(String(h.id))).filter((r): r is SrdRecord => Boolean(r))
-  return preferBookOverSrd(records.filter((r) => matchesFilter(r, kind)))
+  return groupSameName(records.filter((r) => matchesFilter(r, kind)))
 }
 
 export function getSrd(id: string): SrdRecord | undefined {

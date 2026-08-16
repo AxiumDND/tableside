@@ -20,6 +20,8 @@ export const FOLDER_ORDER = [
   'party',
   'npcs',
   'bestiary',
+  'spells',
+  'gear',
   'maps',
   'handouts',
   'templates',
@@ -32,6 +34,8 @@ export const STANDARD_LAYOUT: { canonical: string; name: string; extras: string[
   { canonical: 'party', name: 'Party', extras: ['Art'] },
   { canonical: 'npcs', name: 'NPCs', extras: ['Art'] },
   { canonical: 'bestiary', name: 'Bestiary', extras: ['Art'] },
+  { canonical: 'spells', name: 'Spells', extras: [] },
+  { canonical: 'gear', name: 'Gear', extras: [] },
   { canonical: 'maps', name: 'Maps', extras: ['Art', 'Print'] },
   { canonical: 'handouts', name: 'Handouts', extras: ['Art'] },
   { canonical: 'templates', name: 'Templates', extras: [] },
@@ -44,6 +48,8 @@ export const DEFAULT_OPEN_FOLDERS = new Set([
   'party',
   'npcs',
   'bestiary',
+  'spells',
+  'gear',
   'maps',
   'handouts',
   'the party',
@@ -74,7 +80,13 @@ const FOLDER_ALIASES: Record<string, string> = {
   'handouts props': 'handouts',
   assets: 'maps',
   'z archive': 'archive',
-  archive: 'archive'
+  archive: 'archive',
+  spell: 'spells',
+  spells: 'spells',
+  gear: 'gear',
+  equipment: 'gear',
+  'magic items': 'gear',
+  'magic item': 'gear'
 }
 
 export function canonicalFolder(name: string): string {
@@ -101,6 +113,22 @@ export function isBestiaryFolderName(name: string): boolean {
 
 export function isSessionsFolderName(name: string): boolean {
   return canonicalFolder(name) === 'sessions'
+}
+
+export function isSpellsFolderName(name: string): boolean {
+  return canonicalFolder(name) === 'spells'
+}
+
+export function isGearFolderName(name: string): boolean {
+  return canonicalFolder(name) === 'gear'
+}
+
+export type CampaignLibraryFolder = 'bestiary' | 'spells' | 'gear'
+
+export const LIBRARY_FOLDER_NAMES: Record<CampaignLibraryFolder, string> = {
+  bestiary: 'Bestiary',
+  spells: 'Spells',
+  gear: 'Gear'
 }
 
 export function pathHasFolder(path: string, kind: 'party' | 'npcs' | 'bestiary'): boolean {
