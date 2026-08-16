@@ -94,7 +94,7 @@ Format and placement of personal PHB/DMG text files: [WOTC/README.md](../WOTC/RE
 
 [`.github/workflows/build.yml`](../.github/workflows/build.yml) runs `npm ci`, `npm test`, and `npm run build` on `windows-latest` for pushes and pull requests to `main`.
 
-[`.github/workflows/release.yml`](../.github/workflows/release.yml) builds the Windows NSIS installer and publishes a GitHub Release when you push a `v*` tag (for example `git tag v1.0.7 && git push origin v1.0.7`).
+[`.github/workflows/release.yml`](../.github/workflows/release.yml) builds the Windows NSIS installer and publishes a GitHub Release when you push a `v*` tag (for example `git tag v1.0.8 && git push origin v1.0.8`).
 
 ## Packaging notes
 
