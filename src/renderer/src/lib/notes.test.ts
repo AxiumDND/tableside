@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   isCombatHeading,
   missingCombatantTokens,
+  npcNotes,
   parseNightEncounters,
   type CampaignNote
 } from './notes'
@@ -37,6 +38,12 @@ describe('night sheet parsing', () => {
   it('lists missing combatant tokens', () => {
     const md = `**Combatants:** [[Wolf]] · [[Missing Beast]] · party`
     expect(missingCombatantTokens(md, 'Sessions/Night.md', notes)).toEqual(['Missing Beast'])
+  })
+})
+
+describe('campaign note lists', () => {
+  it('lists npc sheets separately from party and bestiary', () => {
+    expect(npcNotes(notes).map((n) => n.stem)).toEqual(['Hale'])
   })
 })
 

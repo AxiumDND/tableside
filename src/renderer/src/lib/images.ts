@@ -1,5 +1,6 @@
 import { defaultUrlTransform } from 'react-markdown'
 import type { CampaignTreeNode } from '../../../shared/types'
+import { pathHasFolder } from '../../../shared/campaignLayout'
 
 export const IMAGE_EXT = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.bmp'])
 
@@ -17,6 +18,24 @@ export interface CampaignImage {
 
 export function campaignFileUrl(relativePath: string): string {
   return `tabledm://file/?path=${encodeURIComponent(relativePath).replace(/'/g, '%27')}`
+}
+
+export function srdPortraitUrl(name: string): string {
+  const stem = name.replace(/\.[^.]+$/, '').trim()
+  return `tabledm://srd-portrait/?name=${encodeURIComponent(stem)}`
+}
+
+export function portraitSrcForNote(
+  notePath: string,
+  images: CampaignImage[],
+  title?: string
+): string | null {
+  const campaign = portraitForNote(notePath, images) ?? (title ? portraitForNote(`${title}.md`, images) : null)
+  if (campaign) return campaignFileUrl(campaign)
+  if (!pathHasFolder(notePath, 'bestiary')) return null
+  const file = notePath.replaceAll('\\', '/').split('/').pop() ?? notePath
+  const stem = file.replace(/\.[^.]+$/, '')
+  return srdPortraitUrl(title || stem)
 }
 
 export function isImagePath(path: string): boolean {
@@ -119,8 +138,16 @@ export function resolveImageRef(ref: string, notePath: string, images: CampaignI
 }
 
 export function portraitForNote(notePath: string, images: CampaignImage[]): string | null {
-  const stem = (notePath.split('/').pop() ?? notePath).replace(/\.[^.]+$/, '')
-  return resolveImageRef(stem, notePath, images)
+  const note = normalize(notePath)
+  const file = note.split('/').pop() ?? note
+  const stem = file.replace(/\.[^.]+$/, '')
+  const withoutPc = stem.replace(/^pc\s*[—–-]\s*/i, '').trim()
+  const stems = withoutPc && withoutPc !== stem ? [stem, withoutPc] : [stem]
+  for (const candidate of stems) {
+    const found = resolveImageRef(candidate, note, images)
+    if (found) return found
+  }
+  return null
 }
 
 function wikiToMarkdown(raw: string, notePath: string, images: CampaignImage[]): string {

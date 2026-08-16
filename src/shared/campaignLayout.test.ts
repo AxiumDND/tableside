@@ -1,0 +1,64 @@
+import { describe, expect, it } from 'vitest'
+import {
+  folderMatchesCanonical,
+  folderOrderIndex,
+  folderRevealsOpenFile,
+  gearSectionIndex,
+  campaignTreeGroup,
+  isArtFolderName,
+  isGearFolderName
+} from './campaignLayout'
+
+describe('gear folders', () => {
+  it('treats a root Equipment or Magic Items folder as Gear', () => {
+    expect(isGearFolderName('Gear')).toBe(true)
+    expect(isGearFolderName('Equipment')).toBe(true)
+    expect(isGearFolderName('Magic Items')).toBe(true)
+    expect(folderMatchesCanonical('Equipment', 'gear')).toBe(true)
+    expect(isGearFolderName('Weapons')).toBe(false)
+  })
+
+  it('orders Gear subsections Weapons, Armor, Equipment, Magic Items', () => {
+    const names = ['Magic Items', 'Weapons', 'Art', 'Equipment', 'Armor']
+    names.sort((a, b) => {
+      const ga = gearSectionIndex(a)
+      const gb = gearSectionIndex(b)
+      if (ga !== gb) return ga - gb
+      return a.localeCompare(b)
+    })
+    expect(names).toEqual(['Weapons', 'Armor', 'Equipment', 'Magic Items', 'Art'])
+  })
+
+  it('keeps top-level Gear in the standard folder order', () => {
+    expect(folderOrderIndex('Gear')).toBeLessThan(folderOrderIndex('Maps'))
+    expect(folderOrderIndex('Weapons')).toBe(99)
+  })
+})
+
+describe('Art folders', () => {
+  it('recognizes Art by name', () => {
+    expect(isArtFolderName('Art')).toBe(true)
+    expect(isArtFolderName('art')).toBe(true)
+    expect(isArtFolderName('Bestiary')).toBe(false)
+  })
+
+  it('does not auto-reveal Art even when the open file is inside it', () => {
+    expect(folderRevealsOpenFile('Bestiary', 'Bestiary', 'Bestiary/Ghoul.md')).toBe(true)
+    expect(folderRevealsOpenFile('Bestiary/Art', 'Art', 'Bestiary/Art/Ghoul.webp')).toBe(false)
+    expect(folderRevealsOpenFile('Bestiary', 'Bestiary', 'Bestiary/Art/Ghoul.webp')).toBe(true)
+  })
+
+  it('sorts notes before Art folders', () => {
+    const names = ['Art', 'Ghoul.md', 'NPCs']
+    const types: Array<'dir' | 'file'> = ['dir', 'file', 'dir']
+    const order = names
+      .map((name, i) => ({ name, type: types[i] }))
+      .sort(
+        (a, b) =>
+          campaignTreeGroup(a.type, a.name) - campaignTreeGroup(b.type, b.name) ||
+          a.name.localeCompare(b.name)
+      )
+      .map((node) => node.name)
+    expect(order).toEqual(['NPCs', 'Ghoul.md', 'Art'])
+  })
+})

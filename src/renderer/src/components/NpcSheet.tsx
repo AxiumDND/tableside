@@ -1,11 +1,13 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { pathHasFolder } from '../../../shared/campaignLayout'
 import {
   campaignFileUrl,
   markdownUrlTransform,
   portraitForNote,
   resolveImageRef,
+  srdPortraitUrl,
   type CampaignImage
 } from '../lib/images'
 import { extractFacts, extractHook, extractTagline, type ParsedStatblock } from '../lib/statblock'
@@ -104,59 +106,47 @@ export default function NpcSheet({
   const hook = extractHook(markdown)
   const facts = extractFacts(markdown).slice(0, 8)
   const imagePath = firstImage(markdown, path, images)
+  const srdSrc = !imagePath && pathHasFolder(path, 'bestiary') ? srdPortraitUrl(title) : null
+  const imageSrc = imagePath ? campaignFileUrl(imagePath) : srdSrc
+  const selectValue = imagePath ?? srdSrc
   const notes = notesBody(markdown)
+  const [srdFailed, setSrdFailed] = useState(false)
 
   useEffect(() => {
-    if (imagePath && onSelectImage) onSelectImage(imagePath)
-  }, [imagePath])
+    setSrdFailed(false)
+  }, [srdSrc])
+
+  useEffect(() => {
+    if (selectValue && onSelectImage) onSelectImage(selectValue)
+  }, [selectValue])
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-5 pb-6">
-      <div className="grid items-start gap-4 sm:grid-cols-[180px_1fr]">
-        {imagePath ? (
-          <button
-            type="button"
-            onClick={() => onSelectImage?.(imagePath)}
-            className={`overflow-hidden rounded border ${
-              selectedImage === imagePath ? 'border-amber' : 'border-line hover:border-amber-dim'
-            }`}
-          >
-            <img src={campaignFileUrl(imagePath)} alt={title} className="aspect-[2/3] w-full object-cover" />
-            <span className="block bg-ink px-2 py-1 text-[11px] text-muted">
-              {selectedImage === imagePath ? 'Selected — Show to players' : 'Click portrait to select'}
-            </span>
-          </button>
-        ) : (
-          <div className="flex aspect-[2/3] items-center justify-center rounded border border-dashed border-line text-xs text-muted">
-            No portrait
-          </div>
-        )}
-        <div>
-          <div className="flex items-start justify-between gap-2">
-            <h1 className="font-display text-3xl text-amber">{title}</h1>
-            {onEdit ? (
-              <button
-                type="button"
-                onClick={onEdit}
-                className="shrink-0 rounded border border-line px-2 py-1 text-xs hover:border-amber"
-              >
-                Edit markdown
-              </button>
-            ) : null}
-          </div>
-          {tagline ? <p className="mt-1 text-sm italic text-muted">{tagline}</p> : null}
-          {hook ? <p className="mt-3 text-base leading-relaxed text-parchment/95">{hook}</p> : null}
-          {facts.length > 0 ? (
-            <dl className="mt-4 grid grid-cols-[7.5rem_1fr] gap-x-3 gap-y-1.5 text-sm">
-              {facts.map((fact) => (
-                <div key={fact.label} className="contents">
-                  <dt className="text-muted">{fact.label}</dt>
-                  <dd>{cleanWiki(fact.value)}</dd>
-                </div>
-              ))}
-            </dl>
+      <div>
+        <div className="flex items-start justify-between gap-2">
+          <h1 className="font-display text-3xl text-amber">{title}</h1>
+          {onEdit ? (
+            <button
+              type="button"
+              onClick={onEdit}
+              className="shrink-0 rounded border border-line px-2 py-1 text-xs hover:border-amber"
+            >
+              Edit markdown
+            </button>
           ) : null}
         </div>
+        {tagline ? <p className="mt-1 text-sm italic text-muted">{tagline}</p> : null}
+        {hook ? <p className="mt-3 text-base leading-relaxed text-parchment/95">{hook}</p> : null}
+        {facts.length > 0 ? (
+          <dl className="mt-4 grid grid-cols-[7.5rem_1fr] gap-x-3 gap-y-1.5 text-sm">
+            {facts.map((fact) => (
+              <div key={fact.label} className="contents">
+                <dt className="text-muted">{fact.label}</dt>
+                <dd>{cleanWiki(fact.value)}</dd>
+              </div>
+            ))}
+          </dl>
+        ) : null}
       </div>
 
       {notes ? (
@@ -172,7 +162,33 @@ export default function NpcSheet({
       <section>
         <h2 className="font-display text-lg text-amber">Stat block</h2>
         <div className="mt-2">
-          <RollableStatBlock block={block} onAddToCombat={onAddToCombat} />
+          <RollableStatBlock
+            block={block}
+            onAddToCombat={onAddToCombat}
+            portrait={
+              imageSrc && !(srdSrc && srdFailed) ? (
+                <button
+                  type="button"
+                  onClick={() => selectValue && onSelectImage?.(selectValue)}
+                  className={`block w-full ${
+                    selectedImage === selectValue ? 'ring-2 ring-amber' : ''
+                  }`}
+                >
+                  <img
+                    src={imageSrc}
+                    alt={title}
+                    className="aspect-[3/4] w-full object-cover"
+                    onError={() => {
+                      if (srdSrc) setSrdFailed(true)
+                    }}
+                  />
+                  <span className="block bg-ink px-1.5 py-1 text-left text-[10px] leading-tight text-muted">
+                    {selectedImage === selectValue ? 'Selected — Show to players' : 'Click to select'}
+                  </span>
+                </button>
+              ) : undefined
+            }
+          />
         </div>
       </section>
     </div>

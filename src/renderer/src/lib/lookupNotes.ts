@@ -95,6 +95,25 @@ export function libraryFolderFor(record: SrdRecord): CampaignLibraryFolder | nul
   return null
 }
 
+export function gearSubfolderFor(record: SrdRecord): string | undefined {
+  if (libraryFolderFor(record) !== 'gear') return undefined
+  const category = String(record.data.category ?? '').trim()
+  const rarity = fieldValue(record.data, 'Rarity')
+  const attunement = fieldValue(record.data, 'Attunement')
+  const source = record.sourceLabel ?? ''
+  if (
+    /dmg items/i.test(source) ||
+    rarity ||
+    attunement ||
+    /^(Wondrous Item|Potion|Ring|Rod|Staff|Wand|Scroll)\b/i.test(category)
+  ) {
+    return 'Magic Items'
+  }
+  if (record.kind === 'weapon' || /weapon/i.test(category)) return 'Weapons'
+  if (/armor|armour/i.test(category) || fieldValue(record.data, 'Armor Class')) return 'Armor'
+  return 'Equipment'
+}
+
 export function recordToCampaignMarkdown(record: SrdRecord): string {
   if (record.kind === 'monster') return srdMonsterToBestiaryMarkdown(record.data)
   if (record.kind === 'spell') return spellMarkdown(record)

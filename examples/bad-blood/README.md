@@ -21,7 +21,7 @@ A Barovia three-shot with night sheets, portraits, maps, and combatant links rea
   - **Print/** — print-and-play PDFs
 - **Handouts/** — letters and props
   - **Art/** — letter images
-- **Templates/** — blank Player, NPC, Monster, Spell, and Gear sheets
+- **Templates/** — blank Player, NPC, Monster, Spell, Gear, Night Sheet, and Map sheets
 - **Reference/** — tracker, locations, cheat sheets
 - **Archive/** — recaps, transcripts, old drafts (keep closed)
 

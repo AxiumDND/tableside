@@ -64,7 +64,7 @@ Copy bundled SRD (or optional WOTC) text into the campaign folder so you can edi
 4. Open a result:
    - **Monster** → **Add to Bestiary** (and/or **Add to combat** for this fight only)
    - **Spell** → **Add to Spells**
-   - **Weapon / gear / magic item** → **Add to Gear**
+   - **Weapon / gear / magic item** → **Add to Gear** (Weapons, Armor, Equipment, or Magic Items)
 5. The new markdown note appears in that folder. Open it from the file tree to tune HP, add notes, or rename.
 6. Link it from a night sheet with `[[Note Name]]` like any other sheet.
 

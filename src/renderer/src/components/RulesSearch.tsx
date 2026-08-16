@@ -11,6 +11,7 @@ import {
 } from '../lib/srd'
 import { extraSourcesFromRecords, parseWotcFiles } from '../lib/wotcParse'
 import { libraryFolderFor } from '../lib/lookupNotes'
+import { srdPortraitUrl } from '../lib/images'
 import { LIBRARY_FOLDER_NAMES } from '../../../shared/campaignLayout'
 import { statBlockToParsed } from '../lib/statblock'
 import RollableStatBlock from './RollableStatBlock'
@@ -117,6 +118,19 @@ function SaveToCampaignButton({
   )
 }
 
+function MonsterPortrait({ name }: { name: string }) {
+  const [failed, setFailed] = useState(false)
+  if (failed) return null
+  return (
+    <img
+      src={srdPortraitUrl(name)}
+      alt=""
+      className="aspect-[3/4] w-full object-cover"
+      onError={() => setFailed(true)}
+    />
+  )
+}
+
 function Detail({
   record,
   onAddMonster,
@@ -136,7 +150,11 @@ function Detail({
   if (record.kind === 'monster') {
     return (
       <div>
-        <RollableStatBlock block={statBlockToParsed(monsterToStatBlock(data))} hideToolbar />
+        <RollableStatBlock
+          block={statBlockToParsed(monsterToStatBlock(data))}
+          hideToolbar
+          portrait={<MonsterPortrait name={record.name} />}
+        />
         <div className="mt-3 flex flex-col gap-2">
           {onAddMonster ? (
             <button

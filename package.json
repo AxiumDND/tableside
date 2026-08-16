@@ -1,6 +1,6 @@
 {
   "name": "table-dm",
-  "version": "1.0.8",
+  "version": "1.1.1",
   "description": "In-person dual-monitor DM tool for 5e-compatible table games",
   "main": "./out/main/index.js",
   "author": "James",
@@ -56,6 +56,10 @@
       {
         "from": "examples/bad-blood",
         "to": "examples/bad-blood"
+      },
+      {
+        "from": "resources/srd-portraits",
+        "to": "srd-portraits"
       }
     ],
     "win": {

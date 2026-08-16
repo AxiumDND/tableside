@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import type { Character } from '../../../shared/types'
+import type { Character, PlayerMapView } from '../../../shared/types'
 import {
   imageTitle,
   markdownUrlTransform,
@@ -26,10 +26,12 @@ import {
   type NightEncounter
 } from '../lib/notes'
 import { extractStatblock, fallbackStatblock, isNpcSheet, type ParsedStatblock } from '../lib/statblock'
+import { isMapNote, mapImagePath } from '../lib/mapNote'
 import CalloutCard from './CalloutCard'
 import CombatCard from './CombatCard'
 import GettingStarted from './GettingStarted'
 import GmOnly from './GmOnly'
+import MapView from './MapView'
 import ReadAloud from './ReadAloud'
 import NpcSheet from './NpcSheet'
 import { CharacterCard } from './StatBlock'
@@ -74,6 +76,7 @@ export default function SessionNotes({
   disabled,
   onSelectImage,
   onShowToPlayers,
+  onMapLiveView,
   onOpenNote,
   onBack,
   backLabel,
@@ -94,6 +97,7 @@ export default function SessionNotes({
   disabled?: boolean
   onSelectImage?: (path: string) => void
   onShowToPlayers?: () => void
+  onMapLiveView?: (imagePath: string, view: PlayerMapView) => void
   onOpenNote?: (path: string) => void
   onBack?: () => void
   backLabel?: string
@@ -134,6 +138,11 @@ export default function SessionNotes({
     return null
   }, [kind, markdown, path])
   const npcMode = Boolean(parsedNpc && kind === 'note' && !editing && isNpcSheet(markdown, path))
+  const mapMode = kind === 'note' && !editing && isMapNote(markdown)
+  const mapImage = useMemo(
+    () => (kind === 'note' && isMapNote(markdown) ? mapImagePath(markdown, path, images) : null),
+    [kind, markdown, path, images]
+  )
   const headings = useMemo(() => headingsFrom(markdown), [markdown])
   const encounters = useMemo(
     () => (kind === 'note' && !editing ? parseNightEncounters(markdown, path, noteIndex) : []),
@@ -289,7 +298,24 @@ export default function SessionNotes({
     }
   }
 
-  const canShow = Boolean(onShowToPlayers && (kind === 'image' || selectedImage))
+  useEffect(() => {
+    if (mapImage) onSelectImage?.(mapImage)
+  }, [mapImage, onSelectImage])
+
+  async function saveMapMarkdown(next: string): Promise<void> {
+    setMarkdown(next)
+    markdownRef.current = next
+    try {
+      await window.tabledm.saveFile(path, next)
+      originalRef.current = next
+      setOriginal(next)
+      setSaveError('')
+    } catch {
+      setSaveError('Could not save this file.')
+    }
+  }
+
+  const canShow = Boolean(onShowToPlayers && (kind === 'image' || selectedImage || mapImage))
 
   const markdownComponents = {
     h1: ({ children }: { children?: ReactNode }) => {
@@ -448,7 +474,7 @@ export default function SessionNotes({
             </h2>
           </div>
           <div className="flex items-center gap-2">
-            {kind === 'note' && path && headings.length > 0 && !editing && !npcMode ? (
+            {kind === 'note' && path && headings.length > 0 && !editing && !npcMode && !mapMode ? (
               <button
                 type="button"
                 onClick={() => setShowLinks((open) => !open)}
@@ -503,7 +529,7 @@ export default function SessionNotes({
         {path ? <div className="truncate text-[11px] text-muted">{path}</div> : null}
       </header>
 
-      {kind === 'note' && headings.length > 0 && !editing && !npcMode && showLinks ? (
+      {kind === 'note' && headings.length > 0 && !editing && !npcMode && !mapMode && showLinks ? (
         <nav className="max-h-28 overflow-auto border-b border-line px-3 py-2 text-xs">
           {headings.map((h) => (
             <button
@@ -543,6 +569,28 @@ export default function SessionNotes({
             className="min-h-0 flex-1 resize-none rounded border border-line bg-ink p-3 font-mono text-[13px] leading-relaxed text-parchment outline-none focus:border-amber"
           />
         </div>
+      ) : mapMode ? (
+        <MapView
+          key={path}
+          markdown={markdown}
+          path={path}
+          images={images}
+          notes={noteIndex}
+          onChange={(next) => void saveMapMarkdown(next)}
+          onLiveView={onMapLiveView}
+          renderRoom={(text) => (
+            <div className="markdown-body">
+              {renderMarkdown(
+                linkWikiNotes(
+                  prepareNoteMarkdown(text, path, images, { injectPortrait: false }),
+                  path,
+                  noteIndex
+                ),
+                'map-room'
+              )}
+            </div>
+          )}
+        />
       ) : (
       <div className="min-h-0 flex-1 overflow-auto p-3">
         {!path ? (

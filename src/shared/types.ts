@@ -123,6 +123,26 @@ export interface PlayerInitiativeEntry {
   condition?: CombatantCondition | null
 }
 
+export interface PlayerMapToken {
+  id: string
+  x: number
+  y: number
+  size: number
+  label: string
+  kind: 'pc' | 'npc' | 'monster'
+  imageSrc: string | null
+}
+
+/** Crop + fog sent with a map so the player window follows the DM view. */
+export interface PlayerMapView {
+  zoom: number
+  centerX: number
+  centerY: number
+  fog: string
+  fogSize: number
+  tokens?: PlayerMapToken[]
+}
+
 export interface PlayerState {
   imageSrc: string | null
   imageTitle: string
@@ -130,6 +150,7 @@ export interface PlayerState {
   initiative: PlayerInitiativeEntry[]
   showInitiative: boolean
   initiativeRound?: number
+  mapView?: PlayerMapView | null
 }
 
 export interface RecentCampaign {
@@ -148,6 +169,11 @@ export interface AppSettings {
   recentCampaigns?: RecentCampaign[]
 }
 
+/** Optional image when creating a map note. */
+export type CreateNoteMapImage =
+  | { kind: 'existing'; path: string }
+  | { kind: 'import'; filePath: string }
+
 export const emptyCombat = (): CombatState => ({
   combatants: [],
   activeId: null,
@@ -161,7 +187,8 @@ export const emptyPlayerState = (): PlayerState => ({
   campaignTitle: 'Table DM',
   initiative: [],
   showInitiative: false,
-  initiativeRound: 0
+  initiativeRound: 0,
+  mapView: null
 })
 
 export const emptySettings = (): AppSettings => ({})

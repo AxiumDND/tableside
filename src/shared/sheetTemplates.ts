@@ -1,4 +1,4 @@
-export type SheetTemplateKind = 'blank' | 'player' | 'npc' | 'monster' | 'spell' | 'gear' | 'nightsheet'
+export type SheetTemplateKind = 'blank' | 'player' | 'npc' | 'monster' | 'spell' | 'gear' | 'nightsheet' | 'map'
 
 const PLAYER = `<!--
   Party sheet template. Right-click Party/ → New player… (or copy into Party/ and rename).
@@ -205,7 +205,8 @@ Using a Higher-Level Spell Slot.
 `
 
 const GEAR = `<!--
-  Gear / magic item template. Right-click Gear/ → New gear… or save from Lookup.
+  Gear / magic item template. Right-click Gear/Weapons, Equipment, or Magic Items → New gear…
+  or save from Lookup (weapons, armor, gear, and magic items go in those subfolders).
   Use Damage/Properties for weapons, Rarity/Attunement for magic items (WOTC/README.md).
 -->
 # Item Name
@@ -249,13 +250,35 @@ const NIGHTSHEET = `<!--
 - Hook for next session:
 `
 
+const MAP = `<!--
+  Map note template. Right-click Maps/ → New map… to pick an existing image or load one.
+  Loaded art is copied to Maps/Art/ and named like this note. Pins are DM-only.
+  Tokens (Party / NPCs / Bestiary) show to players. Show to players follows zoom, fog, and tokens.
+  See docs/MARKDOWN.md.
+-->
+# Map Name
+
+\`\`\`map
+image: Map Name.jpg
+pins: []
+pinsLocked: true
+\`\`\`
+
+Prep notes for this map.
+
+## Room A
+
+Read-aloud, checks, loot.
+`
+
 export const FALLBACK_TEMPLATES: Record<Exclude<SheetTemplateKind, 'blank'>, string> = {
   player: PLAYER,
   npc: NPC,
   monster: MONSTER,
   spell: SPELL,
   gear: GEAR,
-  nightsheet: NIGHTSHEET
+  nightsheet: NIGHTSHEET,
+  map: MAP
 }
 
 export const TEMPLATE_PLACEHOLDERS: Record<Exclude<SheetTemplateKind, 'blank'>, string> = {
@@ -264,7 +287,8 @@ export const TEMPLATE_PLACEHOLDERS: Record<Exclude<SheetTemplateKind, 'blank'>, 
   monster: 'Monster Name',
   spell: 'Spell Name',
   gear: 'Item Name',
-  nightsheet: 'Session Name'
+  nightsheet: 'Session Name',
+  map: 'Map Name'
 }
 
 export const TEMPLATE_FILE_NAMES: Record<Exclude<SheetTemplateKind, 'blank'>, string[]> = {
@@ -273,7 +297,8 @@ export const TEMPLATE_FILE_NAMES: Record<Exclude<SheetTemplateKind, 'blank'>, st
   monster: ['monster.md', 'creature.md'],
   spell: ['spell.md'],
   gear: ['gear.md', 'item.md', 'equipment.md'],
-  nightsheet: ['night sheet.md', 'nightsheet.md']
+  nightsheet: ['night sheet.md', 'nightsheet.md'],
+  map: ['map.md']
 }
 
 export function displayTitle(fileStem: string): string {

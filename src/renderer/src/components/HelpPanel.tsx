@@ -130,7 +130,8 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
               </>,
               <>
                 Press <span className="text-amber">Add to Bestiary / Spells / Gear</span>. Table DM writes a markdown
-                note in that folder.
+                note in that folder (gear goes under Weapons, Armor, Equipment, or Magic Items). Monster notes also
+                get a bundled D&D-fantasy default portrait in Bestiary/Art when one exists.
               </>,
               <>
                 Open the new note from the file tree — edit HP, add <Code>[[wikilinks]]</Code>, or hook it into a night
@@ -162,8 +163,18 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
             <li>
               Editing: <Code>Ctrl+S</Code> save, <Code>Esc</Code> cancel
             </li>
-            <li>Right-click the file tree to create from Templates or import files</li>
-            <li>Filter/search the file tree with the box under Files (`Ctrl+F` or `/`)</li>
+            <li>
+              Right-click Maps → New map… — pick existing art or load a file into Maps/Art named like the note
+              (Pan / Pin / Token / Fog, each with a submenu)
+            </li>
+            <li>Right-click the file tree to create from Templates, import files, or delete a file</li>
+            <li>
+              Folders start collapsed; the open file’s folder stays expanded. Art folders stay collapsed. Gear has Weapons, Armor, Equipment, and
+              Magic Items
+            </li>
+            <li>
+              Files → <Code>Search</Code> to find notes, maps, and art (`Ctrl+F` or `/`; Esc hides)
+            </li>
             <li>
               Repo docs: <Code>docs/TABLE.md</Code>, <Code>docs/CAMPAIGN.md</Code>, <Code>docs/RECIPES.md</Code>
             </li>

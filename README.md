@@ -4,13 +4,14 @@ A local Windows app for running **in-person** 5e-compatible games. Your laptop i
 
 This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table.
 
-Compatible with fifth edition. Rules lookup uses the **System Reference Document 5.2** (2024 rules), already bundled. Current release: **1.0.8**.
+Compatible with fifth edition. Rules lookup uses the **System Reference Document 5.2** (2024 rules), already bundled. Current release: **1.1.1**.
 
 ## Features
 
 - Dual-window layout: DM console + fullscreen player display
 - Campaign folder of Markdown notes (Obsidian-friendly wikilinks and `![[images]]`)
 - Click a map or portrait, then **Show to players** — 5 second fade-in on a black screen
+- Map notes (`Maps/` + a `map` fence) show the picture with DM-only pins; players still see the clean image
 - Optional initiative overlay on the player screen: order, whose turn, Bloodied (enemies under half HP), 0 HP statuses
 - Night sheets can pull NPC/PC/Bestiary statblocks into initiative (missing links warned; NPCs auto-roll)
 - Offline search for conditions, spells, monsters, weapons, and common rules
@@ -72,7 +73,7 @@ NPCs/             named people (+ Art/)
 Bestiary/         creatures (+ Art/)
 Spells/           campaign spell copies
 Gear/             weapons, equipment, magic items
-Maps/             Art/ + Print/
+Maps/             Art/ + Print/ (map notes with DM pins)
 Handouts/         letters and props (+ Art/)
 Templates/        blank sheets
 Reference/        trackers and cheat sheets

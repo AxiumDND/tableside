@@ -25,15 +25,20 @@ Party/            PC sheets (Add all players)
 NPCs/             named people
   Art/            NPC portraits
 Bestiary/         creatures
-  Art/            creature art
+  Art/            creature art (campaign overrides; SRD monsters have bundled defaults)
 Spells/           campaign copies of spells (edit after Lookup)
-Gear/             weapons, equipment, and magic items
+Gear/
+  Weapons/        mundane weapons
+  Armor/          mundane armor
+  Equipment/      adventuring gear and tools
+  Magic Items/    wondrous items, potions, magic weapons
 Maps/
   Art/            battle and location maps
   Print/          print-and-play PDFs
+  *.md            map notes (fenced map block + DM-only pins + tokens)
 Handouts/         letters and props
   Art/            letter images
-Templates/        blank Player, NPC, Monster, Spell, and Gear sheets
+Templates/        blank Player, NPC, Monster, Spell, Gear, Night Sheet, and Map sheets
 Reference/        tracker, locations, cheat sheets
 Archive/          recaps, transcripts, old drafts
 ```
@@ -47,7 +52,7 @@ Archive/          recaps, transcripts, old drafts
 | `Session Notes`, `Session` | Sessions |
 | `Handouts and Props` | Handouts |
 | `Assets` | Maps |
-| `Equipment`, `Magic Items` | Gear |
+| `Equipment`, `Magic Items` (at the campaign root) | Gear (legacy name) |
 | `Spell` | Spells |
 | `Z Archive` | Archive |
 
@@ -59,7 +64,7 @@ Book text for Lookup is **not** part of a campaign. Put PHB / DMG exports in the
 
 Right-click a folder in the file tree:
 
-- **New player / NPC / monster / spell / gear** — copies the matching Templates file and substitutes the name
+- **New player / NPC / monster / spell / gear / night sheet / map** — copies the matching Templates file and substitutes the name
 - **New note** — empty markdown
 - **Add files…** — import images, PDFs, or markdown into that folder
 
@@ -76,6 +81,8 @@ Notes can stay in Obsidian. Table DM understands:
 | `![[Portrait.png]]` | Embed an image from that folder’s `Art/` (or elsewhere in the campaign) |
 
 Portrait files should match the character or creature name when possible. Click an image in a note, then **Show to players** — the player monitor fades it in on a black screen.
+
+**Map notes** (a fenced `map` block) open as a full map with DM-only pins, circular tokens from Party / NPCs / Bestiary, zoom/pan, and drawable fog. Right-click **Maps/** → **New map…** to pick existing art or load a file into `Maps/Art/` named like the note. **Show to players** sends the image, the current crop, fog, and tokens — no pins. See [MARKDOWN.md](MARKDOWN.md).
 
 Supported image types: `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`, `.bmp`. Full rules: [MARKDOWN.md](MARKDOWN.md).
 
@@ -139,7 +146,7 @@ actions:
 
 Field list and fallbacks: [MARKDOWN.md](MARKDOWN.md#statblock-fence).
 
-Templates under `Templates/` are a good starting point. You can also **Add to campaign** from Lookup (monster → Bestiary, spell → Spells, gear → Gear).
+Templates under `Templates/` are a good starting point. You can also **Add to campaign** from Lookup (monster → Bestiary, spell → Spells, weapon → Gear/Weapons, armor → Gear/Armor, gear → Gear/Equipment, magic item → Gear/Magic Items).
 
 ## Night sheets and combat
 
