@@ -6,6 +6,7 @@ import conditionsFallback from '../data/srd/conditions-fallback.json'
 import weapons from '../data/srd/weapons.json'
 import rules from '../data/srd/rules.json'
 import type { StatBlock } from '../../../shared/types'
+import { parsedToBestiaryMarkdown, statBlockToParsed } from './statblock'
 
 export type SrdKind = 'spell' | 'monster' | 'condition' | 'weapon' | 'rule'
 
@@ -129,6 +130,8 @@ export function monsterToStatBlock(data: Record<string, unknown>): StatBlock {
     languages: data.languages as string | undefined,
     immunities: data.immunities as string | undefined,
     resistances: data.resistances as string | undefined,
+    vulnerabilities: data.vulnerabilities as string | undefined,
+    conditionImmunities: data.conditionImmunities as string | undefined,
     traits: data.traits as StatBlock['traits'],
     actions: data.actions as StatBlock['actions'],
     bonusActions: data.bonusActions as StatBlock['bonusActions'],
@@ -136,6 +139,10 @@ export function monsterToStatBlock(data: Record<string, unknown>): StatBlock {
     legendary: data.legendary as StatBlock['legendary'],
     lair: data.lair as StatBlock['lair']
   }
+}
+
+export function srdMonsterToBestiaryMarkdown(data: Record<string, unknown>): string {
+  return parsedToBestiaryMarkdown(statBlockToParsed(monsterToStatBlock(data)))
 }
 
 export const srdCounts = {

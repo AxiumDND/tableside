@@ -1,0 +1,563 @@
+{
+  "combatants": [
+    {
+      "id": "b03591bf-bacf-42d6-abce-6003a45a5265",
+      "name": "Dallas Hinterfield (Rock Gnome Sorcerer 6)",
+      "kind": "pc",
+      "initiative": 0,
+      "hp": 38,
+      "maxHp": 38,
+      "ac": 15,
+      "sourceId": "party/PC — Dallas Hinterfield.md",
+      "statBlock": {
+        "name": "Dallas Hinterfield (Rock Gnome Sorcerer 6)",
+        "size": "Small",
+        "type": "humanoid",
+        "alignment": "unaligned",
+        "cr": "",
+        "ac": 15,
+        "hp": 38,
+        "hitDice": "6d6",
+        "speed": "25 ft., fly 50 ft. (Broom of Flying)",
+        "scores": {
+          "strength": 8,
+          "dexterity": 14,
+          "constitution": 13,
+          "intelligence": 15,
+          "wisdom": 10,
+          "charisma": 17
+        },
+        "initiativeBonus": 2,
+        "saves": "con +4, cha +6",
+        "skills": "arcana +5, history +5, insight +3, religion +5",
+        "senses": "Darkvision 60 ft., passive Perception 10",
+        "languages": "Common, Draconic, Gnomish, Goblin, Abyssal",
+        "traits": [
+          {
+            "name": "Gnome Cunning",
+            "desc": "Advantage on Intelligence, Wisdom, and Charisma saving throws against magic."
+          },
+          {
+            "name": "Draconic Resilience",
+            "desc": "AC equals 15 when not wearing armor; max HP increased by 6 (included)."
+          },
+          {
+            "name": "Font of Magic",
+            "desc": "6 sorcery points; convert points/slots as a bonus action."
+          },
+          {
+            "name": "Metamagic",
+            "desc": "Careful Spell (protect up to 3 creatures from a save spell); Quickened Spell (cast a 1-action spell as a bonus action)."
+          },
+          {
+            "name": "Elemental Affinity (Acid)",
+            "desc": "Add +3 to one damage roll of an acid spell; may spend 1 point for acid resistance (1 hour)."
+          }
+        ],
+        "actions": [
+          {
+            "name": "Fireball (3rd)",
+            "desc": "DEX save DC 14, 150 ft., 20-ft. sphere, 8d6 fire. Quicken to cast as a bonus action."
+          },
+          {
+            "name": "Sorcerous Burst (cantrip)",
+            "desc": "Spell Attack +6, 120 ft., 2d8 acid (scales); Elemental Affinity adds +3 to a damage roll."
+          },
+          {
+            "name": "Fire Bolt (cantrip)",
+            "desc": "Spell Attack +6, 120 ft., 2d10 fire."
+          },
+          {
+            "name": "Magic Missile (1st)",
+            "desc": "3 darts, 1d4+1 force each, auto-hit."
+          },
+          {
+            "name": "Counterspell (3rd, reaction)",
+            "desc": "Interrupt a spell; contested if above 3rd level (CON check by caster, DC 10+level)."
+          },
+          {
+            "name": "Misty Step (2nd, bonus action)",
+            "desc": "Teleport 30 ft."
+          },
+          {
+            "name": "Haste (3rd, concentration)",
+            "desc": "Target +2 AC, double speed, extra action."
+          }
+        ],
+        "bonusActions": [],
+        "reactions": []
+      }
+    },
+    {
+      "id": "9b73e39c-205c-475c-b986-246d9249159f",
+      "name": "Jasper Alderwick (Halfling Fighter 6, Eldritch Knight)",
+      "kind": "pc",
+      "initiative": 0,
+      "hp": 52,
+      "maxHp": 52,
+      "ac": 19,
+      "sourceId": "party/PC — Jasper Alderwick.md",
+      "statBlock": {
+        "name": "Jasper Alderwick (Halfling Fighter 6, Eldritch Knight)",
+        "size": "Small",
+        "type": "humanoid",
+        "alignment": "unaligned",
+        "cr": "",
+        "ac": 19,
+        "hp": 52,
+        "hitDice": "6d10",
+        "speed": "30 ft.",
+        "scores": {
+          "strength": 8,
+          "dexterity": 20,
+          "constitution": 14,
+          "intelligence": 14,
+          "wisdom": 12,
+          "charisma": 10
+        },
+        "initiativeBonus": 5,
+        "saves": "str +2, con +5",
+        "skills": "acrobatics +8, arcana +5, history +5, insight +4, investigation +5, perception +4, stealth +5",
+        "senses": "passive Perception 14 (no darkvision)",
+        "languages": "Common, Dwarvish, Halfling",
+        "traits": [
+          {
+            "name": "Halfling Luck & Brave",
+            "desc": "Reroll 1s on d20 Tests; Advantage on saves to avoid/end Frightened."
+          },
+          {
+            "name": "Sentinel",
+            "desc": "Opportunity Attack when a creature within 5 ft. Disengages or hits someone other than Jasper; his OA hits reduce the target's Speed to 0 (Halt)."
+          },
+          {
+            "name": "War Bond",
+            "desc": "Bonded weapon can't be disarmed; summon to hand as a Bonus Action (up to 2 bonded)."
+          },
+          {
+            "name": "Longbow of Warning",
+            "desc": "Advantage on initiative; while he holds it, he and allies within 30 ft. can't be surprised (while awake)."
+          },
+          {
+            "name": "Spellcasting (EK)",
+            "desc": "INT, DC 13, +5. Slots 3×1st. Cantrips: Mage Hand, Minor Illusion. Spells: Shield, Protection from Evil and Good, Detect Magic (R), Find Familiar (R)."
+          }
+        ],
+        "actions": [
+          {
+            "name": "Silvered Rapier (Vex, Dueling)",
+            "desc": "Extra Attack (2 attacks). +8 to hit, 1d8+7 Piercing, silvered. On hit: Advantage on his next attack vs that target (Vex)."
+          },
+          {
+            "name": "Longbow of Warning (Slow)",
+            "desc": "+8 to hit, 150/600 ft., 1d8+5 Piercing; on hit, target's Speed −10 ft. until start of his next turn."
+          },
+          {
+            "name": "Whip (Slow, Reach)",
+            "desc": "+8 to hit, reach 10 ft., 1d4+7 Slashing; on hit, target's Speed −10 ft."
+          },
+          {
+            "name": "Dagger (Nick)",
+            "desc": "+8 to hit, thrown 20/60, 1d4+7 Piercing."
+          },
+          {
+            "name": "Action Surge (1/Short Rest)",
+            "desc": "One additional action (not Magic)."
+          }
+        ],
+        "bonusActions": [
+          {
+            "name": "Second Wind (3/Long Rest)",
+            "desc": "Regain 1d10+6 HP, or Tactical Shift (move 15 ft. without provoking)."
+          }
+        ],
+        "reactions": [
+          {
+            "name": "Shield (1st-level slot)",
+            "desc": "+5 AC until start of his next turn (AC 24), incl. vs the triggering attack."
+          }
+        ]
+      }
+    },
+    {
+      "id": "d438be84-d20f-4d20-aeb2-aab31cd78e60",
+      "name": "Lucian Radu (Dhampir Warlock 6, Undead)",
+      "kind": "pc",
+      "initiative": 0,
+      "hp": 30,
+      "maxHp": 30,
+      "ac": 14,
+      "sourceId": "party/PC — Lucian Radu.md",
+      "statBlock": {
+        "name": "Lucian Radu (Dhampir Warlock 6, Undead)",
+        "size": "Medium",
+        "type": "humanoid",
+        "alignment": "chaotic good",
+        "cr": "",
+        "ac": 14,
+        "hp": 30,
+        "hitDice": "6d8",
+        "speed": "35 ft., climb 35 ft. (Spider Climb)",
+        "scores": {
+          "strength": 8,
+          "dexterity": 14,
+          "constitution": 16,
+          "intelligence": 8,
+          "wisdom": 10,
+          "charisma": 18
+        },
+        "initiativeBonus": 2,
+        "saves": "wis +3, cha +7",
+        "skills": "deception +7, persuasion +7",
+        "resistances": "Necrotic",
+        "senses": "Darkvision 60 ft., passive Perception 10",
+        "languages": "Common, Draconic, Gnomish",
+        "traits": [
+          {
+            "name": "Eldritch Mind",
+            "desc": "Advantage on CON saving throws to maintain Concentration."
+          },
+          {
+            "name": "Trace of Undeath",
+            "desc": "Resistance to Necrotic damage; necrotic damage from his attacks ignores Resistance (Arcane Necrosis)."
+          },
+          {
+            "name": "Pact Magic",
+            "desc": "2 spell slots, both 3rd level, regained on a short or long rest."
+          },
+          {
+            "name": "Form of Dread (4/Long Rest)",
+            "desc": "Bonus action, 1 min. Immune to Frightened; once/turn on a hit, force a DC 15 WIS save or Frightened until end of his next turn (Frightful Avatar); add a die of necrotic (Dreaded Necrosis)."
+          }
+        ],
+        "actions": [
+          {
+            "name": "Eldritch Blast (cantrip)",
+            "desc": "Spell Attack +7, 120 ft., two beams, 1d10+4 Force each (Agonizing Blast). On hit may push the target up to 10 ft. (Repelling Blast)."
+          },
+          {
+            "name": "Starry Wisp (cantrip)",
+            "desc": "Spell Attack +7, 60 ft., 2d8 Radiant; target glows (grants advantage / negates invisibility)."
+          },
+          {
+            "name": "Vampiric Bite (3/Long Rest empower)",
+            "desc": "Unarmed Strike alt: 1d4+3 Piercing; then Drain (heal = damage) or Strengthen (bonus to next check/attack)."
+          },
+          {
+            "name": "Hold Person (2nd)",
+            "desc": "WIS save DC 15, 60 ft., paralyze a humanoid (concentration)."
+          },
+          {
+            "name": "Hunger of Hadar (3rd Pact)",
+            "desc": "DEX save DC 15, 150 ft., 20-ft. sphere of darkness; 2d6 cold + 2d6 acid zone (concentration)."
+          },
+          {
+            "name": "Hypnotic Pattern (3rd Pact)",
+            "desc": "WIS save DC 15, 120 ft., 30-ft. cube, Charmed/incapacitated (concentration)."
+          }
+        ],
+        "bonusActions": [
+          {
+            "name": "Misty Step (2nd)",
+            "desc": "Teleport 30 ft."
+          }
+        ],
+        "reactions": []
+      }
+    },
+    {
+      "id": "76a1b000-e3c0-4ab4-bef5-be19f9ed4796",
+      "name": "Lykta Endrino (Dhampir Stars Druid 4 / Monk 2)",
+      "kind": "pc",
+      "initiative": 0,
+      "hp": 51,
+      "maxHp": 51,
+      "ac": 15,
+      "sourceId": "party/PC — Lykta Endrino.md",
+      "statBlock": {
+        "name": "Lykta Endrino (Dhampir Stars Druid 4 / Monk 2)",
+        "size": "Small",
+        "type": "humanoid",
+        "alignment": "neutral good",
+        "cr": "",
+        "ac": 15,
+        "hp": 51,
+        "hitDice": "4d8+2d8",
+        "speed": "45 ft., climb 45 ft. (Spider Climb)",
+        "scores": {
+          "strength": 8,
+          "dexterity": 15,
+          "constitution": 16,
+          "intelligence": 10,
+          "wisdom": 16,
+          "charisma": 10
+        },
+        "initiativeBonus": 2,
+        "saves": "int +3, wis +6",
+        "skills": "arcana +6, insight +6, perception +6, religion +3",
+        "resistances": "Necrotic",
+        "senses": "Darkvision 60 ft., passive Perception 16",
+        "languages": "Common, Druidic, Dwarvish, Elvish",
+        "traits": [
+          {
+            "name": "Starry Form (Bonus Action, Wild Shape)",
+            "desc": "Archer — bonus-action ranged spell attack +6, 1d8+3 radiant. Chalice — when she casts a healing spell, another creature within 30 ft. heals 1d8+3. Dragon — treat 9 or lower as 10 on Int/Wis checks & Concentration saves."
+          },
+          {
+            "name": "Star Map",
+            "desc": "Guiding Bolt always prepared; cast it without a slot 3/long rest."
+          },
+          {
+            "name": "Gathered Whispers",
+            "desc": "Message at will; Augury always prepared (no components, 1/long rest free); Unearthly Scream reaction (+3 AC vs one attack, 3/rest)."
+          },
+          {
+            "name": "Vampiric Bite (3/Long Rest empower)",
+            "desc": "Unarmed Strike alt: 1d4+3 Piercing; then Drain (heal = damage) or Strengthen (bonus to next check/attack)."
+          },
+          {
+            "name": "Uncanny Metabolism (1/Long Rest)",
+            "desc": "On rolling Initiative, regain all Focus Points and 1d6+2 HP."
+          }
+        ],
+        "actions": [
+          {
+            "name": "Starry Wisp (cantrip)",
+            "desc": "Spell Attack +6, 60 ft., 2d8 Radiant; target glows (advantage / negates invisibility)."
+          },
+          {
+            "name": "Guiding Bolt (1st, radiant)",
+            "desc": "Spell Attack +6, 120 ft., 4d6 Radiant; next attacker has advantage."
+          },
+          {
+            "name": "Moonbeam (2nd, concentration, radiant)",
+            "desc": "CON save DC 14, 5-ft. beam, 2d10 Radiant; move beam 60 ft. each turn."
+          },
+          {
+            "name": "Cure Wounds / Healing Word / Healing Spirit",
+            "desc": "Burst and sustained healing; Chalice form adds 1d8+3 splash to another ally."
+          },
+          {
+            "name": "Shillelagh (cantrip melee)",
+            "desc": "Attack +6, 1d10+3 Bludgeoning (WIS-based)."
+          },
+          {
+            "name": "Flurry of Blows (Bonus Action, 1 Focus)",
+            "desc": "Two Unarmed Strikes, +4, 1d6+1 each."
+          }
+        ],
+        "bonusActions": [
+          {
+            "name": "Patient Defense (1 Focus)",
+            "desc": "Disengage and Dodge as a bonus action."
+          }
+        ],
+        "reactions": []
+      }
+    },
+    {
+      "id": "fd9c2ea6-68aa-4c65-85a8-bb04747aa83f",
+      "name": "Vampire Nightbringer (Lyssa von Zarovich)",
+      "kind": "npc",
+      "initiative": 0,
+      "hp": 142,
+      "maxHp": 142,
+      "ac": 16,
+      "sourceId": "npcs/Lyssa von Zarovich.md",
+      "statBlock": {
+        "name": "Vampire Nightbringer (Lyssa von Zarovich)",
+        "size": "Medium",
+        "type": "undead",
+        "alignment": "neutral evil",
+        "cr": "8",
+        "ac": 16,
+        "hp": 142,
+        "hitDice": "19d8+57",
+        "speed": "30 ft., fly 30 ft. (hover)",
+        "scores": {
+          "strength": 16,
+          "dexterity": 18,
+          "constitution": 16,
+          "intelligence": 13,
+          "wisdom": 14,
+          "charisma": 15
+        },
+        "initiativeBonus": 4,
+        "saves": "dex +7, wis +5",
+        "skills": "perception +5, stealth +7",
+        "immunities": "Cold, Necrotic",
+        "senses": "Darkvision 120 ft., passive Perception 15",
+        "languages": "Common plus one other language",
+        "traits": [
+          {
+            "name": "Sunlight Hypersensitivity",
+            "desc": "The vampire takes 10 Radiant damage if it starts its turn in sunlight. While in sunlight, it has Disadvantage on attack rolls and ability checks."
+          }
+        ],
+        "actions": [
+          {
+            "name": "Multiattack",
+            "desc": "The vampire makes one Bite attack and one Shadow Strike attack."
+          },
+          {
+            "name": "Bite",
+            "desc": "Melee Attack Roll: +7, reach 5 ft. Hit: 7 (1d6+4) Piercing plus 10 (3d6) Necrotic damage. The target's Hit Point maximum decreases by an amount equal to the Necrotic damage taken, and the vampire regains Hit Points equal to that amount."
+          },
+          {
+            "name": "Shadow Strike",
+            "desc": "Melee Attack Roll: +7, reach 5 ft. Hit: 7 (1d6+4) Slashing plus 14 (4d6) Cold damage."
+          }
+        ],
+        "bonusActions": [
+          {
+            "name": "Shadow Stealth",
+            "desc": "While in Dim Light or Darkness, the vampire takes the Hide action."
+          }
+        ],
+        "reactions": []
+      }
+    },
+    {
+      "id": "3a925a59-2912-4390-bc9d-f305511feff5",
+      "name": "Vampire Mind Flayer 1",
+      "kind": "monster",
+      "initiative": 0,
+      "hp": 85,
+      "maxHp": 85,
+      "ac": 15,
+      "sourceId": "Bestiary/Vampire Mind Flayer.md#1",
+      "statBlock": {
+        "name": "Vampire Mind Flayer",
+        "size": "Medium",
+        "type": "undead",
+        "alignment": "chaotic evil",
+        "cr": "5",
+        "ac": 15,
+        "hp": 85,
+        "hitDice": "10d8+40",
+        "speed": "30 ft., climb 30 ft.",
+        "scores": {
+          "strength": 18,
+          "dexterity": 18,
+          "constitution": 18,
+          "intelligence": 5,
+          "wisdom": 15,
+          "charisma": 18
+        },
+        "initiativeBonus": 4,
+        "saves": "dex +7, con +4, wis +5, cha +7",
+        "skills": "perception +5, stealth +7",
+        "immunities": "Poison",
+        "resistances": "Necrotic, Psychic",
+        "senses": "Darkvision 120 ft., passive Perception 15",
+        "languages": "Understands Deep Speech but can't speak",
+        "traits": [
+          {
+            "name": "Spider Climb",
+            "desc": "Climbs difficult surfaces, including ceilings, without an ability check. Pursues elevated targets."
+          },
+          {
+            "name": "Sunlight Hypersensitivity",
+            "desc": "Takes 20 radiant if it starts its turn in sunlight. Disadvantage on attacks and checks in sunlight."
+          }
+        ],
+        "actions": [
+          {
+            "name": "Multiattack",
+            "desc": "Two Claws, or one Claw and one Tentacles, and uses Mind Burst if available."
+          },
+          {
+            "name": "Claw",
+            "desc": "+7 to hit, reach 5 ft. Hit: 8 (1d8+4) slashing plus 10 (3d6) necrotic."
+          },
+          {
+            "name": "Tentacles",
+            "desc": "+7 to hit, reach 5 ft. Hit: 11 (2d6+4) piercing. If the target is Medium or smaller, it is Grappled (escape DC 14)."
+          },
+          {
+            "name": "Drink Sapience",
+            "desc": "DC 15 Wis save, one Grappled creature. Failure: 21 (6d6) psychic, 1 Exhaustion, HP maximum reduced by the damage; the mind flayer regains that many HP."
+          },
+          {
+            "name": "Mind Burst (Recharge 6)",
+            "desc": "DC 15 Int save, each creature in a 30-foot Emanation (extends vertically). Failure: Incapacitated; repeat the save at the end of each turn. Ends automatically after 1 minute."
+          }
+        ],
+        "bonusActions": [],
+        "reactions": []
+      }
+    },
+    {
+      "id": "08c1bec7-bd11-4529-9cfb-af1524fb8002",
+      "name": "Vampire Mind Flayer 2",
+      "kind": "monster",
+      "initiative": 0,
+      "hp": 85,
+      "maxHp": 85,
+      "ac": 15,
+      "sourceId": "Bestiary/Vampire Mind Flayer.md#2",
+      "statBlock": {
+        "name": "Vampire Mind Flayer",
+        "size": "Medium",
+        "type": "undead",
+        "alignment": "chaotic evil",
+        "cr": "5",
+        "ac": 15,
+        "hp": 85,
+        "hitDice": "10d8+40",
+        "speed": "30 ft., climb 30 ft.",
+        "scores": {
+          "strength": 18,
+          "dexterity": 18,
+          "constitution": 18,
+          "intelligence": 5,
+          "wisdom": 15,
+          "charisma": 18
+        },
+        "initiativeBonus": 4,
+        "saves": "dex +7, con +4, wis +5, cha +7",
+        "skills": "perception +5, stealth +7",
+        "immunities": "Poison",
+        "resistances": "Necrotic, Psychic",
+        "senses": "Darkvision 120 ft., passive Perception 15",
+        "languages": "Understands Deep Speech but can't speak",
+        "traits": [
+          {
+            "name": "Spider Climb",
+            "desc": "Climbs difficult surfaces, including ceilings, without an ability check. Pursues elevated targets."
+          },
+          {
+            "name": "Sunlight Hypersensitivity",
+            "desc": "Takes 20 radiant if it starts its turn in sunlight. Disadvantage on attacks and checks in sunlight."
+          }
+        ],
+        "actions": [
+          {
+            "name": "Multiattack",
+            "desc": "Two Claws, or one Claw and one Tentacles, and uses Mind Burst if available."
+          },
+          {
+            "name": "Claw",
+            "desc": "+7 to hit, reach 5 ft. Hit: 8 (1d8+4) slashing plus 10 (3d6) necrotic."
+          },
+          {
+            "name": "Tentacles",
+            "desc": "+7 to hit, reach 5 ft. Hit: 11 (2d6+4) piercing. If the target is Medium or smaller, it is Grappled (escape DC 14)."
+          },
+          {
+            "name": "Drink Sapience",
+            "desc": "DC 15 Wis save, one Grappled creature. Failure: 21 (6d6) psychic, 1 Exhaustion, HP maximum reduced by the damage; the mind flayer regains that many HP."
+          },
+          {
+            "name": "Mind Burst (Recharge 6)",
+            "desc": "DC 15 Int save, each creature in a 30-foot Emanation (extends vertically). Failure: Incapacitated; repeat the save at the end of each turn. Ends automatically after 1 minute."
+          }
+        ],
+        "bonusActions": [],
+        "reactions": []
+      }
+    }
+  ],
+  "activeId": null,
+  "round": 0,
+  "showOrderToPlayers": false
+}

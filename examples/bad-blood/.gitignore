@@ -1,0 +1,14 @@
+# Obsidian
+.obsidian/
+.trash/
+
+# OS
+.DS_Store
+Thumbs.db
+Desktop.ini
+
+# Session audio — GitHub rejects files over 100MB (these recordings are ~150–160MB each)
+*.m4a
+*.mp3
+*.wav
+*.aac

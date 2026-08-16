@@ -1,6 +1,7 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { monsterToStatBlock, searchSrd, SRD_ATTRIBUTION, srdCounts, type SrdKind, type SrdRecord } from '../lib/srd'
-import { MonsterStatBlock } from './StatBlock'
+import { statBlockToParsed } from '../lib/statblock'
+import RollableStatBlock from './RollableStatBlock'
 
 const FILTERS: { id: SrdKind | 'all'; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -22,21 +23,54 @@ function KindBadge({ kind }: { kind: SrdKind }) {
   return <span className={`text-[10px] uppercase tracking-wider ${colors[kind]}`}>{kind}</span>
 }
 
-function Detail({ record, onAddMonster }: { record: SrdRecord; onAddMonster?: (record: SrdRecord) => void }) {
+function Detail({
+  record,
+  onAddMonster,
+  onAddToBestiary,
+  canAddToBestiary,
+  bestiaryBusy,
+  bestiaryStatus
+}: {
+  record: SrdRecord
+  onAddMonster?: (record: SrdRecord) => void
+  onAddToBestiary?: (record: SrdRecord) => void
+  canAddToBestiary?: boolean
+  bestiaryBusy?: boolean
+  bestiaryStatus?: 'added' | 'exists' | null
+}) {
   const data = record.data
   if (record.kind === 'monster') {
     return (
       <div>
-        <MonsterStatBlock block={monsterToStatBlock(data)} />
-        {onAddMonster ? (
-          <button
-            type="button"
-            className="mt-3 w-full rounded bg-amber px-3 py-1.5 text-sm font-semibold text-ink"
-            onClick={() => onAddMonster(record)}
-          >
-            Add to combat
-          </button>
-        ) : null}
+        <RollableStatBlock block={statBlockToParsed(monsterToStatBlock(data))} hideToolbar />
+        <div className="mt-3 flex flex-col gap-2">
+          {onAddMonster ? (
+            <button
+              type="button"
+              className="w-full rounded bg-amber px-3 py-1.5 text-sm font-semibold text-ink"
+              onClick={() => onAddMonster(record)}
+            >
+              Add to combat
+            </button>
+          ) : null}
+          {onAddToBestiary ? (
+            <button
+              type="button"
+              className="w-full rounded border border-line bg-panel-2 px-3 py-1.5 text-sm font-semibold text-parchment disabled:text-muted"
+              disabled={!canAddToBestiary || bestiaryBusy}
+              title={canAddToBestiary ? 'Save a Bestiary sheet in this campaign' : 'Open a campaign first'}
+              onClick={() => onAddToBestiary(record)}
+            >
+              {bestiaryBusy
+                ? 'Adding…'
+                : bestiaryStatus === 'exists'
+                  ? 'Already in Bestiary'
+                  : bestiaryStatus === 'added'
+                    ? 'Added to Bestiary'
+                    : 'Add to Bestiary'}
+            </button>
+          ) : null}
+        </div>
       </div>
     )
   }
@@ -79,21 +113,45 @@ function Detail({ record, onAddMonster }: { record: SrdRecord; onAddMonster?: (r
   )
 }
 
-export default function RulesSearch({ onAddMonster }: { onAddMonster?: (record: SrdRecord) => void }) {
+export default function RulesSearch({
+  onAddMonster,
+  onAddToBestiary,
+  canAddToBestiary,
+  onClose
+}: {
+  onAddMonster?: (record: SrdRecord) => void
+  onAddToBestiary?: (record: SrdRecord) => Promise<'added' | 'exists' | void> | 'added' | 'exists' | void
+  canAddToBestiary?: boolean
+  onClose?: () => void
+}) {
   const [query, setQuery] = useState('')
   const [kind, setKind] = useState<SrdKind | 'all'>('all')
   const [selected, setSelected] = useState<SrdRecord | null>(null)
+  const [bestiaryBusy, setBestiaryBusy] = useState(false)
+  const [bestiaryStatus, setBestiaryStatus] = useState<'added' | 'exists' | null>(null)
+
+  useEffect(() => {
+    setBestiaryStatus(null)
+    setBestiaryBusy(false)
+  }, [selected?.id])
 
   const results = useMemo(() => searchSrd(query, kind).slice(0, 30), [query, kind])
 
   return (
-    <section className="flex min-h-0 flex-col border-l border-line bg-panel">
+    <section className="flex min-h-0 flex-1 flex-col border-l border-line bg-panel">
       <header className="border-b border-line px-3 py-2">
-        <div className="flex items-baseline justify-between">
+        <div className="flex items-baseline justify-between gap-2">
           <h2 className="font-display text-lg text-amber">Lookup</h2>
-          <span className="text-[10px] text-muted">
-            {srdCounts.spells} spells · {srdCounts.monsters} monsters
-          </span>
+          <div className="flex items-center gap-2">
+            <span className="text-[10px] text-muted">
+              {srdCounts.spells} spells · {srdCounts.monsters} monsters
+            </span>
+            {onClose ? (
+              <button type="button" onClick={onClose} className="text-xs text-muted hover:text-amber">
+                Hide
+              </button>
+            ) : null}
+          </div>
         </div>
         <input
           autoFocus
@@ -128,7 +186,25 @@ export default function RulesSearch({ onAddMonster }: { onAddMonster?: (record: 
             >
               ← Results
             </button>
-            <Detail record={selected} onAddMonster={onAddMonster} />
+            <Detail
+              record={selected}
+              onAddMonster={onAddMonster}
+              onAddToBestiary={
+                onAddToBestiary
+                  ? (record) => {
+                      setBestiaryBusy(true)
+                      void Promise.resolve(onAddToBestiary(record))
+                        .then((status) => {
+                          if (status === 'added' || status === 'exists') setBestiaryStatus(status)
+                        })
+                        .finally(() => setBestiaryBusy(false))
+                    }
+                  : undefined
+              }
+              canAddToBestiary={canAddToBestiary}
+              bestiaryBusy={bestiaryBusy}
+              bestiaryStatus={bestiaryStatus}
+            />
           </div>
         ) : (
           <ul>
