@@ -15,10 +15,10 @@
 ## Before you sit down
 - **Recap first:** the "open Session 3" recap in [[Session Recaps & Aftermath]] — branches on **Sef** and on whether the **Harbinger was ended or only driven off** (see complication below).
 - **Boost Kit:** confirm it was handed out at the end of S2 (Urwin). If not, he catches them at the churchyard at dawn.
-- **Map:** show `map-03-04.von-zarovich-sanctuary-player.jpg` ([[Locations]]) once they're down the stairs. Queue **Castle Ravenloft** (`Curse of Strahd - Castle Ravenloft.jpg`) for the ending.
+- **Map:** show `map-03-04.von-zarovich-sanctuary-player.webp` ([[Locations]]) once they're down the stairs. Queue **Castle Ravenloft** (`Curse of Strahd - Castle Ravenloft.webp`) for the ending.
 - **Scene images** *(⬜ to generate — MJ prompts at the bottom; save into `Assets/Scenes` with these exact names and the inline embeds below will light up):* The Green Descent · The Sanctuary of Green Candles · The Iron Doors Open · The Failed Experiment · The Elder Evil · The Black Coach.
 - **PRINT THE PROP:** [[Letter — Strahd's Farewell]] — the physical handout is the climax. Folded, sealed if you can manage it, ready. (The red "Z" seal matches the Invitation — the players will connect it.)
-- **Portraits on standby:** ![[Lyssa von Zarovich.png|150]] ![[Strahd von Zarovich.png|150]]
+- **Portraits on standby:** ![[Lyssa von Zarovich.webp|150]] ![[Strahd von Zarovich.webp|150]]
 - **Stat blocks open:** Vampire Spawn ×2, Vampire Mind Flayer ×2, Lyssa (flees at ~71 HP), Vampire Nosferatu + Swarm (if the wall opens). All embedded below.
 - **Ambience:** crypt drone → cold piano (Lyssa) → psychic combat → bittersweet → one cold note for the letter.
 
@@ -69,7 +69,7 @@ creatures:
 
 ▸ **Goal:** the villain monologues, unleashes her experiment, and flees. The party survives the spike.
 
-🖼 ![[Scene - The Sanctuary of Green Candles.png|500]] *(the chamber — then swap to her portrait when she turns)* ![[Lyssa von Zarovich.png|300]]
+🖼 ![[Scene - The Sanctuary of Green Candles.png|500]] *(the chamber — then swap to her portrait when she turns)* ![[Lyssa von Zarovich.webp|300]]
 
 📖
 

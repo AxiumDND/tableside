@@ -1,5 +1,8 @@
 # Ghoul
 
+> [!infobox]+
+> ![[Ghoul.webp]]
+>
 *Wave 1 fodder. Paralysis on the nave floor — they don't climb.*
 
 Medium undead · chaotic evil · CR 1

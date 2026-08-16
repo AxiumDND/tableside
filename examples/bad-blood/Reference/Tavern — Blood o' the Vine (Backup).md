@@ -92,7 +92,7 @@
 
 **Map:** *Map 2.2: Blood of the Vine Tavern* (see [[Locations]]). A vertical dungeon — taproom and office here, bedrooms above, a hollow below.
 
-![[map-03-02.blood-of-the-vine-tavern-player.jpg]]
+![[map-03-02.blood-of-the-vine-tavern-player.webp]]
 
 > [!readaloud]
 > The Blood of the Vine sits dark at the end of the village lane, shutters drawn, a wooden sign creaking on one hinge — a bunch of grapes, the paint flaked to the colour of dried blood. The door is unlocked. It gives with a groan and a breath of stale, sweet rot.
@@ -101,7 +101,7 @@
 > [!readaloud]
 > Dust lies thick on every table, undisturbed but for one set of footprints behind the bar. There, a grey-skinned man in a stained apron polishes a shard of broken glass — over, and over, and over — though the cup it came from is long gone. He does not look up. The rag squeaks against the glass.
 
-![[Scene - The Taproom.png]]
+![[Scene - The Taproom.webp]]
 
 This is **[[Arik the Barkeep]]**. He is **not a fight.**
 
@@ -165,14 +165,14 @@ This is **[[Arik the Barkeep]]**. He is **not a fight.**
 
 **Map:** *Map 2.2: Beneath the Tavern* (see [[Locations]]).
 
-![[map-03-03.beneath-the-tavern-player.jpg]]
+![[map-03-03.beneath-the-tavern-player.webp]]
 
 > [!readaloud]
 > The ladder ends in cold, raw earth. This is no cellar. Standing stones lean out of the dirt walls, half-unburied — tall menhirs carved with ravens in flight wheeling around a rayed sun. The carvings are old beyond reckoning, and they were made by someone who loved whatever this place once was.
 >
 > At the centre of the circle, hunched over a heap of black bones — antlered, tusked, *wrong* — kneels the last of the sisters. She is singing to it. A low, wet, gravel-voiced song, and the bones are twitching in time.
 
-![[Scene - Temple of Ravenkind.png]]
+![[Scene - Temple of Ravenkind.webp]]
 
 ### Sorvina & the Skeleton
 > [!gmonly] ★ Read this before play ★

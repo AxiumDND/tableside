@@ -1,7 +1,7 @@
 # *Arik the Barkeep*
 
 > [!infobox]+
-> ![[Arik the Barkeep.png]]
+> ![[Arik the Barkeep.webp]]
 >
 > ### *Animate corpse · atmosphere, not a fight*
 >

@@ -8,42 +8,42 @@
 ---
 
 ## 1. S0.5 · The Last Camp
-**Image file:** `Scene - The Last Camp.png`  ·  **Used in:** [[Session 0.5]] (Movement 1, the fire) — also handy under the [[Session Recaps & Aftermath]] opener
+**Image file:** `Scene - The Last Camp.webp`  ·  **Used in:** [[Session 0.5]] (Movement 1, the fire) — also handy under the [[Session Recaps & Aftermath]] opener
 
 ```
 A small campfire ringed with stones in a clearing at the edge of dark woods at night, hobbled horses, bedrolls, an ordinary peaceful camp under a starry sky, warm firelight, faint white fog beginning to creep between the trees at the edges, atmospheric establishing shot, gothic horror, dark fantasy, painterly, cinematic moody lighting, desaturated palette, Ravenloft --ar 16:9
 ```
 
 ## 2. S0.5 · The Mists Rise
-**Image file:** `Scene - The Mists Rise.png`  ·  **Used in:** [[Session 0.5]] (Movement 1, the Mists come in)
+**Image file:** `Scene - The Mists Rise.webp`  ·  **Used in:** [[Session 0.5]] (Movement 1, the Mists come in)
 
 ```
 Thick rising white fog swallowing a forest road overnight, the campfire reduced to a dim orange smudge, ground-fog pouring up from between stones, eerie and wrong, dead silence, predawn grey, atmospheric establishing shot, gothic horror, dark fantasy, painterly, cinematic moody lighting, desaturated palette, Ravenloft --ar 16:9
 ```
 
 ## 3. S0.5 · Svalich Woods / Waking in Barovia
-**Image file:** `Scene - The Svalich Woods.png`  ·  **Used in:** [[Session 0.5]] (Movement 1, waking) / [[The Mists — Getting In & Out]]
+**Image file:** `Scene - The Svalich Woods.webp`  ·  **Used in:** [[Session 0.5]] (Movement 1, waking) / [[The Mists — Getting In & Out]]
 
 ```
 A strange cursed valley revealed as fog thins, towering black pine forest, a bruise-coloured purple-grey sky, a distant gothic castle brooding on a far crag, cold and forbidding, a single raven on a dead branch, atmospheric establishing shot, gothic horror, dark fantasy, painterly, cinematic moody lighting, desaturated palette, Ravenloft --ar 16:9
 ```
 
 ## 3a. S0.5 · The Harbinger Emerges ✅
-**Image file:** `Scene - The Harbinger Emerges.png`  ·  **Used in:** [[Session 0.5]] (Movement 2, the attack)
+**Image file:** `Scene - The Harbinger Emerges.webp`  ·  **Used in:** [[Session 0.5]] (Movement 2, the attack)
 
 ```
 A towering faceless undead knight striding out of thick rising white fog in a black dripping pine forest at night, deep hood hiding the face, tattered grave-shrouds over blackened iron plate, dragging a colossal runed greatsword glowing sullen red, the forest gone silent and wrong, dread and menace, atmospheric establishing shot, gothic horror, dark fantasy, painterly, cinematic moody lighting, desaturated palette with red rune-glow, Ravenloft --ar 16:9
 ```
 
 ## 3b. S0.5 · The Dawn Drives It Off ✅
-**Image file:** `Scene - The Dawn Drives It Off.png`  ·  **Used in:** [[Session 0.5]] (Movement 3, the rescue)
+**Image file:** `Scene - The Dawn Drives It Off.webp`  ·  **Used in:** [[Session 0.5]] (Movement 3, the rescue)
 
 ```
 Warm golden holy dawn-light blooming through a grey misty pine forest at night, an explosion of black ravens screaming up from the trees, a towering hooded undead knight recoiling from the light and withdrawing into the fog, a stocky man in an old coat with light pouring from his open hand, salvation and relief, atmospheric establishing shot, gothic horror, dark fantasy, painterly, cinematic moody lighting, desaturated palette pierced by warm radiant gold, Ravenloft --ar 16:9
 ```
 
 ## 3c. S0.5 · The Village Lane ✅
-**Image file:** `Scene - The Village Lane.png`  ·  **Used in:** [[Session 0.5]] (Movement 4, the walk to the tavern)
+**Image file:** `Scene - The Village Lane.webp`  ·  **Used in:** [[Session 0.5]] (Movement 4, the walk to the tavern)
 
 ```
 A grim deserted Barovian village street at dusk, a huddle of grey timber houses with shutters nailed shut, mud and puddles, no people but a sense of watching eyes behind the glass, a distant gothic castle brooding on a far mountain, oppressive dread, atmospheric establishing shot, gothic horror, dark fantasy, painterly, cinematic moody lighting, desaturated palette, Ravenloft --ar 16:9
@@ -57,14 +57,14 @@ A shuttered, rotting village tavern at dusk in a grim Barovian village, a creaki
 ```
 
 ## 5. Tavern backup · The Taproom *(cut)*
-**Image file:** `Scene - The Taproom.png`  ·  **Used in:** [[Tavern — Blood o' the Vine (Backup)]] (only if run — Arik)
+**Image file:** `Scene - The Taproom.webp`  ·  **Used in:** [[Tavern — Blood o' the Vine (Backup)]] (only if run — Arik)
 
 ```
 Interior of an abandoned tavern taproom thick with dust and cobwebs, overturned chairs, a long bar, a single candle, one set of footprints in the dust behind the bar, oppressive silence, shafts of grey light, atmospheric establishing shot, gothic horror, dark fantasy, painterly, cinematic moody lighting, desaturated palette, Ravenloft --ar 16:9
 ```
 
 ## 6. Tavern backup · The Temple of Ravenkind *(cut)*
-**Image file:** `Scene - Temple of Ravenkind.png`  ·  **Used in:** [[Tavern — Blood o' the Vine (Backup)]] (only if run — the buried temple)
+**Image file:** `Scene - Temple of Ravenkind.webp`  ·  **Used in:** [[Tavern — Blood o' the Vine (Backup)]] (only if run — the buried temple)
 
 ```
 A buried underground ritual chamber of raw earth, a partial ring of ancient leaning standing stones (menhirs) carved with ravens in flight around a rayed sun, at the centre a heap of monstrous black antlered tusked bones, cold dread, candlelight, atmospheric establishing shot, gothic horror, dark fantasy, painterly, cinematic moody lighting, desaturated palette, Ravenloft --ar 16:9
@@ -92,7 +92,7 @@ A rain-soaked church graveyard at night, leaning headstones, a fallen young woma
 ```
 
 ## 10. S1 · Lyssa on the Rooftop
-**Image file:** `Scene - Lyssa on the Rooftop.png`  ·  **Used in:** [[Session 1]] (Movement 3, cameo — embedded there)
+**Image file:** `Scene - Lyssa on the Rooftop.webp`  ·  **Used in:** [[Session 1]] (Movement 3, cameo — embedded there)
 
 ```
 A tall pale aristocratic female vampire in old fine clothes standing alone on a rooftop across a rain-soaked square, hands folded, watching coldly, untouched by the downpour, a distant gothic castle behind her, villain reveal, atmospheric establishing shot, gothic horror, dark fantasy, painterly, cinematic moody lighting, desaturated palette, Ravenloft --ar 16:9

@@ -11,7 +11,7 @@ import {
 } from '../lib/srd'
 import { extraSourcesFromRecords, parseWotcFiles } from '../lib/wotcParse'
 import { libraryFolderFor } from '../lib/lookupNotes'
-import { srdPortraitUrl } from '../lib/images'
+import { srdItemUrl, srdPortraitUrl } from '../lib/images'
 import { LIBRARY_FOLDER_NAMES } from '../../../shared/campaignLayout'
 import { statBlockToParsed } from '../lib/statblock'
 import RollableStatBlock from './RollableStatBlock'
@@ -23,7 +23,8 @@ const FILTERS: { id: SrdKind | 'all' | string; label: string }[] = [
   { id: 'condition', label: 'Conditions' },
   { id: 'spell', label: 'Spells' },
   { id: 'monster', label: 'Monsters' },
-  { id: 'weapon', label: 'Weapons' }
+  { id: 'weapon', label: 'Weapons' },
+  { id: 'gear', label: 'Gear' }
 ]
 
 const NAMED_LEAD = /^([A-Z][\w'’ /-]{0,48}\.)(\s+)/
@@ -131,6 +132,19 @@ function MonsterPortrait({ name }: { name: string }) {
   )
 }
 
+function ItemPortrait({ name }: { name: string }) {
+  const [failed, setFailed] = useState(false)
+  if (failed) return null
+  return (
+    <img
+      src={srdItemUrl(name)}
+      alt=""
+      className="aspect-[3/4] w-full rounded object-cover"
+      onError={() => setFailed(true)}
+    />
+  )
+}
+
 function Detail({
   record,
   onAddMonster,
@@ -211,8 +225,15 @@ function Detail({
   ) {
     return (
       <div className="space-y-2 text-sm">
-        <div className="font-display text-xl text-amber">{record.name}</div>
-        <div className="text-xs text-muted">{record.summary}</div>
+        <div className="flex gap-3">
+          <div className="w-24 shrink-0">
+            <ItemPortrait name={record.name} />
+          </div>
+          <div className="min-w-0 flex-1">
+            <div className="font-display text-xl text-amber">{record.name}</div>
+            <div className="text-xs text-muted">{record.summary}</div>
+          </div>
+        </div>
         {itemFields.map((field) => (
           <p key={field.label}>
             <span className="text-muted">{field.label}</span> {field.value}

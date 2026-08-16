@@ -1,7 +1,7 @@
 # *Sorvina*
 
 > [!infobox]+
-> ![[Sorvina.png]]
+> ![[Sorvina.webp]]
 >
 > ### *The Horror · youngest sister · the source*
 >

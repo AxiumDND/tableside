@@ -1,7 +1,7 @@
 # *Urwin Martikov*
 
 > [!infobox]+
-> ![[Urwin Martikov.png]]
+> ![[Urwin Martikov.webp]]
 >
 > ### *Patron · Keeper of the Feather*
 >

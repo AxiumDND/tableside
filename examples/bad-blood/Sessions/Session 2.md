@@ -29,9 +29,9 @@
 ## Before you sit down *(5-min setup)*
 - **Recap:** the full read-aloud recap is **embedded at the top of Movement 1** (no file-flipping at minute zero). GM summary: two waves held, prototype killed, **"— L." note** found, **faction war** clocked by the players, prisoner tattoos, *Strahd controls wolves*. Sef arrived post-siege, safe. Long rest done, **Level 7 banked.**
 - **Attendance:** all four PCs. Lucian (Joe) held the bell tower alone all night — his debrief opens the session.
-- **Map:** the **Neutral Party crypt map** is tonight's Level 1 — save it as `Assets/Maps/Crypt Level 1 — Neutral Party.jpg` and see the **room key** below. Add your route down to Level 2 (candidates flagged at **Room N**). `map-03-04.von-zarovich-sanctuary-player.jpg` is the **lower** sanctuary (Session 3 — don't show it yet).
+- **Map:** the **Neutral Party crypt map** is tonight's Level 1 — save it as `Assets/Maps/Crypt Level 1 — Neutral Party.jpg` and see the **room key** below. Add your route down to Level 2 (candidates flagged at **Room N**). `map-03-04.von-zarovich-sanctuary-player.webp` is the **lower** sanctuary (Session 3 — don't show it yet).
 - **Scene images** *(✅ generated 19 July — embedded inline at each movement; files in `Assets/Scenes`):* The Battlefield Morning · The Old Quarter · The Blood Door · The Hall of Chiselled Names · The Wardens Work · The False Crypts · The Rotunda of the Fallen Warden · The Sealed Stair. *(The Tomb-Warden Rises was skipped — the Harbinger portrait carries that beat.)*
-- **Portraits on standby:** ![[Father Donovich.png|150]] ![[Urwin Martikov.png|150]] ![[Sef Martikov.png|150]] ![[The Harbinger of the Rune-Blade.png|150]] ![[Milos.png|150]]
+- **Portraits on standby:** ![[Father Donovich.webp|150]] ![[Urwin Martikov.webp|150]] ![[Sef Martikov.webp|150]] ![[The Harbinger of the Rune-Blade.webp|150]] ![[Milos.webp|150]]
 - **Props:** the **shipping manifest** (text in Movement 5 — write/print it in the same elegant hand as the "— L." note; they *will* compare). **Two folded private notes for Joe** (texts in Movement 4 — write them before the session; passing paper beats whispering). The "— L." note wording ready — it's in Jasper's notebook.
 - **Stat blocks:** all **embedded below** — Wight (wounded, 30 HP) + Ghoul + Specter in Room I, the full Harbinger (with legendary actions) in Room K. Nothing else to open.
 - **Ambience:** grey morning bells → wind over the battlefield → dead-yew stillness in the old quarter → stone-and-blood silence at the door → bone-dry crypt → the runes' grinding scream → green-lit stillness for the close.
@@ -99,7 +99,7 @@
 
 ▸ **Goal:** the promised morning investigation — battle-signs, the retreat trail, the crest payoff — ending at the north gate with Urwin's counsel. Dread up, weapons away: nothing attacks up here.
 
-🖼 ![[Scene - The Battlefield Morning.png|500]]
+🖼 ![[Scene - The Battlefield Morning.webp|500]]
 
 📖
 
@@ -135,7 +135,7 @@
 
 ▸ **Goal:** find the crypt. The old quarter is a search, not a signpost — short, moody, and rewarded — ending at the mausoleum and the camp of the dead diggers outside it.
 
-🖼 ![[Scene - The Old Quarter.png|500]]
+🖼 ![[Scene - The Old Quarter.webp|500]]
 
 📖
 
@@ -167,7 +167,7 @@
 
 ▸ **Goal:** the way in — a door that asks *who you are*. The solution is Lucian. Give the table time to work it; give Joe the moment when they do.
 
-🖼 ![[Scene - The Blood Door.png|500]] *(this is also the puzzle prop — leave it up and let them study it)*
+🖼 ![[Scene - The Blood Door.webp|500]] *(this is also the puzzle prop — leave it up and let them study it)*
 
 📖
 
@@ -249,7 +249,7 @@
 
 ## A — The Hall of Chiselled Names *(the entry stair lands here)*
 
-🖼 ![[Scene - The Hall of Chiselled Names.png|500]]
+🖼 ![[Scene - The Hall of Chiselled Names.webp|500]]
 
 > [!readaloud]
 > The stair opens into a hall built to be *seen*: coffin niches floor to ceiling, each with its own carved nameplate — and every single plate has been chiselled blank. Not worn away. Cut away — the stone pale and raw where names used to be. A wall of erased people, watching you with no faces at all. Set into the floor, a great sunburst rosette, its rays still sharp, its centre gouged out. The dust of centuries lies everywhere — except the working paths swept through it, boot-wide, like the aisles of a warehouse.
@@ -282,7 +282,7 @@
 
 ## D — The Warden's Work *(the first warning)*
 
-🖼 ![[Scene - The Wardens Work.png|500]]
+🖼 ![[Scene - The Wardens Work.webp|500]]
 
 > [!readaloud]
 > They're laid out along the corridor where they fell. Four ghouls — each in **two pieces**, the halves a stride apart, and there is no blood at all: every cut is seared black, cauterised the instant it was made. They died facing something. It didn't slow down for them. Through the middle of it all walks a single line of bare footprints, unhurried, each print a little too long — and beside the prints, scored into the stone floor itself, runs one long unbroken **groove**, the width of a dragged blade. It goes the same way you're going.
@@ -332,7 +332,7 @@
 
 ### ★ Milos — the talker *(hiding inside an emptied crate)* ★
 
-🖼 ![[Milos.png|200]]
+🖼 ![[Milos.webp|200]]
 
 *A gaunt man in a dead man's coat — prisoner tattoos on both arms, a week of dust on him, half his mind left. He is the last of the dig crew. He surrenders instantly, to anyone, mid-sob.*
 
@@ -381,7 +381,7 @@
 
 ▸ The survivors of Lyssa's field-test force — cornered between the party and the thing in the dark. A fight with a mood: they aren't defending anything. They're *trapped*.
 
-🖼 ![[Scene - The False Crypts.png|500]]
+🖼 ![[Scene - The False Crypts.webp|500]]
 
 > [!readaloud]
 > The false crypts stink of pitch and grave-mould. Three great coffins stand in the lamplight — one smashed open in an old fury, stone rubble spilling from it like guts. And behind them, movement: grey hands on grey stone, eyes catching the light. The survivors of the night's war went to ground here — and the way they look at you isn't hunger. It's the way the drowning look at a boat.
@@ -503,12 +503,12 @@ actions:
 
 ▸ The fight they can finally win. Give it space, give it dread — and give Joe the target on his back.
 
-🖼 ![[Scene - The Rotunda of the Fallen Warden.png|500]] *(show as they enter — then swap to the Harbinger portrait when it fills the archway)*
+🖼 ![[Scene - The Rotunda of the Fallen Warden.webp|500]] *(show as they enter — then swap to the Harbinger portrait when it fills the archway)*
 
 > [!readaloud]
 > The great chamber is a rotunda in the old style: a raised circular dais at its heart, and across the floor — colossal, toppled, broken at the neck — a **statue.** An armoured warden, greatsword in its stone hands, dragged off its plinth with ropes and engines and left where it fell. The crew pulled it down first; you can see the rope-burns on the stone. Above the dais, the vaulting has partly given way: one column of **grey daylight** stands in the middle of the room like a pillar holding up the dark.
 
-🖼 ![[The Harbinger of the Rune-Blade.png|300]]
+🖼 ![[The Harbinger of the Rune-Blade.webp|300]]
 
 📖 *(when it comes — the grinding has been building since Room I)*
 
@@ -609,7 +609,7 @@ legendary_actions:
 
 🎲 **On the way here:** if they spared the wight in **I** — **now** they find it on the entry stair. Two pieces. One stroke. Cauterised black. Nobody says anything.
 
-🖼 ![[Scene - The Sealed Stair.png|500]]
+🖼 ![[Scene - The Sealed Stair.webp|500]]
 
 > [!readaloud]
 > The last vault ends at a door that isn't a door: a single slab, twice head-height, carved edge to edge with the raven-and-sun — and it has been **forced.** Not smashed: *unmade* — the wards chiselled out in the same methodical hand as the names, then the slab levered aside with engines. Beyond it, stairs spiral down into air that is colder, older, and faintly **green.** Far below: candlelight. And something breathing — wet, patient, too many lungs.

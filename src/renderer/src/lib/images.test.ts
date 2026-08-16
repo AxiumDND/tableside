@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { portraitForNote, portraitSrcForNote, srdPortraitUrl, type CampaignImage } from './images'
+import { portraitForNote, portraitSrcForNote, srdItemUrl, srdPortraitUrl, type CampaignImage } from './images'
 
 const images: CampaignImage[] = [
   {
@@ -32,6 +32,12 @@ describe('srdPortraitUrl', () => {
   })
 })
 
+describe('srdItemUrl', () => {
+  it('builds a tabledm URL from the item name', () => {
+    expect(srdItemUrl('Potion of Healing')).toBe('tabledm://srd-item/?name=Potion%20of%20Healing')
+  })
+})
+
 describe('portraitSrcForNote', () => {
   it('prefers campaign art over the SRD default', () => {
     expect(portraitSrcForNote('Bestiary/Ghoul.md', images)).toBe(
@@ -42,6 +48,12 @@ describe('portraitSrcForNote', () => {
   it('falls back to the bundled SRD portrait for bestiary notes', () => {
     expect(portraitSrcForNote('Bestiary/Owlbear.md', [])).toBe(
       'tabledm://srd-portrait/?name=Owlbear'
+    )
+  })
+
+  it('falls back to the bundled SRD item art for gear notes', () => {
+    expect(portraitSrcForNote('Gear/Weapons/Longsword.md', [])).toBe(
+      'tabledm://srd-item/?name=Longsword'
     )
   })
 })

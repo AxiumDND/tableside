@@ -1,7 +1,7 @@
 # *Jasper Alderwick — The Greycloak*
 
 > [!infobox]+
-> ![[Jasper Alderwick.png]]
+> ![[Jasper Alderwick.webp]]
 >
 > ### *The scholar-duelist · quill in one hand, rapier in the other*
 >
@@ -100,7 +100,7 @@
 
 ## Midjourney prompt
 *Portrait of a halfling duelist scholar in a hooded grey travelling cloak, ink-stained fingers, silvered rapier at his hip, longbow and shield slung on his back, sharp intelligent eyes, mist curling around his boots, gothic candlelit backdrop, dark fantasy character portrait, Dungeons and Dragons style, desaturated palette --ar 2:3*
-*(save as `Jasper Alderwick.png` in `NPCs/` + `Assets/Portraits/`)*
+*(save as `Jasper Alderwick.webp` in `NPCs/` + `Assets/Portraits/`)*
 
 ---
 

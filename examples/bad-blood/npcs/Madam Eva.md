@@ -1,7 +1,7 @@
 # *Madam Eva*
 
 > [!infobox]+
-> ![[Madam Eva.png]]
+> ![[Madam Eva.webp]]
 >
 > ### *Vistani seer · one who walks the Mists freely*
 >

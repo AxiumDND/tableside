@@ -205,8 +205,8 @@ export default function DmApp() {
     const path = selectedImage ?? (openKind === 'image' ? openPath : null)
     if (!path) return
     const src = path.startsWith('tabledm://') ? path : campaignFileUrl(path)
-    const title = path.startsWith('tabledm://srd-portrait')
-      ? decodeURIComponent(new URL(path).searchParams.get('name') ?? 'Monster')
+    const title = path.startsWith('tabledm://srd-portrait') || path.startsWith('tabledm://srd-item')
+      ? decodeURIComponent(new URL(path).searchParams.get('name') ?? 'Image')
       : imageTitle(path)
     const live = mapLiveRef.current
     const mapView = live?.src === src ? live.view : null

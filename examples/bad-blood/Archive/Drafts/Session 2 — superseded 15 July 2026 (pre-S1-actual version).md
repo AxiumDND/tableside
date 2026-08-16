@@ -13,9 +13,9 @@
 
 ## Before you sit down *(5-min setup)*
 - **Recap first:** the "open Session 2" recap in [[Session Recaps & Aftermath]] — **branches on whether Sef lived.** Read the right version.
-- **Map:** `map-03-04.von-zarovich-sanctuary-player.jpg` is the **lower** sanctuary (Session 3 — don't show it yet). Tonight's catacombs are theatre-of-mind or a quick sketch: ossuary galleries, a defaced chapel-crypt, a rotunda with a dig-shaft of grey daylight, the broken seal.
+- **Map:** `map-03-04.von-zarovich-sanctuary-player.webp` is the **lower** sanctuary (Session 3 — don't show it yet). Tonight's catacombs are theatre-of-mind or a quick sketch: ossuary galleries, a defaced chapel-crypt, a rotunda with a dig-shaft of grey daylight, the broken seal.
 - **Scene images to generate** *(MJ prompts at the bottom — same style anchor as S1):* The Shattered Grave · The Ossuary · The Tomb-Warden Rises · The Broken Seal.
-- **Portraits on standby:** ![[Ernst Larnak.png|150]] ![[Urwin Martikov.png|150]] ![[The Harbinger of the Rune-Blade.png|150]]
+- **Portraits on standby:** ![[Ernst Larnak.webp|150]] ![[Urwin Martikov.webp|150]] ![[The Harbinger of the Rune-Blade.webp|150]]
 - **Stat blocks open:** Ghoul, Specter, **Harbinger (solo boss — full block below)**.
 - **The Shard:** confirm who carries it. The whole night pays it off.
 - **Ambience:** grey morning → wind in dead yews → bone-dry crypt silence → the runes' grinding scream → green-lit stillness for the close.
@@ -123,7 +123,7 @@ creatures:
 
 ▸ **Goal:** the fight they can finally win. Give it space, give it dread, give the Shard its night.
 
-🖼 ![[The Harbinger of the Rune-Blade.png|300]]
+🖼 ![[The Harbinger of the Rune-Blade.webp|300]]
 
 📖
 > The grinding comes down the ossuary gallery like weather. Bone-dust sifts from the niches with every step. And then it fills the archway: shrouds over dead plate, no face under the cowl, the colossal blade dragging sparks off the floor — and the runes along it are not humming now. They are **screaming.** It has found the desecrated tomb. It has found the thieves standing in it. It does not hurry, because it has never needed to.

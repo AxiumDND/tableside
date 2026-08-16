@@ -1,7 +1,7 @@
 # *The Harbinger of the Rune-Blade*
 
 > [!infobox]+
-> ![[The Harbinger of the Rune-Blade.png]]
+> ![[The Harbinger of the Rune-Blade.webp]]
 >
 > ### *The Tomb-Warden · relentless hunter in the Mist*
 >

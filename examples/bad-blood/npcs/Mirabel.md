@@ -1,7 +1,7 @@
 # *Mirabel*
 
 > [!infobox]+
-> ![[Mirabel.png]]
+> ![[Mirabel.webp]]
 >
 > ### *The Gravecaller · middle sister*
 >

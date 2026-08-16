@@ -25,6 +25,11 @@ export function srdPortraitUrl(name: string): string {
   return `tabledm://srd-portrait/?name=${encodeURIComponent(stem)}`
 }
 
+export function srdItemUrl(name: string): string {
+  const stem = name.replace(/\.[^.]+$/, '').trim()
+  return `tabledm://srd-item/?name=${encodeURIComponent(stem)}`
+}
+
 export function portraitSrcForNote(
   notePath: string,
   images: CampaignImage[],
@@ -32,10 +37,11 @@ export function portraitSrcForNote(
 ): string | null {
   const campaign = portraitForNote(notePath, images) ?? (title ? portraitForNote(`${title}.md`, images) : null)
   if (campaign) return campaignFileUrl(campaign)
-  if (!pathHasFolder(notePath, 'bestiary')) return null
   const file = notePath.replaceAll('\\', '/').split('/').pop() ?? notePath
   const stem = file.replace(/\.[^.]+$/, '')
-  return srdPortraitUrl(title || stem)
+  if (pathHasFolder(notePath, 'bestiary')) return srdPortraitUrl(title || stem)
+  if (pathHasFolder(notePath, 'gear')) return srdItemUrl(title || stem)
+  return null
 }
 
 export function isImagePath(path: string): boolean {

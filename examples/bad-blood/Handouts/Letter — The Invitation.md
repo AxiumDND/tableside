@@ -7,8 +7,8 @@
 
 *(Heavy cream paper, a blood-red wax seal pressed with a single ornate letter you can't quite place — a flourish, a serpent, a maker's mark? The hand is elegant and old-fashioned, the ink so dark it looks wet.)*
 
-![[Letter — The Invitation.jpg]]
-*The print-ready prop. **Hand it out at the very start.** (Higher-res print version: `Letter — The Invitation (print).jpg`.)*
+![[Letter — The Invitation.webp]]
+*The print-ready prop. **Hand it out at the very start.** (Higher-res print version: `Letter — The Invitation (print).webp`.)*
 
 > [!gmonly] The seal is the tell
 > It carries the **same red 'Z' seal** as [[Letter — Strahd's Farewell]] at the very end (von Zarovich) — the players shouldn't place it now, but they'll feel it later.

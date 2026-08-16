@@ -1,7 +1,7 @@
 # *Hektor Braun*
 
 > [!infobox]+
-> ![[Hektor Braun.png]]
+> ![[Hektor Braun.webp]]
 >
 > ### *Father · the desperate one*
 >

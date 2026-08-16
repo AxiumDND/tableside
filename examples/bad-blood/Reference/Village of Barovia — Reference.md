@@ -1,5 +1,5 @@
 # Village of Barovia — Reference
-*Canon detail from* Curse of Strahd *Ch. 3, trimmed to what this arc needs. **We use a slice of the village; the rest is name-drop and set-dressing.** The main CoS plot (Ireena, the burgomaster, escorting her to Vallaki) is **deliberately not opened** — this is a flying visit. Full map: [[Locations]] (*Map of barovia full.jpg* + the village map).*
+*Canon detail from* Curse of Strahd *Ch. 3, trimmed to what this arc needs. **We use a slice of the village; the rest is name-drop and set-dressing.** The main CoS plot (Ireena, the burgomaster, escorting her to Vallaki) is **deliberately not opened** — this is a flying visit. Full map: [[Locations]] (*Map of barovia full.webp* + the village map).*
 
 > [!quote] Approaching the village *(read-aloud)*
 > Tall shapes loom out of the dense fog. The muddy ground gives way to slick, wet cobblestones, and the shapes become village dwellings — windows staring out of pools of blackness. No sound but a distant, mournful sobbing echoing through the streets. When the fog thins, **Castle Ravenloft** looms over it all, like a lance piercing the sky.

@@ -1,5 +1,8 @@
 # Swarm of Infesting Insects
 
+> [!infobox]+
+> ![[Swarm of Infesting Insects.webp]]
+>
 *Optional Session 2 pair with the Nosferatu. Flavour if they run.*
 
 Medium swarm of Tiny beasts · unaligned · CR 2

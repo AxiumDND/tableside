@@ -79,6 +79,7 @@ const FILE_MIME: Record<string, string> = {
 }
 
 let srdPortraitCache: Map<string, string> | null = null
+let srdItemCache: Map<string, string> | null = null
 
 function foldPortraitStem(name: string): string {
   return name
@@ -95,22 +96,42 @@ function srdPortraitsDir(): string {
     : join(__dirname, '../../resources/srd-portraits')
 }
 
-function loadSrdPortraitCache(): Map<string, string> {
-  if (srdPortraitCache) return srdPortraitCache
-  srdPortraitCache = new Map()
-  const dir = srdPortraitsDir()
-  if (!existsSync(dir)) return srdPortraitCache
+function srdItemsDir(): string {
+  return app.isPackaged
+    ? join(process.resourcesPath, 'srd-items')
+    : join(__dirname, '../../resources/srd-items')
+}
+
+function loadSrdImageCache(cache: Map<string, string> | null, dir: string): Map<string, string> {
+  if (cache) return cache
+  const next = new Map<string, string>()
+  if (!existsSync(dir)) return next
   for (const name of readdirSync(dir)) {
     const ext = extname(name).toLowerCase()
     if (!IMAGE_EXT.has(ext)) continue
-    srdPortraitCache.set(foldPortraitStem(name), join(dir, name))
+    next.set(foldPortraitStem(name), join(dir, name))
   }
+  return next
+}
+
+function loadSrdPortraitCache(): Map<string, string> {
+  if (!srdPortraitCache) srdPortraitCache = loadSrdImageCache(srdPortraitCache, srdPortraitsDir())
   return srdPortraitCache
+}
+
+function loadSrdItemCache(): Map<string, string> {
+  if (!srdItemCache) srdItemCache = loadSrdImageCache(srdItemCache, srdItemsDir())
+  return srdItemCache
 }
 
 function findSrdPortraitFile(name: string): string | null {
   if (!name.trim()) return null
   return loadSrdPortraitCache().get(foldPortraitStem(name)) ?? null
+}
+
+function findSrdItemFile(name: string): string | null {
+  if (!name.trim()) return null
+  return loadSrdItemCache().get(foldPortraitStem(name)) ?? null
 }
 
 function settingsPath(): string {
@@ -599,12 +620,17 @@ async function saveToCampaignLibrary(
     return { campaign: await loadCampaign(campaignFolder), path: relativePath, existed: true }
   }
   await writeFile(dest, body.endsWith('\n') ? body : `${body}\n`, 'utf8')
-  if (folderKey === 'bestiary') await copySrdPortraitToArt(name, destDir)
+  if (folderKey === 'bestiary') await copySrdArtToFolder(name, destDir, 'portrait')
+  if (folderKey === 'gear') await copySrdArtToFolder(name, destDir, 'item')
   return { campaign: await loadCampaign(campaignFolder), path: relativePath, existed: false }
 }
 
-async function copySrdPortraitToArt(name: string, noteDir: string): Promise<void> {
-  const source = findSrdPortraitFile(name)
+async function copySrdArtToFolder(
+  name: string,
+  noteDir: string,
+  kind: 'portrait' | 'item'
+): Promise<void> {
+  const source = kind === 'item' ? findSrdItemFile(name) : findSrdPortraitFile(name)
   if (!source || !campaignFolder) return
   const artDir = join(noteDir, 'Art')
   await ensureDir(artDir)
@@ -635,7 +661,8 @@ async function createCampaignNote(
     if (imageFile) body = setMapFenceImage(body, imageFile)
   }
   await writeFile(dest, body, 'utf8')
-  if (template === 'monster') await copySrdPortraitToArt(title.replace(/^pc\s*[—–-]\s*/i, ''), destDir)
+  if (template === 'monster') await copySrdArtToFolder(title.replace(/^pc\s*[—–-]\s*/i, ''), destDir, 'portrait')
+  if (template === 'gear') await copySrdArtToFolder(title.replace(/^pc\s*[—–-]\s*/i, ''), destDir, 'item')
   const relativePath = toPosix(relative(campaignFolder, dest))
   return { campaign: await loadCampaign(campaignFolder), path: relativePath }
 }
@@ -888,9 +915,9 @@ app.whenReady().then(async () => {
   protocol.handle('tabledm', async (request) => {
     try {
       const url = new URL(request.url)
-      if (url.hostname === 'srd-portrait') {
+      if (url.hostname === 'srd-portrait' || url.hostname === 'srd-item') {
         const name = url.searchParams.get('name') ?? ''
-        const full = findSrdPortraitFile(name)
+        const full = url.hostname === 'srd-item' ? findSrdItemFile(name) : findSrdPortraitFile(name)
         if (!full) return new Response('Not found', { status: 404 })
         const response = await net.fetch(pathToFileURL(full).href)
         const mime = FILE_MIME[extname(full).toLowerCase()]

@@ -1,7 +1,7 @@
 # *Mina Braun*
 
 > [!infobox]+
-> ![[Mina Braun.png]]
+> ![[Mina Braun.webp]]
 >
 > ### *Daughter · the little one*
 >

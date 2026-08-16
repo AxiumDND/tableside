@@ -1,5 +1,8 @@
 # Dire Wolf
 
+> [!infobox]+
+> ![[Dire Wolf.webp]]
+>
 *Doorway pressure. Pack Tactics and a knockdown bite.*
 
 Large beast · unaligned · CR 1

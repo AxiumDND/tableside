@@ -1,7 +1,7 @@
 # *Lucian Radu*
 
 > [!infobox]+
-> ![[Lucian Radu.png]]
+> ![[Lucian Radu.webp]]
 >
 > ### *The dispossessed dhampir · sharp-tongued warlock*
 >

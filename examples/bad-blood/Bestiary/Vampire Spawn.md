@@ -1,5 +1,8 @@
 # Vampire Spawn
 
+> [!infobox]+
+> ![[Vampire Spawn.webp]]
+>
 *The Wave 2 clock. One on Sef, one in the gallery.*
 
 Medium undead · neutral evil · CR 5

@@ -1,7 +1,7 @@
 # *Strahd von Zarovich*
 
 > [!infobox]+
-> ![[Strahd von Zarovich.png]]
+> ![[Strahd von Zarovich.webp]]
 >
 > ### *The Devil of Barovia · off-screen power*
 >
@@ -23,7 +23,7 @@
 - **Manner** — Courteous, amused, utterly assured. Politeness that lands like a threat.
 - **Quotes** — *"Do not mistake an open door for a friend."* · *"You kept your half of a bargain you never knew you'd made."*
 
-![[Curse of Strahd - Castle Ravenloft.jpg]]
+![[Curse of Strahd - Castle Ravenloft.webp]]
 
 > [!gmonly]
 > **Golden rule.** A Level 6–8 party cannot beat him. Keep him off-screen and felt. If they force a fight, he toys, lands the lesson, and lets them live.

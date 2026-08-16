@@ -1,7 +1,7 @@
 # *Danika Braun*
 
 > [!infobox]+
-> ![[Danika Braun.png]]
+> ![[Danika Braun.webp]]
 >
 > ### *Mother · the steady one*
 >

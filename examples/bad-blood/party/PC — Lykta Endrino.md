@@ -1,7 +1,7 @@
 # *Lykta Endrino*
 
 > [!infobox]+
-> ![[Lykta Endrino.png]]
+> ![[Lykta Endrino.webp]]
 >
 > ### *The party's healer & seer · spirit-medium star druid*
 >

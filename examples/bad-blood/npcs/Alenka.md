@@ -1,7 +1,7 @@
 # *Alenka*
 
 > [!infobox]+
-> ![[Alenka.png]]
+> ![[Alenka.webp]]
 >
 > ### *The Slasher · eldest sister*
 >

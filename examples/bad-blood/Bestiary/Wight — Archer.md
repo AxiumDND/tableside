@@ -1,5 +1,8 @@
 # Wight — Archer
 
+> [!infobox]+
+> ![[Wight — Archer.webp]]
+>
 *Stays in the graveyard. Shoots the snipers. Never enters the church.*
 
 Medium undead · neutral evil · CR 3

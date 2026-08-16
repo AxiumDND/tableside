@@ -22,9 +22,9 @@
 ## Before you sit down *(5-min setup)*
 - **Recap:** the party held the church through two waves, killed the prototype, found the **"— L." note** (*"the work at the old churchyard is nearly ready… keep the feather folk busy — and the strangers too"*), clocked the **faction war**, the **prisoner tattoos**, and *Strahd controls wolves*. Sef arrived post-siege, safe. Long rest done, **Level 7 banked.** The Shard is **still at the altar** — nobody has it.
 - **Attendance:** all five PCs. Lucian (Joe) held the bell tower alone all night — his debrief opens the session.
-- **Map:** `map-03-04.von-zarovich-sanctuary-player.jpg` is the **lower** sanctuary (Session 3 — don't show it yet). Tonight's catacombs are theatre-of-mind or a quick sketch: ossuary galleries, a defaced chapel-crypt, a rotunda with a dig-shaft of grey daylight, the broken seal.
+- **Map:** `map-03-04.von-zarovich-sanctuary-player.webp` is the **lower** sanctuary (Session 3 — don't show it yet). Tonight's catacombs are theatre-of-mind or a quick sketch: ossuary galleries, a defaced chapel-crypt, a rotunda with a dig-shaft of grey daylight, the broken seal.
 - **Scene images** *(MJ prompts at the bottom):* The Shattered Grave · The Lady at the Grave · The Ossuary · The Tomb-Warden Rises · The Broken Seal.
-- **Portraits on standby:** ![[Ernst Larnak.png|150]] ![[Lyssa von Zarovich.png|150]] ![[Sef Martikov.png|150]] ![[Urwin Martikov.png|150]] ![[Father Donovich.png|150]] ![[The Harbinger of the Rune-Blade.png|150]]
+- **Portraits on standby:** ![[Ernst Larnak.webp|150]] ![[Lyssa von Zarovich.webp|150]] ![[Sef Martikov.webp|150]] ![[Urwin Martikov.webp|150]] ![[Father Donovich.webp|150]] ![[The Harbinger of the Rune-Blade.webp|150]]
 - **Props:** the **shipping manifest** (Movement 5 handout — write/print it); the "— L." note is already in Jasper's notebook — have the wording ready, they *will* compare hands.
 - **Stat blocks open:** **Harbinger (solo boss — full block below)**. No other fight is planned tonight.
 - **Ambience:** grey morning bells → breakfast murmur → wind in dead yews → bone-dry crypt silence → the runes' grinding scream → green-lit stillness for the close.
@@ -81,7 +81,7 @@
 
 ## 2b — Ernst Larnak: the contract
 
-🖼 ![[Ernst Larnak.png|200]]
+🖼 ![[Ernst Larnak.webp|200]]
 
 📖
 > He comes in with the morning bread, which is the first wrong thing, because nobody saw him on the road. Trim, well-kept, dry — *dry*, in this valley — with a wide-brimmed hat and a smile that arrives a half-second before the rest of his face. He looks at the scorch-marks, the stacked bodies outside, the barricade scars, and says, delighted: "Oh, *good*. Capable people."
@@ -152,7 +152,7 @@
 
 ## ★ The Lady at the Grave ★
 
-🖼 ![[Lyssa von Zarovich.png|300]]
+🖼 ![[Lyssa von Zarovich.webp|300]]
 
 📖 *(when the investigation winds down — or the moment someone starts down the steps)*
 > She is standing among the yews as though she has been there the whole time, and perhaps she has: a pale woman in old, fine clothes, dressed for a better century, watching you work with the particular patience of someone who owns the clock. When you notice her, she smiles like a hostess.
@@ -219,7 +219,7 @@
 
 ▸ **Goal:** the fight they can finally win. Give it space, give it dread, give the Shard its night.
 
-🖼 ![[The Harbinger of the Rune-Blade.png|300]]
+🖼 ![[The Harbinger of the Rune-Blade.webp|300]]
 
 📖
 > The grinding comes down the ossuary gallery like weather. Bone-dust sifts from the niches with every step. And then it fills the archway: shrouds over dead plate, no face under the cowl, the colossal blade dragging sparks off the floor — and the runes along it are not humming now. They are **screaming.** It has found the desecrated tomb. It has found the thieves standing in it. It does not hurry, because it has never needed to.

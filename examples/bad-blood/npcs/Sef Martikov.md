@@ -1,7 +1,7 @@
 # *Sef Martikov*
 
 > [!infobox]+
-> ![[Sef Martikov.png]]
+> ![[Sef Martikov.webp]]
 >
 > ### *Wereraven Keeper · Urwin's niece · the heart of the siege*
 >

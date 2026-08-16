@@ -1,7 +1,7 @@
 # *Father Donovich*
 
 > [!infobox]+
-> ![[Father Donovich.png]]
+> ![[Father Donovich.webp]]
 >
 > ### *The village priest · keeper of the refuge*
 >

@@ -1,5 +1,8 @@
 # Wereraven — Keeper
 
+> [!infobox]+
+> ![[Wereraven — Keeper.webp]]
+>
 *Ally, not a damage dealer. Shift them when the party is going under.*
 
 Medium monstrosity · lawful good · CR 2

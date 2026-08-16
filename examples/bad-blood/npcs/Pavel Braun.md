@@ -1,7 +1,7 @@
 # *Pavel Braun*
 
 > [!infobox]+
-> ![[Pavel Braun.png]]
+> ![[Pavel Braun.webp]]
 >
 > ### *Son · the brave boy*
 >

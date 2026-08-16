@@ -1,9 +1,9 @@
 # Session 3 — "Treacherous Blood" *(the door, the fall & the long dark)*
 > _The Warden steps off the dais. The door opens. And what waits below has been waiting for guests. Read **from** this at the table. Stat blocks embedded._
 > *Rewritten 21 July 2026 post-[[Session 2 — Actual Play]] — the previous version (coach-and-letter ending) is in `_archive/`. Changes: **opens in initiative** at the S2 cliffhanger; **full lethality, no safety nets** — the party is L7, un-boosted, and a TPK is the likely (and planned-for) outcome; **Lyssa names herself at the Trap** (Milos and the manifest are cut); **the Farewell letter and coach are cut entirely** — Strahd's hand stays hidden, forever if need be; and if the party falls, the arc ends in **the Long Dark**: shallow graves, fifty years, and a very old Sef.*
-> *Updated 25 July 2026 — the physical table map is built (`Map session 3.jpeg`): Area A = lower cavern, Area B = passage + sanctuary. Map key added below; arena text keyed to the build. Pre-map version in `_archive/`.*
+> *Updated 25 July 2026 — the physical table map is built (`Map session 3.webp`): Area A = lower cavern, Area B = passage + sanctuary. Map key added below; arena text keyed to the build. Pre-map version in `_archive/`.*
 > *★ Rewritten again 25 July 2026 — **the Vestige rewrite.** Four decisions locked: (1) the voices that have called Lykta all arc are **the Choir Below** — a vestige the old branch imprisoned and Lyssa has been draining to fuel her experiments; (2) Lucian's link to Lyssa is **indirect kin** — his mother's line is the erased jailer-branch, Lyssa is NOT his mother; (3) the party **deals Lyssa a real blow** win or lose — breaking the Binding frees the Choir and guts her life's work (the TPK can BE the blow); (4) **Lyssa is killable if they earn it** — her mist-escape fails during the Unchaining. The Long Dark stays, and now the Choir is why it works. Pre-vestige version in `_archive/`.*
-> *Updated 26 July 2026 — **the Signet is confirmed on Lucian.** Image list trimmed: Warden Descends + Sanctuary of Green Candles cut (Movement 2 reuses `Scene - The Sealed Stair.png` + the Harbinger portrait; Area B lives on the table map); "The Iron Doors Open" reworked into **The Inner Sanctum** (lair + mind-flayer lab + the sarcophagus in one image); the Choir's seal is now explicitly a **great black sarcophagus bricked into the far wall** — Lyssa's experimental subject; aged **Sef (65) portrait** added for the Long Dark. All images generated and renamed same day; the planned Sealed Sarcophagus close-up was cut — the sarcophagus reads clearly in the Inner Sanctum image, which doubles as the interaction shot. MJ prompts moved to [[Midjourney Prompt List]] now the set is done.*
+> *Updated 26 July 2026 — **the Signet is confirmed on Lucian.** Image list trimmed: Warden Descends + Sanctuary of Green Candles cut (Movement 2 reuses `Scene - The Sealed Stair.webp` + the Harbinger portrait; Area B lives on the table map); "The Iron Doors Open" reworked into **The Inner Sanctum** (lair + mind-flayer lab + the sarcophagus in one image); the Choir's seal is now explicitly a **great black sarcophagus bricked into the far wall** — Lyssa's experimental subject; aged **Sef (65) portrait** added for the Long Dark. All images generated and renamed same day; the planned Sealed Sarcophagus close-up was cut — the sarcophagus reads clearly in the Inner Sanctum image, which doubles as the interaction shot. MJ prompts moved to [[Midjourney Prompt List]] now the set is done.*
 > *★ Rewritten a third time 26 July 2026 — **the Reveal + the Spotlight pass.** Two changes: (1) **THE FRAME IS REVEALED — by Lyssa, at the Trap.** She has worked out that **Strahd invited the party into Barovia to remove her**, and she tells them so, plainly and truthfully (the Choir confirms it to Lykta). Strahd himself still never appears, writes nothing, says nothing — the Mists opening at the end is his only signature, and now the party knows how to read it. (2) **A spotlight ledger** guarantees each player an engineered epic beat — Lucian and Lykta's were already built; **Dallas gains the volatile vats, Jasper gains the Warded Line + Hunter's Eye.** (3) **★ The Offer, sharpened:** Lyssa's recruitment is for **Lucian alone** — a place at her side and the family name restored, **priced at his companions' lives** — and the other three are told to their faces they have nothing she wants. Delivered in character to Joe, then held in silence.*
 
 > [!tip] How to use this
@@ -50,14 +50,14 @@
 - **★ Night sheet:** [[Session 3 — Night Sheet]] — one page of numbers, round scripts, and cues. **Run the fights from there; read the prose from here.**
 - **Recap:** embedded at Movement 1 — picks up mid-cliffhanger. GM summary of state: party in the **lower cavern** at the great door; **two pressure-plate mechanisms** found (they open the door); **Jasper has Protection from Evil and Good running**; the **Warden is halfway down the dais shaft**; whispering voices behind the door ("come to us"); everyone ~unbloodied but an hour of resources down (short rest spent in the crypt). **Level 7.** Loot carried: **Signet — Lucian wears it (confirmed 26 Jul)**, Chime, Lens, scrolls ×2, 3 holy water, silvered arrows.
 - **Attendance:** all four PCs.
-- **Map:** ✅ **built — the physical table layout is photographed as `Assets/Maps/Map session 3.jpeg`** (key below). **Area A** (right) = the lower cavern — dais, stairs, shaft, the great door (Movement 2). **Area B** (left) = the green passage + Lyssa's sanctuary (Movements 3–4). Keep the far half covered/undressed until the doors open. Surface reference only if they retreat: `Crypt Level 1 — as played (Session 2).jpeg`. *(`map-03-04.von-zarovich-sanctuary-player.jpg` no longer needed — the sanctuary is on the table.)*
-- **Scene images** *(✅ ALL GENERATED & renamed 26 Jul):* **The Inner Sanctum** *(lair + mind-flayer lab + the sarcophagus in one frame)* · **The Unchaining** · **The Long Dark** · **Portrait — Sef Martikov, 65**. *(✂️ The Warden Descends and The Sanctuary of Green Candles are cut — Movement 2 reuses `Scene - The Sealed Stair.png` + the Harbinger portrait, and Area B is physically on the table. ✂️ The Sealed Sarcophagus close-up is cut — the sarcophagus reads clearly in the Inner Sanctum image; show that for Lykta's interactions at the seal. The Black Coach and Elder Evil scenes stay cut with their content.)*
-- **Portraits on standby:** ![[The Harbinger of the Rune-Blade.png|150]] ![[Lyssa von Zarovich.png|150]] ![[Sef Martikov — Old.png|150]] *(the aged portrait for the Long Dark — the young ![[Sef Martikov.png|100]] is "how you remember her")*
+- **Map:** ✅ **built — the physical table layout is photographed as `Assets/Maps/Map session 3.webp`** (key below). **Area A** (right) = the lower cavern — dais, stairs, shaft, the great door (Movement 2). **Area B** (left) = the green passage + Lyssa's sanctuary (Movements 3–4). Keep the far half covered/undressed until the doors open. Surface reference only if they retreat: `Crypt Level 1 — as played (Session 2).webp`. *(`map-03-04.von-zarovich-sanctuary-player.webp` no longer needed — the sanctuary is on the table.)*
+- **Scene images** *(✅ ALL GENERATED & renamed 26 Jul):* **The Inner Sanctum** *(lair + mind-flayer lab + the sarcophagus in one frame)* · **The Unchaining** · **The Long Dark** · **Portrait — Sef Martikov, 65**. *(✂️ The Warden Descends and The Sanctuary of Green Candles are cut — Movement 2 reuses `Scene - The Sealed Stair.webp` + the Harbinger portrait, and Area B is physically on the table. ✂️ The Sealed Sarcophagus close-up is cut — the sarcophagus reads clearly in the Inner Sanctum image; show that for Lykta's interactions at the seal. The Black Coach and Elder Evil scenes stay cut with their content.)*
+- **Portraits on standby:** ![[The Harbinger of the Rune-Blade.webp|150]] ![[Lyssa von Zarovich.webp|150]] ![[Sef Martikov — Old.webp|150]] *(the aged portrait for the Long Dark — the young ![[Sef Martikov.webp|100]] is "how you remember her")*
 - **Stat blocks:** embedded below — the Harbinger (Movement 2), Lyssa + 2 Vampire Mind Flayers (Movement 4).
 - **Props/notes:** nothing to print, nothing to hand out — **no letter, no cards.** The last-thought beat (M5) and its fifty-year echo (M7) are done verbally; just have your own pen ready to jot the four answers.
 - **Ambience:** chain-rattle and stone → the runes' scream → green-lit hush → cold piano for Lyssa → psychic combat → silence… → rain on mud, and wind, for the Long Dark.
 
-## Table map key *(as built — `Map session 3.jpeg`, 24 Jul)*
+## Table map key *(as built — `Map session 3.webp`, 24 Jul)*
 
 > [!tip] One mat, both fights
 > The whole night is on one mat: **Area A** (right) is the lower cavern, **Area B** (left) is the passage and sanctuary. The great door ruin sits on the seam between them — when the button is pressed, the door "opens" and play flows left. Until then, treat the seam as solid: nothing in B is visible from A but green light through the crack.
@@ -113,7 +113,7 @@
 
 ▸ **Goal:** the rematch, at last — in the arena the players chose by digging deep. Winnable with radiant and brains; escapable through the door; survivable by retreat. Its quarry is Lucian.
 
-🖼 ![[Scene - The Sealed Stair.png|500]] *(the arena — then the Harbinger portrait as it steps off)* ![[The Harbinger of the Rune-Blade.png|300]]
+🖼 ![[Scene - The Sealed Stair.webp|500]] *(the arena — then the Harbinger portrait as it steps off)* ![[The Harbinger of the Rune-Blade.webp|300]]
 
 📖 *(as initiative resolves)*
 
@@ -177,7 +177,7 @@
 
 ▸ **Goal:** her first appearance, her name from her own mouth, and a fight run at full lethality to whatever end the dice decree.
 
-🖼 ![[Scene - The Inner Sanctum.png|500]] ![[Lyssa von Zarovich.png|300]]
+🖼 ![[Scene - The Inner Sanctum.webp|500]] ![[Lyssa von Zarovich.webp|300]]
 
 📖 *(the sanctuary chamber)*
 
@@ -229,7 +229,7 @@
 - **Radiant + the party's tools** are the levers: holy water, silvered arrows, Starry Wisp, Guiding Bolt; the **scroll of Protection from Evil and Good** is worth its weight in lives. And the **Chime** — useless against creatures, remember — was cut for exactly this congregation (see The Binding). If they play perfectly they can live. That's the honest gap between *can* and *probably won't*.
 
 > [!gmonly] ★ THE BINDING — the objective layer (this is how the blow lands) ★
-> 🖼 ![[Scene - The Inner Sanctum.png|400]] *(the sarcophagus is in-frame — point to it whenever anyone, above all Lykta, approaches, touches, or studies the seal while it still holds; the Unchaining image replaces it when the third lock breaks)*
+> 🖼 ![[Scene - The Inner Sanctum.webp|400]] *(the sarcophagus is in-frame — point to it whenever anyone, above all Lykta, approaches, touches, or studies the seal while it still holds; the Unchaining image replaces it when the third lock breaks)*
 > The Trap is also a **prison mid-jailbreak**, and the party holds every key. The Binding has **three locks: the two anchor-stones** (the carved slabs, mid-room) **and the seal-wall** (the small ruin, far corner).
 > **Breaking an anchor-stone** (any one of):
 > - **Ring the Chime of Last Rites beside it** (action, adjacent) — automatic. The funeral bell, finally at its funeral. The stone cracks through with a sound like a held breath released.
@@ -240,7 +240,7 @@
 > **★ Lyssa's tell — play it loud:** the first time a stone so much as cracks, the hostess evaporates: ***"THE STONES — kill the medium, NOW."*** From that round she fights like someone watching her life's work catch fire, because she is. The players should learn what matters in this room from *her* panic.
 > **The fallback (GM pocket — the blow lands regardless):** if the party never works the locks and falls, **Lucian's death-blood, spilled on the prison floor, is itself a key turning.** The last of the jailers, dead in the jail — the Binding fails over his body, and the Unchaining plays over their deaths. Their fall IS the blow. *(Best if they do it on purpose — hold this only for the bleakest branch.)*
 
-📖 **★ When the third lock breaks — show the image and say this over whatever else is happening:** 🖼 ![[Scene - The Unchaining.png|400]]
+📖 **★ When the third lock breaks — show the image and say this over whatever else is happening:** 🖼 ![[Scene - The Unchaining.webp|400]]
 
 > [!readaloud]
 > Every candle in the room goes out at once — one heartbeat of absolute dark. Then they relight — **wrong.** Black at the core, the flames burning inward, and every thread of light in the room running *backwards*, into the wall. The seal does not explode. It **inhales**: the sarcophagus lid and the bricks around it fold inward into a dark that eats the torchlight — and something comes out. Not a shape. Never a shape. A tide of voices and grave-cold light, fifty years of screaming finally let off the leash.
@@ -309,9 +309,9 @@
 
 ▸ **Goal:** fifty years in one breath; four shallow graves; one very old woman. The campaign's ending and the next campaign's cold open, in the same scene. **Reveal almost nothing about what they now are.**
 
-🖼 ![[Scene - The Long Dark.png|500]]
+🖼 ![[Scene - The Long Dark.webp|500]]
 
-🖼 ![[Sef Martikov — Old.png|300]] *(show as she speaks)*
+🖼 ![[Sef Martikov — Old.webp|300]] *(show as she speaks)*
 
 📖 *(from the darkness of Movement 5 — no pause)*
 
@@ -366,6 +366,6 @@
 
 ## Images *(✅ set complete — 26 Jul)*
 
-All table images for tonight live in `Assets/` and are embedded above at their movements: `Scene - The Sealed Stair.png` (reused — M2) · the Harbinger & Lyssa portraits · `Scene - The Inner Sanctum.png` (M4, doubles as the seal-interaction shot) · `Scene - The Unchaining.png` (the third lock) · `Scene - The Long Dark.png` + `Sef Martikov — Old.png` (M7). The Midjourney prompts are archived in [[Midjourney Prompt List]] for regeneration/variants.
+All table images for tonight live in `Assets/` and are embedded above at their movements: `Scene - The Sealed Stair.webp` (reused — M2) · the Harbinger & Lyssa portraits · `Scene - The Inner Sanctum.webp` (M4, doubles as the seal-interaction shot) · `Scene - The Unchaining.webp` (the third lock) · `Scene - The Long Dark.webp` + `Sef Martikov — Old.webp` (M7). The Midjourney prompts are archived in [[Midjourney Prompt List]] for regeneration/variants.
 
 #dnd #ravenloft #oneshot #runguide

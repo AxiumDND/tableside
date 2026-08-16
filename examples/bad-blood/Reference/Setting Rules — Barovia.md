@@ -7,7 +7,7 @@
 Rolling thunderclouds, deathly stillness, dark woods patrolled by Strahd's wolves and servitors. The **Svalich Woods** climb the mountains that wall the valley — **Mount Baratok** (snow-capped) and its twin **Mount Ghakis**, with **Lake Zarovich** between them. **Vallaki** (palisaded town) sits on the lake's south side; **Krezk** (walled village, Abbey of Saint Markovia) lies west; the ruins of **Argynvostholt** (the fallen Order of the Silver Dragon) lie between them. **East of the mountains** lies the **village of Barovia** — *shrouded in mist, with no walls or defenses* — overlooked by **Castle Ravenloft**, perched on the 1,000-ft **Pillarstone of Ravenloft.**
 
 > [!gmonly] For this arc
-> Our whole three-shot is the **village of Barovia** and its surrounds. The village is **undefended and wall-less** — which is exactly why the **village church** becomes the people's only refuge (and Lyssa's target) in Session 2. Vallaki/Krezk are a day+ away; we never go there. Full regional map: [[Locations]] (*Map of barovia full.jpg*).
+> Our whole three-shot is the **village of Barovia** and its surrounds. The village is **undefended and wall-less** — which is exactly why the **village church** becomes the people's only refuge (and Lyssa's target) in Session 2. Vallaki/Krezk are a day+ away; we never go there. Full regional map: [[Locations]] (*Map of barovia full.webp*).
 
 ## The Mists *(why "just leave" never works)*
 A deadly fog rings the valley and engulfs any creature trying to leave — **flying creatures included.**

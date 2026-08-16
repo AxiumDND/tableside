@@ -40,7 +40,7 @@ The mausoleum as written: thorn-vine **half carved into the stone, half real and
 
 🗺️ **The crypt as actually played** — drawn at the table, rooms lettered to the run-guide key:
 
-![[Crypt Level 1 — as played (Session 2).jpeg]]
+![[Crypt Level 1 — as played (Session 2).webp]]
 *The as-played layout (this supersedes the Neutral Party plan as canon): the niche hall with the sun rosette (A, bottom right), the urn room (B), the wells (C), the workshop with the strap tables (F, top centre), the broken span (H, the diagonal planks), the rotunda with the dais and the toppled statue-and-sword (K, right), and the dug hole down to the lower cavern (centre). The party's position at the cut: the cavern below the hole, at the great door.*
 
 - **A — Hall of Chiselled Names:** every nameplate scrubbed (Inv 19 — methodical, purposeful), the sun rosette gouged *rougher, angrier* than the plates — and the swept boot-paths **deliberately detour around the sun symbol.** Dallas **Arcana 27**: this is *de-consecration* — someone stripping the wards that kept these dead from rising. The party put the whole erasure thesis together unaided.

@@ -4,7 +4,7 @@
 > **Cut from the arc — 19 July 2026.** Never introduced. Sheet kept as sequel material: if they return to Barovia, a smiling man who is always dry in the rain already knows their names. His fee survives as the purse in the coach (2,500 gp for a contract nobody signed).
 
 > [!infobox]+
-> ![[Ernst Larnak.png]]
+> ![[Ernst Larnak.webp]]
 >
 > ### *The smiling man · Strahd's spy*
 >

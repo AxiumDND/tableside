@@ -1,5 +1,8 @@
 # Specter
 
+> [!infobox]+
+> ![[Specter.webp]]
+>
 *Phases through the church wall. There is no safe perch.*
 
 Medium undead · chaotic evil · CR 1

@@ -7,7 +7,7 @@
 ---
 
 ## Before you sit down *(5-min setup)*
-- **Queue images:** [[Scene - The Last Camp.png]] → [[Scene - The Mists Rise.png]] → [[Scene - The Svalich Woods.png]] → [[Scene - The Harbinger Emerges.png]] → [[Scene - The Dawn Drives It Off.png]] → [[Scene - The Village Lane.png]].
+- **Queue images:** [[Scene - The Last Camp.webp]] → [[Scene - The Mists Rise.webp]] → [[Scene - The Svalich Woods.webp]] → [[Scene - The Harbinger Emerges.webp]] → [[Scene - The Dawn Drives It Off.webp]] → [[Scene - The Village Lane.webp]].
 - **Print/ready:** [[Letter — The Invitation]] (hand out at the very start).
 - **Stat block open:** **[[The Harbinger of the Rune-Blade]]** — the night's only fight; run it to *frighten*, not kill. Scaling + the rescue: [[Encounters & Stat Blocks#Session 0.5 — Into the Mist (party Level 6)|Encounters → Session 0.5]].
 - **Ambience:** warm campfire loop → silence → dripping-forest drone. See [[Ambience & Soundtrack]].
@@ -51,19 +51,19 @@
 > Because the land here is old, and it is patient, and a long time ago it learned the taste of people.
 > None of which you know yet. Tonight you're somewhere else entirely — somewhere ordinary, and warm, and almost over.
 
-🎲 Cut to black, hand out **[[Letter — The Invitation]]**, let a player read it aloud. Then show [[Scene - The Last Camp.png]] and open on the fire.
+🎲 Cut to black, hand out **[[Letter — The Invitation]]**, let a player read it aloud. Then show [[Scene - The Last Camp.webp]] and open on the fire.
 
 📖 **The fire:**
 > The road's been long, the last inn a full day behind you, so you make camp where the trees thin — a ring of stones, a small fire, the horses hobbled close. Crickets. Woodsmoke. The easy quiet of people who've decided to trust one another with the watch. Settle in. Pass the wineskin.
 
 🎲 If you didn't spend it all in Session Zero, take one last warm beat — a shared memory, a small kindness — *then* take it away.
 
-🎲 **The Mists take them.** Drop the music to **silence.** Pick the deep-night watcher. Show [[Scene - The Mists Rise.png]].
+🎲 **The Mists take them.** Drop the music to **silence.** Pick the deep-night watcher. Show [[Scene - The Mists Rise.webp]].
 > [Watcher's name], it's your watch. The fire's burned low. And the fog comes — but not the way fog should. It doesn't roll in off the hills; it *rises*, out of the ground, out from between the camp-stones, too white and too quiet. The fire shrinks to a dim orange smear an arm's length away. You open your mouth to wake the others —
 
 🎲 Let the watcher try **one** thing (shout, grab someone). Then a **DC 13 Wisdom save** — succeed or fail, the fog takes them too. The others can't be roused. *Story, not a fight.* Cut to black.
 
-📖 **Waking** — show [[Scene - The Svalich Woods.png]]:
+📖 **Waking** — show [[Scene - The Svalich Woods.webp]]:
 > You wake to grey light and the smell of a woodsmoke that isn't yours. The fire is long dead. The fog is already drawing back between the trees like a tide going out — and as it clears, it takes your road with it. Black pines lean over a valley that was not here last night, under a sky the colour of a bruise. The horses are gone. The air smells of wet stone. Somewhere ahead a raven calls, once — and then, oddly, it *waits.*
 
 🔀 **If they search themselves / the camp:** whoever the Invitation's *token* latched onto finds it — the spent vial of dark wine (or feather). **DC 15 Arcana:** a faint, *spent* conjuration, like a struck match; it won't light again. **Do not explain it.** Gear remains; horses and road do not.
@@ -85,7 +85,7 @@
 🎲 A red glow swells in the fog; the hum rises to a *scream.* Then it comes:
 > It walks out of the Mist like the fog gave birth to it — towering, shrouded head to foot in rotted grave-cloth over blackened iron, faceless under its hood, dragging a slab of runed steel taller than a man, the etched characters burning sullen red. It doesn't speak. It doesn't hurry. The hood turns, takes the three of you in, fixes on one — and it starts walking.
 
-![[Scene - The Harbinger Emerges.png]]
+![[Scene - The Harbinger Emerges.webp]]
 
 🎲 **Run it scary, not lethal** (block: [[The Harbinger of the Rune-Blade]]):
 - **Steel rings off it** — resists nonmagical B/P/S; even magic weapons feel like hitting an anvil. Say it loudly the first time.
@@ -148,7 +148,7 @@ actions:
 🎲 **The rescue — his entrance.** Time it to the party's worst moment.
 > Ravens — an explosion of them, screaming up out of the pines — and a voice: "**Down! Eyes shut!**" Light blooms at the treeline, warm and gold and utterly wrong for this grey place, pouring from the open hand of a stocky man in an old coat. The Harbinger *stops* — recoils, runes guttering — and steps back into the Mist, gone. The man lowers his hand, breathing hard. "…Huh. I asked for help. Didn't think I'd get it. Name's Urwin."
 
-![[Scene - The Dawn Drives It Off.png]]
+![[Scene - The Dawn Drives It Off.webp]]
 
 🎲 **If they ask what it was:** the Keepers call it the **Tomb-Warden** — *"It hunts what doesn't belong, and those who rob the dead. The Dawn holds it off. For a while. Try not to go digging up graves… though where I'm sending you, you may not get the choice."* (Don't over-explain.)
 
@@ -175,7 +175,7 @@ actions:
 ▸ **Goal:** end on the shuttered tavern. Don't open it.
 
 🎲 Walk them down as the grey day sinks toward dusk — nailed shutters, faces you feel but never see, the castle that never gets closer. Stop the moment the tavern shows.
-![[Scene - The Village Lane.png]]
+![[Scene - The Village Lane.webp]]
 
 > The village is a huddle of grey houses with their shutters nailed shut — not one face shows itself, though you feel them behind the glass. At the end of the lane: a tavern, dark, its sign creaking on one hinge — a bunch of grapes, paint flaked to dried-blood red. *Blood of the Vine.* No light. No sound but that creak. Urwin stops at the square's edge and comes no closer. "That's it," he says quietly. "Whatever's in there… it was three good women, once. Do right by them if you can." *(he won't meet your eyes)* "I'll be near. Dawn keep you."
 

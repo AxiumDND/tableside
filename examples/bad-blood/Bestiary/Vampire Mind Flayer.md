@@ -1,5 +1,8 @@
 # Vampire Mind Flayer
 
+> [!infobox]+
+> ![[Vampire Mind Flayer.webp]]
+>
 *The prototype. Mind Burst goes up as well as out.*
 
 Medium undead · chaotic evil · CR 5

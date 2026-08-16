@@ -1,5 +1,8 @@
 # Vampire Nosferatu
 
+> [!infobox]+
+> ![[Vampire Nosferatu.webp]]
+>
 *Optional Session 2 coffin. Walking away is the right call.*
 
 Medium undead · chaotic evil · CR 8

@@ -58,7 +58,7 @@ The most valuable column in this document.
 
 ### Maps
 - **Village of Barovia** (full + player versions), **the church** (GF, basement, print-ready PDFs), **outside the village**, **Castle Ravenloft**, **the Blood o' the Vine tavern** (three floors, print-ready).
-- **Two hand-drawn as-played maps**: `Crypt Level 1 — as played (Session 2).jpeg` and `Map session 3.jpeg`.
+- **Two hand-drawn as-played maps**: `Crypt Level 1 — as played (Session 2).webp` and `Map session 3.webp`.
 
 ### Handouts
 `Letter — The Invitation` (screen + print) and `Letter — Strahd's Farewell` as finished images, plus the markdown originals. **The Invitation is a reusable device**: a sealed letter that drags strangers somewhere is the cleanest cold-open you've run.

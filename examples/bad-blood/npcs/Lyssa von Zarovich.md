@@ -1,7 +1,7 @@
 # *Lyssa von Zarovich*
 
 > [!infobox]+
-> ![[Lyssa von Zarovich.png]]
+> ![[Lyssa von Zarovich.webp]]
 >
 > ### *The villain · vampire nightbringer*
 >

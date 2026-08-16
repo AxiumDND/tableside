@@ -1,5 +1,8 @@
 # Minotaur Skeleton
 
+> [!infobox]+
+> ![[Minotaur Skeleton.webp]]
+>
 *Tavern backup. Hammers wreck it.*
 
 Large undead · lawful evil · CR 2

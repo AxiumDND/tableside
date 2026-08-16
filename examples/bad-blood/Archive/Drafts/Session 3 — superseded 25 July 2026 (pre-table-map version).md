@@ -27,9 +27,9 @@
 ## Before you sit down *(5-min setup)*
 - **Recap:** embedded at Movement 1 — picks up mid-cliffhanger. GM summary of state: party in the **lower cavern** at the great door; **two pressure-plate mechanisms** found (they open the door); **Jasper has Protection from Evil and Good running**; the **Warden is halfway down the dais shaft**; whispering voices behind the door ("come to us"); everyone ~unbloodied but an hour of resources down (short rest spent in the crypt). **Level 7.** Loot carried: Signet (confirm holder — it is only warm in Lucian's hand), Chime, Lens, scrolls ×2, 3 holy water, silvered arrows.
 - **Attendance:** all four PCs.
-- **Map:** the as-played crypt is `Crypt Level 1 — as played (Session 2).jpeg` (surface reference only tonight). The lower cavern + great door: sketch from the S2 table drawing. Beyond the door use `map-03-04.von-zarovich-sanctuary-player.jpg` ([[Locations]]) once they're through.
+- **Map:** the as-played crypt is `Crypt Level 1 — as played (Session 2).webp` (surface reference only tonight). The lower cavern + great door: sketch from the S2 table drawing. Beyond the door use `map-03-04.von-zarovich-sanctuary-player.webp` ([[Locations]]) once they're through.
 - **Scene images** *(MJ prompts at the bottom — generate before the session):* The Warden Descends · The Sanctuary of Green Candles · The Iron Doors Open · The Long Dark. *(The Black Coach and Elder Evil scenes are cut with their content.)*
-- **Portraits on standby:** ![[The Harbinger of the Rune-Blade.png|150]] ![[Lyssa von Zarovich.png|150]] ![[Sef Martikov.png|150]] *(Sef's portrait is 50 years young — describe over it, don't show it until the reveal lands, or show it as "how you remember her")*
+- **Portraits on standby:** ![[The Harbinger of the Rune-Blade.webp|150]] ![[Lyssa von Zarovich.webp|150]] ![[Sef Martikov.webp|150]] *(Sef's portrait is 50 years young — describe over it, don't show it until the reveal lands, or show it as "how you remember her")*
 - **Stat blocks:** embedded below — the Harbinger (Movement 2), Lyssa + 2 Vampire Mind Flayers (Movement 4).
 - **Props/notes:** four index cards for the Fall (each player writes their character's last thought — see Movement 5). **Do NOT print anything letter-shaped.** There is no letter.
 - **Ambience:** chain-rattle and stone → the runes' scream → green-lit hush → cold piano for Lyssa → psychic combat → silence… → rain on mud, and wind, for the Long Dark.
@@ -68,7 +68,7 @@
 
 ▸ **Goal:** the rematch, at last — in the arena the players chose by digging deep. Winnable with radiant and brains; escapable through the door; survivable by retreat. Its quarry is Lucian.
 
-🖼 ![[Scene - The Warden Descends.png|500]] *(then the Harbinger portrait as it steps off)* ![[The Harbinger of the Rune-Blade.png|300]]
+🖼 ![[Scene - The Warden Descends.png|500]] *(then the Harbinger portrait as it steps off)* ![[The Harbinger of the Rune-Blade.webp|300]]
 
 📖 *(as initiative resolves)*
 
@@ -124,7 +124,7 @@ creatures:
 
 ▸ **Goal:** her first appearance, her name from her own mouth, and a fight run at full lethality to whatever end the dice decree.
 
-🖼 ![[Lyssa von Zarovich.png|300]]
+🖼 ![[Lyssa von Zarovich.webp|300]]
 
 📖 *(the sanctuary chamber)*
 
@@ -207,7 +207,7 @@ creatures:
 
 ▸ **Goal:** fifty years in one breath; four shallow graves; one very old woman. The campaign's ending and the next campaign's cold open, in the same scene. **Reveal almost nothing about what they now are.**
 
-🖼 ![[Scene - The Long Dark.png|500]]
+🖼 ![[Scene - The Long Dark.webp|500]]
 
 📖 *(from the darkness of Movement 5 — no pause)*
 
@@ -274,7 +274,7 @@ creatures:
 ### Scene - The Iron Doors Open.png *(carried over — generate if not already done)*
 > Two great iron doors swinging open in a green-candlelit underground vault releasing two horrifying undead mind flayer creatures, pale grey-skinned humanoids with writhing facial tentacles and vampire fangs in dead men's clothes, a pale aristocratic vampire woman in century-old finery standing before them with a delighted hostess smile, psychic energy distorting the air, gothic horror, dark fantasy oil painting style, Dungeons and Dragons Ravenloft aesthetic, dramatic lighting, highly detailed, muted desaturated palette with sickly green candlelight --ar 16:9 --v 6
 
-### Scene - The Long Dark.png
+### Scene - The Long Dark.webp
 *Show at Movement 7 — the graves.*
 > A rain-soaked graveyard at night under towering old yew trees filled with silent watching ravens, four shallow graves with freshly turned earth, muddy hands breaking up through the soil, a small old woman in a hooded travelling cloak leaning on a spade watching with a lantern at her feet, a worn raven-feather charm on a cord at her neck, a distant gothic castle on a mountain with one lit window, gothic horror, dark fantasy oil painting style, Dungeons and Dragons Ravenloft aesthetic, dramatic lighting, highly detailed, muted desaturated palette with one warm lantern light --ar 16:9 --v 6
 

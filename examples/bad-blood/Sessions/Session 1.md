@@ -81,7 +81,7 @@
 
 ▸ **Goal:** Sef arrives with Jasper — Urwin's ravens found him and she went out to get him. Pick up exactly where 0.5 ended, then get moving fast.
 
-🖼 ![[Scene - The Church Siege.png|500]]
+🖼 ![[Scene - The Church Siege.webp|500]]
 
 📖 **The opener — read it cold, lights down, ambience up.** *(Embedded here so you don't flip files at minute zero; the same recap lives in [[Session Recaps & Aftermath]]. Show the siege image as you start.)*
 
@@ -110,7 +110,7 @@
 > [!tip] Table note — the first five minutes
 > Don't ask for rolls yet and don't open the map discussion. Let them shout down the tower, wake the church, throw the gate — momentum first, mechanics later. The session starts *moving* and should feel like it.
 
-🖼 ![[Sef Martikov.png|250]]
+🖼 ![[Sef Martikov.webp|250]]
 
 🎲 **Sef Martikov** and **Jasper Alderwick** ([[PC — Jasper Alderwick]]), running for the gate together.
 
@@ -164,7 +164,7 @@ This is Jasper's entrance and the party's first real chance to fold him in — d
 
 ▸ **Goal:** Urwin shows his true face. The Shard changes hands. Ten minutes — then the doors come in.
 
-🖼 ![[Urwin Martikov.png|250]] ![[Father Donovich.png|250]]
+🖼 ![[Urwin Martikov.webp|250]] ![[Father Donovich.webp|250]]
 
 📖
 
@@ -260,7 +260,7 @@ Sef doesn't move toward the undercroft.
 
 **Combatants:** [[Ghoul]] ×3 · [[Dire Wolf]] ×2 · [[Wight — Archer]] · [[Specter]] · party
 
-🖼 ![[Scene - The Doors Fall.png|500]]
+🖼 ![[Scene - The Doors Fall.webp|500]]
 
 📖
 
@@ -313,7 +313,7 @@ Sef doesn't move toward the undercroft.
 
 **Combatants:** [[Vampire Spawn]] ×2 · [[Ghoul]] · party
 
-🖼 ![[Scene - Sef in the Courtyard.png|500]]
+🖼 ![[Scene - Sef in the Courtyard.webp|500]]
 
 📖
 
@@ -380,7 +380,7 @@ Sef doesn't move toward the undercroft.
 >
 > This is where the faction war becomes explicit, from Urwin's own mouth: Strahd's wolves are in the graveyard, not to help the Keepers, but because Lyssa is trespassing in Strahd's domain. The party are caught between two ancient powers. Let it land while they're still catching their breath — *then* the doors.
 
-🖼 ![[Scene - The Prototype.png|500]]
+🖼 ![[Scene - The Prototype.webp|500]]
 
 📖
 
@@ -409,7 +409,7 @@ Telegraph it every time: *"Its tentacles flare and pressure builds behind your e
 
 ▸ **Goal:** the villain in the flesh. Non-combat. One minute of quiet after an hour of noise.
 
-🖼 ![[Scene - Lyssa on the Rooftop.png|500]] ![[Lyssa von Zarovich.png|250]]
+🖼 ![[Scene - Lyssa on the Rooftop.webp|500]] ![[Lyssa von Zarovich.webp|250]]
 
 🎲 When the prototype falls, cut the ambience dead. Read — then show the scene, then the portrait.
 
@@ -464,7 +464,7 @@ One line back from whoever wants it, then he's part of the group again for the a
 
 ## The graveyard investigation
 
-🖼 ![[Scene - The Morning After.png|500]]
+🖼 ![[Scene - The Morning After.webp|500]]
 
 🎲 Dawn graying the sky. Curious PCs search the graveyard. DC 12 Investigation / Survival:
 
@@ -496,7 +496,7 @@ One line back from whoever wants it, then he's part of the group again for the a
 
 ## Ernst Larnak arrives
 
-🖼 ![[Scene - Ernst Larnak Arrives.png|500]] ![[Ernst Larnak.png|250]]
+🖼 ![[Scene - Ernst Larnak Arrives.webp|500]] ![[Ernst Larnak.webp|250]]
 
 🎲 Too conveniently — a figure steps through the broken door. Dry. Immaculate. He steps over a body with the ease of stepping over a puddle.
 

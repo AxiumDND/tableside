@@ -9,7 +9,7 @@
 
 *(The same aged paper, the same blood-red wax seal pressed with a single ornate letter — and now, beneath the signature, you can read it: a **Z**. The hand is the same elegant old-fashioned script as the letter that started all this. You know it now, and it makes the back of your neck cold.)*
 
-![[Letter — Strahd's Farewell.png]]
+![[Letter — Strahd's Farewell.webp]]
 *The print-ready prop. Hand it over and stay quiet while they read.*
 
 > To the company who came through my Mists — and lived. My compliments.

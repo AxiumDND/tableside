@@ -1,7 +1,7 @@
 # *Dallas Hinterfield*
 
 > [!infobox]+
-> ![[Dallas Hinterfield.png]]
+> ![[Dallas Hinterfield.webp]]
 >
 > ### *The party's arcanist · know-it-all gnome sorcerer*
 >

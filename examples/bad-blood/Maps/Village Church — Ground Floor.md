@@ -1,7 +1,7 @@
 # Village Church — Ground Floor
 
 ```map
-image: MAP Curse of Strahd - Village of Barovia - Church GF.jpg
+image: MAP Curse of Strahd - Village of Barovia - Church GF.webp
 pins:
   - id: a1
     x: 0.5
@@ -86,7 +86,7 @@ Small stone structure north of the apse, outside. Ignore unless someone goes aro
 
 ## Not on this floor
 
-- **Gallery / bell loft** — overwatch, Lykta's natural perch, Lucian's tower stair. Map: `MAP Curse of Strahd - Village of Barovia - Church.jpg`
-- **Undercroft** — Brauns sealed below, one trapdoor. Map: `MAP Curse of Strahd - Village of Barovia - Church basement.jpg`
+- **Gallery / bell loft** — overwatch, Lykta's natural perch, Lucian's tower stair. Map: `MAP Curse of Strahd - Village of Barovia - Church.webp`
+- **Undercroft** — Brauns sealed below, one trapdoor. Map: `MAP Curse of Strahd - Village of Barovia - Church basement.webp`
 
 [[Session 1]] · [[Locations]] · [[Urwin Martikov]] · [[Father Donovich]]

@@ -8,7 +8,7 @@ Rewrites of the run guides, kept so the evolution of the arc is traceable. Each 
 - `Session 2 — superseded 15 July 2026 (pre-S1-actual version)` — written before Session 1 was played; the S1 outcomes made it wrong.
 - `Session 2 — superseded 19 July 2026 (pre-crypt-map version)` — before the crypt was mapped room-by-room.
 - `Session 3 — superseded 21 July 2026 (coach-ending version)` — **the version with the coach, the Farewell letter and Ernst Larnak.** Cut on 21 July… and then partly reinstated at the table on the night. **If you ever want the ending as originally written, it's this file.**
-- `Session 3 — superseded 25 July 2026 (pre-table-map version)` — before `Map session 3.jpeg` was built.
+- `Session 3 — superseded 25 July 2026 (pre-table-map version)` — before `Map session 3.webp` was built.
 - `Session 3 — superseded 25 July 2026 (pre-vestige version)` — before the Choir Below / Binding / Unchaining rewrite.
 
 ## Retired planning docs *(archived 14 August 2026, arc complete)*

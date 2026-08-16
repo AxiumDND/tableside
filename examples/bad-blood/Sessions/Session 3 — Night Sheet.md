@@ -9,7 +9,7 @@
 
 **Combatants:** [[The Harbinger of the Rune-Blade]] · party
 
-![[Scene - The Sealed Stair.png]] ![[The Harbinger of the Rune-Blade.png]]
+![[Scene - The Sealed Stair.webp]] ![[The Harbinger of the Rune-Blade.webp]]
 
 | | |
 |---|---|
@@ -29,7 +29,7 @@ Sentinels usher, never fight (*"She is expecting you."*). Attacked → they melt
 
 ## 🎭 The talking *(3–4 min — do not rush the silence)*
 
-![[Scene - The Inner Sanctum.png]] ![[Lyssa von Zarovich.png]]
+![[Scene - The Inner Sanctum.webp]] ![[Lyssa von Zarovich.webp]]
 
 1. **The naming** — she confirms everything airily; never apologises.
 2. **The REVEAL** — Strahd invited them; pest control for the family tomb. Same breath, Choir to Lykta: ***"She does not lie. Not in this."*** *(Letter raised? "He answered with silence.")*
@@ -40,7 +40,7 @@ Sentinels usher, never fight (*"She is expecting you."*). Attacked → they melt
 
 **Combatants:** [[Lyssa von Zarovich]] · [[Vampire Mind Flayer]] ×2 · party
 
-![[Map session 3.jpeg]] ![[Lyssa von Zarovich.png]]
+![[Map session 3.webp]] ![[Lyssa von Zarovich.webp]]
 
 | | |
 |---|---|
@@ -61,7 +61,7 @@ Sentinels usher, never fight (*"She is expecting you."*). Attacked → they melt
 
 ## 🌑 The Unchaining *(3 rounds, overlays the fight — read-aloud + image in [[Session 3]])*
 
-![[Scene - The Unchaining.png]]
+![[Scene - The Unchaining.webp]]
 
 Top of each round: **everyone** in the room **DC 15 Wis** or 10 (3d6) psychic *(yes, it can finish dying PCs — that's the design)* · spawn drop dead (R1) · mind flayers **−10 necrotic/round, Mind Burst stops recharging** · vats burst · **★ LYSSA CANNOT LEAVE — killable** · Warden alive? **released too** (second release whisper to Lykta).
 **End of R3:** cold pull of air toward the mountains → silence → to Lykta only: ***"We have you."*** Never explain it.
@@ -69,14 +69,14 @@ Top of each round: **everyone** in the room **DC 15 Wis** or 10 (3d6) psychic *(
 ## 🏁 Endings
 - **☠ THE FALL → M5:** stop rolling. One–two sentences per death. **Ask each player for the character's last thought — jot it down.** Lykta last: *"we have you."* → **straight into M7, no pause.**
 
-![[Scene - The Long Dark.png]] ![[Sef Martikov - Old.png]]
+![[Scene - The Long Dark.webp]] ![[Sef Martikov - Old.png]]
 
 Long Dark: Sef (65), the fragments, **NO gift reveals** — one sensory wrongness each — read the last thoughts back → *"There's work."* Cut.
 - **🌅 THEY STAND → M6:** loot the wreck (notes, grave-goods, **Gem of Brightness**, gold) · Binding intact? → **the choice at the wall** · **Level 8** · the Mists open = payment, they leave *knowing* · the window goes dark.
 - **🚪 THEY RETREAT:** let them go, honestly. Level 8 if earned + Boost Kit topside → [[Session 4]].
 
 ## 🎬 Cues
-- **Images, in order:** ![[Scene - The Sealed Stair.png]] → ![[The Harbinger of the Rune-Blade.png]] → *(doors open: uncover Area B)* → ![[Scene - The Inner Sanctum.png]] + ![[Lyssa von Zarovich.png]] → ![[Scene - The Unchaining.png]] → ![[Scene - The Long Dark.png]] + ![[Sef Martikov - Old.png]]
+- **Images, in order:** ![[Scene - The Sealed Stair.webp]] → ![[The Harbinger of the Rune-Blade.webp]] → *(doors open: uncover Area B)* → ![[Scene - The Inner Sanctum.webp]] + ![[Lyssa von Zarovich.webp]] → ![[Scene - The Unchaining.webp]] → ![[Scene - The Long Dark.webp]] + ![[Sef Martikov - Old.png]]
 - **Audio:** chain-rattle & stone → rune-scream → green hush → cold piano (Lyssa) → psychic combat → **silence** → rain on mud, wind.
 - **Spotlights owed:** [[PC — Lucian Radu|Lucian]] — the walk / the Offer · [[PC — Lykta Endrino|Lykta]] — the voices · [[PC — Dallas Hinterfield|Dallas]] — the vats · [[PC — Jasper Alderwick|Jasper]] — the line & the notebook.
 - **Clock:** 0:10 initiative · 0:55 Warden resolved · 1:35 naming · 2:30 Trap ended · 3:00 close. **Trim the gloat, never the graves.**
