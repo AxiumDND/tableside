@@ -12,12 +12,14 @@ Open this folder in Table DM (or click **Sample**).
   - **Art/** — NPC portraits
 - **Bestiary/** — creatures
   - **Art/** — creature art
+- **Spells/** — campaign copies of spells
+- **Gear/** — weapons, equipment, and magic items
 - **Maps/**
   - **Art/** — battle and location maps
   - **Print/** — print-and-play PDFs
 - **Handouts/** — letters and props
   - **Art/** — letter images
-- **Templates/** — blank Player, NPC, and Monster sheets
+- **Templates/** — blank Player, NPC, Monster, Spell, and Gear sheets
 - **Reference/** — tracker, locations, cheat sheets
 - **Archive/** — recaps, transcripts, old drafts (keep closed)
 

@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type { AppSettings, CampaignInfo, CombatState, DisplayInfo, PlayerState } from '../shared/types'
+import type { CampaignLibraryFolder } from '../shared/campaignLayout'
 import type { SheetTemplateKind } from '../shared/sheetTemplates'
 import type { WotcLibrary } from '../shared/wotc'
 
@@ -57,11 +58,12 @@ const api = {
     ipcRenderer.invoke('campaign:duplicate-file', relativePath, name),
   addFiles: (folder: string): Promise<{ campaign: CampaignInfo; paths: string[] } | null> =>
     ipcRenderer.invoke('campaign:add-files', folder),
-  saveToBestiary: (
+  saveToCampaignLibrary: (
+    folder: CampaignLibraryFolder,
     name: string,
     contents: string
   ): Promise<{ campaign: CampaignInfo; path: string; existed: boolean } | null> =>
-    ipcRenderer.invoke('campaign:save-to-bestiary', name, contents),
+    ipcRenderer.invoke('campaign:save-to-library', folder, name, contents),
   loadWotcLibrary: (): Promise<WotcLibrary> => ipcRenderer.invoke('wotc:load'),
   openWotcFolder: (): Promise<string> => ipcRenderer.invoke('wotc:open-folder')
 }

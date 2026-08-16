@@ -10,6 +10,8 @@ import {
   type SrdRecord
 } from '../lib/srd'
 import { extraSourcesFromRecords, parseWotcFiles } from '../lib/wotcParse'
+import { libraryFolderFor } from '../lib/lookupNotes'
+import { LIBRARY_FOLDER_NAMES } from '../../../shared/campaignLayout'
 import { statBlockToParsed } from '../lib/statblock'
 import RollableStatBlock from './RollableStatBlock'
 
@@ -80,20 +82,55 @@ function SourceNote({ record }: { record: SrdRecord }) {
   return <p className="text-[10px] text-muted">From your {record.sourceLabel} file</p>
 }
 
+function SaveToCampaignButton({
+  record,
+  onSave,
+  canSave,
+  busy,
+  status
+}: {
+  record: SrdRecord
+  onSave?: (record: SrdRecord) => void
+  canSave?: boolean
+  busy?: boolean
+  status?: 'added' | 'exists' | null
+}) {
+  const folder = libraryFolderFor(record)
+  if (!onSave || !folder) return null
+  const label = LIBRARY_FOLDER_NAMES[folder]
+  return (
+    <button
+      type="button"
+      className="w-full rounded border border-line bg-panel-2 px-3 py-1.5 text-sm font-semibold text-parchment disabled:text-muted"
+      disabled={!canSave || busy}
+      title={canSave ? `Save a ${label} note in this campaign` : 'Open a campaign first'}
+      onClick={() => onSave(record)}
+    >
+      {busy
+        ? 'Adding…'
+        : status === 'exists'
+          ? `Already in ${label}`
+          : status === 'added'
+            ? `Added to ${label}`
+            : `Add to ${label}`}
+    </button>
+  )
+}
+
 function Detail({
   record,
   onAddMonster,
-  onAddToBestiary,
-  canAddToBestiary,
-  bestiaryBusy,
-  bestiaryStatus
+  onSaveToCampaign,
+  canSaveToCampaign,
+  saveBusy,
+  saveStatus
 }: {
   record: SrdRecord
   onAddMonster?: (record: SrdRecord) => void
-  onAddToBestiary?: (record: SrdRecord) => void
-  canAddToBestiary?: boolean
-  bestiaryBusy?: boolean
-  bestiaryStatus?: 'added' | 'exists' | null
+  onSaveToCampaign?: (record: SrdRecord) => void
+  canSaveToCampaign?: boolean
+  saveBusy?: boolean
+  saveStatus?: 'added' | 'exists' | null
 }) {
   const data = record.data
   if (record.kind === 'monster') {
@@ -110,23 +147,13 @@ function Detail({
               Add to combat
             </button>
           ) : null}
-          {onAddToBestiary ? (
-            <button
-              type="button"
-              className="w-full rounded border border-line bg-panel-2 px-3 py-1.5 text-sm font-semibold text-parchment disabled:text-muted"
-              disabled={!canAddToBestiary || bestiaryBusy}
-              title={canAddToBestiary ? 'Save a Bestiary sheet in this campaign' : 'Open a campaign first'}
-              onClick={() => onAddToBestiary(record)}
-            >
-              {bestiaryBusy
-                ? 'Adding…'
-                : bestiaryStatus === 'exists'
-                  ? 'Already in Bestiary'
-                  : bestiaryStatus === 'added'
-                    ? 'Added to Bestiary'
-                    : 'Add to Bestiary'}
-            </button>
-          ) : null}
+          <SaveToCampaignButton
+            record={record}
+            onSave={onSaveToCampaign}
+            canSave={canSaveToCampaign}
+            busy={saveBusy}
+            status={saveStatus}
+          />
         </div>
         <SourceNote record={record} />
       </div>
@@ -174,6 +201,13 @@ function Detail({
           </p>
         ))}
         <SpellProse text={String(data.desc ?? '')} />
+        <SaveToCampaignButton
+          record={record}
+          onSave={onSaveToCampaign}
+          canSave={canSaveToCampaign}
+          busy={saveBusy}
+          status={saveStatus}
+        />
         <SourceNote record={record} />
       </div>
     )
@@ -209,6 +243,13 @@ function Detail({
             text={`Using a Higher-Level Spell Slot. ${String(data.higherLevel)}`}
           />
         ) : null}
+        <SaveToCampaignButton
+          record={record}
+          onSave={onSaveToCampaign}
+          canSave={canSaveToCampaign}
+          busy={saveBusy}
+          status={saveStatus}
+        />
         <SourceNote record={record} />
       </div>
     )
@@ -226,28 +267,28 @@ function Detail({
 
 export default function RulesSearch({
   onAddMonster,
-  onAddToBestiary,
-  canAddToBestiary,
+  onSaveToCampaign,
+  canSaveToCampaign,
   onClose
 }: {
   onAddMonster?: (record: SrdRecord) => void
-  onAddToBestiary?: (record: SrdRecord) => Promise<'added' | 'exists' | void> | 'added' | 'exists' | void
-  canAddToBestiary?: boolean
+  onSaveToCampaign?: (record: SrdRecord) => Promise<'added' | 'exists' | void> | 'added' | 'exists' | void
+  canSaveToCampaign?: boolean
   onClose?: () => void
 }) {
   const [query, setQuery] = useState('')
   const [kind, setKind] = useState<SrdKind | 'all' | string>('all')
   const [selected, setSelected] = useState<SrdRecord | null>(null)
-  const [bestiaryBusy, setBestiaryBusy] = useState(false)
-  const [bestiaryStatus, setBestiaryStatus] = useState<'added' | 'exists' | null>(null)
+  const [saveBusy, setSaveBusy] = useState(false)
+  const [saveStatus, setSaveStatus] = useState<'added' | 'exists' | null>(null)
   const [extraSources, setExtraSources] = useState<
     { id: string; label: string; kind: SrdKind; count: number }[]
   >([])
   const [wotcFolder, setWotcFolder] = useState('')
 
   useEffect(() => {
-    setBestiaryStatus(null)
-    setBestiaryBusy(false)
+    setSaveStatus(null)
+    setSaveBusy(false)
   }, [selected?.id])
 
   useEffect(() => {
@@ -329,21 +370,21 @@ export default function RulesSearch({
             <Detail
               record={selected}
               onAddMonster={onAddMonster}
-              onAddToBestiary={
-                onAddToBestiary
+              onSaveToCampaign={
+                onSaveToCampaign
                   ? (record) => {
-                      setBestiaryBusy(true)
-                      void Promise.resolve(onAddToBestiary(record))
+                      setSaveBusy(true)
+                      void Promise.resolve(onSaveToCampaign(record))
                         .then((status) => {
-                          if (status === 'added' || status === 'exists') setBestiaryStatus(status)
+                          if (status === 'added' || status === 'exists') setSaveStatus(status)
                         })
-                        .finally(() => setBestiaryBusy(false))
+                        .finally(() => setSaveBusy(false))
                     }
                   : undefined
               }
-              canAddToBestiary={canAddToBestiary}
-              bestiaryBusy={bestiaryBusy}
-              bestiaryStatus={bestiaryStatus}
+              canSaveToCampaign={canSaveToCampaign}
+              saveBusy={saveBusy}
+              saveStatus={saveStatus}
             />
           </div>
         ) : (

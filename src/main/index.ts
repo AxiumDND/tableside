@@ -17,16 +17,17 @@ import type {
 import { emptyCombat, emptyPlayerState, emptySettings } from '../shared/types'
 import { APP_VERSION } from '../shared/version'
 import {
+  LIBRARY_FOLDER_NAMES,
   SKIP_DIR_NAMES,
   STANDARD_LAYOUT,
   canonicalFolder,
   folderOrderIndex,
-  isBestiaryFolderName,
   isHiddenCampaignFile,
   isNpcFolderName,
   isPartyFolderName,
   isSessionsFolderName,
-  pathHasFolder
+  pathHasFolder,
+  type CampaignLibraryFolder
 } from '../shared/campaignLayout'
 import {
   FALLBACK_TEMPLATES,
@@ -399,7 +400,9 @@ async function seedNewCampaignFiles(root: string): Promise<void> {
   const seeds: { file: string; kind: Exclude<SheetTemplateKind, 'blank'> }[] = [
     { file: 'Player.md', kind: 'player' },
     { file: 'NPC.md', kind: 'npc' },
-    { file: 'Monster.md', kind: 'monster' }
+    { file: 'Monster.md', kind: 'monster' },
+    { file: 'Spell.md', kind: 'spell' },
+    { file: 'Gear.md', kind: 'gear' }
   ]
   const existing = new Set((await readdir(templatesDir)).map((name) => name.toLowerCase()))
   for (const seed of seeds) {
@@ -497,24 +500,28 @@ function noteFileName(folder: string, name: string, template: SheetTemplateKind)
   return `${stem}.md`
 }
 
-async function findBestiaryFolder(): Promise<string> {
-  if (!campaignFolder) return 'Bestiary'
+async function findLayoutFolder(canonical: CampaignLibraryFolder): Promise<string> {
+  const fallback = LIBRARY_FOLDER_NAMES[canonical]
+  if (!campaignFolder) return fallback
   const entries = await readdir(campaignFolder, { withFileTypes: true })
-  const match = entries.find((entry) => entry.isDirectory() && isBestiaryFolderName(entry.name))
-  return match?.name ?? 'Bestiary'
+  const match = entries.find((entry) => entry.isDirectory() && canonicalFolder(entry.name) === canonical)
+  return match?.name ?? fallback
 }
 
-async function saveToBestiary(
+async function saveToCampaignLibrary(
+  folderKey: CampaignLibraryFolder,
   name: string,
   contents: string
 ): Promise<{ campaign: CampaignInfo; path: string; existed: boolean } | null> {
   if (!campaignFolder) return null
   const body = contents.trim()
   if (!body) return null
-  const folder = await findBestiaryFolder()
+  const folder = await findLayoutFolder(folderKey)
   const destDir = safeJoin(campaignFolder, folder)
   await ensureDir(destDir)
-  const fileName = noteFileName(folder, name, 'monster')
+  const template: SheetTemplateKind =
+    folderKey === 'bestiary' ? 'monster' : folderKey === 'spells' ? 'spell' : 'gear'
+  const fileName = noteFileName(folder, name, template)
   const dest = join(destDir, fileName)
   const relativePath = toPosix(relative(campaignFolder, dest))
   if (existsSync(dest)) {
@@ -687,6 +694,7 @@ function registerIpc(): void {
 
   ipcMain.handle('campaign:get', async () => {
     if (!campaignFolder) return null
+    await prepareCampaignFolder(campaignFolder)
     return loadCampaign(campaignFolder)
   })
 
@@ -712,8 +720,10 @@ function registerIpc(): void {
       createCampaignNote(folder ?? '', name, template)
   )
 
-  ipcMain.handle('campaign:save-to-bestiary', async (_e, name: string, contents: string) =>
-    saveToBestiary(name, contents)
+  ipcMain.handle(
+    'campaign:save-to-library',
+    async (_e, folder: CampaignLibraryFolder, name: string, contents: string) =>
+      saveToCampaignLibrary(folder, name, contents)
   )
 
   ipcMain.handle('campaign:duplicate-file', async (_e, relativePath: string, name?: string) =>

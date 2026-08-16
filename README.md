@@ -15,7 +15,7 @@ Compatible with fifth edition. Rules lookup uses the **System Reference Document
 - Night sheets can pull NPC/PC statblocks into initiative
 - Offline search for conditions, spells, monsters, weapons, and common rules
 - Optional extra lookup from your own WOTC text files in `WOTC/` (spells, equipment, magic items)
-- Add an SRD monster to the campaign Bestiary from Lookup
+- Add a monster, spell, or gear item from Lookup into the campaign Bestiary, Spells, or Gear folder
 
 ## Run it
 
@@ -55,12 +55,14 @@ NPCs/             named people
   Art/            NPC portraits
 Bestiary/         creatures
   Art/            creature art
+Spells/           campaign copies of spells (edit after Lookup)
+Gear/             weapons, equipment, and magic items
 Maps/
   Art/            battle and location maps
   Print/          print-and-play PDFs
 Handouts/         letters and props
   Art/            letter images
-Templates/        blank Player, NPC, and Monster sheets
+Templates/        blank Player, NPC, Monster, Spell, and Gear sheets
 Reference/        tracker, locations, cheat sheets
 Archive/          recaps, transcripts, old drafts
 ```

@@ -1,4 +1,4 @@
-export type SheetTemplateKind = 'blank' | 'player' | 'npc' | 'monster'
+export type SheetTemplateKind = 'blank' | 'player' | 'npc' | 'monster' | 'spell' | 'gear'
 
 const PLAYER = `# *Character Name*
 
@@ -172,22 +172,54 @@ actions:
 \`\`\`
 `
 
+const SPELL = `# Spell Name
+
+Level 1 Evocation (Wizard)
+Casting Time: Action
+Range: 60 feet
+Components: V, S
+Duration: Instantaneous
+
+What the spell does at the table.
+
+Using a Higher-Level Spell Slot. 
+`
+
+const GEAR = `# Item Name
+
+Adventuring Gear
+Rarity: 
+Attunement: 
+Damage: 
+Properties: 
+Weight: 
+Cost: 
+
+What it does, or any house-rule notes.
+`
+
 export const FALLBACK_TEMPLATES: Record<Exclude<SheetTemplateKind, 'blank'>, string> = {
   player: PLAYER,
   npc: NPC,
-  monster: MONSTER
+  monster: MONSTER,
+  spell: SPELL,
+  gear: GEAR
 }
 
 export const TEMPLATE_PLACEHOLDERS: Record<Exclude<SheetTemplateKind, 'blank'>, string> = {
   player: 'Character Name',
   npc: 'NPC Name',
-  monster: 'Monster Name'
+  monster: 'Monster Name',
+  spell: 'Spell Name',
+  gear: 'Item Name'
 }
 
 export const TEMPLATE_FILE_NAMES: Record<Exclude<SheetTemplateKind, 'blank'>, string[]> = {
   player: ['player.md', 'pc.md', 'character.md'],
   npc: ['npc.md'],
-  monster: ['monster.md', 'creature.md']
+  monster: ['monster.md', 'creature.md'],
+  spell: ['spell.md'],
+  gear: ['gear.md', 'item.md', 'equipment.md']
 }
 
 export function displayTitle(fileStem: string): string {

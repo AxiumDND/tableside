@@ -4,8 +4,10 @@ import {
   DEFAULT_OPEN_FOLDERS,
   canonicalFolder,
   isBestiaryFolderName,
+  isGearFolderName,
   isNpcFolderName,
-  isPartyFolderName
+  isPartyFolderName,
+  isSpellsFolderName
 } from '../../../shared/campaignLayout'
 import type { SheetTemplateKind } from '../../../shared/sheetTemplates'
 import { IMAGE_EXT, campaignFileUrl } from '../lib/images'
@@ -30,10 +32,12 @@ function displayName(name: string): string {
   return name.replace(/\.(md|markdown|txt|json|png|jpe?g|webp|gif|svg|bmp|pdf)$/i, '').replace(/[-_]/g, ' ')
 }
 
-function folderKind(name: string): 'party' | 'npcs' | 'bestiary' | null {
+function folderKind(name: string): 'party' | 'npcs' | 'bestiary' | 'spells' | 'gear' | null {
   if (isPartyFolderName(name)) return 'party'
   if (isNpcFolderName(name)) return 'npcs'
   if (isBestiaryFolderName(name)) return 'bestiary'
+  if (isSpellsFolderName(name)) return 'spells'
+  if (isGearFolderName(name)) return 'gear'
   return null
 }
 
@@ -186,7 +190,9 @@ export default function CampaignFiles({
       blank: 'New note',
       player: 'New player',
       npc: 'New NPC',
-      monster: 'New monster'
+      monster: 'New monster',
+      spell: 'New spell',
+      gear: 'New gear'
     }
     setPrompt({ kind: 'create', folder, template, title: titles[template] })
     setName('')
@@ -291,6 +297,12 @@ export default function CampaignFiles({
               ) : null}
               {folderHint === 'bestiary' || !folderHint ? (
                 <MenuItem label="New monster…" onClick={() => startCreate(folderPath, 'monster')} />
+              ) : null}
+              {folderHint === 'spells' || !folderHint ? (
+                <MenuItem label="New spell…" onClick={() => startCreate(folderPath, 'spell')} />
+              ) : null}
+              {folderHint === 'gear' || !folderHint ? (
+                <MenuItem label="New gear…" onClick={() => startCreate(folderPath, 'gear')} />
               ) : null}
               <MenuItem label="New note…" onClick={() => startCreate(folderPath, 'blank')} />
               <MenuItem label="Add files…" onClick={() => void addFiles(folderPath)} />
