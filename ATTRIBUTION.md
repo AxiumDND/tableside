@@ -6,4 +6,4 @@ Please do not include any other attribution to Wizards or its parent or affiliat
 
 Structured JSON used for search is fetched from the [Open5e API](https://api.open5e.com/) document key `srd-2024` (SRD 5.2.1), also under CC BY 4.0.
 
-Table DM is an independent project and is not affiliated with Wizards of the Coast.
+Tableside is an independent project and is not affiliated with Wizards of the Coast.

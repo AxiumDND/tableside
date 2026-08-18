@@ -1,3 +1,5 @@
+import { APP_NAME } from './version'
+
 export type CombatantKind = 'pc' | 'npc' | 'monster'
 
 export interface AbilityScores {
@@ -184,7 +186,7 @@ export const emptyCombat = (): CombatState => ({
 export const emptyPlayerState = (): PlayerState => ({
   imageSrc: null,
   imageTitle: '',
-  campaignTitle: 'Table DM',
+  campaignTitle: APP_NAME,
   initiative: [],
   showInitiative: false,
   initiativeRound: 0,

@@ -34,7 +34,8 @@ import {
 import { libraryFolderFor, recordToCampaignMarkdown, gearSubfolderFor } from '../lib/lookupNotes'
 import { monsterToStatBlock, type SrdRecord } from '../lib/srd'
 import { extractStatblock, fallbackStatblock, parsedToStatBlock, type ParsedStatblock } from '../lib/statblock'
-import { APP_VERSION } from '../../../shared/version'
+import { APP_NAME, APP_VERSION } from '../../../shared/version'
+import appIcon from '../assets/icon.png'
 
 const SIDE_PANEL_WIDTH = 'w-[400px]'
 
@@ -470,9 +471,12 @@ export default function DmApp() {
     <div className="flex h-full flex-col bg-ink text-parchment">
       <header className="flex items-center gap-3 border-b border-line bg-panel px-4 py-2">
         <div>
-          <div className="flex items-baseline gap-2">
-            <div className="font-display text-xl leading-none text-amber">Table DM</div>
-            <div className="text-[11px] font-semibold tracking-wide text-amber-dim">v{APP_VERSION}</div>
+          <div className="flex items-center gap-2">
+            <img src={appIcon} alt="" className="h-7 w-7 rounded-sm" />
+            <div className="flex items-baseline gap-2">
+              <div className="font-display text-xl leading-none text-amber">{APP_NAME}</div>
+              <div className="text-[11px] font-semibold tracking-wide text-amber-dim">v{APP_VERSION}</div>
+            </div>
           </div>
           <div className="text-[11px] text-muted">5e compatible · second-monitor player view</div>
         </div>

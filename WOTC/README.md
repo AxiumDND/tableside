@@ -1,6 +1,6 @@
 # WOTC lookup files
 
-Drop your own book text here. Table DM does **not** ship Player’s Handbook, Dungeon Master’s Guide, or other Wizards books.
+Drop your own book text here. Tableside does **not** ship Player’s Handbook, Dungeon Master’s Guide, or other Wizards books.
 
 When this folder has files Lookup can read, extra filter chips appear (PHB 2024, PHB Gear, DMG Items) and search includes that text. SRD 5.2.1 stays available either way.
 
@@ -19,7 +19,7 @@ Also scanned (same rules):
 
 - This project folder: `WOTC/`
 - Installed app: `%APPDATA%\table-dm\WOTC`
-- A `WOTC` folder next to `Table DM.exe`
+- A `WOTC` folder next to `Tableside.exe`
 
 Restart Lookup (close and open the panel, or restart the app) after adding files.
 

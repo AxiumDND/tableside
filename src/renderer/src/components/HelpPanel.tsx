@@ -130,7 +130,7 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
                 Items, …). A selected chip lists every matching entry.
               </>,
               <>
-                Press <span className="text-amber">Add to Bestiary / Spells / Gear</span>. Table DM writes a markdown
+                Press <span className="text-amber">Add to Bestiary / Spells / Gear</span>. Tableside writes a markdown
                 note in that folder (gear goes under Weapons, Armor, Equipment, or Magic Items). Monster notes also
                 get a bundled D&D-fantasy default portrait in Bestiary/Art when one exists.
               </>,

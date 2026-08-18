@@ -1,10 +1,10 @@
-# Table DM
+# Tableside
 
 A local Windows app for running **in-person** 5e-compatible games. Your laptop is the DM console. The second monitor is a clean player view for maps and art — image only, plus an optional initiative overlay.
 
 This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table.
 
-Compatible with fifth edition. Rules lookup uses the **System Reference Document 5.2** (2024 rules), already bundled. Current release: **1.1.3**.
+Compatible with fifth edition. Rules lookup uses the **System Reference Document 5.2** (2024 rules), already bundled. Current release: **1.1.4**.
 
 ## Features
 
@@ -36,7 +36,7 @@ npm run dev
 
 Two windows open. If you have a second monitor, the player window goes there fullscreen.
 
-Click **Sample** to load **Bad Blood**, the included Barovia three-shot. Table DM copies it into your user data folder so combat and notes do not write back into the git repo.
+Click **Sample** to load **Bad Blood**, the included Barovia three-shot. Tableside copies it into your user data folder so combat and notes do not write back into the git repo.
 
 ### Installer (Windows)
 

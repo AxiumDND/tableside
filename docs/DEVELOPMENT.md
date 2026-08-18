@@ -1,6 +1,6 @@
 # Development
 
-Table DM is an Electron + React + TypeScript app built with [electron-vite](https://electron-vite.org/).
+Tableside is an Electron + React + TypeScript app built with [electron-vite](https://electron-vite.org/).
 
 ## Requirements
 
@@ -98,7 +98,7 @@ Format and placement of personal PHB/DMG text files: [WOTC/README.md](../WOTC/RE
 
 ## Packaging notes
 
-`electron-builder` ships `examples/bad-blood` as an extra resource. Product name is **Table DM** (`com.tabledm.app`). Installer target is Windows NSIS only today.
+`electron-builder` ships `examples/bad-blood` as an extra resource. Product name is **Tableside** (`com.tabledm.app`). Installer target is Windows NSIS only today. Window and installer icons live in `resources/icon.ico` (regenerate with `node scripts/make-app-icon.mjs`).
 
 ## Where behavior lives
 
