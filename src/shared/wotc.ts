@@ -11,7 +11,7 @@ export interface WotcLibrary {
 export const WOTC_README = `WOTC lookup files
 =================
 
-Drop your own book text here. Table DM does not ship Player's Handbook,
+Drop your own book text here. Tableside does not ship Player's Handbook,
 Dungeon Master's Guide, or other Wizards books.
 
 When this folder has files Lookup can read, extra filter chips appear
@@ -31,7 +31,7 @@ Use .md or .txt. The filename tells Lookup what it is:
 
 Also scanned (same filename rules):
 - This folder (%APPDATA%\\table-dm\\WOTC)
-- A WOTC folder next to Table DM.exe
+- A WOTC folder next to Tableside.exe
 - The project WOTC/ folder when running from source
 
 Restart Lookup (close and open the panel, or restart the app) after adding files.
@@ -225,5 +225,5 @@ TROUBLESHOOTING
 - No chip: fix the filename keywords, then close and reopen Lookup.
 - Chip but no hits: use ## headings per entry; save as UTF-8 .md/.txt.
 - Wrong chip: avoid mixing Spell and Equipment in the same filename.
-- Full guide with examples: see WOTC/README.md in the Table DM repo.
+- Full guide with examples: see WOTC/README.md in the Tableside repo.
 `

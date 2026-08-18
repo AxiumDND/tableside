@@ -1,6 +1,6 @@
 # Campaign authoring
 
-How to structure a campaign folder so Table DM can find notes, art, and combatants.
+How to structure a campaign folder so Tableside can find notes, art, and combatants.
 
 Also read:
 
@@ -72,7 +72,7 @@ Duplicate from a file’s context menu when you need a second vampire spawn shee
 
 ## Wikilinks and images
 
-Notes can stay in Obsidian. Table DM understands:
+Notes can stay in Obsidian. Tableside understands:
 
 | Syntax | Purpose |
 | --- | --- |
@@ -165,7 +165,7 @@ A **night sheet** is a session note with combat sections that feed the initiativ
 - `×2` / `x2` adds multiple copies of that sheet.
 - Separators: `·`, `|`, `,`, or `;`.
 
-If there is no `Combatants:` line, Table DM still picks up wikilinks (and some bold table labels) to Party / NPCs / Bestiary notes in that section.
+If there is no `Combatants:` line, Tableside still picks up wikilinks (and some bold table labels) to Party / NPCs / Bestiary notes in that section.
 
 On the night sheet, use **Add to initiative** / **Add encounter** to load those sheets into Combat. **Add all players** pulls every PC sheet.
 

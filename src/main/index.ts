@@ -18,7 +18,7 @@ import type {
 } from '../shared/types'
 import { emptyCombat, emptyPlayerState, emptySettings } from '../shared/types'
 import { mapArtRelativeFolder, setMapFenceImage } from '../shared/mapCreate'
-import { APP_VERSION } from '../shared/version'
+import { APP_NAME, APP_VERSION } from '../shared/version'
 import {
   LIBRARY_FOLDER_NAMES,
   SKIP_DIR_NAMES,
@@ -58,6 +58,11 @@ protocol.registerSchemesAsPrivileged([
   }
 ])
 
+app.setName(APP_NAME)
+if (process.platform === 'win32') {
+  app.setAppUserModelId('com.tabledm.app')
+}
+
 let dmWindow: BrowserWindow | null = null
 let playerWindow: BrowserWindow | null = null
 let campaignFolder: string | null = null
@@ -65,6 +70,16 @@ let playerState: PlayerState = emptyPlayerState()
 let settings: AppSettings = emptySettings()
 let allowQuit = false
 let boundsTimer: ReturnType<typeof setTimeout> | null = null
+
+function appIconPath(): string {
+  const ico = app.isPackaged
+    ? join(process.resourcesPath, 'icon.ico')
+    : join(__dirname, '../../resources/icon.ico')
+  const png = app.isPackaged
+    ? join(process.resourcesPath, 'icon.png')
+    : join(__dirname, '../../resources/icon.png')
+  return existsSync(ico) ? ico : png
+}
 
 const IMAGE_EXT = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.bmp'])
 const FILE_MIME: Record<string, string> = {
@@ -200,6 +215,7 @@ function scheduleBoundsSave(): void {
 
 function createDmWindow(): void {
   const bounds = settings.dmBounds
+  const icon = appIconPath()
   dmWindow = new BrowserWindow({
     width: bounds?.width ?? 1480,
     height: bounds?.height ?? 920,
@@ -210,7 +226,8 @@ function createDmWindow(): void {
     show: false,
     autoHideMenuBar: true,
     backgroundColor: '#0e0c0a',
-    title: `Table DM ${APP_VERSION}`,
+    title: `${APP_NAME} ${APP_VERSION}`,
+    icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
@@ -218,6 +235,13 @@ function createDmWindow(): void {
       plugins: true
     }
   })
+  if (process.platform === 'win32') {
+    dmWindow.setAppDetails({
+      appId: 'com.tabledm.app',
+      appIconPath: icon,
+      relaunchDisplayName: APP_NAME
+    })
+  }
 
   dmWindow.on('ready-to-show', () => dmWindow?.show())
   dmWindow.on('moved', scheduleBoundsSave)
@@ -256,6 +280,7 @@ function playerBounds() {
 
 function createPlayerWindow(): void {
   const bounds = playerBounds()
+  const icon = appIconPath()
   playerWindow = new BrowserWindow({
     x: bounds.x,
     y: bounds.y,
@@ -265,7 +290,8 @@ function createPlayerWindow(): void {
     fullscreen: screen.getAllDisplays().length > 1,
     autoHideMenuBar: true,
     backgroundColor: '#050403',
-    title: 'Table DM — Player',
+    title: `${APP_NAME} — Player`,
+    icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,

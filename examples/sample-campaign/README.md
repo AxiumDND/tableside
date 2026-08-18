@@ -1,10 +1,10 @@
 # Sample campaign — The Ember Road
 
-Minimal one-night folder for trying Table DM without the full Bad Blood three-shot.
+Minimal one-night folder for trying Tableside without the full Bad Blood three-shot.
 
 ## Try it
 
-1. In Table DM, choose **Open campaign** and select this folder  
+1. In Tableside, choose **Open campaign** and select this folder  
    (`examples/sample-campaign`).
 2. Open `Overview.md`, then **Sessions → 2026-08-15**.
 3. Click `![[sealed-crate.svg]]` or the forest road image → **Show to players**.

@@ -1,6 +1,6 @@
-# Bad Blood — Table DM campaign
+# Bad Blood — Tableside campaign
 
-Open this folder in Table DM (or click **Sample** in the app). Sample copies into your user data folder so combat and note edits stay out of the git repo / install bundle.
+Open this folder in Tableside (or click **Sample** in the app). Sample copies into your user data folder so combat and note edits stay out of the git repo / install bundle.
 
 A Barovia three-shot with night sheets, portraits, maps, and combatant links ready for the initiative tracker.
 

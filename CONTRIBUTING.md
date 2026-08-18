@@ -1,6 +1,6 @@
 # Contributing
 
-Thanks for helping with Table DM.
+Thanks for helping with Tableside.
 
 ## Before you change code
 

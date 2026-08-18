@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import type { RecentCampaign } from '../../../shared/types'
+import { APP_NAME } from '../../../shared/version'
 
 function Step({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -29,7 +30,7 @@ export default function GettingStarted({
     <div className="mx-auto flex max-w-xl flex-col gap-4 py-6 text-parchment">
       <div>
         <h2 className="font-display text-2xl text-amber">
-          {hasCampaign ? 'Pick a note to begin' : 'Table DM'}
+          {hasCampaign ? 'Pick a note to begin' : APP_NAME}
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-parchment/85">
           {hasCampaign

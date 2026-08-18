@@ -1,6 +1,6 @@
 # Markdown and statblocks
 
-Reference for note syntax Table DM understands. For folder layout and night sheets, see [CAMPAIGN.md](CAMPAIGN.md). For the UI, see [TABLE.md](TABLE.md).
+Reference for note syntax Tableside understands. For folder layout and night sheets, see [CAMPAIGN.md](CAMPAIGN.md). For the UI, see [TABLE.md](TABLE.md).
 
 ## Supported files
 
@@ -223,6 +223,6 @@ Placeholder text such as `Character Name` / `NPC Name` / `Monster Name` is repla
 
 ## Editing tips
 
-- Prefer Obsidian for long writing; Table DM is happiest as the table runner.
+- Prefer Obsidian for long writing; Tableside is happiest as the table runner.
 - Keep night sheets short; put prose in the session note and link with `[[Session 3]]`.
 - One creature or PC per sheet file so `[[Name]]` and portraits stay unambiguous.
