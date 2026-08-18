@@ -15,8 +15,8 @@ Drop your own book text here. Table DM does not ship Player's Handbook,
 Dungeon Master's Guide, or other Wizards books.
 
 When this folder has files Lookup can read, extra filter chips appear
-(PHB 2024, PHB Gear, DMG Items) and search includes that text. SRD 5.2.1
-stays available either way.
+(PHB 2024, PHB Gear, DMG Items, Ravenloft) and search includes that text.
+SRD 5.2.1 stays available either way.
 
 WHERE TO PUT FILES
 ------------------
@@ -26,6 +26,8 @@ Use .md or .txt. The filename tells Lookup what it is:
   Equipment / Gear -> PHB Gear     e.g. Players Handbook 2024 Equipment.md
   Magic Item       -> DMG Items    e.g. Dungeon Masters Guide 2024 Magic Items.md
   Dungeon Master   -> DMG Items    (same chip as Magic Item)
+  Bestiary / Ravenloft / MM -> monsters  e.g. Ravenloft Horrors Bestiary.md
+  Monster Manual A/B/... share one MM2024 chip
 
 Also scanned (same filename rules):
 - This folder (%APPDATA%\\table-dm\\WOTC)
@@ -177,10 +179,42 @@ Rules:
 - Blank line, then the body. Markdown tables are OK.
 
 
+BESTIARY
+--------
+Name the file something with Bestiary, Ravenloft, or Monster Manual in it.
+
+# Ravenloft Horrors Bestiary
+
+## Boneless
+Medium Undead, Chaotic Evil
+AC: 12
+HP: 22 (4d8 + 4)
+Speed: 30 ft.
+STR: 15 (+2)
+DEX: 14 (+2)
+CON: 12 (+1)
+INT: 1 (-5)
+WIS: 10 (+0)
+CHA: 1 (-5)
+CR: 1 (XP 200; PB +2)
+
+Flayed skins that smother the living.
+
+### Actions
+Smother. Melee Attack Roll: +4, reach 5 ft. Hit: 7 (2d4 + 2) Bludgeoning damage.
+
+Rules:
+- Heading is the creature name (## Boneless).
+- Next line is Size Type, Alignment.
+- Then AC, HP, Speed, STR-CHA, and CR fields.
+- Then lore. Then ### Traits / ### Actions (and Bonus Actions, Reactions,
+  Legendary Actions if needed).
+
+
 CHECKLIST
 ---------
 1. Save as .md in this folder (or next to the app in a WOTC folder).
-2. Put Spell, Equipment, or Magic Item in the filename.
+2. Put Spell, Equipment, Magic Item, or Bestiary / Ravenloft in the filename.
 3. One ## heading per entry.
 4. Field names match the examples above, including the colon.
 5. Open Lookup — a new chip should appear, and a search for the first entry

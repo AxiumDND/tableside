@@ -13,6 +13,7 @@ Use `.md` or `.txt`. The filename tells Lookup what it is:
 | `Spell` | PHB 2024 | `Players Handbook 2024 Spell List.md` |
 | `Equipment` or `Gear` | PHB Gear | `Players Handbook 2024 Equipment.md` |
 | `Magic Item` or `Dungeon Master` | DMG Items | `Dungeon Masters Guide 2024 Magic Items.md` |
+| `Bestiary`, `Ravenloft`, or `Monster Manual` | Ravenloft / MM2024 / Bestiary | `Ravenloft Horrors Bestiary.md`, `Monster Manual A.md` |
 
 Also scanned (same rules):
 
@@ -154,10 +155,45 @@ Rules:
 - Then `Attunement:` if it needs it (`Requires Attunement` or `Requires Attunement by a Dwarf`).
 - Blank line, then the body. Markdown tables are OK.
 
+### Bestiary
+
+Name the file something with **Bestiary**, **Ravenloft**, or **Monster Manual** in it. One `##` heading per creature. Keep the stat fields together, then lore, then `### Traits` / `### Actions` (and Bonus Actions, Reactions, Legendary Actions if it has them). Multiple Monster Manual files (A, B, and so on) share one **MM2024** Lookup chip.
+
+```markdown
+# Ravenloft Horrors Bestiary
+
+## Boneless
+Medium Undead, Chaotic Evil
+AC: 12
+Initiative: +2 (12)
+HP: 22 (4d8 + 4)
+Speed: 30 ft.
+STR: 15 (+2)
+DEX: 14 (+2)
+CON: 12 (+1)
+INT: 1 (-5)
+WIS: 10 (+0)
+CHA: 1 (-5)
+Skills: Stealth +4
+CR: 1 (XP 200; PB +2)
+
+Flayed skins that smother the living.
+
+### Traits
+
+Compression. The boneless can move through a space as narrow as 1 inch.
+
+### Actions
+
+Smother. Melee Attack Roll: +4, reach 5 ft. Hit: 7 (2d4 + 2) Bludgeoning damage.
+```
+
+A messy D&D Beyond paste as `.txt` can be tidied with `node scripts/tidy-wotc-bestiary.mjs --remove-src` (pass the source path if it is not the Ravenloft dump).
+
 ## Checklist
 
 1. Save as `.md` in this folder (or `%APPDATA%\table-dm\WOTC`).
-2. Put **Spell**, **Equipment**, or **Magic Item** in the filename.
+2. Put **Spell**, **Equipment**, **Magic Item**, or **Bestiary** / **Ravenloft** in the filename.
 3. One `##` heading per entry.
 4. Field names match the examples above, including the colon.
 5. Open Lookup — a new chip should appear, and a search for the first entry should find it.
@@ -166,7 +202,7 @@ Rules:
 
 | Symptom | Likely fix |
 | --- | --- |
-| No new chip in Lookup | Filename must contain `Spell`, `Equipment`/`Gear`, or `Magic Item`/`Dungeon Master`. Restart Lookup (close panel or app). |
+| No new chip in Lookup | Filename must contain `Spell`, `Equipment`/`Gear`, `Magic Item`/`Dungeon Master`, or `Bestiary`/`Ravenloft`. Restart Lookup (close panel or app). |
 | Chip appears, search empty | Entries need `## Name` headings (or the looser spell dump format). Confirm the file is `.md` / `.txt` and UTF-8. |
 | Wrong chip | Rename the file so only the intended keyword matches (avoid putting both `Spell` and `Equipment` in one name). |
 | Edits not picked up | Close and reopen Lookup after saving. The app reads the folder when the panel loads. |

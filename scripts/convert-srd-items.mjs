@@ -45,12 +45,22 @@ const copies = {
   'Bolts (20)': ['Crossbow bolt'],
   'Needles (50)': ['Blowgun needles'],
   'Potion of Healing': ['Potions of Healing'],
+  'Half Plate Armor': ['Half plate'],
+  'Crystal Ball': [
+    'Crystal Ball of Mind Reading',
+    'Crystal Ball of Telepathy',
+    'Crystal Ball of True Seeing'
+  ],
   'Dice set': ['Gaming Set, Dice'],
   'Gaming Set, Playing Cards': ['Playing card set'],
   'Bullets, Sling (20)': ['Sling bullets'],
 }
 
-const pngs = readdirSync(assets).filter((name) => extname(name).toLowerCase() === '.png')
+const pngs = readdirSync(assets).filter((name) => {
+  if (extname(name).toLowerCase() !== '.png') return false
+  const stem = basename(name, extname(name))
+  return !/^c__/i.test(stem) && !/workspaceStorage|image-[a-f0-9-]{8}/i.test(stem)
+})
 for (const file of pngs) {
   const name = basename(file, extname(file))
   const src = join(assets, file)

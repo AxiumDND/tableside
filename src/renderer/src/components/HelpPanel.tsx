@@ -126,7 +126,8 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
             items={[
               <>Open a campaign, then open <span className="text-amber">Lookup</span>.</>,
               <>
-                Search a monster, spell, or gear item. Use chips to narrow (Spells, Monsters, …).
+                Search a monster, spell, or gear item. Use chips to narrow (Spells, Monsters, Armor, Magic
+                Items, …). A selected chip lists every matching entry.
               </>,
               <>
                 Press <span className="text-amber">Add to Bestiary / Spells / Gear</span>. Table DM writes a markdown
