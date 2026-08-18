@@ -108,7 +108,7 @@ function stripSize(ref: string): string {
 }
 
 function foldName(value: string): string {
-  return value.toLowerCase().replace(/[—–−]/g, '-').replace(/\s+/g, ' ').trim()
+  return value.toLowerCase().replace(/[’‘`]/g, "'").replace(/[—–−]/g, '-').replace(/\s+/g, ' ').trim()
 }
 
 export function resolveImageRef(ref: string, notePath: string, images: CampaignImage[]): string | null {

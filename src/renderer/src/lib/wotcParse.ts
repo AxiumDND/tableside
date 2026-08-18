@@ -1,4 +1,5 @@
 import type { SrdKind, SrdRecord } from './srd'
+import type { AbilityScores } from '../../../shared/types'
 
 const TYPE_LINE =
   /^(?:([A-Za-z]+)\s+)?Cantrip\s+\((.+)\)\s*$|^Level\s+(\d+)\s+([A-Za-z]+)\s+\((.+)\)\s*$/
@@ -17,6 +18,8 @@ function slug(value: string): string {
 
 function sourceIdFromName(fileName: string): string {
   const stem = fileName.replace(/\.[^.]+$/, '')
+  if (/monster\s*manual|\bmm\b/i.test(stem)) return 'monster-manual'
+  if (/ravenloft/i.test(stem)) return 'ravenloft'
   return slug(stem) || 'wotc'
 }
 
@@ -25,7 +28,9 @@ function sourceLabelFromName(fileName: string): string {
   if (/equipment|gear/i.test(stem)) return 'PHB Gear'
   if (/magic item/i.test(stem) || /dungeon master/i.test(stem)) return 'DMG Items'
   if (/player'?s?\s*handbook|phb/i.test(stem) && /spell/i.test(stem)) return 'PHB 2024'
-  if (/monster\s*manual|\bmm\b/i.test(stem)) return 'Monster Manual'
+  if (/ravenloft/i.test(stem)) return 'Ravenloft'
+  if (/monster\s*manual|\bmm\b/i.test(stem)) return 'MM2024'
+  if (/bestiary|beastry/i.test(stem)) return 'Bestiary'
   return stem.replace(/\s+/g, ' ').trim() || 'WOTC'
 }
 
@@ -52,6 +57,12 @@ function looksLikeEquipment(fileName: string, text: string): boolean {
 function looksLikeMagicItems(fileName: string, text: string): boolean {
   if (/magic item/i.test(fileName) || /dungeon master/i.test(fileName)) return true
   return /^## /m.test(text) && /^Rarity:/m.test(text)
+}
+
+function looksLikeBestiary(fileName: string, text: string): boolean {
+  if (/bestiary|beastry|monster\s*manual|\bmm\b|ravenloft/i.test(fileName)) return true
+  const types = text.match(/^(Tiny|Small|Medium|Large|Huge|Gargantuan)\b.+,/gm)
+  return Boolean(types && types.length >= 3 && /^(AC|HP):/m.test(text) && /^(CR|Challenge):/m.test(text))
 }
 
 const EQUIPMENT_FIELD =
@@ -146,6 +157,208 @@ export function parsePhbMagicItems(text: string, fileName: string): SrdRecord[] 
       summary: [category, rarity, attunement].filter(Boolean).join(' · ') || record.summary
     }
   })
+}
+
+const SIZE_LINE =
+  /^(Tiny|Small|Medium|Large|Huge|Gargantuan)(?: or (?:Tiny|Small|Medium|Large|Huge|Gargantuan))?(?: Swarm of Tiny \w+)? .+,/
+const MONSTER_FIELD =
+  /^(Habitat|Treasure|AC|Initiative|HP|Speed|STR|DEX|CON|INT|WIS|CHA|Skills|Senses|Languages|CR|Challenge|Gear|Resistances|Immunities|Vulnerabilities):\s*(.*)$/i
+const CONDITION_WORD =
+  /^(Blinded|Charmed|Deafened|Exhaustion|Frightened|Grappled|Incapacitated|Invisible|Paralyzed|Petrified|Poisoned|Prone|Restrained|Stunned|Unconscious)$/i
+const ABILITY_KEYS = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const
+const ABILITY_NAMES: Record<(typeof ABILITY_KEYS)[number], keyof AbilityScores> = {
+  str: 'strength',
+  dex: 'dexterity',
+  con: 'constitution',
+  int: 'intelligence',
+  wis: 'wisdom',
+  cha: 'charisma'
+}
+
+function parseSigned(value: string): number | undefined {
+  const match = /^([+\-−–]?\d+)/.exec(value.trim())
+  if (!match) return undefined
+  return Number(match[1].replace(/[−–]/g, '-'))
+}
+
+function parseAbilityScore(value: string): { score: number; mod?: number; save?: number } | null {
+  const match = /^(\d+)\s*\(\s*([+\-−–]?\d+)(?:\s*,\s*save\s+([+\-−–]?\d+))?\s*\)/.exec(value.trim())
+  if (match) {
+    return {
+      score: Number(match[1]),
+      mod: Number(match[2].replace(/[−–]/g, '-')),
+      save: match[3] != null ? Number(match[3].replace(/[−–]/g, '-')) : undefined
+    }
+  }
+  const score = Number(value.trim())
+  return Number.isFinite(score) ? { score } : null
+}
+
+function parseHp(value: string): { hp?: number; hitDice?: string } {
+  const match = /^(\d+)\s*(?:\((.+)\))?/.exec(value.trim())
+  if (!match) return {}
+  return { hp: Number(match[1]), hitDice: match[2]?.replace(/\s+/g, '') }
+}
+
+function parseCr(value: string): number | string {
+  const lead = /^(?:(\d+\/\d+)|(\d+))/.exec(value.trim())
+  if (!lead) return value.trim()
+  return lead[1] ?? Number(lead[2])
+}
+
+function splitImmunities(value: string): { immunities?: string; conditionImmunities?: string } {
+  const trimmed = value.trim()
+  if (!trimmed) return {}
+  if (trimmed.includes(';')) {
+    const [damage, conditions] = trimmed.split(';').map((part) => part.trim())
+    return { immunities: damage || undefined, conditionImmunities: conditions || undefined }
+  }
+  const parts = trimmed.split(',').map((part) => part.trim()).filter(Boolean)
+  if (parts.length && parts.every((part) => CONDITION_WORD.test(part))) {
+    return { conditionImmunities: trimmed }
+  }
+  return { immunities: trimmed }
+}
+
+function parseNamedBits(lines: string[]): { name: string; desc: string }[] {
+  const bits: { name: string; desc: string }[] = []
+  for (const line of lines) {
+    const named = /^([A-Z][^.]{0,80}?)\.\s+(.+)$/.exec(line)
+    if (named) {
+      bits.push({ name: named[1].trim(), desc: named[2].trim() })
+      continue
+    }
+    if (bits.length) bits[bits.length - 1].desc += ` ${line}`
+  }
+  return bits
+}
+
+function monsterSummary(fields: Record<string, string>, size: string, type: string, cr: number | string): string {
+  const ac = fields.AC
+  const hp = fields.HP?.match(/^\d+/)?.[0]
+  return [size, type, cr !== '' ? `CR ${cr}` : null, ac ? `AC ${ac}` : null, hp ? `HP ${hp}` : null]
+    .filter(Boolean)
+    .join(' · ')
+}
+
+export function parseWotcBestiary(text: string, fileName: string): SrdRecord[] {
+  const source = sourceIdFromName(fileName)
+  const sourceLabel = sourceLabelFromName(fileName)
+  const blocks = text.replace(/\r\n/g, '\n').split(/^## /m).slice(1)
+  const records: SrdRecord[] = []
+
+  for (const block of blocks) {
+    const lines = block.split('\n').map((line) => line.trim())
+    const name = lines[0]?.replace(/^#+\s*/, '').trim()
+    if (!name) continue
+    const typeAt = lines.findIndex((line, index) => index > 0 && SIZE_LINE.test(line))
+    const typeLine = typeAt >= 0 ? lines[typeAt] : ''
+    const comma = typeLine.lastIndexOf(',')
+    const left = comma === -1 ? typeLine : typeLine.slice(0, comma).trim()
+    const alignment = comma === -1 ? '' : typeLine.slice(comma + 1).trim()
+    const sizeMatch = left.match(/^(Tiny|Small|Medium|Large|Huge|Gargantuan)(?: or (?:Tiny|Small|Medium|Large|Huge|Gargantuan))?/)
+    const size = sizeMatch?.[0] ?? ''
+    const type = left.slice(size.length).trim()
+
+    const fields: Record<string, string> = {}
+    const body: string[] = []
+    const sections: Record<string, string[]> = {
+      traits: [],
+      actions: [],
+      'bonus actions': [],
+      reactions: [],
+      'legendary actions': [],
+      'lair actions': []
+    }
+    let section = ''
+
+    for (const line of lines.slice(Math.max(typeAt, 0) + 1)) {
+      if (!line) continue
+      const heading = /^###\s+(.+)$/.exec(line)
+      if (heading) {
+        section = heading[1].trim().toLowerCase()
+        continue
+      }
+      const field = MONSTER_FIELD.exec(line)
+      if (field && !section) {
+        fields[field[1]] = field[2]
+        continue
+      }
+      if (section && sections[section]) {
+        sections[section].push(line)
+        continue
+      }
+      body.push(line)
+    }
+
+    const scores: AbilityScores = {}
+    const modifiers: AbilityScores = {}
+    const saveParts: string[] = []
+    for (const key of ABILITY_KEYS) {
+      const parsed = parseAbilityScore(fields[key.toUpperCase()] ?? '')
+      if (!parsed) continue
+      scores[ABILITY_NAMES[key]] = parsed.score
+      if (parsed.mod != null) modifiers[ABILITY_NAMES[key]] = parsed.mod
+      if (parsed.save != null && parsed.save !== parsed.mod) {
+        saveParts.push(`${key[0].toUpperCase()}${key.slice(1)} ${parsed.save >= 0 ? '+' : ''}${parsed.save}`)
+      }
+    }
+
+    const hpParsed = parseHp(fields.HP ?? '')
+    const cr = fields.CR || fields.Challenge ? parseCr(fields.CR || fields.Challenge) : ''
+    const split = splitImmunities(fields.Immunities ?? '')
+    const desc = body.join('\n').replace(/\n{3,}/g, '\n\n').trim()
+    const traits = parseNamedBits(sections.traits)
+    const actions = parseNamedBits(sections.actions)
+    const bonusActions = parseNamedBits(sections['bonus actions'])
+    const reactions = parseNamedBits(sections.reactions)
+    const legendary = parseNamedBits(sections['legendary actions'])
+    const lair = parseNamedBits(sections['lair actions'])
+
+    records.push({
+      id: `${source}_${slug(name)}`,
+      name,
+      kind: 'monster',
+      searchText: [name, type, alignment, desc, fields.Habitat, sourceLabel].filter(Boolean).join(' '),
+      summary: monsterSummary(fields, size, type, cr),
+      source,
+      sourceLabel,
+      data: {
+        name,
+        size,
+        type,
+        alignment,
+        cr: cr === '' ? undefined : cr,
+        ac: Number(fields.AC) || undefined,
+        hp: hpParsed.hp,
+        hitDice: hpParsed.hitDice,
+        speed: fields.Speed,
+        scores,
+        modifiers,
+        initiativeBonus: parseSigned(fields.Initiative ?? ''),
+        saves: saveParts.join(', ') || undefined,
+        skills: fields.Skills,
+        senses: fields.Senses,
+        languages: fields.Languages,
+        immunities: split.immunities,
+        conditionImmunities: split.conditionImmunities,
+        resistances: fields.Resistances,
+        vulnerabilities: fields.Vulnerabilities,
+        habitat: fields.Habitat,
+        treasure: fields.Treasure,
+        gear: fields.Gear,
+        desc,
+        traits,
+        actions,
+        bonusActions,
+        reactions,
+        legendary,
+        lair
+      }
+    })
+  }
+
+  return records
 }
 
 function isArtistCredit(line: string): boolean {
@@ -342,13 +555,15 @@ export function parseWotcFiles(files: { name: string; text: string }[]): SrdReco
   const records: SrdRecord[] = []
   const seen = new Set<string>()
   for (const file of files) {
-    const parsed = looksLikeSpellList(file.name, file.text)
-      ? parsePhbSpellList(file.text, file.name)
-      : looksLikeEquipment(file.name, file.text)
-        ? parsePhbEquipment(file.text, file.name)
-        : looksLikeMagicItems(file.name, file.text)
-          ? parsePhbMagicItems(file.text, file.name)
-          : parseGenericBook(file.text, file.name)
+    const parsed = looksLikeBestiary(file.name, file.text)
+      ? parseWotcBestiary(file.text, file.name)
+      : looksLikeSpellList(file.name, file.text)
+        ? parsePhbSpellList(file.text, file.name)
+        : looksLikeEquipment(file.name, file.text)
+          ? parsePhbEquipment(file.text, file.name)
+          : looksLikeMagicItems(file.name, file.text)
+            ? parsePhbMagicItems(file.text, file.name)
+            : parseGenericBook(file.text, file.name)
     for (const record of parsed) {
       if (seen.has(record.id)) continue
       seen.add(record.id)

@@ -7,6 +7,7 @@ import weapons from '../data/srd/weapons.json'
 function foldStem(name: string): string {
   return name
     .toLowerCase()
+    .replace(/[’‘`]/g, "'")
     .replace(/[—–−]/g, '-')
     .replace(/\s+/g, ' ')
     .replace(/\.[^.]+$/, '')
@@ -26,6 +27,12 @@ function uniqueNames(records: { name: string }[]): string[] {
 }
 
 describe('bundled SRD item art', () => {
+  it('folds curly apostrophes to match ASCII filenames', () => {
+    expect(foldStem("Alchemist’s Supplies")).toBe(foldStem("Alchemist's Supplies"))
+    expect(foldStem("Thieves’ Tools")).toBe(foldStem("Thieves' Tools"))
+    expect(foldStem("Clothes, Traveler’s")).toBe(foldStem("Clothes, Traveler's"))
+  })
+
   it('ships an image for every unique SRD weapon, armor, gear, and magic item', () => {
     const dir = join(process.cwd(), 'resources', 'srd-items')
     const files = readdirSync(dir).filter((name) => /\.(png|webp|jpe?g)$/i.test(name))

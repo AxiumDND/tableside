@@ -24,7 +24,9 @@ const FILTERS: { id: SrdKind | 'all' | string; label: string }[] = [
   { id: 'spell', label: 'Spells' },
   { id: 'monster', label: 'Monsters' },
   { id: 'weapon', label: 'Weapons' },
-  { id: 'gear', label: 'Gear' }
+  { id: 'armor', label: 'Armor' },
+  { id: 'gear', label: 'Gear' },
+  { id: 'magic', label: 'Magic Items' }
 ]
 
 const NAMED_LEAD = /^([A-Z][\w'’ /-]{0,48}\.)(\s+)/
@@ -136,10 +138,32 @@ function ItemPortrait({ name }: { name: string }) {
   const [failed, setFailed] = useState(false)
   if (failed) return null
   return (
+    <div className="w-36 shrink-0">
+      <img
+        src={srdItemUrl(name)}
+        alt=""
+        className="aspect-[3/4] w-full rounded object-cover"
+        onError={() => setFailed(true)}
+      />
+    </div>
+  )
+}
+
+function ResultThumb({ record }: { record: SrdRecord }) {
+  const [failed, setFailed] = useState(false)
+  if (failed) return null
+  const src =
+    record.kind === 'monster'
+      ? srdPortraitUrl(record.name)
+      : record.kind === 'weapon' || record.kind === 'gear'
+        ? srdItemUrl(record.name)
+        : null
+  if (!src) return null
+  return (
     <img
-      src={srdItemUrl(name)}
+      src={src}
       alt=""
-      className="aspect-[3/4] w-full rounded object-cover"
+      className="h-12 w-9 shrink-0 rounded object-cover"
       onError={() => setFailed(true)}
     />
   )
@@ -226,9 +250,7 @@ function Detail({
     return (
       <div className="space-y-2 text-sm">
         <div className="flex gap-3">
-          <div className="w-24 shrink-0">
-            <ItemPortrait name={record.name} />
-          </div>
+          <ItemPortrait name={record.name} />
           <div className="min-w-0 flex-1">
             <div className="font-display text-xl text-amber">{record.name}</div>
             <div className="text-xs text-muted">{record.summary}</div>
@@ -339,10 +361,7 @@ export default function RulesSearch({
     })
   }, [])
 
-  const results = useMemo(
-    () => searchSrd(query, kind).slice(0, 30),
-    [query, kind, extraSources]
-  )
+  const results = useMemo(() => searchSrd(query, kind), [query, kind, extraSources])
   const filters = useMemo(
     () => [
       ...FILTERS,
@@ -428,18 +447,26 @@ export default function RulesSearch({
           </div>
         ) : (
           <ul>
+            {results.length > 0 ? (
+              <li className="px-3 py-1.5 text-[10px] uppercase tracking-wider text-muted">
+                {results.length} {results.length === 1 ? 'result' : 'results'}
+              </li>
+            ) : null}
             {results.map((record) => (
               <li key={record.id}>
                 <button
                   type="button"
                   onClick={() => setSelected(record)}
-                  className="flex w-full flex-col items-start border-b border-line/70 px-3 py-2 text-left hover:bg-panel-2"
+                  className="flex w-full items-center gap-2.5 border-b border-line/70 px-3 py-2 text-left hover:bg-panel-2"
                 >
-                  <div className="flex w-full items-baseline justify-between gap-2">
-                    <span className="font-medium">{record.name}</span>
-                    <KindBadge record={record} />
-                  </div>
-                  <span className="text-[11px] text-muted">{record.summary}</span>
+                  <ResultThumb record={record} />
+                  <span className="min-w-0 flex-1">
+                    <span className="flex w-full items-baseline justify-between gap-2">
+                      <span className="font-medium">{record.name}</span>
+                      <KindBadge record={record} />
+                    </span>
+                    <span className="block text-[11px] text-muted">{record.summary}</span>
+                  </span>
                 </button>
               </li>
             ))}

@@ -62,6 +62,27 @@ async function fetchConditions() {
     .filter(Boolean)
 }
 
+function propertyLabel(entry) {
+  if (typeof entry === 'string') return entry
+  if (!entry || typeof entry !== 'object') return ''
+  return entry.property?.name || entry.name || ''
+}
+
+function uniqueByName(records) {
+  const byName = new Map()
+  for (const record of records) {
+    const key = String(record.name).toLowerCase().replace(/\s+/g, ' ').trim()
+    const existing = byName.get(key)
+    if (!existing) {
+      byName.set(key, record)
+      continue
+    }
+    const preferNew = String(record.id).includes('srd-2024') && !String(existing.id).includes('srd-2024')
+    if (preferNew) byName.set(key, record)
+  }
+  return [...byName.values()]
+}
+
 function components(spell) {
   const parts = []
   if (spell.verbal) parts.push('V')
@@ -207,19 +228,21 @@ async function main() {
 
   const conditions = conditionsRaw
 
-  const weapons = weaponsRaw.map((w) => ({
-    id: w.key ?? w.slug ?? w.name,
-    name: w.name,
-    kind: 'weapon',
-    category: w.category ?? w.weapon_category ?? '',
-    damage: w.damage_dice
-      ? `${w.damage_dice} ${w.damage_type?.name ?? w.damage_type ?? ''}`.trim()
-      : (w.damage ?? ''),
-    properties: Array.isArray(w.properties)
-      ? w.properties.map((p) => p.name ?? p).join(', ')
-      : (w.properties ?? ''),
-    desc: w.desc ?? w.description ?? ''
-  }))
+  const weapons = uniqueByName(
+    weaponsRaw.map((w) => ({
+      id: w.key ?? w.slug ?? w.name,
+      name: w.name,
+      kind: 'weapon',
+      category: w.category ?? w.weapon_category ?? (w.is_simple ? 'Simple' : 'Martial'),
+      damage: w.damage_dice
+        ? `${w.damage_dice} ${w.damage_type?.name ?? w.damage_type ?? ''}`.trim()
+        : (w.damage ?? ''),
+      properties: Array.isArray(w.properties)
+        ? w.properties.map(propertyLabel).filter(Boolean).join(', ')
+        : propertyLabel(w.properties),
+      desc: w.desc ?? w.description ?? ''
+    }))
+  )
 
   const index = {
     generatedAt: new Date().toISOString(),
