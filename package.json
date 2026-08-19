@@ -19,7 +19,7 @@
     "preview": "node ./node_modules/electron-vite/bin/electron-vite.js preview",
     "start": "node ./node_modules/electron/cli.js .",
     "test": "vitest run",
-    "dist": "node ./node_modules/electron-vite/bin/electron-vite.js build && node ./node_modules/electron-builder/cli.js --win",
+    "dist": "node ./node_modules/electron-vite/bin/electron-vite.js build && node ./node_modules/electron-builder/cli.js --win --publish never",
     "fetch-srd": "node scripts/fetch-srd.mjs"
   },
   "dependencies": {
