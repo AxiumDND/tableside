@@ -3,8 +3,10 @@ import {
   folderMatchesCanonical,
   folderOrderIndex,
   folderRevealsOpenFile,
+  folderUsesArt,
   gearSectionIndex,
   campaignTreeGroup,
+  artFolderRelativePath,
   isArtFolderName,
   isGearFolderName
 } from './campaignLayout'
@@ -46,6 +48,23 @@ describe('Art folders', () => {
     expect(folderRevealsOpenFile('Bestiary', 'Bestiary', 'Bestiary/Ghoul.md')).toBe(true)
     expect(folderRevealsOpenFile('Bestiary/Art', 'Art', 'Bestiary/Art/Ghoul.webp')).toBe(false)
     expect(folderRevealsOpenFile('Bestiary', 'Bestiary', 'Bestiary/Art/Ghoul.webp')).toBe(true)
+  })
+
+  it('resolves the Art sidecar for a notes folder', () => {
+    expect(artFolderRelativePath('Bestiary')).toBe('Bestiary/Art')
+    expect(artFolderRelativePath('Bestiary/Art')).toBe('Bestiary/Art')
+    expect(artFolderRelativePath('Gear/Weapons')).toBe('Gear/Weapons/Art')
+    expect(artFolderRelativePath('')).toBe('Art')
+  })
+
+  it('offers Add art on sheet folders and Art, not Gear root or Maps/Print', () => {
+    expect(folderUsesArt('Bestiary')).toBe(true)
+    expect(folderUsesArt('Bestiary/Art')).toBe(true)
+    expect(folderUsesArt('Spells')).toBe(true)
+    expect(folderUsesArt('Gear/Weapons')).toBe(true)
+    expect(folderUsesArt('Gear')).toBe(false)
+    expect(folderUsesArt('Maps/Print')).toBe(false)
+    expect(folderUsesArt('Templates')).toBe(false)
   })
 
   it('sorts notes before Art folders', () => {

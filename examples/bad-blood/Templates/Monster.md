@@ -1,19 +1,22 @@
 <!--
   Bestiary template. Right-click Bestiary/ → New monster… (or copy into Bestiary/ and rename).
-  Art: Bestiary/Art/Monster Name.png. Prefer Add to Bestiary from Lookup for SRD creatures.
+  Art: Bestiary/Art/Monster Name.png, or Load art on the sheet. Prefer Add to Bestiary from Lookup for SRD creatures.
   See docs/CAMPAIGN.md and docs/MARKDOWN.md.
 -->
 # Monster Name
 
+> [!infobox]+
+> ![[Monster Name.png]]
+>
+> | | |
+> |---|---|
+> | **CR** | 1 |
+> | **Role** | Pressure / boss / minion |
+> | **Source** | MM / custom |
+
 *One line: what it does at the table.*
 
 Medium undead · chaotic evil · CR 1
-
-| | |
-|---|---|
-| **CR** | 1 |
-| **Role** | Pressure / boss / minion |
-| **Source** | MM / custom |
 
 ## Notes
 

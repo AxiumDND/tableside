@@ -160,13 +160,17 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
                 art by name. <Code>Esc</Code> clears, then hides the box.
               </>,
               <>
-                Right-click a folder for Templates (player, NPC, monster, spell, gear, night sheet, map), or{' '}
-                <Action>Add files…</Action> to import. Gear has Weapons, Armor, Equipment, and Magic Items — right-click
-                the subsection.
+                Right-click a folder for Templates (player, NPC, monster, spell, gear, game night sheet, map).{' '}
+                <Action>Add art…</Action> on Party, NPCs, Bestiary, Spells, Sessions, Maps, Handouts, a Gear
+                subsection, or the <Code>Art/</Code> folder itself — pictures go in that folder’s{' '}
+                <Code>Art/</Code>. Name them like the sheet (<Code>Ghoul.webp</Code>) so portraits attach.{' '}
+                <Action>Add files…</Action> still imports notes and PDFs into the folder you clicked. Player, NPC, and
+                monster sheets show a portrait frame — click it for <Action>Load art…</Action> or campaign art, or add
+                art when you create the sheet.
               </>,
               <>
-                Right-click a file to <Action>Duplicate…</Action>, add files beside it, or <Action>Delete…</Action>{' '}
-                (asks first).
+                Right-click a file to <Action>Duplicate…</Action>, <Action>Add art here…</Action> (into that
+                folder’s <Code>Art/</Code>), add files beside it, or <Action>Delete…</Action> (asks first).
               </>,
               <>
                 <Action>New map…</Action> picks existing art or <Action>Load image…</Action>. Loaded files copy into
@@ -204,17 +208,21 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
           </p>
         </Section>
 
-        <Section id="combat" title="Combat & night sheets" open={open} onToggle={toggle}>
+        <Section id="combat" title="Combat & game night sheets" open={open} onToggle={toggle}>
           <Sub>Prep (once)</Sub>
           <Ol
             items={[
               <>
                 Put PC / NPC / monster sheets under <Code>Party/</Code>, <Code>NPCs/</Code>, <Code>Bestiary/</Code> with
                 a <Code>statblock</Code> fence (at least name, HP, AC). Right-click the folder, or save from Lookup.
+                Each sheet has a portrait frame — click it to load art or pick campaign art, or add art when you create
+                the sheet.
               </>,
               <>
-                In a session or night-sheet note, use a heading that includes <Code>Combat</Code>, <Code>Encounter</Code>
-                , or ⚔️. Skip headings that say <Code>no combat</Code>.
+                In a session or game night sheet, use a heading that includes <Code>Combat</Code>, <Code>Encounter</Code>
+                , or ⚔️. Skip headings that say <Code>no combat</Code>. Right-click Sessions for{' '}
+                <Action>New game night sheet…</Action> — it uses the Lazy DM 10 steps and links every existing Party
+                sheet.
               </>,
               <>
                 Add a line like <Code>**Combatants:** [[Harbinger]] · [[Vampire Spawn]] ×2 · party</Code>
@@ -237,12 +245,12 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
           <Ol
             items={[
               <>
-                Open the night sheet. On that combat section, press <Action>Add to initiative</Action>. Missing{' '}
+                Open the game night sheet. On that combat section, press <Action>Add to initiative</Action>. Missing{' '}
                 <Code>[[links]]</Code> show a warning on the card. NPCs/monsters at initiative 0 are rolled
                 automatically. Names already in Combat are skipped.
               </>,
               <>
-                Or skip the night sheet: <Action>Add all players</Action>, click the Bestiary list, or type a manual
+                Or skip the game night sheet: <Action>Add all players</Action>, click the Bestiary list, or type a manual
                 Name / Init / HP / AC row.
               </>,
               <>
@@ -289,13 +297,14 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
                 selected chip with an empty search lists every matching entry.
               </>,
               <>
-                Open a result. Monsters, weapons, and gear show bundled art when it exists. Click a named trait or
-                attack in a monster block to roll it.
+                Open a result. Spells show the emblem for their school of magic. Monsters, weapons, and gear show
+                bundled art when it exists. Click a named trait or attack in a monster block to roll it.
               </>,
               <>
                 <Action>Add to Bestiary / Spells / Gear</Action> writes a markdown note you can edit. Gear goes under
                 Weapons, Armor, Equipment, or Magic Items. A monster also copies its default portrait into{' '}
-                <Code>Bestiary/Art/</Code> if the campaign does not already have one.
+                <Code>Bestiary/Art/</Code> if the campaign does not already have one. A spell copies its school emblem
+                into <Code>Spells/Art/</Code>.
               </>,
               <>
                 Monsters can <Action>Add to combat</Action> for this fight only, without saving a note.

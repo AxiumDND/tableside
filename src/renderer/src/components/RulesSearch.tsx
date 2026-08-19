@@ -11,7 +11,7 @@ import {
 } from '../lib/srd'
 import { extraSourcesFromRecords, parseWotcFiles } from '../lib/wotcParse'
 import { libraryFolderFor } from '../lib/lookupNotes'
-import { srdItemUrl, srdPortraitUrl } from '../lib/images'
+import { srdItemUrl, srdPortraitUrl, srdSchoolUrl } from '../lib/images'
 import { LIBRARY_FOLDER_NAMES } from '../../../shared/campaignLayout'
 import { statBlockToParsed } from '../lib/statblock'
 import RollableStatBlock from './RollableStatBlock'
@@ -149,15 +149,33 @@ function ItemPortrait({ name }: { name: string }) {
   )
 }
 
+function SpellPortrait({ school }: { school: string }) {
+  const [failed, setFailed] = useState(false)
+  if (failed || !school.trim()) return null
+  return (
+    <div className="w-36 shrink-0">
+      <img
+        src={srdSchoolUrl(school)}
+        alt=""
+        className="aspect-[3/4] w-full rounded object-cover"
+        onError={() => setFailed(true)}
+      />
+    </div>
+  )
+}
+
 function ResultThumb({ record }: { record: SrdRecord }) {
   const [failed, setFailed] = useState(false)
   if (failed) return null
+  const school = String(record.data.school ?? '').trim()
   const src =
     record.kind === 'monster'
       ? srdPortraitUrl(record.name)
-      : record.kind === 'weapon' || record.kind === 'gear'
-        ? srdItemUrl(record.name)
-        : null
+      : record.kind === 'spell' && school
+        ? srdSchoolUrl(school)
+        : record.kind === 'weapon' || record.kind === 'gear'
+          ? srdItemUrl(record.name)
+          : null
   if (!src) return null
   return (
     <img
@@ -275,10 +293,16 @@ function Detail({
   }
 
   if (record.kind === 'spell') {
+    const school = String(data.school ?? '').trim()
     return (
       <div className="space-y-2 text-sm">
-        <div className="font-display text-xl text-amber">{record.name}</div>
-        <div className="text-xs text-muted">{record.summary}</div>
+        <div className="flex gap-3">
+          <SpellPortrait school={school} />
+          <div className="min-w-0 flex-1">
+            <div className="font-display text-xl text-amber">{record.name}</div>
+            <div className="text-xs text-muted">{record.summary}</div>
+          </div>
+        </div>
         <p>
           <span className="text-muted">Casting Time</span> {String(data.castingTime || '—')}
         </p>

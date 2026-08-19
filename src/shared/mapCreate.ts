@@ -1,9 +1,10 @@
+import { artFolderRelativePath } from './campaignLayout'
+
 /** Art folder next to a new map note (`Maps` → `Maps/Art`). */
 export function mapArtRelativeFolder(noteFolder: string): string {
   const posix = noteFolder.replaceAll('\\', '/').replace(/\/+$/, '')
   if (!posix) return 'Maps/Art'
-  if (/(^|\/)art$/i.test(posix)) return posix
-  return `${posix}/Art`
+  return artFolderRelativePath(posix)
 }
 
 /** Set `image:` inside a map fence (or insert it if missing). */

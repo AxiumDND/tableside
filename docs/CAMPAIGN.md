@@ -5,7 +5,7 @@ How to structure a campaign folder so Tableside can find notes, art, and combata
 Also read:
 
 - [TABLE.md](TABLE.md) — DM console, combat, Lookup, player display
-- [RECIPES.md](RECIPES.md) — night sheet → initiative, Lookup → campaign note (also in-app **Help**)
+- [RECIPES.md](RECIPES.md) — game night sheet → initiative, Lookup → campaign note (also in-app **Help**)
 - [MARKDOWN.md](MARKDOWN.md) — wikilinks, callouts, `statblock` field reference
 - [WOTC/README.md](../WOTC/README.md) — optional book text for Lookup
 
@@ -18,7 +18,7 @@ campaign.json     campaign name (hidden in the file tree)
 combat.json       live initiative (hidden)
 Overview.md       hub note — opens first if present
 
-Sessions/         run guides and night sheets
+Sessions/         run guides and game night sheets
   Art/            establishing shots
 Party/            PC sheets (Add all players)
   Art/            PC portraits
@@ -27,18 +27,23 @@ NPCs/             named people
 Bestiary/         creatures
   Art/            creature art (campaign overrides; SRD monsters have bundled defaults)
 Spells/           campaign copies of spells (edit after Lookup)
+  Art/            school emblems and spell art
 Gear/
   Weapons/        mundane weapons
+    Art/          weapon art
   Armor/          mundane armor
+    Art/          armor art
   Equipment/      adventuring gear and tools
+    Art/          equipment art
   Magic Items/    wondrous items, potions, magic weapons
+    Art/          magic item art
 Maps/
   Art/            battle and location maps
   Print/          print-and-play PDFs
   *.md            map notes (fenced map block + DM-only pins + tokens)
 Handouts/         letters and props
   Art/            letter images
-Templates/        blank Player, NPC, Monster, Spell, Gear, Night Sheet, and Map sheets
+Templates/        blank Player, NPC, Monster, Spell, Gear, Game Night Sheet, and Map sheets
 Reference/        tracker, locations, cheat sheets
 Archive/          recaps, transcripts, old drafts
 ```
@@ -64,9 +69,10 @@ Book text for Lookup is **not** part of a campaign. Put PHB / DMG exports in the
 
 Right-click a folder in the file tree:
 
-- **New player / NPC / monster / spell / gear / night sheet / map** — copies the matching Templates file and substitutes the name
+- **New player / NPC / monster / spell / gear / game night sheet / map** — copies the matching Templates file and substitutes the name
 - **New note** — empty markdown
-- **Add files…** — import images, PDFs, or markdown into that folder
+- **Add art…** — import images into that folder’s `Art/` (creates `Art/` if needed). Name files like the sheet so portraits attach
+- **Add files…** — import notes, PDFs, or other files into the folder you clicked
 
 Duplicate from a file’s context menu when you need a second vampire spawn sheet, etc.
 
@@ -148,9 +154,9 @@ Field list and fallbacks: [MARKDOWN.md](MARKDOWN.md#statblock-fence).
 
 Templates under `Templates/` are a good starting point. You can also **Add to campaign** from Lookup (monster → Bestiary, spell → Spells, weapon → Gear/Weapons, armor → Gear/Armor, gear → Gear/Equipment, magic item → Gear/Magic Items).
 
-## Night sheets and combat
+## Game night sheets and combat
 
-A **night sheet** is a session note with combat sections that feed the initiative tracker.
+A **game night sheet** is a session note with combat sections that feed the initiative tracker. Right-click **Sessions** → **New game night sheet…** for a Lazy DM 10-step page (characters, strong start, scenes, secrets, locations, NPCs, monsters, treasure, last time, endings). Existing `Party/` sheets are linked in automatically. New files are named `Session N — Game Night Sheet.md`.
 
 1. Use a heading that includes `Combat`, `Encounter`, or ⚔️ (skip headings that say `no combat`).
 2. List combatants with wikilinks to Party / NPCs / Bestiary sheets:
@@ -167,9 +173,9 @@ A **night sheet** is a session note with combat sections that feed the initiativ
 
 If there is no `Combatants:` line, Tableside still picks up wikilinks (and some bold table labels) to Party / NPCs / Bestiary notes in that section.
 
-On the night sheet, use **Add to initiative** / **Add encounter** to load those sheets into Combat. **Add all players** pulls every PC sheet.
+On the game night sheet, use **Add to initiative** / **Add encounter** to load those sheets into Combat. **Add all players** pulls every PC sheet.
 
-Suggested split: long prose in `Session N.md`, numbers and combatant lines in `Session N — Night Sheet.md`, cross-linked with wikilinks.
+Suggested split: long prose in `Session N.md`, numbers and combatant lines in `Session N — Game Night Sheet.md`, cross-linked with wikilinks.
 
 Full recipe (prep + troubleshooting): [RECIPES.md](RECIPES.md#night-sheet--initiative).
 
@@ -186,7 +192,7 @@ HP edits stay on the DM console; the overlay never shows numbers. Step-by-step U
 ## At the table (short)
 
 1. Open or create a campaign (or click **Sample** for Bad Blood).
-2. Open tonight’s session or night sheet from the file tree.
+2. Open tonight’s session or game night sheet from the file tree.
 3. Click a map or portrait → **Show to players**.
 4. When a fight starts, add the encounter (or combatants) → roll / enter initiative → advance turns.
 5. Use **Lookup** for conditions, spells, monsters, and weapons (SRD bundled; optional WOTC files extend it).
@@ -197,5 +203,5 @@ Full UI walkthrough: [TABLE.md](TABLE.md).
 
 | Folder | What it demonstrates |
 | --- | --- |
-| [examples/bad-blood](../examples/bad-blood) | Full three-shot with night sheets, art, and combatants |
+| [examples/bad-blood](../examples/bad-blood) | Full three-shot with game night sheets, art, and combatants |
 | [examples/sample-campaign](../examples/sample-campaign) | Minimal one-night starter |

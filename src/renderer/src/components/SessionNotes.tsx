@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import type { Character, PlayerMapView } from '../../../shared/types'
+import type { CampaignInfo, Character, CreateNoteMapImage, PlayerMapView } from '../../../shared/types'
 import {
   imageTitle,
   markdownUrlTransform,
@@ -86,7 +86,8 @@ export default function SessionNotes({
   onOpenCampaign,
   onOpenSample,
   recentCampaigns,
-  onOpenRecent
+  onOpenRecent,
+  onCampaignChange
 }: {
   path: string
   kind: FileKind
@@ -108,6 +109,7 @@ export default function SessionNotes({
   onOpenSample?: () => void
   recentCampaigns?: import('../../../shared/types').RecentCampaign[]
   onOpenRecent?: (folder: string) => void
+  onCampaignChange?: (campaign: CampaignInfo) => void
 }) {
   const [markdown, setMarkdown] = useState('')
   const [original, setOriginal] = useState('')
@@ -630,6 +632,15 @@ export default function SessionNotes({
             onSelectImage={onSelectImage}
             onAddToCombat={onAddNpcToCombat ? () => onAddNpcToCombat(parsedNpc.block, path) : undefined}
             onEdit={() => setEditing(true)}
+            onSetPortrait={async (image: CreateNoteMapImage) => {
+              const result = await window.tabledm.setNotePortrait(path, image)
+              if (!result) return
+              setMarkdown(result.markdown)
+              setOriginal(result.markdown)
+              markdownRef.current = result.markdown
+              originalRef.current = result.markdown
+              onCampaignChange?.(result.campaign)
+            }}
             renderNotes={(body) =>
               renderDocument(
                 linkWikiNotes(prepareNoteMarkdown(body, path, images, { injectPortrait: false }), path, noteIndex),

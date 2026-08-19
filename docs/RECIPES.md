@@ -4,7 +4,7 @@ Short table workflows. UI overview: [TABLE.md](TABLE.md). Authoring: [CAMPAIGN.m
 
 These recipes also appear in the in-app **Help** panel (header), along with layout, maps, combat overlay, Lookup chips, and shortcuts.
 
-## Night sheet → initiative
+## Game night sheet → initiative
 
 Prep combatants in Markdown once; load them at the table in one click.
 
@@ -32,11 +32,11 @@ Rules of thumb:
 
 Skip headings that say `no combat`.
 
-Prefer a short **Night Sheet** for numbers and combatant lines, and keep long prose in `Session N.md` with `[[Session N — Night Sheet]]` links either way.
+Prefer a short **game night sheet** for numbers and combatant lines, and keep long prose in `Session N.md` with `[[Session N — Game Night Sheet]]` links either way. **New game night sheet…** starts from the Lazy DM 10-step template and links existing Party files.
 
 ### At the table
 
-1. Open the night sheet.
+1. Open the game night sheet.
 2. On the combat section, press **Add to initiative** (loads linked sheets; skips names already in Combat). Unresolved `[[links]]` show a warning on the card. Newly added NPCs/monsters at initiative 0 are rolled automatically.
 3. Open **Combat** in the header if it is not already open.
 4. Type PC totals from the table (NPCs may already be rolled). Use **Roll all** / **Roll NPCs** if you need to re-roll.
@@ -66,7 +66,7 @@ Copy bundled SRD (or optional WOTC) text into the campaign folder so you can edi
    - **Spell** → **Add to Spells**
    - **Weapon / gear / magic item** → **Add to Gear** (Weapons, Armor, Equipment, or Magic Items)
 5. The new markdown note appears in that folder. Open it from the file tree to tune HP, add notes, or rename.
-6. Link it from a night sheet with `[[Note Name]]` like any other sheet.
+6. Link it from a game night sheet with `[[Note Name]]` like any other sheet.
 
 ### Status messages
 
@@ -81,8 +81,8 @@ Saving needs an open campaign. Conditions and pure rules entries do not get an A
 ### After saving a monster
 
 1. Optional: drop art in `Bestiary/Art/Name.png` and embed `![[Name.png]]`.
-2. Add `**Combatants:** [[Name]] · party` on tonight’s night sheet.
-3. Or add from Combat’s Bestiary list / Lookup **Add to combat** without a night sheet.
+2. Add `**Combatants:** [[Name]] · party` on tonight’s game night sheet.
+3. Or add from Combat’s Bestiary list / Lookup **Add to combat** without a game night sheet.
 
 ### Optional WOTC text
 

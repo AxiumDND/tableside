@@ -64,13 +64,21 @@ const api = {
     ipcRenderer.invoke('campaign:create-note', folder, name, template, mapImage ?? null),
   pickImageFile: (): Promise<{ filePath: string; fileName: string } | null> =>
     ipcRenderer.invoke('campaign:pick-image'),
+  setNotePortrait: (
+    relativePath: string,
+    image: CreateNoteMapImage
+  ): Promise<{ campaign: CampaignInfo; path: string; markdown: string } | null> =>
+    ipcRenderer.invoke('campaign:set-portrait', relativePath, image),
   duplicateFile: (
     relativePath: string,
     name?: string
   ): Promise<{ campaign: CampaignInfo; path: string } | null> =>
     ipcRenderer.invoke('campaign:duplicate-file', relativePath, name),
-  addFiles: (folder: string): Promise<{ campaign: CampaignInfo; paths: string[] } | null> =>
-    ipcRenderer.invoke('campaign:add-files', folder),
+  addFiles: (
+    folder: string,
+    mode?: 'files' | 'art'
+  ): Promise<{ campaign: CampaignInfo; paths: string[] } | null> =>
+    ipcRenderer.invoke('campaign:add-files', folder, mode ?? 'files'),
   deleteFile: (
     relativePath: string
   ): Promise<{ campaign: CampaignInfo; path: string } | null> =>

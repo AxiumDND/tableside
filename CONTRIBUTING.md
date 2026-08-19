@@ -22,7 +22,7 @@ Thanks for helping with Tableside.
 | --- | --- |
 | [README.md](README.md) | Product overview + quick start |
 | [docs/TABLE.md](docs/TABLE.md) | Running a session in the UI |
-| [docs/RECIPES.md](docs/RECIPES.md) | Night sheet + Lookup save recipes |
+| [docs/RECIPES.md](docs/RECIPES.md) | Game night sheet + Lookup save recipes |
 | [docs/CAMPAIGN.md](docs/CAMPAIGN.md) | Campaign folder contract |
 | [docs/MARKDOWN.md](docs/MARKDOWN.md) | Note / statblock syntax |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Contributor / architecture notes |

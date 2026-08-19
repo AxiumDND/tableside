@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CampaignInfo, CampaignTreeNode, CreateNoteMapImage } from '../../../shared/types'
 import {
+  artFolderRelativePath,
   folderRevealsOpenFile,
+  folderUsesArt,
+  isArtFolderName,
   isBestiaryFolderName,
   isGearFolderName,
   isMapsFolderName,
@@ -12,6 +15,7 @@ import {
 } from '../../../shared/campaignLayout'
 import { mapArtRelativeFolder } from '../../../shared/mapCreate'
 import { sanitizeFileName, type SheetTemplateKind } from '../../../shared/sheetTemplates'
+import { sheetAcceptsPortrait } from '../../../shared/sheetPortrait'
 import { IMAGE_EXT, campaignFileUrl, flattenImages } from '../lib/images'
 import { parentFolderLabel, searchCampaignFiles } from '../lib/campaignSearch'
 
@@ -36,6 +40,12 @@ function displayName(name: string): string {
 
 function fileNameOf(path: string): string {
   return path.replaceAll('\\', '/').split('/').pop() ?? path
+}
+
+function parentRelativePath(path: string): string {
+  const posix = path.replaceAll('\\', '/')
+  const slash = posix.lastIndexOf('/')
+  return slash === -1 ? '' : posix.slice(0, slash)
 }
 
 function fileExt(path: string): string {
@@ -309,7 +319,7 @@ export default function CampaignFiles({
       monster: 'New monster',
       spell: 'New spell',
       gear: 'New gear',
-      nightsheet: 'New night sheet',
+      nightsheet: 'New game night sheet',
       map: 'New map'
     }
     setPrompt({ kind: 'create', folder, template, title: titles[template] })
@@ -341,9 +351,9 @@ export default function CampaignFiles({
     setMenu(null)
   }
 
-  async function addFiles(folder: string): Promise<void> {
+  async function addFiles(folder: string, mode: 'files' | 'art' = 'files'): Promise<void> {
     setMenu(null)
-    const result = await window.tabledm.addFiles(folder)
+    const result = await window.tabledm.addFiles(folder, mode)
     if (!result) return
     onTreeChange?.(result.campaign, result.paths[0])
   }
@@ -375,7 +385,8 @@ export default function CampaignFiles({
     setBusy(true)
     try {
       if (prompt.kind === 'create') {
-        const image = prompt.template === 'map' ? mapImage : null
+        const image =
+          prompt.template === 'map' || sheetAcceptsPortrait(prompt.template) ? mapImage : null
         const result = await window.tabledm.createNote(prompt.folder, value, prompt.template, image)
         if (result) onTreeChange?.(result.campaign, result.path)
       } else {
@@ -390,6 +401,17 @@ export default function CampaignFiles({
 
   const folderPath = menu?.kind === 'node' && menu.node.type === 'dir' ? menu.node.relativePath : ''
   const folderHint = folderPath ? folderKindForPath(folderPath) : null
+  const artMenu =
+    menu?.kind === 'node' && menu.node.type === 'dir' && isArtFolderName(menu.node.name)
+  const canAddArt = Boolean(folderPath && folderUsesArt(folderPath))
+  const fileParent =
+    menu?.kind === 'node' && menu.node.type === 'file' ? parentRelativePath(menu.node.relativePath) : ''
+  const fileParentIsArt = isArtFolderName(fileParent.split('/').pop() ?? '')
+  const fileParentUsesArt = Boolean(fileParent && folderUsesArt(fileParent))
+  const createWantsArt =
+    prompt?.kind === 'create' && (prompt.template === 'map' || sheetAcceptsPortrait(prompt.template))
+  const createArtFolder =
+    prompt?.kind === 'create' ? (prompt.template === 'map' ? mapArtRelativeFolder(prompt.folder) : artFolderRelativePath(prompt.folder)) : ''
 
   return (
     <aside className="flex min-h-0 flex-1 flex-col bg-ink">
@@ -490,16 +512,16 @@ export default function CampaignFiles({
           {menu.kind === 'node' && menu.node.type === 'file' ? (
             <>
               <MenuItem label="Duplicate…" onClick={() => startDuplicate(menu.node)} />
-              <MenuItem
-                label="Add files here…"
-                onClick={() => {
-                  const path = menu.node.relativePath.replaceAll('\\', '/')
-                  const slash = path.lastIndexOf('/')
-                  void addFiles(slash === -1 ? '' : path.slice(0, slash))
-                }}
-              />
+              {fileParentUsesArt ? (
+                <MenuItem label="Add art here…" onClick={() => void addFiles(fileParent, 'art')} />
+              ) : null}
+              {fileParentIsArt ? null : (
+                <MenuItem label="Add files here…" onClick={() => void addFiles(fileParent)} />
+              )}
               <MenuItem label="Delete…" onClick={() => startDelete(menu.node)} />
             </>
+          ) : artMenu ? (
+            <MenuItem label="Add art…" onClick={() => void addFiles(folderPath, 'art')} />
           ) : (
             <>
               {folderHint === 'party' || !folderHint ? (
@@ -518,12 +540,15 @@ export default function CampaignFiles({
                 <MenuItem label="New gear…" onClick={() => startCreate(folderPath, 'gear')} />
               ) : null}
               {folderHint === 'sessions' || !folderHint ? (
-                <MenuItem label="New night sheet…" onClick={() => startCreate(folderPath, 'nightsheet')} />
+                <MenuItem label="New game night sheet…" onClick={() => startCreate(folderPath, 'nightsheet')} />
               ) : null}
               {folderHint === 'maps' || !folderHint ? (
                 <MenuItem label="New map…" onClick={() => startCreate(folderPath, 'map')} />
               ) : null}
               <MenuItem label="New note…" onClick={() => startCreate(folderPath, 'blank')} />
+              {canAddArt ? (
+                <MenuItem label="Add art…" onClick={() => void addFiles(folderPath, 'art')} />
+              ) : null}
               <MenuItem label="Add files…" onClick={() => void addFiles(folderPath)} />
             </>
           )}
@@ -537,7 +562,7 @@ export default function CampaignFiles({
         >
           <form
             className={`w-full rounded border border-line bg-panel p-4 ${
-              prompt.kind === 'create' && prompt.template === 'map' ? 'max-w-md' : 'max-w-sm'
+              createWantsArt ? 'max-w-md' : 'max-w-sm'
             }`}
             onClick={(event) => event.stopPropagation()}
             onKeyDown={(event) => {
@@ -552,8 +577,12 @@ export default function CampaignFiles({
             <p className="mt-1 text-[11px] text-muted">
               {prompt.kind === 'delete'
                 ? `Remove ${prompt.fileName} from this campaign. This cannot be undone.`
-                : prompt.kind === 'create' && prompt.template === 'map'
+                : prompt.kind === 'create' && prompt.template === 'nightsheet'
+                  ? 'Lazy DM 10-step game night sheet. Existing Party characters are linked in. Combatants lines feed Add to initiative.'
+                  : prompt.kind === 'create' && prompt.template === 'map'
                   ? 'Pick a campaign image, or load one — loaded files go in this folder’s Art/ and are named after the map.'
+                  : prompt.kind === 'create' && sheetAcceptsPortrait(prompt.template)
+                    ? 'Optional portrait — load a file or pick campaign art. It lands in this folder’s Art/ named like the sheet. You can also load art later from the sheet.'
                   : prompt.kind === 'create' && prompt.template !== 'blank'
                     ? 'Uses the matching Templates file if you have one.'
                     : prompt.kind === 'duplicate'
@@ -572,10 +601,10 @@ export default function CampaignFiles({
                 className="mt-3 w-full rounded border border-line bg-ink px-2 py-1.5 text-sm outline-none focus:border-amber"
               />
             )}
-            {prompt.kind === 'create' && prompt.template === 'map' ? (
+            {prompt.kind === 'create' && createWantsArt ? (
               <div className="mt-3 space-y-2">
                 <label className="block text-[11px] text-muted">
-                  Map image
+                  {prompt.template === 'map' ? 'Map image' : 'Portrait'}
                   <select
                     value={mapImage?.kind === 'existing' ? mapImage.path : ''}
                     onChange={(event) => {
@@ -605,8 +634,8 @@ export default function CampaignFiles({
                     <span className="min-w-0 truncate text-[11px] text-muted">
                       {fileNameOf(mapImage.filePath)}
                       {name.trim()
-                        ? ` → ${mapArtRelativeFolder(prompt.folder)}/${sanitizeFileName(name)}${fileExt(mapImage.filePath)}`
-                        : ` → ${mapArtRelativeFolder(prompt.folder)}/ (named after the map)`}
+                        ? ` → ${createArtFolder}/${sanitizeFileName(name)}${fileExt(mapImage.filePath)}`
+                        : ` → ${createArtFolder}/ (named after the ${prompt.template === 'map' ? 'map' : 'sheet'})`}
                     </span>
                   ) : null}
                 </div>

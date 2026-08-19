@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { portraitForNote, portraitSrcForNote, srdItemUrl, srdPortraitUrl, type CampaignImage } from './images'
+import { portraitForNote, portraitSrcForNote, srdItemUrl, srdPortraitUrl, srdSchoolUrl, type CampaignImage } from './images'
 
 const images: CampaignImage[] = [
   {
@@ -35,6 +35,12 @@ describe('srdPortraitUrl', () => {
 describe('srdItemUrl', () => {
   it('builds a tabledm URL from the item name', () => {
     expect(srdItemUrl('Potion of Healing')).toBe('tabledm://srd-item/?name=Potion%20of%20Healing')
+  })
+})
+
+describe('srdSchoolUrl', () => {
+  it('builds a tabledm URL from the school name', () => {
+    expect(srdSchoolUrl('Evocation')).toBe('tabledm://srd-school/?name=Evocation')
   })
 })
 

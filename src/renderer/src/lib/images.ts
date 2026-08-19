@@ -30,6 +30,11 @@ export function srdItemUrl(name: string): string {
   return `tabledm://srd-item/?name=${encodeURIComponent(stem)}`
 }
 
+export function srdSchoolUrl(school: string): string {
+  const stem = school.replace(/\.[^.]+$/, '').trim()
+  return `tabledm://srd-school/?name=${encodeURIComponent(stem)}`
+}
+
 export function portraitSrcForNote(
   notePath: string,
   images: CampaignImage[],

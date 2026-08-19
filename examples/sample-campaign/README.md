@@ -20,6 +20,6 @@ Minimal one-night folder for trying Tableside without the full Bad Blood three-s
 | `Maps/Art/` | Road art |
 | `Handouts/Art/` | Crate reveal image |
 
-For a complete campaign (night sheets, combatants, maps, templates), use [Bad Blood](../bad-blood) or click **Sample** in the app.
+For a complete campaign (game night sheets, combatants, maps, templates), use [Bad Blood](../bad-blood) or click **Sample** in the app.
 
 Authoring: [docs/CAMPAIGN.md](../../docs/CAMPAIGN.md) · UI: [docs/TABLE.md](../../docs/TABLE.md).

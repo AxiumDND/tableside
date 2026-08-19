@@ -53,6 +53,7 @@ examples/
   sample-campaign/ Minimal demo folder
 scripts/
   fetch-srd.mjs   Open5e → src/renderer/src/data/srd
+  convert-srd-portraits.mjs / convert-srd-items.mjs / convert-srd-schools.mjs
   tidy-bad-blood.mjs  One-off helper for reshaping the Bad Blood example
 WOTC/             Optional local book text for Lookup (not shipped)
 docs/             Authoring and contributor docs
@@ -98,7 +99,7 @@ Format and placement of personal PHB/DMG text files: [WOTC/README.md](../WOTC/RE
 
 ## Packaging notes
 
-`electron-builder` ships `examples/bad-blood` as an extra resource. Product name is **Tableside** (`com.tabledm.app`). `npm run dist` writes `dist/Tableside-Setup-<version>.exe` (per-user NSIS: Start Menu + desktop shortcuts, custom icon). Window and installer icons live in `resources/icon.ico` (regenerate with `node scripts/make-app-icon.mjs`). First launch copies `%APPDATA%\table-dm` settings/WOTC/samples into `%APPDATA%\Tableside` if needed.
+`electron-builder` ships `examples/bad-blood` as an extra resource, plus `srd-portraits`, `srd-items`, and `srd-schools`. Product name is **Tableside** (`com.tabledm.app`). `npm run dist` writes `dist/Tableside-Setup-<version>.exe` (per-user NSIS: Start Menu + desktop shortcuts, custom icon). Window and installer icons live in `resources/icon.ico` (regenerate with `node scripts/make-app-icon.mjs`). First launch copies `%APPDATA%\table-dm` settings/WOTC/samples into `%APPDATA%\Tableside` if needed.
 
 ## Where behavior lives
 

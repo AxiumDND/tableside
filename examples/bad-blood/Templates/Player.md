@@ -1,6 +1,6 @@
 <!--
   Party sheet template. Right-click Party/ → New player… (or copy into Party/ and rename).
-  Put the portrait in Party/Art/ as Character Name.png and keep AC/HP in sync with the statblock.
+  Put the portrait in Party/Art/ as Character Name.png (or Load art on the sheet). Keep AC/HP in sync with the statblock.
   See docs/CAMPAIGN.md and docs/MARKDOWN.md.
 -->
 # *Character Name*
