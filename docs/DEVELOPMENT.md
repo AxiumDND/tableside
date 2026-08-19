@@ -88,7 +88,7 @@ That hits the Open5e API (network required for the script only). The app itself 
 
 ## Optional WOTC lookup
 
-Format and placement of personal PHB/DMG text files: [WOTC/README.md](../WOTC/README.md). The main process also writes a short `README.txt` into `%APPDATA%\table-dm\WOTC` when that folder is created.
+Format and placement of personal PHB/DMG text files: [WOTC/README.md](../WOTC/README.md). The main process also writes a short `README.txt` into `%APPDATA%\Tableside\WOTC` when that folder is created.
 
 ## CI
 
@@ -98,7 +98,7 @@ Format and placement of personal PHB/DMG text files: [WOTC/README.md](../WOTC/RE
 
 ## Packaging notes
 
-`electron-builder` ships `examples/bad-blood` as an extra resource. Product name is **Tableside** (`com.tabledm.app`). Installer target is Windows NSIS only today. Window and installer icons live in `resources/icon.ico` (regenerate with `node scripts/make-app-icon.mjs`).
+`electron-builder` ships `examples/bad-blood` as an extra resource. Product name is **Tableside** (`com.tabledm.app`). `npm run dist` writes `dist/Tableside-Setup-<version>.exe` (per-user NSIS: Start Menu + desktop shortcuts, custom icon). Window and installer icons live in `resources/icon.ico` (regenerate with `node scripts/make-app-icon.mjs`). First launch copies `%APPDATA%\table-dm` settings/WOTC/samples into `%APPDATA%\Tableside` if needed.
 
 ## Where behavior lives
 

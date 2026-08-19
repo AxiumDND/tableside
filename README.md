@@ -4,7 +4,7 @@ A local Windows app for running **in-person** 5e-compatible games. Your laptop i
 
 This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table.
 
-Compatible with fifth edition. Rules lookup uses the **System Reference Document 5.2** (2024 rules), already bundled. Current release: **1.1.4**.
+Compatible with fifth edition. Rules lookup uses the **System Reference Document 5.2** (2024 rules), already bundled. Current release: **1.1.5**.
 
 ## Features
 
@@ -38,13 +38,23 @@ Two windows open. If you have a second monitor, the player window goes there ful
 
 Click **Sample** to load **Bad Blood**, the included Barovia three-shot. Tableside copies it into your user data folder so combat and notes do not write back into the git repo.
 
-### Installer (Windows)
+### Install on a PC (Windows)
+
+1. Run `npm run dist` (or download `Tableside-Setup-1.1.5.exe` from a GitHub Release).
+2. Double-click the installer. It is a per-user install: Start Menu + desktop shortcuts, no admin required. You can pick the folder.
+3. Open **Tableside** from the Start Menu. First launch copies settings and WOTC files from an older `%APPDATA%\table-dm` folder if you already had one.
+
+Windows may show SmartScreen (“Windows protected your PC”) because the installer is not code-signed. **More info → Run anyway**.
+
+Uninstall from Windows Settings; campaign folders on disk and `%APPDATA%\Tableside` are left in place.
+
+### Build the installer
 
 ```bash
 npm run dist
 ```
 
-Writes a Windows NSIS installer to `dist/`.
+Writes `dist/Tableside-Setup-1.1.5.exe`. To attach that file to a GitHub Release, tag and push: `git tag v1.1.5 && git push origin v1.1.5`.
 
 `npm run fetch-srd` is only needed if you want to refresh the bundled SRD snapshot from the [Open5e API](https://api.open5e.com/) (`srd-2024`).
 
@@ -82,7 +92,7 @@ Archive/          recaps and old drafts
 
 Full authoring guide: **[docs/CAMPAIGN.md](docs/CAMPAIGN.md)**. At-the-table UI: **[docs/TABLE.md](docs/TABLE.md)**. Step recipes: **[docs/RECIPES.md](docs/RECIPES.md)** (also in the app **Help** panel). Markdown/`statblock` reference: **[docs/MARKDOWN.md](docs/MARKDOWN.md)**.
 
-Book text for Lookup is **not** part of a campaign. Put Player’s Handbook and Dungeon Master’s Guide exports in the app `WOTC/` folder (or `%APPDATA%\table-dm\WOTC`). When those files are present, Lookup grows extra filters and searches that text. The SRD stays available either way. Filenames must contain `Spell`, `Equipment`, or `Magic Item` — details in [WOTC/README.md](WOTC/README.md).
+Book text for Lookup is **not** part of a campaign. Put Player’s Handbook and Dungeon Master’s Guide exports in the app `WOTC/` folder (or `%APPDATA%\Tableside\WOTC`). When those files are present, Lookup grows extra filters and searches that text. The SRD stays available either way. Filenames must contain `Spell`, `Equipment`, or `Magic Item` — details in [WOTC/README.md](WOTC/README.md).
 
 ### Examples
 
