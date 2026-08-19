@@ -34,7 +34,7 @@ export default function GettingStarted({
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-parchment/85">
           {hasCampaign
-            ? 'Open a session, night sheet, or map from the file tree on the left. Right-click a folder to add players, NPCs, or monsters from Templates.'
+            ? 'Open a session, game night sheet, or map from the file tree on the left. Right-click a folder to add players, NPCs, or monsters from Templates.'
             : 'Local dual-monitor tool for in-person 5e-compatible games. Your laptop is the DM console; the second screen shows maps and art — no account, no cloud.'}
         </p>
       </div>

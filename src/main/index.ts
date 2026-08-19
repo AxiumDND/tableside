@@ -23,11 +23,13 @@ import {
   LIBRARY_FOLDER_NAMES,
   SKIP_DIR_NAMES,
   STANDARD_LAYOUT,
+  artFolderRelativePath,
   canonicalFolder,
   folderMatchesCanonical,
   folderOrderIndex,
   gearSectionIndex,
   campaignTreeGroup,
+  isArtFolderName,
   isHiddenCampaignFile,
   isNpcFolderName,
   isPartyFolderName,
@@ -38,11 +40,14 @@ import {
 import {
   FALLBACK_TEMPLATES,
   TEMPLATE_FILE_NAMES,
+  displayTitle,
   fillTemplate,
+  gameNightSheetFileStem,
   rewriteDuplicatedMarkdown,
   sanitizeFileName,
   type SheetTemplateKind
 } from '../shared/sheetTemplates'
+import { setSheetPortraitEmbed, sheetAcceptsPortrait } from '../shared/sheetPortrait'
 import { loadWotcLibrary, openWotcFolder } from './wotcLibrary'
 
 protocol.registerSchemesAsPrivileged([
@@ -95,6 +100,7 @@ const FILE_MIME: Record<string, string> = {
 
 let srdPortraitCache: Map<string, string> | null = null
 let srdItemCache: Map<string, string> | null = null
+let srdSchoolCache: Map<string, string> | null = null
 
 function foldPortraitStem(name: string): string {
   return name
@@ -116,6 +122,12 @@ function srdItemsDir(): string {
   return app.isPackaged
     ? join(process.resourcesPath, 'srd-items')
     : join(__dirname, '../../resources/srd-items')
+}
+
+function srdSchoolsDir(): string {
+  return app.isPackaged
+    ? join(process.resourcesPath, 'srd-schools')
+    : join(__dirname, '../../resources/srd-schools')
 }
 
 function loadSrdImageCache(cache: Map<string, string> | null, dir: string): Map<string, string> {
@@ -140,6 +152,11 @@ function loadSrdItemCache(): Map<string, string> {
   return srdItemCache
 }
 
+function loadSrdSchoolCache(): Map<string, string> {
+  if (!srdSchoolCache) srdSchoolCache = loadSrdImageCache(srdSchoolCache, srdSchoolsDir())
+  return srdSchoolCache
+}
+
 function findSrdPortraitFile(name: string): string | null {
   if (!name.trim()) return null
   return loadSrdPortraitCache().get(foldPortraitStem(name)) ?? null
@@ -148,6 +165,11 @@ function findSrdPortraitFile(name: string): string | null {
 function findSrdItemFile(name: string): string | null {
   if (!name.trim()) return null
   return loadSrdItemCache().get(foldPortraitStem(name)) ?? null
+}
+
+function findSrdSchoolFile(name: string): string | null {
+  if (!name.trim()) return null
+  return loadSrdSchoolCache().get(foldPortraitStem(name)) ?? null
 }
 
 function settingsPath(): string {
@@ -488,6 +510,7 @@ async function ensureCampaignLayout(root: string): Promise<void> {
     await ensureDir(dir)
     for (const extra of item.extras) {
       await ensureDir(join(dir, extra))
+      if (item.canonical === 'gear') await ensureDir(join(dir, extra, 'Art'))
     }
   }
 }
@@ -514,7 +537,7 @@ async function seedNewCampaignFiles(root: string): Promise<void> {
     { file: 'Monster.md', kind: 'monster' },
     { file: 'Spell.md', kind: 'spell' },
     { file: 'Gear.md', kind: 'gear' },
-    { file: 'Night Sheet.md', kind: 'nightsheet' },
+    { file: 'Game Night Sheet.md', kind: 'nightsheet' },
     { file: 'Map.md', kind: 'map' }
   ]
   const existing = new Set((await readdir(templatesDir)).map((name) => name.toLowerCase()))
@@ -522,12 +545,65 @@ async function seedNewCampaignFiles(root: string): Promise<void> {
     if (TEMPLATE_FILE_NAMES[seed.kind].some((name) => existing.has(name))) continue
     await writeFile(join(templatesDir, seed.file), FALLBACK_TEMPLATES[seed.kind], 'utf8')
   }
+  await refreshStockNightSheetTemplate(root)
+}
+
+async function listPartyNoteStems(root: string): Promise<string[]> {
+  const dir = await existingCanonicalDir(root, 'party')
+  if (!dir || !existsSync(dir)) return []
+  const entries = await readdir(dir, { withFileTypes: true })
+  const stems: string[] = []
+  for (const entry of entries) {
+    if (!entry.isFile() || isHiddenCampaignFile(entry.name)) continue
+    const ext = extname(entry.name).toLowerCase()
+    if (ext !== '.md' && ext !== '.markdown' && ext !== '.txt') continue
+    stems.push(basename(entry.name, ext))
+  }
+  return stems
+}
+
+async function refreshStockNightSheetTemplate(root: string): Promise<void> {
+  const templatesDir = (await existingCanonicalDir(root, 'templates')) ?? join(root, 'Templates')
+  await ensureDir(templatesDir)
+  const entries = await readdir(templatesDir)
+  const wanted = new Set(TEMPLATE_FILE_NAMES.nightsheet)
+  const matches = entries.filter((name) => wanted.has(name.toLowerCase()))
+  const dest = join(templatesDir, 'Game Night Sheet.md')
+  const preferred = matches.find((name) => name.toLowerCase() === 'game night sheet.md')
+  const currentPath = preferred ? join(templatesDir, preferred) : matches[0] ? join(templatesDir, matches[0]) : null
+  if (!currentPath) {
+    await writeFile(dest, FALLBACK_TEMPLATES.nightsheet, 'utf8')
+    return
+  }
+  const current = await readFile(currentPath, 'utf8')
+  const alreadyCurrent =
+    current.includes('{{party}}') && current.includes('# Session Name — Game Night Sheet')
+  if (!alreadyCurrent) {
+    const stock =
+      current.includes('{{party}}') ||
+      current.includes('Numbers and cues for behind the screen') ||
+      current.includes('Combat 1 — name the encounter')
+    if (stock) await writeFile(dest, FALLBACK_TEMPLATES.nightsheet, 'utf8')
+  } else if (currentPath !== dest) {
+    await writeFile(dest, current, 'utf8')
+  }
+  for (const name of matches) {
+    if (name.toLowerCase() === 'game night sheet.md') continue
+    const extra = join(templatesDir, name)
+    const text = extra === currentPath ? current : await readFile(extra, 'utf8')
+    const stock =
+      text.includes('{{party}}') ||
+      text.includes('Numbers and cues for behind the screen') ||
+      text.includes('Combat 1 — name the encounter')
+    if (stock) await unlink(extra)
+  }
 }
 
 async function prepareCampaignFolder(root: string): Promise<void> {
   const hadCore = await campaignHasCoreFolders(root)
   await ensureCampaignLayout(root)
   if (!hadCore) await seedNewCampaignFiles(root)
+  else await refreshStockNightSheetTemplate(root)
 }
 
 async function listSessions(dir: string): Promise<SessionFile[]> {
@@ -582,6 +658,41 @@ function toPosix(path: string): string {
   return path.replaceAll('\\', '/')
 }
 
+async function copyImageToArtFolder(
+  noteFolder: string,
+  title: string,
+  choice: CreateNoteMapImage
+): Promise<string | null> {
+  if (!campaignFolder) return null
+  const source =
+    choice.kind === 'existing' ? safeJoin(campaignFolder, toPosix(choice.path).replace(/^\/+/, '')) : choice.filePath
+  const ext = extname(source).toLowerCase()
+  if (!existsSync(source) || !IMAGE_EXT.has(ext)) return null
+  const artRel = artFolderRelativePath(noteFolder)
+  const artDir = safeJoin(campaignFolder, artRel)
+  await ensureDir(artDir)
+  const destName = `${sanitizeFileName(displayTitle(title))}${ext}`
+  const dest = join(artDir, destName)
+  if (!samePath(source, dest)) await copyFile(source, dest)
+  return destName
+}
+
+async function setNotePortrait(
+  relativePath: string,
+  image: CreateNoteMapImage
+): Promise<{ campaign: CampaignInfo; path: string; markdown: string } | null> {
+  if (!campaignFolder) return null
+  const dest = safeJoin(campaignFolder, relativePath)
+  if (!existsSync(dest)) return null
+  const folder = toPosix(relative(campaignFolder, dirname(dest)))
+  const stem = displayTitle(basename(dest, extname(dest)))
+  const imageFile = await copyImageToArtFolder(folder, stem, image)
+  if (!imageFile) return null
+  const markdown = setSheetPortraitEmbed(await readFile(dest, 'utf8'), imageFile)
+  await writeFile(dest, markdown, 'utf8')
+  return { campaign: await loadCampaign(campaignFolder), path: toPosix(relative(campaignFolder, dest)), markdown }
+}
+
 async function resolveCreateMapImage(
   noteFolder: string,
   title: string,
@@ -631,6 +742,7 @@ function noteFileName(folder: string, name: string, template: SheetTemplateKind)
   if (template === 'player' && folder && pathHasFolder(folder, 'party') && !/^pc\s*[—–-]/i.test(stem)) {
     stem = `PC — ${stem}`
   }
+  if (template === 'nightsheet') stem = gameNightSheetFileStem(stem)
   return `${stem}.md`
 }
 
@@ -667,15 +779,20 @@ async function saveToCampaignLibrary(
   await writeFile(dest, body.endsWith('\n') ? body : `${body}\n`, 'utf8')
   if (folderKey === 'bestiary') await copySrdArtToFolder(name, destDir, 'portrait')
   if (folderKey === 'gear') await copySrdArtToFolder(name, destDir, 'item')
+  if (folderKey === 'spells') {
+    const school = schoolFromSpellMarkdown(body)
+    if (school) await copySrdArtToFolder(school, destDir, 'school')
+  }
   return { campaign: await loadCampaign(campaignFolder), path: relativePath, existed: false }
 }
 
 async function copySrdArtToFolder(
   name: string,
   noteDir: string,
-  kind: 'portrait' | 'item'
+  kind: 'portrait' | 'item' | 'school'
 ): Promise<void> {
-  const source = kind === 'item' ? findSrdItemFile(name) : findSrdPortraitFile(name)
+  const source =
+    kind === 'item' ? findSrdItemFile(name) : kind === 'school' ? findSrdSchoolFile(name) : findSrdPortraitFile(name)
   if (!source || !campaignFolder) return
   const artDir = join(noteDir, 'Art')
   await ensureDir(artDir)
@@ -683,6 +800,15 @@ async function copySrdArtToFolder(
   const dest = join(artDir, destName)
   if (existsSync(dest)) return
   await copyFile(source, dest)
+}
+
+function schoolFromSpellMarkdown(contents: string): string | null {
+  const match = contents.match(
+    /\b(Abjuration|Conjuration|Divination|Enchantment|Evocation|Illusion|Necromancy|Transmutation)\b/i
+  )
+  if (!match) return null
+  const school = match[1]
+  return school.charAt(0).toUpperCase() + school.slice(1).toLowerCase()
 }
 
 async function createCampaignNote(
@@ -699,11 +825,18 @@ async function createCampaignNote(
   const title = sanitizeFileName(name).replace(/\.md$/i, '')
   let body = `# ${title.replace(/^pc\s*[—–-]\s*/i, '')}\n`
   if (template !== 'blank') {
-    body = fillTemplate(await findTemplateSource(campaignFolder, template), template, title)
+    if (template === 'nightsheet') await refreshStockNightSheetTemplate(campaignFolder)
+    const extras =
+      template === 'nightsheet' ? { partyStems: await listPartyNoteStems(campaignFolder) } : undefined
+    body = fillTemplate(await findTemplateSource(campaignFolder, template), template, title, extras)
   }
   if (template === 'map' && mapImage) {
     const imageFile = await resolveCreateMapImage(folder, title.replace(/^pc\s*[—–-]\s*/i, ''), mapImage)
     if (imageFile) body = setMapFenceImage(body, imageFile)
+  }
+  if (sheetAcceptsPortrait(template) && mapImage) {
+    const imageFile = await copyImageToArtFolder(folder, displayTitle(basename(fileName, '.md')), mapImage)
+    if (imageFile) body = setSheetPortraitEmbed(body, imageFile)
   }
   await writeFile(dest, body, 'utf8')
   if (template === 'monster') await copySrdArtToFolder(title.replace(/^pc\s*[—–-]\s*/i, ''), destDir, 'portrait')
@@ -736,18 +869,28 @@ async function duplicateCampaignFile(
   return { campaign: await loadCampaign(campaignFolder), path: toPosix(relative(campaignFolder, dest)) }
 }
 
-async function addCampaignFiles(folder: string): Promise<{ campaign: CampaignInfo; paths: string[] } | null> {
+async function addCampaignFiles(
+  folder: string,
+  mode: 'files' | 'art' = 'files'
+): Promise<{ campaign: CampaignInfo; paths: string[] } | null> {
   if (!campaignFolder) return null
+  const destRel = mode === 'art' ? artFolderRelativePath(folder) : folder.replaceAll('\\', '/')
+  const imagesOnly = mode === 'art' || isArtFolderName(basename(destRel || '.'))
   const result = await dialog.showOpenDialog(dmWindow ?? undefined, {
-    title: 'Add files to campaign',
+    title: imagesOnly ? 'Add art' : 'Add files to campaign',
     properties: ['openFile', 'multiSelections'],
-    filters: [
-      { name: 'Notes and art', extensions: ['md', 'markdown', 'txt', 'png', 'jpg', 'jpeg', 'webp', 'gif', 'pdf'] },
-      { name: 'All files', extensions: ['*'] }
-    ]
+    filters: imagesOnly
+      ? [
+          { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif'] },
+          { name: 'All files', extensions: ['*'] }
+        ]
+      : [
+          { name: 'Notes and art', extensions: ['md', 'markdown', 'txt', 'png', 'jpg', 'jpeg', 'webp', 'gif', 'pdf'] },
+          { name: 'All files', extensions: ['*'] }
+        ]
   })
   if (result.canceled || result.filePaths.length === 0) return null
-  const destDir = folder ? safeJoin(campaignFolder, folder) : campaignFolder
+  const destDir = destRel ? safeJoin(campaignFolder, destRel) : campaignFolder
   await ensureDir(destDir)
   const paths: string[] = []
   for (const source of result.filePaths) {
@@ -922,7 +1065,7 @@ function registerIpc(): void {
 
   ipcMain.handle('campaign:pick-image', async () => {
     const result = await dialog.showOpenDialog(dmWindow ?? undefined, {
-      title: 'Load map image',
+      title: 'Load image',
       properties: ['openFile'],
       filters: [
         { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'svg'] },
@@ -940,11 +1083,17 @@ function registerIpc(): void {
       saveToCampaignLibrary(folder, name, contents, subfolder)
   )
 
+  ipcMain.handle('campaign:set-portrait', async (_e, relativePath: string, image: CreateNoteMapImage) =>
+    setNotePortrait(relativePath, image)
+  )
+
   ipcMain.handle('campaign:duplicate-file', async (_e, relativePath: string, name?: string) =>
     duplicateCampaignFile(relativePath, name)
   )
 
-  ipcMain.handle('campaign:add-files', async (_e, folder: string) => addCampaignFiles(folder ?? ''))
+  ipcMain.handle('campaign:add-files', async (_e, folder: string, mode?: 'files' | 'art') =>
+    addCampaignFiles(folder ?? '', mode === 'art' ? 'art' : 'files')
+  )
 
   ipcMain.handle('campaign:delete-file', async (_e, relativePath: string) =>
     deleteCampaignFile(relativePath)
@@ -961,9 +1110,14 @@ app.whenReady().then(async () => {
   protocol.handle('tabledm', async (request) => {
     try {
       const url = new URL(request.url)
-      if (url.hostname === 'srd-portrait' || url.hostname === 'srd-item') {
+      if (url.hostname === 'srd-portrait' || url.hostname === 'srd-item' || url.hostname === 'srd-school') {
         const name = url.searchParams.get('name') ?? ''
-        const full = url.hostname === 'srd-item' ? findSrdItemFile(name) : findSrdPortraitFile(name)
+        const full =
+          url.hostname === 'srd-item'
+            ? findSrdItemFile(name)
+            : url.hostname === 'srd-school'
+              ? findSrdSchoolFile(name)
+              : findSrdPortraitFile(name)
         if (!full) return new Response('Not found', { status: 404 })
         const response = await net.fetch(pathToFileURL(full).href)
         const mime = FILE_MIME[extname(full).toLowerCase()]

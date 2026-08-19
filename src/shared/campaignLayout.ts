@@ -37,7 +37,7 @@ export const STANDARD_LAYOUT: { canonical: string; name: string; extras: string[
   { canonical: 'party', name: 'Party', extras: ['Art'] },
   { canonical: 'npcs', name: 'NPCs', extras: ['Art'] },
   { canonical: 'bestiary', name: 'Bestiary', extras: ['Art'] },
-  { canonical: 'spells', name: 'Spells', extras: [] },
+  { canonical: 'spells', name: 'Spells', extras: ['Art'] },
   { canonical: 'gear', name: 'Gear', extras: [...GEAR_SECTIONS] },
   { canonical: 'maps', name: 'Maps', extras: ['Art', 'Print'] },
   { canonical: 'handouts', name: 'Handouts', extras: ['Art'] },
@@ -130,6 +130,45 @@ export function isMapsFolderName(name: string): boolean {
 
 export function isArtFolderName(name: string): boolean {
   return foldFolderName(name) === 'art'
+}
+
+export function isPrintFolderName(name: string): boolean {
+  return foldFolderName(name) === 'print'
+}
+
+/** `Bestiary` → `Bestiary/Art`; already an Art folder stays as-is. */
+export function artFolderRelativePath(folderPath: string): string {
+  const path = folderPath.replaceAll('\\', '/').replace(/\/+$/, '')
+  if (!path) return 'Art'
+  const last = path.split('/').pop() ?? ''
+  if (isArtFolderName(last)) return path
+  return `${path}/Art`
+}
+
+/** Folders whose portraits/maps live in an Art/ sidecar (not Gear root or Maps/Print). */
+export function folderUsesArt(folderPath: string): boolean {
+  const parts = folderPath.replaceAll('\\', '/').split('/').filter(Boolean)
+  if (parts.length === 0) return false
+  const last = parts[parts.length - 1] ?? ''
+  if (isPrintFolderName(last)) return false
+  if (isArtFolderName(last)) return true
+  for (const part of parts) {
+    if (isArtFolderName(part) || isPrintFolderName(part)) continue
+    const canonical = canonicalFolder(part)
+    if (
+      canonical === 'party' ||
+      canonical === 'npcs' ||
+      canonical === 'bestiary' ||
+      canonical === 'spells' ||
+      canonical === 'sessions' ||
+      canonical === 'maps' ||
+      canonical === 'handouts'
+    ) {
+      return true
+    }
+    if (gearSectionIndex(part) < 99) return true
+  }
+  return false
 }
 
 /** 0 = normal folder, 1 = file, 2 = Art (notes first, portraits last). */

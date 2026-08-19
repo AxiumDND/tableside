@@ -1,6 +1,6 @@
 {
   "name": "table-dm",
-  "version": "1.1.6",
+  "version": "1.1.10",
   "description": "Tableside — in-person dual-monitor DM tool for 5e-compatible table games",
   "main": "./out/main/index.js",
   "author": "James",
@@ -66,6 +66,10 @@
       {
         "from": "resources/srd-items",
         "to": "srd-items"
+      },
+      {
+        "from": "resources/srd-schools",
+        "to": "srd-schools"
       },
       {
         "from": "resources/icon.ico",

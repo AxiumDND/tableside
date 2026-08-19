@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { SrdRecord } from './srd'
-import { gearSubfolderFor } from './lookupNotes'
+import { gearSubfolderFor, recordToCampaignMarkdown } from './lookupNotes'
 
 function record(partial: Partial<SrdRecord> & Pick<SrdRecord, 'kind'>): SrdRecord {
   return {
@@ -40,5 +40,27 @@ describe('gearSubfolderFor', () => {
         })
       )
     ).toBe('Magic Items')
+  })
+})
+
+describe('recordToCampaignMarkdown', () => {
+  it('embeds the school emblem on a spell note', () => {
+    const markdown = recordToCampaignMarkdown(
+      record({
+        kind: 'spell',
+        name: 'Fireball',
+        data: {
+          level: 3,
+          school: 'Evocation',
+          castingTime: 'action',
+          range: '150 feet',
+          components: 'V, S, M',
+          duration: 'instantaneous',
+          desc: 'A bright streak flashes.'
+        }
+      })
+    )
+    expect(markdown).toContain('![[Evocation.webp]]')
+    expect(markdown).toContain('Level 3 Evocation')
   })
 })

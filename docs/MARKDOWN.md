@@ -1,6 +1,6 @@
 # Markdown and statblocks
 
-Reference for note syntax Tableside understands. For folder layout and night sheets, see [CAMPAIGN.md](CAMPAIGN.md). For the UI, see [TABLE.md](TABLE.md).
+Reference for note syntax Tableside understands. For folder layout and game night sheets, see [CAMPAIGN.md](CAMPAIGN.md). For the UI, see [TABLE.md](TABLE.md).
 
 ## Supported files
 
@@ -214,15 +214,15 @@ Facts in that table surface in the sheet chrome. Keep the combat numbers in sync
 | `Monster.md` / `Creature.md` | Bestiary sheet |
 | `Spell.md` | Spells note |
 | `Gear.md` / `Item.md` / `Equipment.md` | Gear note |
-| `Night Sheet.md` / `nightsheet.md` | Night sheet |
+| `Game Night Sheet.md` / `Night Sheet.md` / `nightsheet.md` | Game night sheet |
 | `Map.md` | Map note (image + DM pins + tokens) |
 
 **New campaign** writes these from built-in fallbacks if missing. Leading HTML comments (`<!-- … -->`) are stripped when filling a new note from a template.
 
-Placeholder text such as `Character Name` / `NPC Name` / `Monster Name` is replaced with the name you enter.
+Placeholder text such as `Character Name` / `NPC Name` / `Monster Name` is replaced with the name you enter. Game night sheets also replace `{{party}}` with wikilinks to every `Party/` sheet.
 
 ## Editing tips
 
 - Prefer Obsidian for long writing; Tableside is happiest as the table runner.
-- Keep night sheets short; put prose in the session note and link with `[[Session 3]]`.
+- Keep game night sheets short; put prose in the session note and link with `[[Session 3]]`.
 - One creature or PC per sheet file so `[[Name]]` and portraits stay unambiguous.

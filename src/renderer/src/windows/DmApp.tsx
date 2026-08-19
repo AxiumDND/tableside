@@ -206,9 +206,12 @@ export default function DmApp() {
     const path = selectedImage ?? (openKind === 'image' ? openPath : null)
     if (!path) return
     const src = path.startsWith('tabledm://') ? path : campaignFileUrl(path)
-    const title = path.startsWith('tabledm://srd-portrait') || path.startsWith('tabledm://srd-item')
-      ? decodeURIComponent(new URL(path).searchParams.get('name') ?? 'Image')
-      : imageTitle(path)
+    const title =
+      path.startsWith('tabledm://srd-portrait') ||
+      path.startsWith('tabledm://srd-item') ||
+      path.startsWith('tabledm://srd-school')
+        ? decodeURIComponent(new URL(path).searchParams.get('name') ?? 'Image')
+        : imageTitle(path)
     const live = mapLiveRef.current
     const mapView = live?.src === src ? live.view : null
     playerLiveRef.current = true
@@ -617,6 +620,7 @@ export default function DmApp() {
           }
           onAddNpcToCombat={addNpcFromSheet}
           onAddEncounter={addEncounterItems}
+          onCampaignChange={setCampaign}
           onNewCampaign={() => void newCampaign()}
           onOpenCampaign={() => void openFolder()}
           onOpenSample={() => void openSample()}

@@ -2,7 +2,7 @@ export type SheetTemplateKind = 'blank' | 'player' | 'npc' | 'monster' | 'spell'
 
 const PLAYER = `<!--
   Party sheet template. Right-click Party/ → New player… (or copy into Party/ and rename).
-  Put the portrait in Party/Art/ as Character Name.png and keep AC/HP in sync with the statblock.
+  Put the portrait in Party/Art/ as Character Name.png (or Load art on the sheet). Keep AC/HP in sync with the statblock.
   See docs/CAMPAIGN.md and docs/MARKDOWN.md.
 -->
 # *Character Name*
@@ -75,7 +75,7 @@ actions:
 
 const NPC = `<!--
   NPC sheet template. Right-click NPCs/ → New NPC… (or copy into NPCs/ and rename).
-  Portrait: NPCs/Art/NPC Name.png. Night sheets link with [[NPC Name]].
+  Portrait: NPCs/Art/NPC Name.png, or Load art on the sheet. Game night sheets link with [[NPC Name]].
   See docs/CAMPAIGN.md and docs/MARKDOWN.md.
 -->
 # *NPC Name*
@@ -137,20 +137,23 @@ actions:
 
 const MONSTER = `<!--
   Bestiary template. Right-click Bestiary/ → New monster… (or copy into Bestiary/ and rename).
-  Art: Bestiary/Art/Monster Name.png. Prefer Add to Bestiary from Lookup for SRD creatures.
+  Art: Bestiary/Art/Monster Name.png, or Load art on the sheet. Prefer Add to Bestiary from Lookup for SRD creatures.
   See docs/CAMPAIGN.md and docs/MARKDOWN.md.
 -->
 # Monster Name
 
+> [!infobox]+
+> ![[Monster Name.png]]
+>
+> | | |
+> |---|---|
+> | **CR** | 1 |
+> | **Role** | Pressure / boss / minion |
+> | **Source** | MM / custom |
+
 *One line: what it does at the table.*
 
 Medium undead · chaotic evil · CR 1
-
-| | |
-|---|---|
-| **CR** | 1 |
-| **Role** | Pressure / boss / minion |
-| **Source** | MM / custom |
 
 ## Notes
 
@@ -223,15 +226,66 @@ What it does, or any house-rule notes.
 `
 
 const NIGHTSHEET = `<!--
-  Night sheet template. Right-click Sessions/ → New night sheet…
-  Link Party / NPCs / Bestiary sheets in Combatants lines. See docs/RECIPES.md.
+  Game night sheet template — Lazy DM 10-step prep. Right-click Sessions/ → New game night sheet…
+  {{party}} is replaced with wikilinks to every Party/ sheet.
+  Combat headings (⚔️ / Combat / Encounter) + Combatants lines feed Add to initiative.
+  party = all PCs. [[Name]] opens a sheet. ![[Art.webp]] then Show to players.
+  Long prose belongs in a separate session note. See docs/RECIPES.md.
 -->
-# Session Name — Night Sheet
+# Session Name — Game Night Sheet
 
-*Numbers and cues for behind the screen. Prose lives in [[Session Name]].*
+*Behind the screen. Prose in [[Session Name]]. Click [[links]] to open sheets. Click art, then **Show to players**.*
+
+> [!gmonly] What this page does
+> - **Add to initiative** on a ⚔️ / Combat heading loads the **Combatants:** line (\`party\` = every PC, \`×2\` duplicates a monster).
+> - Missing \`[[links]]\` warn on the card. NPCs and monsters at initiative 0 are rolled.
+> - Keep this page short. Delete unused steps. Run-guide prose stays in [[Session Name]].
 
 > [!abstract] Tonight at a glance
-> Beat one → beat two → **the fight** → fallout.
+> Strong start → scenes → **the fight** → fallout.
+
+## 1. The characters
+
+{{party}}
+
+- Spotlight tonight:
+- What they want / what they forgot last time:
+
+## 2. Strong start
+
+> [!readaloud]
+> First thing they see, hear, or are dropped into.
+
+- Already in initiative? Map: [[Map Name]]
+
+## 3. Scenes
+
+1. 
+2. 
+3. **the fight**
+4. Fallout
+
+## 4. Secrets and clues
+
+Three things they can find no matter which way they go:
+
+- 
+- 
+- 
+
+## 5. Locations
+
+- [[Map Name]] — what they notice, what's fantastic, what's dangerous
+- Set dressing / telegraph:
+
+## 6. NPCs
+
+- [[NPC Name]] — want / will say / will not say
+- Voice:
+
+## 7. Monsters
+
+Copy the combat block for a second fight. Headings that say *no combat* are skipped.
 
 ## ⚔️ Combat 1 — name the encounter
 
@@ -242,11 +296,23 @@ const NIGHTSHEET = `<!--
 | **Monster Name** | AC · HP · key attacks |
 
 - Telegraph:
+- Target / quarry:
 - Cut if running long:
 
-## After
+## 8. Treasure
 
-- Loot / clue:
+- Coin / mundane:
+- Magic (attunement?):
+
+## 9. From last time
+
+- Open threads:
+- Promises, debts, unused clues:
+
+## 10. Likely endings
+
+- If they succeed:
+- If they fail or flee:
 - Hook for next session:
 `
 
@@ -297,7 +363,7 @@ export const TEMPLATE_FILE_NAMES: Record<Exclude<SheetTemplateKind, 'blank'>, st
   monster: ['monster.md', 'creature.md'],
   spell: ['spell.md'],
   gear: ['gear.md', 'item.md', 'equipment.md'],
-  nightsheet: ['night sheet.md', 'nightsheet.md'],
+  nightsheet: ['game night sheet.md', 'gamenightsheet.md', 'night sheet.md', 'nightsheet.md'],
   map: ['map.md']
 }
 
@@ -305,13 +371,50 @@ export function displayTitle(fileStem: string): string {
   return fileStem.replace(/^pc\s*[—–-]\s*/i, '').trim()
 }
 
-export function fillTemplate(source: string, kind: Exclude<SheetTemplateKind, 'blank'>, name: string): string {
+/** `Session 4` → `Session 4 — Game Night Sheet`. Leaves an existing game-night-sheet name alone. */
+export function gameNightSheetFileStem(name: string): string {
+  const stem = sanitizeFileName(name).replace(/\.md$/i, '')
+  if (/game\s*night\s*sheet/i.test(stem)) return stem
+  if (/night\s*sheet/i.test(stem)) return stem.replace(/night\s*sheet/gi, 'Game Night Sheet')
+  return `${stem} — Game Night Sheet`
+}
+
+export type FillTemplateExtras = {
+  partyStems?: string[]
+}
+
+export function wikiLinkForSheet(stem: string): string {
+  const title = displayTitle(stem)
+  return title && title !== stem ? `[[${stem}|${title}]]` : `[[${stem}]]`
+}
+
+export function partyLinkList(stems: string[]): string {
+  const unique = [...new Set(stems.map((value) => value.trim()).filter(Boolean))]
+  unique.sort((a, b) => displayTitle(a).localeCompare(displayTitle(b), undefined, { sensitivity: 'base' }))
+  if (unique.length === 0) {
+    return '- *(No Party sheets yet — right-click Party/ → New player…)*'
+  }
+  return unique.map((stem) => `- ${wikiLinkForSheet(stem)}`).join('\n')
+}
+
+export function fillTemplate(
+  source: string,
+  kind: Exclude<SheetTemplateKind, 'blank'>,
+  name: string,
+  extras?: FillTemplateExtras
+): string {
   const placeholder = TEMPLATE_PLACEHOLDERS[kind]
   const title = displayTitle(name)
-  return source
-    .replace(/^<!--[\s\S]*?-->\s*/, '')
-    .split(placeholder)
-    .join(title)
+  let body = source.replace(/^<!--[\s\S]*?-->\s*/, '').split(placeholder).join(title)
+  if (kind === 'nightsheet') {
+    const stems = extras?.partyStems ?? []
+    if (body.includes('{{party}}')) {
+      body = body.replaceAll('{{party}}', partyLinkList(stems))
+    } else if (stems.length > 0 && !stems.some((stem) => body.includes(`[[${stem}`))) {
+      body = body.replace(/^(# .+\r?\n)/, `$1\n## The characters\n\n${partyLinkList(stems)}\n\n`)
+    }
+  }
+  return body
 }
 
 export function rewriteDuplicatedMarkdown(source: string, fromStem: string, toStem: string): string {

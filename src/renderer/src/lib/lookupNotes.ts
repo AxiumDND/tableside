@@ -49,7 +49,11 @@ function spellMarkdown(record: SrdRecord): string {
     level === 0
       ? [school, 'Cantrip', classes ? `(${classes})` : ''].filter(Boolean).join(' ')
       : [`Level ${level}`, school, classes ? `(${classes})` : ''].filter(Boolean).join(' ')
-  const lines = [`# ${record.name}`, typeLine]
+  const lines = [`# ${record.name}`]
+  if (school) {
+    lines.push('', `> [!infobox]+`, `> ![[${school}.webp]]`, '')
+  }
+  lines.push(typeLine)
   const casting = pretty(String(data.castingTime || '').trim())
   const range = String(data.range || '').trim()
   const components = String(data.components || '').trim()

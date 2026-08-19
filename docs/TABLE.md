@@ -36,9 +36,9 @@ PDFs open in the center pane for you; they are not sent to the player display as
 
 - Click a note, image, or PDF to open it. Folders start collapsed; the folder that holds the open file (and its parents) stay expanded. `Art/` stays collapsed — portraits load from there onto the `.md` sheets.
 - **Search** (hidden until you click it next to Files, or press `Ctrl+F` / `/`) finds notes, maps, and art by name. Results are a flat ranked list with folder paths — `Esc` clears, then hides the box.
-- **Right-click** a folder (or empty tree area) to create notes from Templates, or **Add files…** to import into that folder. Gear has **Weapons**, **Armor**, **Equipment**, and **Magic Items** — right-click the subsection to add a note there.
-- Right-click a file to **Duplicate…**, add files beside it, or **Delete…** (asks first).
-- Creating **New player / NPC / monster / spell / gear / night sheet / map** uses `Templates/Player.md` (etc.) when present, then fills in the name you type.
+- **Right-click** a folder (or empty tree area) to create notes from Templates. **Add art…** on Party, NPCs, Bestiary, Spells, Sessions, Maps, Handouts, a Gear subsection, or the `Art/` folder itself copies pictures into that folder’s `Art/` (creates it if needed). Name art like the sheet (`Ghoul.webp`) so portraits attach. **Add files…** still imports notes and PDFs into the folder you clicked. Gear has **Weapons**, **Armor**, **Equipment**, and **Magic Items** — right-click the subsection to add a note or art there.
+- Right-click a file to **Duplicate…**, **Add art here…** (into that folder’s `Art/`), add files beside it, or **Delete…** (asks first).
+- Creating **New player / NPC / monster / spell / gear / game night sheet / map** uses `Templates/Player.md` (etc.) when present, then fills in the name you type. **New game night sheet…** is a Lazy DM 10-step page and links every existing `Party/` sheet.
 - **New map…** lets you choose an existing campaign image or **Load image…**. Loaded files are copied into that folder’s `Art/` (usually `Maps/Art/`) and named to match the map.
 - `campaign.json`, `combat.json`, and `README.md` stay hidden from the tree.
 
@@ -82,7 +82,7 @@ State saves to `combat.json` in the campaign folder.
 Offline MiniSearch over the bundled SRD 5.2.1 snapshot (conditions, spells, monsters, weapons, rules).
 
 - Filter chips narrow the category.
-- Monster results can **Add to combat**. Lookup shows the bundled D&D-fantasy default portrait when one exists. Weapons and gear show still-life item art the same way.
+- Monster results can **Add to combat**. Lookup shows the bundled D&D-fantasy default portrait when one exists. Spells show the emblem for their school of magic. Weapons and gear show still-life item art the same way.
 - With a campaign open, **Add to Bestiary / Spells / Gear** writes a campaign markdown note (skipped if a same-named note already exists). Adding a monster also copies its default portrait into `Bestiary/Art/` if the campaign does not already have one.
 - Optional WOTC files add chips like PHB 2024 / PHB Gear / DMG Items / Ravenloft / MM2024 — [WOTC/README.md](../WOTC/README.md). Use **Open WOTC folder** in Lookup to jump to the writable location.
 
@@ -90,7 +90,7 @@ Step-by-step save flow: [RECIPES.md](RECIPES.md#lookup--campaign-note).
 
 ## Help panel
 
-**Help** in the header opens a side panel written for the table: quick start, player screen, files and maps, combat and night sheets, Lookup, dice, and shortcuts. Click a heading to open it; click again to close.
+**Help** in the header opens a side panel written for the table: quick start, player screen, files and maps, combat and game night sheets, Lookup, dice, and shortcuts. Click a heading to open it; click again to close.
 
 ## Dice tray
 

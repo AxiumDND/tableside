@@ -4,7 +4,7 @@ A local Windows app for running **in-person** 5e-compatible games. Your laptop i
 
 This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table.
 
-Compatible with fifth edition. Rules lookup uses the **System Reference Document 5.2** (2024 rules), already bundled. Current release: **1.1.6**.
+Compatible with fifth edition. Rules lookup uses the **System Reference Document 5.2** (2024 rules), already bundled. Current release: **1.1.10**.
 
 ## Features
 
@@ -13,7 +13,7 @@ Compatible with fifth edition. Rules lookup uses the **System Reference Document
 - Click a map or portrait, then **Show to players** — 5 second fade-in on a black screen
 - Map notes (`Maps/` + a `map` fence) show the picture with DM-only pins; players still see the clean image
 - Optional initiative overlay on the player screen: order, whose turn, Bloodied (enemies under half HP), 0 HP statuses
-- Night sheets can pull NPC/PC/Bestiary statblocks into initiative (missing links warned; NPCs auto-roll)
+- Game night sheets can pull NPC/PC/Bestiary statblocks into initiative (missing links warned; NPCs auto-roll)
 - Offline search for conditions, spells, monsters, weapons, and common rules
 - Optional extra lookup from your own WOTC text files in `WOTC/` (spells, equipment, magic items)
 - Add a monster, spell, or gear item from Lookup into the campaign Bestiary, Spells, or Gear folder
@@ -40,7 +40,7 @@ Click **Sample** to load **Bad Blood**, the included Barovia three-shot. Tablesi
 
 ### Install on a PC (Windows)
 
-1. Run `npm run dist` (or download `Tableside-Setup-1.1.6.exe` from a GitHub Release).
+1. Run `npm run dist` (or download `Tableside-Setup-1.1.10.exe` from a GitHub Release).
 2. Double-click the installer. It is a per-user install: Start Menu + desktop shortcuts, no admin required. You can pick the folder.
 3. Open **Tableside** from the Start Menu. First launch copies settings and WOTC files from an older `%APPDATA%\table-dm` folder if you already had one.
 
@@ -54,7 +54,7 @@ Uninstall from Windows Settings; campaign folders on disk and `%APPDATA%\Tablesi
 npm run dist
 ```
 
-Writes `dist/Tableside-Setup-1.1.6.exe`. To attach that file to a GitHub Release, tag and push: `git tag v1.1.6 && git push origin v1.1.6`.
+Writes `dist/Tableside-Setup-1.1.10.exe`. To attach that file to a GitHub Release, tag and push: `git tag v1.1.10 && git push origin v1.1.10`.
 
 `npm run fetch-srd` is only needed if you want to refresh the bundled SRD snapshot from the [Open5e API](https://api.open5e.com/) (`srd-2024`).
 
@@ -63,8 +63,8 @@ Writes `dist/Tableside-Setup-1.1.6.exe`. To attach that file to a GitHub Release
 | Doc | Audience |
 | --- | --- |
 | [docs/TABLE.md](docs/TABLE.md) | DMs — console layout, combat, Lookup, player display |
-| [docs/RECIPES.md](docs/RECIPES.md) | DMs — night sheet → initiative, Lookup → campaign note |
-| [docs/CAMPAIGN.md](docs/CAMPAIGN.md) | DMs — folder layout, night sheets, combatants, images |
+| [docs/RECIPES.md](docs/RECIPES.md) | DMs — game night sheet → initiative, Lookup → campaign note |
+| [docs/CAMPAIGN.md](docs/CAMPAIGN.md) | DMs — folder layout, game night sheets, combatants, images |
 | [docs/MARKDOWN.md](docs/MARKDOWN.md) | DMs — wikilinks, callouts, `statblock` fields |
 | [WOTC/README.md](WOTC/README.md) | Optional PHB / DMG lookup file formats |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Contributors — scripts, architecture, CI |
@@ -77,7 +77,7 @@ Campaigns are ordinary folders on disk. **New campaign** scaffolds the standard 
 
 ```
 Overview.md       hub note
-Sessions/         run guides and night sheets (+ Art/)
+Sessions/         run guides and game night sheets (+ Art/)
 Party/            PC sheets (+ Art/)
 NPCs/             named people (+ Art/)
 Bestiary/         creatures (+ Art/)
