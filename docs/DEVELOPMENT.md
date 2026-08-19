@@ -115,7 +115,7 @@ Format and placement of personal PHB/DMG text files: [WOTC/README.md](../WOTC/RE
 | Sheet templates | `src/shared/sheetTemplates.ts` |
 | Folder aliases / hidden files | `src/shared/campaignLayout.ts` |
 
-Author-facing contracts: [CAMPAIGN.md](CAMPAIGN.md), [MARKDOWN.md](MARKDOWN.md), [TABLE.md](TABLE.md), [RECIPES.md](RECIPES.md). In-app Help mirrors RECIPES in `src/renderer/src/components/HelpPanel.tsx`.
+Author-facing contracts: [CAMPAIGN.md](CAMPAIGN.md), [MARKDOWN.md](MARKDOWN.md), [TABLE.md](TABLE.md), [RECIPES.md](RECIPES.md). In-app Help is the table-side version of TABLE + RECIPES (`src/renderer/src/components/HelpPanel.tsx`).
 
 ## Scripts notes
 
