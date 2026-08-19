@@ -30,7 +30,8 @@ Use .md or .txt. The filename tells Lookup what it is:
   Monster Manual A/B/... share one MM2024 chip
 
 Also scanned (same filename rules):
-- This folder (%APPDATA%\\table-dm\\WOTC)
+- This folder (%APPDATA%\\Tableside\\WOTC)
+- Older builds: %APPDATA%\\table-dm\\WOTC
 - A WOTC folder next to Tableside.exe
 - The project WOTC/ folder when running from source
 

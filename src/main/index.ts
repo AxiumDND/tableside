@@ -177,6 +177,24 @@ function samePath(a: string, b: string): boolean {
   return normalize(a).toLowerCase() === normalize(b).toLowerCase()
 }
 
+async function migrateLegacyUserData(): Promise<void> {
+  const current = app.getPath('userData')
+  const legacy = join(app.getPath('appData'), 'table-dm')
+  if (samePath(current, legacy)) return
+  if (existsSync(join(current, 'settings.json'))) return
+  const legacySettings = join(legacy, 'settings.json')
+  const legacyWotc = join(legacy, 'WOTC')
+  if (!existsSync(legacySettings) && !existsSync(legacyWotc)) return
+  await mkdir(current, { recursive: true })
+  if (existsSync(legacySettings)) {
+    await copyFile(legacySettings, join(current, 'settings.json'))
+  }
+  for (const name of ['WOTC', 'samples']) {
+    const from = join(legacy, name)
+    if (existsSync(from)) await cp(from, join(current, name), { recursive: true })
+  }
+}
+
 function sampleSourcePath(): string {
   return app.isPackaged
     ? join(process.resourcesPath, 'examples', 'bad-blood')
@@ -938,6 +956,7 @@ function registerIpc(): void {
 
 app.whenReady().then(async () => {
   app.setAppUserModelId('com.tabledm.app')
+  await migrateLegacyUserData()
 
   protocol.handle('tabledm', async (request) => {
     try {

@@ -23,7 +23,7 @@ jobs:
       - name: Upload installer artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: table-dm-windows
+          name: tableside-windows
           path: |
             dist/*.exe
             dist/*.yml

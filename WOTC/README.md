@@ -18,7 +18,7 @@ Use `.md` or `.txt`. The filename tells Lookup what it is:
 Also scanned (same rules):
 
 - This project folder: `WOTC/`
-- Installed app: `%APPDATA%\table-dm\WOTC`
+- Installed app: `%APPDATA%\Tableside\WOTC`
 - A `WOTC` folder next to `Tableside.exe`
 
 Restart Lookup (close and open the panel, or restart the app) after adding files.
@@ -192,7 +192,7 @@ A messy D&D Beyond paste as `.txt` can be tidied with `node scripts/tidy-wotc-be
 
 ## Checklist
 
-1. Save as `.md` in this folder (or `%APPDATA%\table-dm\WOTC`).
+1. Save as `.md` in this folder (or `%APPDATA%\Tableside\WOTC`).
 2. Put **Spell**, **Equipment**, **Magic Item**, or **Bestiary** / **Ravenloft** in the filename.
 3. One `##` heading per entry.
 4. Field names match the examples above, including the colon.
@@ -206,7 +206,7 @@ A messy D&D Beyond paste as `.txt` can be tidied with `node scripts/tidy-wotc-be
 | Chip appears, search empty | Entries need `## Name` headings (or the looser spell dump format). Confirm the file is `.md` / `.txt` and UTF-8. |
 | Wrong chip | Rename the file so only the intended keyword matches (avoid putting both `Spell` and `Equipment` in one name). |
 | Edits not picked up | Close and reopen Lookup after saving. The app reads the folder when the panel loads. |
-| Cannot find the folder | In Lookup, use the control that opens the WOTC folder; installed builds prefer `%APPDATA%\table-dm\WOTC`. |
+| Cannot find the folder | In Lookup, use the control that opens the WOTC folder; installed builds prefer `%APPDATA%\Tableside\WOTC`. |
 
 Do **not** commit copyrighted PHB/DMG text into the git repo. This `WOTC/` directory is for local files only; `.gitignore` may still track the README — keep book dumps untracked or outside the repo.
 
