@@ -90,7 +90,7 @@ Step-by-step save flow: [RECIPES.md](RECIPES.md#lookup--campaign-note).
 
 ## Help panel
 
-**Help** in the header opens a side panel with the same short recipes (quick start, night sheet → initiative, Lookup → campaign, shortcuts). Prefer that at the table; use [RECIPES.md](RECIPES.md) when writing docs or campaign notes offline.
+**Help** in the header opens a side panel written for the table: quick start, player screen, files and maps, combat and night sheets, Lookup, dice, and shortcuts. Click a heading to open it; click again to close.
 
 ## Dice tray
 
