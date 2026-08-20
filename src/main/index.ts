@@ -307,19 +307,51 @@ function createDmWindow(): void {
   dmWindow.loadURL(rendererUrl('dm'))
 }
 
-function playerBounds() {
+function dmDisplayId(): number {
+  if (dmWindow && !dmWindow.isDestroyed()) {
+    return screen.getDisplayMatching(dmWindow.getBounds()).id
+  }
+  return screen.getPrimaryDisplay().id
+}
+
+function targetPlayerDisplay(displayId?: number): Electron.Display {
   const displays = screen.getAllDisplays()
-  const preferred = settings.playerDisplayId
-    ? displays.find((d) => d.id === settings.playerDisplayId)
-    : undefined
-  if (preferred) return preferred.bounds
-  const primary = screen.getPrimaryDisplay()
-  const secondary = displays.find((d) => d.id !== primary.id)
-  return (secondary ?? primary).bounds
+  const wanted = displayId ?? settings.playerDisplayId
+  if (wanted != null) {
+    const match = displays.find((d) => d.id === wanted)
+    if (match) return match
+  }
+  const dmId = dmDisplayId()
+  return displays.find((d) => d.id !== dmId) ?? screen.getPrimaryDisplay()
+}
+
+function fullscreenPlayerOnDisplay(display: Electron.Display): void {
+  if (!playerWindow || playerWindow.isDestroyed()) return
+  const win = playerWindow
+  const bounds = display.bounds
+  const enter = (): void => {
+    if (win.isDestroyed()) return
+    win.setBounds(bounds)
+    win.setFullScreen(true)
+  }
+  if (!win.isFullScreen()) {
+    enter()
+    return
+  }
+  const here = screen.getDisplayMatching(win.getBounds())
+  if (here.id === display.id) return
+  const timer = setTimeout(enter, 200)
+  win.once('leave-full-screen', () => {
+    clearTimeout(timer)
+    enter()
+  })
+  win.setFullScreen(false)
 }
 
 function createPlayerWindow(): void {
-  const bounds = playerBounds()
+  if (playerWindow && !playerWindow.isDestroyed()) return
+  const display = targetPlayerDisplay()
+  const bounds = display.bounds
   const icon = appIconPath()
   playerWindow = new BrowserWindow({
     x: bounds.x,
@@ -327,7 +359,8 @@ function createPlayerWindow(): void {
     width: bounds.width,
     height: bounds.height,
     frame: false,
-    fullscreen: screen.getAllDisplays().length > 1,
+    fullscreen: false,
+    fullscreenable: true,
     autoHideMenuBar: true,
     backgroundColor: '#050403',
     title: `${APP_NAME} — Player`,
@@ -339,10 +372,6 @@ function createPlayerWindow(): void {
     }
   })
 
-  if (screen.getAllDisplays().length === 1) {
-    playerWindow.setBounds({ x: bounds.x + 80, y: bounds.y + 80, width: 1100, height: 700 })
-  }
-
   playerWindow.on('closed', () => {
     playerWindow = null
   })
@@ -350,6 +379,7 @@ function createPlayerWindow(): void {
   playerWindow.webContents.on('did-finish-load', () => {
     playerWindow?.webContents.send('player:state', playerState)
   })
+  fullscreenPlayerOnDisplay(display)
 }
 
 function sendPlayerState(): void {
@@ -359,12 +389,31 @@ function sendPlayerState(): void {
 
 function listDisplays(): DisplayInfo[] {
   const primaryId = screen.getPrimaryDisplay().id
-  return screen.getAllDisplays().map((d) => ({
-    id: d.id,
-    label: d.label,
-    bounds: d.bounds,
-    primary: d.id === primaryId
-  }))
+  const dmId = dmDisplayId()
+  return screen.getAllDisplays().map((d, index) => {
+    const name = d.label?.trim() || `Monitor ${index + 1}`
+    return {
+      id: d.id,
+      label: `${name} · ${d.bounds.width}×${d.bounds.height}`,
+      bounds: d.bounds,
+      primary: d.id === primaryId,
+      dm: d.id === dmId
+    }
+  })
+}
+
+function broadcastDisplays(): void {
+  dmWindow?.webContents.send('app:displays-changed', listDisplays())
+}
+
+function watchDisplays(): void {
+  const replacePlayer = (): void => {
+    fullscreenPlayerOnDisplay(targetPlayerDisplay())
+    broadcastDisplays()
+  }
+  screen.on('display-added', replacePlayer)
+  screen.on('display-removed', replacePlayer)
+  screen.on('display-metrics-changed', () => broadcastDisplays())
 }
 
 function safeJoin(root: string, ...parts: string[]): string {
@@ -577,7 +626,9 @@ async function refreshStockNightSheetTemplate(root: string): Promise<void> {
   }
   const current = await readFile(currentPath, 'utf8')
   const alreadyCurrent =
-    current.includes('{{party}}') && current.includes('# Session Name — Game Night Sheet')
+    current.includes('{{party}}') &&
+    current.includes('# Session Name — Game Night Sheet') &&
+    !current.includes('What this page does')
   if (!alreadyCurrent) {
     const stock =
       current.includes('{{party}}') ||
@@ -599,11 +650,47 @@ async function refreshStockNightSheetTemplate(root: string): Promise<void> {
   }
 }
 
+async function refreshStockCreatureTemplates(root: string): Promise<void> {
+  const templatesDir = (await existingCanonicalDir(root, 'templates')) ?? join(root, 'Templates')
+  await ensureDir(templatesDir)
+  const entries = await readdir(templatesDir)
+  const jobs: { kind: 'player' | 'npc' | 'monster' | 'gear' | 'spell'; dest: string; stock: string }[] = [
+    { kind: 'player', dest: 'Player.md', stock: '# *Character Name*' },
+    { kind: 'npc', dest: 'NPC.md', stock: '# *NPC Name*' },
+    { kind: 'monster', dest: 'Monster.md', stock: '# Monster Name' },
+    { kind: 'gear', dest: 'Gear.md', stock: '# Item Name' },
+    { kind: 'spell', dest: 'Spell.md', stock: '# Spell Name' }
+  ]
+  for (const job of jobs) {
+    const wanted = new Set(TEMPLATE_FILE_NAMES[job.kind])
+    const matches = entries.filter((name) => wanted.has(name.toLowerCase()))
+    const dest = join(templatesDir, job.dest)
+    const preferred = matches.find((name) => name.toLowerCase() === job.dest.toLowerCase())
+    const currentPath = preferred
+      ? join(templatesDir, preferred)
+      : matches[0]
+        ? join(templatesDir, matches[0])
+        : null
+    if (!currentPath) {
+      await writeFile(dest, FALLBACK_TEMPLATES[job.kind], 'utf8')
+      continue
+    }
+    const current = await readFile(currentPath, 'utf8')
+    if (current.includes(job.stock)) {
+      await writeFile(dest, FALLBACK_TEMPLATES[job.kind], 'utf8')
+      if (currentPath !== dest) await unlink(currentPath)
+    }
+  }
+}
+
 async function prepareCampaignFolder(root: string): Promise<void> {
   const hadCore = await campaignHasCoreFolders(root)
   await ensureCampaignLayout(root)
   if (!hadCore) await seedNewCampaignFiles(root)
-  else await refreshStockNightSheetTemplate(root)
+  else {
+    await refreshStockNightSheetTemplate(root)
+    await refreshStockCreatureTemplates(root)
+  }
 }
 
 async function listSessions(dir: string): Promise<SessionFile[]> {
@@ -954,6 +1041,8 @@ function registerIpc(): void {
         mapView: payload.mapView ?? null
       }
       sendPlayerState()
+      if (!playerWindow || playerWindow.isDestroyed()) createPlayerWindow()
+      else fullscreenPlayerOnDisplay(targetPlayerDisplay())
       return playerState
     }
   )
@@ -983,12 +1072,12 @@ function registerIpc(): void {
 
   ipcMain.handle('player:get-state', () => playerState)
 
-  ipcMain.handle('player:place-on-display', (_e, displayId: number) => {
+  ipcMain.handle('player:place-on-display', async (_e, displayId: number) => {
     const display = screen.getAllDisplays().find((d) => d.id === displayId)
-    if (!display || !playerWindow) return listDisplays()
-    void patchSettings({ playerDisplayId: displayId })
-    playerWindow.setBounds(display.bounds)
-    playerWindow.setFullScreen(true)
+    if (!display) return listDisplays()
+    await patchSettings({ playerDisplayId: displayId })
+    if (!playerWindow || playerWindow.isDestroyed()) createPlayerWindow()
+    else fullscreenPlayerOnDisplay(display)
     return listDisplays()
   })
 
@@ -1166,6 +1255,7 @@ app.whenReady().then(async () => {
 
   createDmWindow()
   createPlayerWindow()
+  watchDisplays()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

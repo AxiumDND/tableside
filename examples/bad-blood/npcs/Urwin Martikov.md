@@ -15,32 +15,6 @@
 > | **Status** | Alive |
 > | **CR** | 2 |
 
-*A wereraven who shelters the village at the church — the one honest face in Barovia, and the man who receives them as an answered prayer.*
-
-## Look & voice
-
-- **Look** — Stocky, plain, deliberately unremarkable. Dark, too-clever eyes; a bird-like head tilt. Feathers at the collar when he's stressed; his shadow looks winged.
-- **Manner** — Warm, weary, decent. Speaks plainly.
-- **Quotes** — *"I asked for help. I didn't really think I'd get it."* · *"Help me — and I swear on the Dawn, I'll help you find your road home."* · *"We don't fight the Count in the open. We outlive him."*
-
-> [!readaloud]
-> A stocky man in a travel-worn coat meets you at the church door as if he had been waiting all night. "The Mist gave me you," he says, and he means it.
-
-> [!gmonly]
-> **The three-sender irony.** Urwin's faith is genuine and must never waver. He has no idea Strahd baited them in. The party think a patron hired them; Urwin thinks the Dawn sent them; only Strahd knows.
->
-> Withholds his wereraven nature in Session 0.5 / 1; reveals it in Session 2. Lies by omission to protect the Keepers. Hands out the Under-Level Boost Kit before the old churchyard — [[Rewards & Leveling]].
->
-> Ally. Should not fight the party. Stats are only if he defends them.
-
-## Notes
-
-Possible exit route: Keepers smuggle them out — [[The Mists — Getting In & Out]].
-
-## Combat
-
-**Combatants:** [[Urwin Martikov]] · party
-
 ```statblock
 layout: Basic 5e Layout
 name: Urwin Martikov
@@ -73,3 +47,26 @@ actions:
   - name: Shortsword (humanoid or hybrid only)
     desc: "+5 to hit, reach 5 ft. Hit: 6 (1d6+3) piercing."
 ```
+
+*A wereraven who shelters the village at the church — the one honest face in Barovia, and the man who receives them as an answered prayer.*
+
+## Look & voice
+
+- **Look** — Stocky, plain, deliberately unremarkable. Dark, too-clever eyes; a bird-like head tilt. Feathers at the collar when he's stressed; his shadow looks winged.
+- **Manner** — Warm, weary, decent. Speaks plainly.
+- **Quotes** — *"I asked for help. I didn't really think I'd get it."* · *"Help me — and I swear on the Dawn, I'll help you find your road home."* · *"We don't fight the Count in the open. We outlive him."*
+
+> [!readaloud]
+> A stocky man in a travel-worn coat meets you at the church door as if he had been waiting all night. "The Mist gave me you," he says, and he means it.
+
+> [!gmonly]
+> **The three-sender irony.** Urwin's faith is genuine and must never waver. He has no idea Strahd baited them in. The party think a patron hired them; Urwin thinks the Dawn sent them; only Strahd knows.
+>
+> Withholds his wereraven nature in Session 0.5 / 1; reveals it in Session 2. Lies by omission to protect the Keepers. Hands out the Under-Level Boost Kit before the old churchyard — [[Rewards & Leveling]].
+>
+> Ally. Should not fight the party. Stats are only if he defends them.
+
+## Notes
+
+Possible exit route: Keepers smuggle them out — [[The Mists — Getting In & Out]].
+

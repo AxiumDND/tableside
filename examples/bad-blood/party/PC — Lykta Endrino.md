@@ -21,6 +21,58 @@
 > | **Speed** | 45 ft. walk · **45 ft. climb** (Spider Climb) |
 > | **Save DC** | 14 · Spell Atk +6 · WIS caster |
 
+```statblock
+layout: Basic 5e Layout
+name: Lykta Endrino (Dhampir Stars Druid 4 / Monk 2)
+size: Small
+type: humanoid
+alignment: neutral good
+ac: 15
+hp: 51
+hit_dice: 4d8+2d8
+speed: 45 ft., climb 45 ft. (Spider Climb)
+stats: [8, 15, 16, 10, 16, 10]
+saves:
+  - int: 3
+  - wis: 6
+skillsaves:
+  - arcana: 6
+  - insight: 6
+  - perception: 6
+  - religion: 3
+damage_resistances: "Necrotic"
+senses: "Darkvision 60 ft., passive Perception 16"
+languages: "Common, Druidic, Dwarvish, Elvish"
+cr: ""
+traits:
+  - name: Starry Form (Bonus Action, Wild Shape)
+    desc: "Archer — bonus-action ranged spell attack +6, 1d8+3 radiant. Chalice — when she casts a healing spell, another creature within 30 ft. heals 1d8+3. Dragon — treat 9 or lower as 10 on Int/Wis checks & Concentration saves."
+  - name: Star Map
+    desc: "Guiding Bolt always prepared; cast it without a slot 3/long rest."
+  - name: Gathered Whispers
+    desc: "Message at will; Augury always prepared (no components, 1/long rest free); Unearthly Scream reaction (+3 AC vs one attack, 3/rest)."
+  - name: Vampiric Bite (3/Long Rest empower)
+    desc: "Unarmed Strike alt: 1d4+3 Piercing; then Drain (heal = damage) or Strengthen (bonus to next check/attack)."
+  - name: Uncanny Metabolism (1/Long Rest)
+    desc: "On rolling Initiative, regain all Focus Points and 1d6+2 HP."
+actions:
+  - name: Starry Wisp (cantrip)
+    desc: "Spell Attack +6, 60 ft., 2d8 Radiant; target glows (advantage / negates invisibility)."
+  - name: Guiding Bolt (1st, radiant)
+    desc: "Spell Attack +6, 120 ft., 4d6 Radiant; next attacker has advantage."
+  - name: Moonbeam (2nd, concentration, radiant)
+    desc: "CON save DC 14, 5-ft. beam, 2d10 Radiant; move beam 60 ft. each turn."
+  - name: Cure Wounds / Healing Word / Healing Spirit
+    desc: "Burst and sustained healing; Chalice form adds 1d8+3 splash to another ally."
+  - name: Shillelagh (cantrip melee)
+    desc: "Attack +6, 1d10+3 Bludgeoning (WIS-based)."
+  - name: Flurry of Blows (Bonus Action, 1 Focus)
+    desc: "Two Unarmed Strikes, +4, 1d6+1 each."
+bonus_actions:
+  - name: Patient Defense (1 Focus)
+    desc: "Disengage and Dodge as a bonus action."
+```
+
 *A small, watchful dhampir who walks with the dead at her shoulder — a spirit medium who talks to what's left behind, and a star-druid whose body lights up like a constellation when the fighting starts. Built, by a player once burned in Barovia, to keep everyone alive.*
 
 ---
@@ -91,60 +143,7 @@
 
 ---
 
-## Stat block (DM combat reference)
 > [!gmonly]
 > Condensed from the player's (incomplete) sheet for fast table reference — the player's PDF is authoritative, and this updates when the build is finished.
-
-```statblock
-layout: Basic 5e Layout
-name: Lykta Endrino (Dhampir Stars Druid 4 / Monk 2)
-size: Small
-type: humanoid
-alignment: neutral good
-ac: 15
-hp: 51
-hit_dice: 4d8+2d8
-speed: 45 ft., climb 45 ft. (Spider Climb)
-stats: [8, 15, 16, 10, 16, 10]
-saves:
-  - int: 3
-  - wis: 6
-skillsaves:
-  - arcana: 6
-  - insight: 6
-  - perception: 6
-  - religion: 3
-damage_resistances: "Necrotic"
-senses: "Darkvision 60 ft., passive Perception 16"
-languages: "Common, Druidic, Dwarvish, Elvish"
-cr: ""
-traits:
-  - name: Starry Form (Bonus Action, Wild Shape)
-    desc: "Archer — bonus-action ranged spell attack +6, 1d8+3 radiant. Chalice — when she casts a healing spell, another creature within 30 ft. heals 1d8+3. Dragon — treat 9 or lower as 10 on Int/Wis checks & Concentration saves."
-  - name: Star Map
-    desc: "Guiding Bolt always prepared; cast it without a slot 3/long rest."
-  - name: Gathered Whispers
-    desc: "Message at will; Augury always prepared (no components, 1/long rest free); Unearthly Scream reaction (+3 AC vs one attack, 3/rest)."
-  - name: Vampiric Bite (3/Long Rest empower)
-    desc: "Unarmed Strike alt: 1d4+3 Piercing; then Drain (heal = damage) or Strengthen (bonus to next check/attack)."
-  - name: Uncanny Metabolism (1/Long Rest)
-    desc: "On rolling Initiative, regain all Focus Points and 1d6+2 HP."
-actions:
-  - name: Starry Wisp (cantrip)
-    desc: "Spell Attack +6, 60 ft., 2d8 Radiant; target glows (advantage / negates invisibility)."
-  - name: Guiding Bolt (1st, radiant)
-    desc: "Spell Attack +6, 120 ft., 4d6 Radiant; next attacker has advantage."
-  - name: Moonbeam (2nd, concentration, radiant)
-    desc: "CON save DC 14, 5-ft. beam, 2d10 Radiant; move beam 60 ft. each turn."
-  - name: Cure Wounds / Healing Word / Healing Spirit
-    desc: "Burst and sustained healing; Chalice form adds 1d8+3 splash to another ally."
-  - name: Shillelagh (cantrip melee)
-    desc: "Attack +6, 1d10+3 Bludgeoning (WIS-based)."
-  - name: Flurry of Blows (Bonus Action, 1 Focus)
-    desc: "Two Unarmed Strikes, +4, 1d6+1 each."
-bonus_actions:
-  - name: Patient Defense (1 Focus)
-    desc: "Disengage and Dodge as a bonus action."
-```
 
 #dnd #ravenloft #pc #barovia

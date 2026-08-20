@@ -14,27 +14,6 @@
 > | **Status** | Hostile — only if they enter the tavern |
 > | **CR** | 6 |
 
-*The gentle, worried middle sister — she kept the journal that records the family's fall. Beautiful once; you can still see it under everything. Now a ghast who holds court over two ghoul servants.*
-
-## Look & voice
-
-- **Look** — Once-lovely, now wasted; lower face dark and glistening; torn fine dress.
-- **Manner** — Mock-hostess. Predatory delight over flashes of human grief.
-- **Quote** — *"Ohhh. Guests. We're closed, you know. But I'm sure we can find something for you."*
-
-> [!gmonly]
-> Commands **2× [[Ghoul]]** from the doorway; opens with them flanking from side rooms. Claw Paralyzes; Horrific Necrosis Frightens; Stench DC 13 Con. **Can be talked to briefly** — naming her or her sisters (DC 15 Persuasion/Insight) buys a round or reveals *"Sorvina did this — downstairs, with the bones."*
->
-> Journal: three torn entries in her room. Full text in [[Handouts & Props]].
-
-## Notes
-
-Cut content. In play only if the party goes into the tavern.
-
-## Combat
-
-**Combatants:** [[Mirabel]] · [[Ghoul]] ×2 · party
-
 ```statblock
 layout: Basic 5e Layout
 name: Mirabel
@@ -67,3 +46,21 @@ actions:
   - name: Spellcasting
     desc: "At will (Intelligence, no material): Speak with Dead, Thaumaturgy."
 ```
+
+*The gentle, worried middle sister — she kept the journal that records the family's fall. Beautiful once; you can still see it under everything. Now a ghast who holds court over two ghoul servants.*
+
+## Look & voice
+
+- **Look** — Once-lovely, now wasted; lower face dark and glistening; torn fine dress.
+- **Manner** — Mock-hostess. Predatory delight over flashes of human grief.
+- **Quote** — *"Ohhh. Guests. We're closed, you know. But I'm sure we can find something for you."*
+
+> [!gmonly]
+> Commands **2× [[Ghoul]]** from the doorway; opens with them flanking from side rooms. Claw Paralyzes; Horrific Necrosis Frightens; Stench DC 13 Con. **Can be talked to briefly** — naming her or her sisters (DC 15 Persuasion/Insight) buys a round or reveals *"Sorvina did this — downstairs, with the bones."*
+>
+> Journal: three torn entries in her room. Full text in [[Handouts & Props]].
+
+## Notes
+
+Cut content. In play only if the party goes into the tavern.
+

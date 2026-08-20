@@ -3,23 +3,6 @@
 > [!infobox]+
 > ![[Jackal.webp]]
 >
-*SRD 5.2 monster. Add notes for this table.*
-
-Small beast · unaligned · CR 0
-
-| | |
-|---|---|
-| **CR** | 0 |
-| **Role** |  |
-| **Source** | SRD 5.2 |
-
-## Notes
-
-Add where it appears and how to run it.
-
-## Combat
-
-**Combatants:** [[Jackal]] · party
 
 ```statblock
 layout: Basic 5e Layout
@@ -49,3 +32,18 @@ actions:
   - name: Bite
     desc: "Melee Attack Roll: +1, reach 5 ft. 1 (1d4 - 1) Piercing damage."
 ```
+
+*SRD 5.2 monster. Add notes for this table.*
+
+Small beast · unaligned · CR 0
+
+| | |
+|---|---|
+| **CR** | 0 |
+| **Role** |  |
+| **Source** | SRD 5.2 |
+
+## Notes
+
+Add where it appears and how to run it.
+

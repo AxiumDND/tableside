@@ -3,19 +3,6 @@
 > [!infobox]+
 > ![[Vampire Mind Flayer.webp]]
 >
-*The prototype. Mind Burst goes up as well as out.*
-
-Medium undead · chaotic evil · CR 5
-
-| | |
-|---|---|
-| **CR** | 5 |
-| **Role** | Wave 3 spike · Session 3 Trap |
-| **Source** | Custom |
-
-## Notes
-
-Mind Burst is a 30-ft emanation that extends vertically — gallery snipers are in range. Climb 30 ft.; it comes up the nave wall. Telegraph every time: tentacles flare, pressure behind the eyes. Radiant wrecks it — 20 if it starts its turn in Dawnlight. Session 3 runs two of them with Lyssa.
 
 ```statblock
 layout: Basic 5e Layout
@@ -59,3 +46,18 @@ actions:
   - name: Mind Burst (Recharge 6)
     desc: "DC 15 Int save, each creature in a 30-foot Emanation (extends vertically). Failure: Incapacitated; repeat the save at the end of each turn. Ends automatically after 1 minute."
 ```
+
+*The prototype. Mind Burst goes up as well as out.*
+
+Medium undead · chaotic evil · CR 5
+
+| | |
+|---|---|
+| **CR** | 5 |
+| **Role** | Wave 3 spike · Session 3 Trap |
+| **Source** | Custom |
+
+## Notes
+
+Mind Burst is a 30-ft emanation that extends vertically — gallery snipers are in range. Climb 30 ft.; it comes up the nave wall. Telegraph every time: tentacles flare, pressure behind the eyes. Radiant wrecks it — 20 if it starts its turn in Dawnlight. Session 3 runs two of them with Lyssa.
+

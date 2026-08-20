@@ -14,27 +14,6 @@
 > | **Status** | Alive — at risk |
 > | **CR** | 2 |
 
-*Urwin's young niece — bright, eager, brave to a fault. In the churchyard siege she runs out to save a family and is pinned. Reach her in time, or don't. That choice is the personal stake of the night.*
-
-## Look & voice
-
-- **Look** — Slight, quick; dark feather-streaked hair, bright black eyes. A small raven often on her shoulder.
-- **Manner** — Warm, a little reckless; idolises the Keepers and wants to prove herself.
-- **Quotes** — *(before)* *"Uncle says you walked out of the Mist. That's amazing."* · *(if saved)* *"I'm not staying behind. She killed our people. I'm coming."*
-
-> [!gmonly]
-> **Session 1 Wave 2.** She goes down in the churchyard on a **3-round rescue clock**. Do not fudge it.
-> - **Saved:** she lives, and can be the optional Keeper ally (the "5th body" in the [[Rewards & Leveling|Under-Level Boost Kit]]). Keep her support-flavoured — Help, a heal, a flanking strike.
-> - **Lost:** her death is **Urwin's grief** and the party's score to settle. Old-churchyard intel then comes from a fallen attacker instead.
-
-## Notes
-
-As played she arrived safe. Keep the clock anyway if you re-run the siege.
-
-## Combat
-
-**Combatants:** [[Sef Martikov]] · party
-
 ```statblock
 layout: Basic 5e Layout
 name: Sef Martikov
@@ -66,3 +45,21 @@ actions:
   - name: Shortsword (humanoid or hybrid only)
     desc: "+5 to hit, reach 5 ft. Hit: 6 (1d6+3) piercing."
 ```
+
+*Urwin's young niece — bright, eager, brave to a fault. In the churchyard siege she runs out to save a family and is pinned. Reach her in time, or don't. That choice is the personal stake of the night.*
+
+## Look & voice
+
+- **Look** — Slight, quick; dark feather-streaked hair, bright black eyes. A small raven often on her shoulder.
+- **Manner** — Warm, a little reckless; idolises the Keepers and wants to prove herself.
+- **Quotes** — *(before)* *"Uncle says you walked out of the Mist. That's amazing."* · *(if saved)* *"I'm not staying behind. She killed our people. I'm coming."*
+
+> [!gmonly]
+> **Session 1 Wave 2.** She goes down in the churchyard on a **3-round rescue clock**. Do not fudge it.
+> - **Saved:** she lives, and can be the optional Keeper ally (the "5th body" in the [[Rewards & Leveling|Under-Level Boost Kit]]). Keep her support-flavoured — Help, a heal, a flanking strike.
+> - **Lost:** her death is **Urwin's grief** and the party's score to settle. Old-churchyard intel then comes from a fallen attacker instead.
+
+## Notes
+
+As played she arrived safe. Keep the clock anyway if you re-run the siege.
+

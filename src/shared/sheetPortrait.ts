@@ -13,5 +13,11 @@ export function setSheetPortraitEmbed(markdown: string, fileName: string): strin
 export function sheetAcceptsPortrait(
   template: 'blank' | 'player' | 'npc' | 'monster' | 'spell' | 'gear' | 'nightsheet' | 'map'
 ): boolean {
-  return template === 'player' || template === 'npc' || template === 'monster'
+  return (
+    template === 'player' ||
+    template === 'npc' ||
+    template === 'monster' ||
+    template === 'spell' ||
+    template === 'gear'
+  )
 }

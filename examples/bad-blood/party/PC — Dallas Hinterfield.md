@@ -21,6 +21,56 @@
 > | **Speed** | 25 ft. walk · **50 ft. fly** (Broom of Flying) |
 > | **Save DC** | 14 · Spell Atk +6 · CHA caster |
 
+```statblock
+layout: Basic 5e Layout
+name: Dallas Hinterfield (Rock Gnome Sorcerer 6)
+size: Small
+type: humanoid
+alignment: unaligned
+ac: 15
+hp: 38
+hit_dice: 6d6
+speed: 25 ft., fly 50 ft. (Broom of Flying)
+stats: [8, 14, 13, 15, 10, 17]
+saves:
+  - con: 4
+  - cha: 6
+skillsaves:
+  - arcana: 5
+  - history: 5
+  - insight: 3
+  - religion: 5
+senses: "Darkvision 60 ft., passive Perception 10"
+languages: "Common, Draconic, Gnomish, Goblin, Abyssal"
+cr: ""
+traits:
+  - name: Gnome Cunning
+    desc: "Advantage on Intelligence, Wisdom, and Charisma saving throws against magic."
+  - name: Draconic Resilience
+    desc: "AC equals 15 when not wearing armor; max HP increased by 6 (included)."
+  - name: Font of Magic
+    desc: "6 sorcery points; convert points/slots as a bonus action."
+  - name: Metamagic
+    desc: "Careful Spell (protect up to 3 creatures from a save spell); Quickened Spell (cast a 1-action spell as a bonus action)."
+  - name: Elemental Affinity (Acid)
+    desc: "Add +3 to one damage roll of an acid spell; may spend 1 point for acid resistance (1 hour)."
+actions:
+  - name: Fireball (3rd)
+    desc: "DEX save DC 14, 150 ft., 20-ft. sphere, 8d6 fire. Quicken to cast as a bonus action."
+  - name: Sorcerous Burst (cantrip)
+    desc: "Spell Attack +6, 120 ft., 2d8 acid (scales); Elemental Affinity adds +3 to a damage roll."
+  - name: Fire Bolt (cantrip)
+    desc: "Spell Attack +6, 120 ft., 2d10 fire."
+  - name: Magic Missile (1st)
+    desc: "3 darts, 1d4+1 force each, auto-hit."
+  - name: Counterspell (3rd, reaction)
+    desc: "Interrupt a spell; contested if above 3rd level (CON check by caster, DC 10+level)."
+  - name: Misty Step (2nd, bonus action)
+    desc: "Teleport 30 ft."
+  - name: Haste (3rd, concentration)
+    desc: "Target +2 AC, double speed, extra action."
+```
+
 *A 350-year-old rock gnome who knows it — patient, tinkering, endlessly explaining. Black-dragon blood runs hot under all that fussy scholarship, and the valley is about to give him more buried arcana than any sage could resist.*
 
 ---
@@ -89,58 +139,7 @@
 
 ---
 
-## Stat block (DM combat reference)
 > [!gmonly]
 > Condensed from the player's sheet for fast table reference — the player's PDF is authoritative.
-
-```statblock
-layout: Basic 5e Layout
-name: Dallas Hinterfield (Rock Gnome Sorcerer 6)
-size: Small
-type: humanoid
-alignment: unaligned
-ac: 15
-hp: 38
-hit_dice: 6d6
-speed: 25 ft., fly 50 ft. (Broom of Flying)
-stats: [8, 14, 13, 15, 10, 17]
-saves:
-  - con: 4
-  - cha: 6
-skillsaves:
-  - arcana: 5
-  - history: 5
-  - insight: 3
-  - religion: 5
-senses: "Darkvision 60 ft., passive Perception 10"
-languages: "Common, Draconic, Gnomish, Goblin, Abyssal"
-cr: ""
-traits:
-  - name: Gnome Cunning
-    desc: "Advantage on Intelligence, Wisdom, and Charisma saving throws against magic."
-  - name: Draconic Resilience
-    desc: "AC equals 15 when not wearing armor; max HP increased by 6 (included)."
-  - name: Font of Magic
-    desc: "6 sorcery points; convert points/slots as a bonus action."
-  - name: Metamagic
-    desc: "Careful Spell (protect up to 3 creatures from a save spell); Quickened Spell (cast a 1-action spell as a bonus action)."
-  - name: Elemental Affinity (Acid)
-    desc: "Add +3 to one damage roll of an acid spell; may spend 1 point for acid resistance (1 hour)."
-actions:
-  - name: Fireball (3rd)
-    desc: "DEX save DC 14, 150 ft., 20-ft. sphere, 8d6 fire. Quicken to cast as a bonus action."
-  - name: Sorcerous Burst (cantrip)
-    desc: "Spell Attack +6, 120 ft., 2d8 acid (scales); Elemental Affinity adds +3 to a damage roll."
-  - name: Fire Bolt (cantrip)
-    desc: "Spell Attack +6, 120 ft., 2d10 fire."
-  - name: Magic Missile (1st)
-    desc: "3 darts, 1d4+1 force each, auto-hit."
-  - name: Counterspell (3rd, reaction)
-    desc: "Interrupt a spell; contested if above 3rd level (CON check by caster, DC 10+level)."
-  - name: Misty Step (2nd, bonus action)
-    desc: "Teleport 30 ft."
-  - name: Haste (3rd, concentration)
-    desc: "Target +2 AC, double speed, extra action."
-```
 
 #dnd #ravenloft #pc #barovia

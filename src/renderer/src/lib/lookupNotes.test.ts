@@ -61,6 +61,56 @@ describe('recordToCampaignMarkdown', () => {
       })
     )
     expect(markdown).toContain('![[Evocation.webp]]')
-    expect(markdown).toContain('Level 3 Evocation')
+    expect(markdown).toContain('### *Level 3 Evocation')
+    expect(markdown).toContain('| **Casting Time** | Action |')
+    expect(markdown).toContain('| **Range** | 150 feet |')
+    expect(markdown).not.toMatch(/^Casting Time:/m)
+  })
+
+  it('puts gear stats in an infobox table', () => {
+    const markdown = recordToCampaignMarkdown(
+      record({
+        kind: 'gear',
+        name: 'Acid',
+        data: {
+          category: 'Adventuring Gear',
+          Weight: '1 lb.',
+          Cost: '25 GP',
+          desc: 'When you take the Attack action, you can replace one attack with throwing a vial of Acid.'
+        }
+      })
+    )
+    expect(markdown).toContain('![[Acid.webp]]')
+    expect(markdown).toContain('### *Adventuring Gear*')
+    expect(markdown).toContain('| **Weight** | 1 lb. |')
+    expect(markdown).toContain('| **Cost** | 25 GP |')
+    expect(markdown).not.toMatch(/^Weight:/m)
+    expect(markdown).not.toMatch(/^Cost:/m)
+  })
+
+  it('puts a monster portrait and statblock above notes', () => {
+    const markdown = recordToCampaignMarkdown(
+      record({
+        kind: 'monster',
+        name: 'Ghoul',
+        data: {
+          name: 'Ghoul',
+          size: 'Medium',
+          type: 'undead',
+          alignment: 'chaotic evil',
+          ac: 12,
+          hp: 22,
+          speed: '30 ft.',
+          strength: 13,
+          dexterity: 15,
+          constitution: 10,
+          intelligence: 7,
+          wisdom: 10,
+          charisma: 6
+        }
+      })
+    )
+    expect(markdown).toContain('![[Ghoul.webp]]')
+    expect(markdown.indexOf('```statblock')).toBeLessThan(markdown.indexOf('## Notes'))
   })
 })

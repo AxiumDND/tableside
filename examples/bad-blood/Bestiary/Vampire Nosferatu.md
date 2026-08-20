@@ -3,19 +3,6 @@
 > [!infobox]+
 > ![[Vampire Nosferatu.webp]]
 >
-*Optional Session 2 coffin. Walking away is the right call.*
-
-Medium undead · chaotic evil · CR 8
-
-| | |
-|---|---|
-| **CR** | 8 |
-| **Role** | Optional elder |
-| **Source** | RtHW |
-
-## Notes
-
-Only run this for a fresh or boosted Level 7 party. The coffin holds a Gem of Brightness — they can grab it and leave. Regeneration 10 shuts off the turn after radiant. Blood Frenzy: Advantage against anyone not at full HP.
 
 ```statblock
 layout: Basic 5e Layout
@@ -64,3 +51,18 @@ reactions:
   - name: Bloodthirsty Slash
     desc: "When a Bloodied creature the nosferatu can see within 40 ft. takes damage, it moves up to its Speed without opportunity attacks and makes a Claw attack against that creature."
 ```
+
+*Optional Session 2 coffin. Walking away is the right call.*
+
+Medium undead · chaotic evil · CR 8
+
+| | |
+|---|---|
+| **CR** | 8 |
+| **Role** | Optional elder |
+| **Source** | RtHW |
+
+## Notes
+
+Only run this for a fresh or boosted Level 7 party. The coffin holds a Gem of Brightness — they can grab it and leave. Regeneration 10 shuts off the turn after radiant. Blood Frenzy: Advantage against anyone not at full HP.
+

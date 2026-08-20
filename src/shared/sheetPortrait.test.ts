@@ -21,10 +21,12 @@ describe('setSheetPortraitEmbed', () => {
 })
 
 describe('sheetAcceptsPortrait', () => {
-  it('is true for player, NPC, and monster sheets', () => {
+  it('is true for creature, gear, and spell sheets', () => {
     expect(sheetAcceptsPortrait('player')).toBe(true)
     expect(sheetAcceptsPortrait('npc')).toBe(true)
     expect(sheetAcceptsPortrait('monster')).toBe(true)
+    expect(sheetAcceptsPortrait('gear')).toBe(true)
+    expect(sheetAcceptsPortrait('spell')).toBe(true)
     expect(sheetAcceptsPortrait('map')).toBe(false)
   })
 })

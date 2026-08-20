@@ -3,19 +3,6 @@
 > [!infobox]+
 > ![[Specter.webp]]
 >
-*Phases through the church wall. There is no safe perch.*
-
-Medium undead · chaotic evil · CR 1
-
-| | |
-|---|---|
-| **CR** | 1 |
-| **Role** | Gallery hunter |
-| **Source** | MM 2024 |
-
-## Notes
-
-Arrives at the end of Wave 1, round 1. Incorporeal Movement goes through stone, wood, and closed doors — it reaches Dallas on the broom or Lykta on the ceiling. Life Drain chips max HP across the whole siege. Removable if Wave 1 is running long.
 
 ```statblock
 layout: Basic 5e Layout
@@ -43,3 +30,18 @@ actions:
   - name: Life Drain
     desc: "+4 to hit, reach 5 ft. Hit: 10 (3d6) necrotic. The target's HP maximum decreases by the necrotic taken until a Long Rest. The target dies if its HP maximum reaches 0."
 ```
+
+*Phases through the church wall. There is no safe perch.*
+
+Medium undead · chaotic evil · CR 1
+
+| | |
+|---|---|
+| **CR** | 1 |
+| **Role** | Gallery hunter |
+| **Source** | MM 2024 |
+
+## Notes
+
+Arrives at the end of Wave 1, round 1. Incorporeal Movement goes through stone, wood, and closed doors — it reaches Dallas on the broom or Lykta on the ceiling. Life Drain chips max HP across the whole siege. Removable if Wave 1 is running long.
+

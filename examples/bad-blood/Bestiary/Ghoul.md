@@ -3,19 +3,6 @@
 > [!infobox]+
 > ![[Ghoul.webp]]
 >
-*Wave 1 fodder. Paralysis on the nave floor — they don't climb.*
-
-Medium undead · chaotic evil · CR 1
-
-| | |
-|---|---|
-| **CR** | 1 |
-| **Role** | Nave pressure |
-| **Source** | MM 2024 |
-
-## Notes
-
-Three come through the church doors. A fourth never arrives — Lucian's tower fire takes it in the graveyard. Drop them first if Wave 1 is running long.
 
 ```statblock
 layout: Basic 5e Layout
@@ -41,3 +28,18 @@ actions:
   - name: Claw
     desc: "+4 to hit, reach 5 ft. Hit: 4 (1d4+2) slashing. If the target isn't an Undead or elf: DC 10 Con save or Paralyzed until the end of its next turn."
 ```
+
+*Wave 1 fodder. Paralysis on the nave floor — they don't climb.*
+
+Medium undead · chaotic evil · CR 1
+
+| | |
+|---|---|
+| **CR** | 1 |
+| **Role** | Nave pressure |
+| **Source** | MM 2024 |
+
+## Notes
+
+Three come through the church doors. A fourth never arrives — Lucian's tower fire takes it in the graveyard. Drop them first if Wave 1 is running long.
+

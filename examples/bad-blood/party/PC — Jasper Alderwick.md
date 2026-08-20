@@ -21,6 +21,61 @@
 > | **Speed** | 30 ft. · **Initiative +5** |
 > | **Save DC** | 13 · Spell Atk +5 · INT caster (EK) |
 
+```statblock
+layout: Basic 5e Layout
+name: Jasper Alderwick (Halfling Fighter 6, Eldritch Knight)
+size: Small
+type: humanoid
+alignment: unaligned
+ac: 19
+hp: 52
+hit_dice: 6d10
+speed: 30 ft.
+stats: [8, 20, 14, 14, 12, 10]
+saves:
+  - str: 2
+  - con: 5
+skillsaves:
+  - acrobatics: 8
+  - arcana: 5
+  - history: 5
+  - insight: 4
+  - investigation: 5
+  - perception: 4
+  - stealth: 5
+senses: "passive Perception 14 (no darkvision)"
+languages: "Common, Dwarvish, Halfling"
+cr: ""
+traits:
+  - name: Halfling Luck & Brave
+    desc: "Reroll 1s on d20 Tests; Advantage on saves to avoid/end Frightened."
+  - name: Sentinel
+    desc: "Opportunity Attack when a creature within 5 ft. Disengages or hits someone other than Jasper; his OA hits reduce the target's Speed to 0 (Halt)."
+  - name: War Bond
+    desc: "Bonded weapon can't be disarmed; summon to hand as a Bonus Action (up to 2 bonded)."
+  - name: Longbow of Warning
+    desc: "Advantage on initiative; while he holds it, he and allies within 30 ft. can't be surprised (while awake)."
+  - name: Spellcasting (EK)
+    desc: "INT, DC 13, +5. Slots 3×1st. Cantrips: Mage Hand, Minor Illusion. Spells: Shield, Protection from Evil and Good, Detect Magic (R), Find Familiar (R)."
+actions:
+  - name: Silvered Rapier (Vex, Dueling)
+    desc: "Extra Attack (2 attacks). +8 to hit, 1d8+7 Piercing, silvered. On hit: Advantage on his next attack vs that target (Vex)."
+  - name: Longbow of Warning (Slow)
+    desc: "+8 to hit, 150/600 ft., 1d8+5 Piercing; on hit, target's Speed −10 ft. until start of his next turn."
+  - name: Whip (Slow, Reach)
+    desc: "+8 to hit, reach 10 ft., 1d4+7 Slashing; on hit, target's Speed −10 ft."
+  - name: Dagger (Nick)
+    desc: "+8 to hit, thrown 20/60, 1d4+7 Piercing."
+  - name: Action Surge (1/Short Rest)
+    desc: "One additional action (not Magic)."
+bonus_actions:
+  - name: Second Wind (3/Long Rest)
+    desc: "Regain 1d10+6 HP, or Tactical Shift (move 15 ft. without provoking)."
+reactions:
+  - name: Shield (1st-level slot)
+    desc: "+5 AC until start of his next turn (AC 24), incl. vs the triggering attack."
+```
+
 *A Small figure in a grey travelling cloak with a scribe's ink-stained fingers and a duelist's footwork. He was scouting ahead when the Mists took the road — and he's been alone in them ever since. He stumbles out of the fog at the church gate in the Session 1 cold open.*
 
 > [!success] Sheet finalised — 12 July 2026 (PDF: woody77777777_167786516)
@@ -104,64 +159,8 @@
 
 ---
 
-## Stat block (DM combat reference)
 > [!gmonly]
 > **Final** — matches the completed D&D Beyond sheet (12 July 2026).
-
-```statblock
-layout: Basic 5e Layout
-name: Jasper Alderwick (Halfling Fighter 6, Eldritch Knight)
-size: Small
-type: humanoid
-alignment: unaligned
-ac: 19
-hp: 52
-hit_dice: 6d10
-speed: 30 ft.
-stats: [8, 20, 14, 14, 12, 10]
-saves:
-  - str: 2
-  - con: 5
-skillsaves:
-  - acrobatics: 8
-  - arcana: 5
-  - history: 5
-  - insight: 4
-  - investigation: 5
-  - perception: 4
-  - stealth: 5
-senses: "passive Perception 14 (no darkvision)"
-languages: "Common, Dwarvish, Halfling"
-cr: ""
-traits:
-  - name: Halfling Luck & Brave
-    desc: "Reroll 1s on d20 Tests; Advantage on saves to avoid/end Frightened."
-  - name: Sentinel
-    desc: "Opportunity Attack when a creature within 5 ft. Disengages or hits someone other than Jasper; his OA hits reduce the target's Speed to 0 (Halt)."
-  - name: War Bond
-    desc: "Bonded weapon can't be disarmed; summon to hand as a Bonus Action (up to 2 bonded)."
-  - name: Longbow of Warning
-    desc: "Advantage on initiative; while he holds it, he and allies within 30 ft. can't be surprised (while awake)."
-  - name: Spellcasting (EK)
-    desc: "INT, DC 13, +5. Slots 3×1st. Cantrips: Mage Hand, Minor Illusion. Spells: Shield, Protection from Evil and Good, Detect Magic (R), Find Familiar (R)."
-actions:
-  - name: Silvered Rapier (Vex, Dueling)
-    desc: "Extra Attack (2 attacks). +8 to hit, 1d8+7 Piercing, silvered. On hit: Advantage on his next attack vs that target (Vex)."
-  - name: Longbow of Warning (Slow)
-    desc: "+8 to hit, 150/600 ft., 1d8+5 Piercing; on hit, target's Speed −10 ft. until start of his next turn."
-  - name: Whip (Slow, Reach)
-    desc: "+8 to hit, reach 10 ft., 1d4+7 Slashing; on hit, target's Speed −10 ft."
-  - name: Dagger (Nick)
-    desc: "+8 to hit, thrown 20/60, 1d4+7 Piercing."
-  - name: Action Surge (1/Short Rest)
-    desc: "One additional action (not Magic)."
-bonus_actions:
-  - name: Second Wind (3/Long Rest)
-    desc: "Regain 1d10+6 HP, or Tactical Shift (move 15 ft. without provoking)."
-reactions:
-  - name: Shield (1st-level slot)
-    desc: "+5 AC until start of his next turn (AC 24), incl. vs the triggering attack."
-```
 
 ## Links
 [[PC Roster — Bad Blood]] · [[Session 1]] · [[Ravenkind Shard]] · [[Player Pitch — Bad Blood]]

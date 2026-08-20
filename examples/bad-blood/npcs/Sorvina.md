@@ -14,27 +14,6 @@
 > | **Status** | Hostile — only if they enter the tavern |
 > | **CR** | 8 |
 
-*The curious youngest sister who found the hollow and dug too deep. Now a many-limbed horror chanting over the black bones, raising them against intruders.*
-
-## Look & voice
-
-- **Look** — Huge, wrong, more-than-human. Her face splits into something that was never a smile.
-- **Manner** — Too far gone to reason with. For a gut-punch, let one human word slip mid-fight.
-- **Quote** — *"…it's so much quieter now."*
-
-> [!gmonly]
-> On noticing them she howls and raises the black bones as a [[Minotaur Skeleton]]; both fight to the death. Attacks against her have Disadvantage (Incomprehensible Form); regenerates 10/turn; Terrifying Aura 15 ft. Frightens *and* Paralyzes (DC 15 Wis).
->
-> When the skeleton falls (or a PC touches the bones), the bound spirit whispers — [[Rewards & Leveling]] for the Dark Gift. Full tactics in [[Tavern — Blood o' the Vine (Backup)]].
-
-## Notes
-
-Cut content. In play only if the party goes into the tavern. Lyssa's agent steered her to the dig; they were experiments, and collateral.
-
-## Combat
-
-**Combatants:** [[Sorvina]] · [[Minotaur Skeleton]] · party
-
 ```statblock
 layout: Basic 5e Layout
 name: Sorvina
@@ -70,3 +49,21 @@ reactions:
   - name: Warp Mind
     desc: "Trigger: a creature she can see within 120 ft. takes Study or makes a Constitution save to keep Concentration. DC 15 Wisdom save. Failure: 7 (2d6) psychic and Stunned until the end of its next turn."
 ```
+
+*The curious youngest sister who found the hollow and dug too deep. Now a many-limbed horror chanting over the black bones, raising them against intruders.*
+
+## Look & voice
+
+- **Look** — Huge, wrong, more-than-human. Her face splits into something that was never a smile.
+- **Manner** — Too far gone to reason with. For a gut-punch, let one human word slip mid-fight.
+- **Quote** — *"…it's so much quieter now."*
+
+> [!gmonly]
+> On noticing them she howls and raises the black bones as a [[Minotaur Skeleton]]; both fight to the death. Attacks against her have Disadvantage (Incomprehensible Form); regenerates 10/turn; Terrifying Aura 15 ft. Frightens *and* Paralyzes (DC 15 Wis).
+>
+> When the skeleton falls (or a PC touches the bones), the bound spirit whispers — [[Rewards & Leveling]] for the Dark Gift. Full tactics in [[Tavern — Blood o' the Vine (Backup)]].
+
+## Notes
+
+Cut content. In play only if the party goes into the tavern. Lyssa's agent steered her to the dig; they were experiments, and collateral.
+

@@ -9,11 +9,6 @@
 
 *Behind the screen. Prose in [[Session Name]]. Click [[links]] to open sheets. Click art, then **Show to players**.*
 
-> [!gmonly] What this page does
-> - **Add to initiative** on a ⚔️ / Combat heading loads the **Combatants:** line (`party` = every PC, `×2` duplicates a monster).
-> - Missing `[[links]]` warn on the card. NPCs and monsters at initiative 0 are rolled.
-> - Keep this page short. Delete unused steps. Run-guide prose stays in [[Session Name]].
-
 > [!abstract] Tonight at a glance
 > Strong start → scenes → **the fight** → fallout.
 

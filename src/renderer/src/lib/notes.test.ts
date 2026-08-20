@@ -39,6 +39,18 @@ describe('night sheet parsing', () => {
     const md = `**Combatants:** [[Wolf]] · [[Missing Beast]] · party`
     expect(missingCombatantTokens(md, 'Sessions/Night.md', notes)).toEqual(['Missing Beast'])
   })
+
+  it('does not treat the night-sheet how-to as an encounter', () => {
+    const md = `# session test — Game Night Sheet
+
+> [!gmonly] What this page does
+> - **Add to initiative** on a ⚔️ / Combat heading loads the **Combatants:** line (\`party\` = every PC).
+
+## 1. The characters
+`
+    expect(parseNightEncounters(md, 'Sessions/Night.md', notes)).toHaveLength(0)
+    expect(missingCombatantTokens(md, 'Sessions/Night.md', notes)).toEqual([])
+  })
 })
 
 describe('campaign note lists', () => {

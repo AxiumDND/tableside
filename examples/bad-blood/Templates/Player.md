@@ -21,31 +21,6 @@
 > | **AC** | 18 |
 > | **HP** | 44 |
 
-*Two sentences the DM can read at a glance — who they are and what they want tonight.*
-
-## At the table
-
-- **Saves** — 
-- **Skills** — 
-- **Signature tricks** — 
-
-> [!gmonly]
-> How this kit bends the session. Secret hooks. What to flag if they forget a feature.
-
-## Look & voice
-
-- **Look** — 
-- **Manner** — 
-- **Quotes** — *"…"*
-
-## Notes
-
-Party ties, debts, and what they care about.
-
-## Combat
-
-**Combatants:** [[Character Name]] · party
-
 ```statblock
 layout: Basic 5e Layout
 name: Character Name
@@ -69,3 +44,24 @@ actions:
   - name: Longsword
     desc: "+6 to hit, reach 5 ft. Hit: 8 (1d8+4) slashing."
 ```
+
+*Two sentences the DM can read at a glance — who they are and what they want tonight.*
+
+## At the table
+
+- **Saves** — 
+- **Skills** — 
+- **Signature tricks** — 
+
+> [!gmonly]
+> How this kit bends the session. Secret hooks. What to flag if they forget a feature.
+
+## Look & voice
+
+- **Look** — 
+- **Manner** — 
+- **Quotes** — *"…"*
+
+## Notes
+
+Party ties, debts, and what they care about.

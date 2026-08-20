@@ -163,9 +163,7 @@ export default function RollableStatBlock({
             ) : null}
           </div>
         </div>
-        {portrait ? (
-          <div className="w-[7.5rem] shrink-0 overflow-hidden rounded border border-line">{portrait}</div>
-        ) : null}
+        {portrait ? <div className="w-40 shrink-0">{portrait}</div> : null}
       </div>
 
       <div className="mt-3 grid grid-cols-6 gap-1 text-center">

@@ -21,6 +21,56 @@
 > | **Speed** | 35 ft. walk · **35 ft. climb** (Spider Climb) |
 > | **Save DC** | 15 · Spell Atk +7 · CHA caster |
 
+```statblock
+layout: Basic 5e Layout
+name: Lucian Radu (Dhampir Warlock 6, Undead)
+size: Medium
+type: humanoid
+alignment: chaotic good
+ac: 14
+hp: 30
+hit_dice: 6d8
+speed: 35 ft., climb 35 ft. (Spider Climb)
+stats: [8, 14, 16, 8, 10, 18]
+saves:
+  - wis: 3
+  - cha: 7
+skillsaves:
+  - deception: 7
+  - persuasion: 7
+  - sleight of hand: 5
+  - investigation: 2
+damage_resistances: "Necrotic"
+senses: "Darkvision 60 ft., passive Perception 10"
+languages: "Common, Draconic, Gnomish"
+cr: ""
+traits:
+  - name: Eldritch Mind
+    desc: "Advantage on CON saving throws to maintain Concentration."
+  - name: Trace of Undeath
+    desc: "Resistance to Necrotic damage; necrotic damage from his attacks ignores Resistance (Arcane Necrosis)."
+  - name: Pact Magic
+    desc: "2 spell slots, both 3rd level, regained on a short or long rest."
+  - name: Form of Dread (4/Long Rest)
+    desc: "Bonus action, 1 min. Immune to Frightened; once/turn on a hit, force a DC 15 WIS save or Frightened until end of his next turn (Frightful Avatar); add a die of necrotic (Dreaded Necrosis)."
+actions:
+  - name: Eldritch Blast (cantrip)
+    desc: "Spell Attack +7, 120 ft., two beams, 1d10+4 Force each (Agonizing Blast). On hit may push the target up to 10 ft. (Repelling Blast)."
+  - name: Starry Wisp (cantrip)
+    desc: "Spell Attack +7, 60 ft., 2d8 Radiant; target glows (grants advantage / negates invisibility)."
+  - name: Vampiric Bite (3/Long Rest empower)
+    desc: "Unarmed Strike alt: 1d4+3 Piercing; then Drain (heal = damage) or Strengthen (bonus to next check/attack)."
+  - name: Hold Person (2nd)
+    desc: "WIS save DC 15, 60 ft., paralyze a humanoid (concentration)."
+  - name: Hunger of Hadar (3rd Pact)
+    desc: "DEX save DC 15, 150 ft., 20-ft. sphere of darkness; 2d6 cold + 2d6 acid zone (concentration)."
+  - name: Hypnotic Pattern (3rd Pact)
+    desc: "WIS save DC 15, 120 ft., 30-ft. cube, Charmed/incapacitated (concentration)."
+bonus_actions:
+  - name: Misty Step (2nd)
+    desc: "Teleport 30 ft."
+```
+
 *A dispossessed noble with fangs, a forged pedigree, and a debt habit — sarcasm for armour and an undead patron whispering at his back. He wants his stolen lands and title returned. In Barovia, that ambition is a leash the von Zarovich line knows exactly how to pull.*
 
 ---
@@ -104,58 +154,7 @@
 
 ---
 
-## Stat block (DM combat reference)
 > [!gmonly]
 > Condensed from the player's sheet for fast table reference — the player's PDF is authoritative.
-
-```statblock
-layout: Basic 5e Layout
-name: Lucian Radu (Dhampir Warlock 6, Undead)
-size: Medium
-type: humanoid
-alignment: chaotic good
-ac: 14
-hp: 30
-hit_dice: 6d8
-speed: 35 ft., climb 35 ft. (Spider Climb)
-stats: [8, 14, 16, 8, 10, 18]
-saves:
-  - wis: 3
-  - cha: 7
-skillsaves:
-  - deception: 7
-  - persuasion: 7
-  - sleight of hand: 5
-  - investigation: 2
-damage_resistances: "Necrotic"
-senses: "Darkvision 60 ft., passive Perception 10"
-languages: "Common, Draconic, Gnomish"
-cr: ""
-traits:
-  - name: Eldritch Mind
-    desc: "Advantage on CON saving throws to maintain Concentration."
-  - name: Trace of Undeath
-    desc: "Resistance to Necrotic damage; necrotic damage from his attacks ignores Resistance (Arcane Necrosis)."
-  - name: Pact Magic
-    desc: "2 spell slots, both 3rd level, regained on a short or long rest."
-  - name: Form of Dread (4/Long Rest)
-    desc: "Bonus action, 1 min. Immune to Frightened; once/turn on a hit, force a DC 15 WIS save or Frightened until end of his next turn (Frightful Avatar); add a die of necrotic (Dreaded Necrosis)."
-actions:
-  - name: Eldritch Blast (cantrip)
-    desc: "Spell Attack +7, 120 ft., two beams, 1d10+4 Force each (Agonizing Blast). On hit may push the target up to 10 ft. (Repelling Blast)."
-  - name: Starry Wisp (cantrip)
-    desc: "Spell Attack +7, 60 ft., 2d8 Radiant; target glows (grants advantage / negates invisibility)."
-  - name: Vampiric Bite (3/Long Rest empower)
-    desc: "Unarmed Strike alt: 1d4+3 Piercing; then Drain (heal = damage) or Strengthen (bonus to next check/attack)."
-  - name: Hold Person (2nd)
-    desc: "WIS save DC 15, 60 ft., paralyze a humanoid (concentration)."
-  - name: Hunger of Hadar (3rd Pact)
-    desc: "DEX save DC 15, 150 ft., 20-ft. sphere of darkness; 2d6 cold + 2d6 acid zone (concentration)."
-  - name: Hypnotic Pattern (3rd Pact)
-    desc: "WIS save DC 15, 120 ft., 30-ft. cube, Charmed/incapacitated (concentration)."
-bonus_actions:
-  - name: Misty Step (2nd)
-    desc: "Teleport 30 ft."
-```
 
 #dnd #ravenloft #pc #barovia

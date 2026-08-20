@@ -14,21 +14,6 @@
 > | **Role** | Pressure / boss / minion |
 > | **Source** | MM / custom |
 
-*One line: what it does at the table.*
-
-Medium undead · chaotic evil · CR 1
-
-## Notes
-
-Where it appears. What to telegraph. When to cut it if the fight runs long.
-
-> [!gmonly]
-> Tuning: add or drop HP, skip a recharge, or have it flee.
-
-## Combat
-
-**Combatants:** [[Monster Name]] · party
-
 ```statblock
 layout: Basic 5e Layout
 name: Monster Name
@@ -51,3 +36,12 @@ actions:
   - name: Claw
     desc: "+4 to hit, reach 5 ft. Hit: 4 (1d4+2) slashing."
 ```
+
+*One line: what it does at the table.*
+
+## Notes
+
+Where it appears. What to telegraph. When to cut it if the fight runs long.
+
+> [!gmonly]
+> Tuning: add or drop HP, skip a recharge, or have it flee.

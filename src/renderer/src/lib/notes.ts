@@ -187,6 +187,16 @@ export function isCombatHeading(heading: string): boolean {
   return /combat|⚔️|⚔|encounter/i.test(heading)
 }
 
+/** A roster line such as `**Combatants:** [[Wolf]] · party`, not a mention inside a callout. */
+export function combatantsRosterLine(markdown: string): string | null {
+  for (const line of markdown.replace(/\r/g, '').split('\n')) {
+    if (/^\s*>/.test(line)) continue
+    const match = /^\s*(?:\*\*)?Combatants:(?:\*\*)?\s*(.+)$/i.exec(line)
+    if (match) return match[1].trim()
+  }
+  return null
+}
+
 export interface NoteSection {
   heading: string
   level: number
@@ -238,7 +248,7 @@ export function splitCombatCardContent(markdown: string): { card: string; rest: 
       continue
     }
     if (!line.trim()) continue
-    if (/\*\*Combatants:\*\*/i.test(line) || /^Combatants:/i.test(line)) {
+    if (combatantsRosterLine(line)) {
       lastKeep = i
       continue
     }
@@ -364,7 +374,7 @@ export function parseNightEncounters(
 
   const encounters: NightEncounter[] = []
   for (const section of sections) {
-    const combatantsLine = /\*\*Combatants:\*\*\s*(.+)/i.exec(section.body)
+    const combatantsLine = combatantsRosterLine(section.body)
     const combatHeading = isCombatHeading(section.heading)
     if (!combatantsLine && !combatHeading) continue
 
@@ -378,8 +388,8 @@ export function parseNightEncounters(
 
     let includeParty = combatHeading
     if (combatantsLine) {
-      includeParty = /\bparty\b/i.test(combatantsLine[1])
-      for (const token of combatantsLine[1].split(/\s*[·|,;]\s*/)) {
+      includeParty = /\bparty\b/i.test(combatantsLine)
+      for (const token of combatantsLine.split(/\s*[·|,;]\s*/)) {
         if (/^party$/i.test(token.trim())) {
           includeParty = true
           continue
@@ -433,11 +443,10 @@ export function missingCombatantTokens(
   notePath: string,
   notes: CampaignNote[]
 ): string[] {
-  const combatantsLine =
-    /\*\*Combatants:\*\*\s*(.+)/i.exec(sectionMarkdown) ?? /^Combatants:\s*(.+)/im.exec(sectionMarkdown)
+  const combatantsLine = combatantsRosterLine(sectionMarkdown)
   if (!combatantsLine) return []
   const missing: string[] = []
-  for (const token of combatantsLine[1].split(/\s*[·|,;]\s*/)) {
+  for (const token of combatantsLine.split(/\s*[·|,;]\s*/)) {
     const raw = token.trim()
     if (!raw || /^party$/i.test(raw)) continue
     if (combatantFromQuery(raw, notePath, notes)) continue

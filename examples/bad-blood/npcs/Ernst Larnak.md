@@ -1,42 +1,5 @@
 # *Ernst Larnak*
 
-> [!warning]
-> **Cut from the arc — 19 July 2026.** Never introduced. Sheet kept as sequel material: if they return to Barovia, a smiling man who is always dry in the rain already knows their names. His fee survives as the purse in the coach (2,500 gp for a contract nobody signed).
-
-> [!infobox]+
-> ![[Ernst Larnak.webp]]
->
-> ### *The smiling man · Strahd's spy*
->
-> | | |
-> |---|---|
-> | **Aliases** | "A friend of order" |
-> | **Ancestry** | Human |
-> | **Role** | False patron *(cut)* |
-> | **Faction** | Secretly an agent of Strahd |
-> | **Location** | Village of Barovia |
-> | **Status** | Alive — off-stage |
-> | **CR** | 1 |
-
-*A charming local fixer who is secretly one of Strahd's spies. The horror of him is that he's pleasant.*
-
-## Look & voice
-
-- **Look** — Trim, well-kept; a practised smile that never reaches the eyes; somehow always dry in the rain. Wide-brimmed hat.
-- **Manner** — Impeccably polite. Never answers a direct question. Tips far too much.
-- **Quotes** — *"Dreadful weather for grave-robbing, isn't it? Oh — forgive me. Investigating."* · *"Two thousand five hundred gold. I do hope you'll be discreet."*
-
-> [!gmonly]
-> He works for **Strahd.** He never intends to pay — or pays in cold, marked coin. Will not fight; flees into the fog if pressed.
-
-## Notes
-
-Plot device, not a fight. Stats are only for the rare case of violence.
-
-## Combat
-
-**Combatants:** [[Ernst Larnak]] · party
-
 ```statblock
 layout: Basic 5e Layout
 name: Ernst Larnak
@@ -74,3 +37,37 @@ actions:
   - name: Hand Crossbow
     desc: "+4 to hit, range 30/120 ft. Hit: 5 (1d6+2) piercing."
 ```
+
+> [!warning]
+> **Cut from the arc — 19 July 2026.** Never introduced. Sheet kept as sequel material: if they return to Barovia, a smiling man who is always dry in the rain already knows their names. His fee survives as the purse in the coach (2,500 gp for a contract nobody signed).
+
+> [!infobox]+
+> ![[Ernst Larnak.webp]]
+>
+> ### *The smiling man · Strahd's spy*
+>
+> | | |
+> |---|---|
+> | **Aliases** | "A friend of order" |
+> | **Ancestry** | Human |
+> | **Role** | False patron *(cut)* |
+> | **Faction** | Secretly an agent of Strahd |
+> | **Location** | Village of Barovia |
+> | **Status** | Alive — off-stage |
+> | **CR** | 1 |
+
+*A charming local fixer who is secretly one of Strahd's spies. The horror of him is that he's pleasant.*
+
+## Look & voice
+
+- **Look** — Trim, well-kept; a practised smile that never reaches the eyes; somehow always dry in the rain. Wide-brimmed hat.
+- **Manner** — Impeccably polite. Never answers a direct question. Tips far too much.
+- **Quotes** — *"Dreadful weather for grave-robbing, isn't it? Oh — forgive me. Investigating."* · *"Two thousand five hundred gold. I do hope you'll be discreet."*
+
+> [!gmonly]
+> He works for **Strahd.** He never intends to pay — or pays in cold, marked coin. Will not fight; flees into the fog if pressed.
+
+## Notes
+
+Plot device, not a fight. Stats are only for the rare case of violence.
+

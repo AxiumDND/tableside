@@ -3,19 +3,6 @@
 > [!infobox]+
 > ![[Minotaur Skeleton.webp]]
 >
-*Tavern backup. Hammers wreck it.*
-
-Large undead · lawful evil · CR 2
-
-| | |
-|---|---|
-| **CR** | 2 |
-| **Role** | Sorvina's muscle |
-| **Source** | MM 2024 |
-
-## Notes
-
-Optional Blood o' the Vine fight. Vulnerable to bludgeoning. Open with Gore after a 20-ft charge (extra damage and Prone), then Slam.
 
 ```statblock
 layout: Basic 5e Layout
@@ -42,3 +29,18 @@ actions:
   - name: Slam
     desc: "+6 to hit, reach 5 ft. Hit: 15 (2d10+4) bludgeoning."
 ```
+
+*Tavern backup. Hammers wreck it.*
+
+Large undead · lawful evil · CR 2
+
+| | |
+|---|---|
+| **CR** | 2 |
+| **Role** | Sorvina's muscle |
+| **Source** | MM 2024 |
+
+## Notes
+
+Optional Blood o' the Vine fight. Vulnerable to bludgeoning. Open with Gore after a 20-ft charge (extra damage and Prone), then Slam.
+

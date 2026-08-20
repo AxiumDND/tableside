@@ -3,19 +3,6 @@
 > [!infobox]+
 > ![[Vampire Spawn.webp]]
 >
-*The Wave 2 clock. One on Sef, one in the gallery.*
-
-Medium undead · neutral evil · CR 5
-
-| | |
-|---|---|
-| **CR** | 5 |
-| **Role** | Split the party |
-| **Source** | MM 2024 |
-
-## Notes
-
-No Regeneration in 2024. Sunlight Hypersensitivity is 20 radiant if it starts its turn in Dawnlight, plus Disadvantage. A public church is not a residence — Forbiddance does not stop the siege. Spider Climb: they go up the walls after elevated PCs. Dawnlight is 1/day — if they fire it here, Wave 3 comes in the dark.
 
 ```statblock
 layout: Basic 5e Layout
@@ -54,3 +41,18 @@ bonus_actions:
   - name: Deathless Agility
     desc: "Takes the Dash or Disengage action."
 ```
+
+*The Wave 2 clock. One on Sef, one in the gallery.*
+
+Medium undead · neutral evil · CR 5
+
+| | |
+|---|---|
+| **CR** | 5 |
+| **Role** | Split the party |
+| **Source** | MM 2024 |
+
+## Notes
+
+No Regeneration in 2024. Sunlight Hypersensitivity is 20 radiant if it starts its turn in Dawnlight, plus Disadvantage. A public church is not a residence — Forbiddance does not stop the siege. Spider Climb: they go up the walls after elevated PCs. Dawnlight is 1/day — if they fire it here, Wave 3 comes in the dark.
+

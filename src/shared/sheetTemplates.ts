@@ -23,31 +23,6 @@ const PLAYER = `<!--
 > | **AC** | 18 |
 > | **HP** | 44 |
 
-*Two sentences the DM can read at a glance — who they are and what they want tonight.*
-
-## At the table
-
-- **Saves** — 
-- **Skills** — 
-- **Signature tricks** — 
-
-> [!gmonly]
-> How this kit bends the session. Secret hooks. What to flag if they forget a feature.
-
-## Look & voice
-
-- **Look** — 
-- **Manner** — 
-- **Quotes** — *"…"*
-
-## Notes
-
-Party ties, debts, and what they care about.
-
-## Combat
-
-**Combatants:** [[Character Name]] · party
-
 \`\`\`statblock
 layout: Basic 5e Layout
 name: Character Name
@@ -71,6 +46,27 @@ actions:
   - name: Longsword
     desc: "+6 to hit, reach 5 ft. Hit: 8 (1d8+4) slashing."
 \`\`\`
+
+*Two sentences the DM can read at a glance — who they are and what they want tonight.*
+
+## At the table
+
+- **Saves** — 
+- **Skills** — 
+- **Signature tricks** — 
+
+> [!gmonly]
+> How this kit bends the session. Secret hooks. What to flag if they forget a feature.
+
+## Look & voice
+
+- **Look** — 
+- **Manner** — 
+- **Quotes** — *"…"*
+
+## Notes
+
+Party ties, debts, and what they care about.
 `
 
 const NPC = `<!--
@@ -93,28 +89,6 @@ const NPC = `<!--
 > | **Status** | Alive |
 > | **CR** | 2 |
 
-*Two sentences: what the party sees, and what you need them for.*
-
-## Look & voice
-
-- **Look** — 
-- **Manner** — 
-- **Quotes** — *"…"*
-
-> [!readaloud]
-> A line to speak when they first appear.
-
-> [!gmonly]
-> The truth. What they want. What they will not say.
-
-## Notes
-
-How they move the night. What happens if the party helps, threatens, or ignores them.
-
-## Combat
-
-**Combatants:** [[NPC Name]] · party
-
 \`\`\`statblock
 layout: Basic 5e Layout
 name: NPC Name
@@ -133,6 +107,24 @@ actions:
   - name: Shortsword
     desc: "+4 to hit, reach 5 ft. Hit: 5 (1d6+2) piercing."
 \`\`\`
+
+*Two sentences: what the party sees, and what you need them for.*
+
+## Look & voice
+
+- **Look** — 
+- **Manner** — 
+- **Quotes** — *"…"*
+
+> [!readaloud]
+> A line to speak when they first appear.
+
+> [!gmonly]
+> The truth. What they want. What they will not say.
+
+## Notes
+
+How they move the night. What happens if the party helps, threatens, or ignores them.
 `
 
 const MONSTER = `<!--
@@ -150,21 +142,6 @@ const MONSTER = `<!--
 > | **CR** | 1 |
 > | **Role** | Pressure / boss / minion |
 > | **Source** | MM / custom |
-
-*One line: what it does at the table.*
-
-Medium undead · chaotic evil · CR 1
-
-## Notes
-
-Where it appears. What to telegraph. When to cut it if the fight runs long.
-
-> [!gmonly]
-> Tuning: add or drop HP, skip a recharge, or have it flee.
-
-## Combat
-
-**Combatants:** [[Monster Name]] · party
 
 \`\`\`statblock
 layout: Basic 5e Layout
@@ -188,19 +165,35 @@ actions:
   - name: Claw
     desc: "+4 to hit, reach 5 ft. Hit: 4 (1d4+2) slashing."
 \`\`\`
+
+*One line: what it does at the table.*
+
+## Notes
+
+Where it appears. What to telegraph. When to cut it if the fight runs long.
+
+> [!gmonly]
+> Tuning: add or drop HP, skip a recharge, or have it flee.
 `
 
 const SPELL = `<!--
   Spell note template. Right-click Spells/ → New spell… or save from Lookup.
-  Field lines mirror WOTC/PHB dump format (see WOTC/README.md).
+  School art: Spells/Art/, or Load art on the sheet. Lookup fills the infobox from the SRD.
+  See docs/CAMPAIGN.md and docs/MARKDOWN.md.
 -->
 # Spell Name
 
-Level 1 Evocation (Wizard)
-Casting Time: Action
-Range: 60 feet
-Components: V, S
-Duration: Instantaneous
+> [!infobox]+
+> ![[Evocation.webp]]
+>
+> ### *Level 1 Evocation (Wizard)*
+>
+> | | |
+> |---|---|
+> | **Casting Time** | Action |
+> | **Range** | 60 feet |
+> | **Components** | V, S |
+> | **Duration** | Instantaneous |
 
 What the spell does at the table.
 
@@ -210,17 +203,24 @@ Using a Higher-Level Spell Slot.
 const GEAR = `<!--
   Gear / magic item template. Right-click Gear/Weapons, Equipment, or Magic Items → New gear…
   or save from Lookup (weapons, armor, gear, and magic items go in those subfolders).
-  Use Damage/Properties for weapons, Rarity/Attunement for magic items (WOTC/README.md).
+  Art: that folder’s Art/, or Load art on the sheet. Lookup fills Weight/Cost from the SRD.
+  See docs/CAMPAIGN.md and docs/MARKDOWN.md.
 -->
 # Item Name
 
-Adventuring Gear
-Rarity: 
-Attunement: 
-Damage: 
-Properties: 
-Weight: 
-Cost: 
+> [!infobox]+
+> ![[Item Name.png]]
+>
+> ### *Adventuring Gear*
+>
+> | | |
+> |---|---|
+> | **Weight** | |
+> | **Cost** | |
+> | **Rarity** | |
+> | **Attunement** | |
+> | **Damage** | |
+> | **Properties** | |
 
 What it does, or any house-rule notes.
 `
@@ -235,11 +235,6 @@ const NIGHTSHEET = `<!--
 # Session Name — Game Night Sheet
 
 *Behind the screen. Prose in [[Session Name]]. Click [[links]] to open sheets. Click art, then **Show to players**.*
-
-> [!gmonly] What this page does
-> - **Add to initiative** on a ⚔️ / Combat heading loads the **Combatants:** line (\`party\` = every PC, \`×2\` duplicates a monster).
-> - Missing \`[[links]]\` warn on the card. NPCs and monsters at initiative 0 are rolled.
-> - Keep this page short. Delete unused steps. Run-guide prose stays in [[Session Name]].
 
 > [!abstract] Tonight at a glance
 > Strong start → scenes → **the fight** → fallout.

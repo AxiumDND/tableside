@@ -3,19 +3,6 @@
 > [!infobox]+
 > ![[Wereraven — Keeper.webp]]
 >
-*Ally, not a damage dealer. Shift them when the party is going under.*
-
-Medium monstrosity · lawful good · CR 2
-
-| | |
-|---|---|
-| **CR** | 2 |
-| **Role** | Tide-turner |
-| **Source** | MM |
-
-## Notes
-
-Each round: down a wounded ghoul, Help a PC, or drag a civilian clear. Urwin shifts first (give him 35 HP and real aggression). Sef only if desperate. Hold the reveal until a PC is down, villagers are about to be reached, or a barricade is breaking — see Session 1. If it never fires, they see it quietly at dawn.
 
 ```statblock
 layout: Basic 5e Layout
@@ -48,3 +35,18 @@ actions:
   - name: Shortsword
     desc: "+5 to hit, reach 5 ft. Hit: 6 (1d6+3) piercing. Humanoid or hybrid only."
 ```
+
+*Ally, not a damage dealer. Shift them when the party is going under.*
+
+Medium monstrosity · lawful good · CR 2
+
+| | |
+|---|---|
+| **CR** | 2 |
+| **Role** | Tide-turner |
+| **Source** | MM |
+
+## Notes
+
+Each round: down a wounded ghoul, Help a PC, or drag a civilian clear. Urwin shifts first (give him 35 HP and real aggression). Sef only if desperate. Hold the reveal until a PC is down, villagers are about to be reached, or a barricade is breaking — see Session 1. If it never fires, they see it quietly at dawn.
+

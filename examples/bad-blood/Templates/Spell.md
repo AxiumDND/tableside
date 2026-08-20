@@ -1,14 +1,20 @@
 <!--
   Spell note template. Right-click Spells/ → New spell… or save from Lookup.
-  Field lines mirror WOTC/PHB dump format (see WOTC/README.md).
+  School art: Spells/Art/, or Load art on the sheet. Lookup fills the infobox from the SRD.
 -->
 # Spell Name
 
-Level 1 Evocation (Wizard)
-Casting Time: Action
-Range: 60 feet
-Components: V, S
-Duration: Instantaneous
+> [!infobox]+
+> ![[Evocation.webp]]
+>
+> ### *Level 1 Evocation (Wizard)*
+>
+> | | |
+> |---|---|
+> | **Casting Time** | Action |
+> | **Range** | 60 feet |
+> | **Components** | V, S |
+> | **Duration** | Instantaneous |
 
 What the spell does at the table.
 

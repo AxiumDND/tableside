@@ -3,19 +3,6 @@
 > [!infobox]+
 > ![[Swarm of Infesting Insects.webp]]
 >
-*Optional Session 2 pair with the Nosferatu. Flavour if they run.*
-
-Medium swarm of Tiny beasts · unaligned · CR 2
-
-| | |
-|---|---|
-| **CR** | 2 |
-| **Role** | Coffin escort |
-| **Source** | RtHW |
-
-## Notes
-
-Fights to the death beside the Vampire Nosferatu. If the party grabs the Gem of Brightness and retreats, keep pursuit as flavour — not a death-trap.
 
 ```statblock
 layout: Basic 5e Layout
@@ -40,3 +27,18 @@ actions:
   - name: Infestation
     desc: "+4 to hit, reach 5 ft. Hit: 12 (4d4+2) poison, or 7 (2d4+2) if the swarm is Bloodied, and the target is Poisoned. After 1 hour still Poisoned: DC 11 Con save. Failure: roll 1d6 — 1–2 Blinded; 3–4 HP maximum decreases by 5 (1d10); 5–6 one Exhaustion until Poisoned ends. Success: Poisoned ends."
 ```
+
+*Optional Session 2 pair with the Nosferatu. Flavour if they run.*
+
+Medium swarm of Tiny beasts · unaligned · CR 2
+
+| | |
+|---|---|
+| **CR** | 2 |
+| **Role** | Coffin escort |
+| **Source** | RtHW |
+
+## Notes
+
+Fights to the death beside the Vampire Nosferatu. If the party grabs the Gem of Brightness and retreats, keep pursuit as flavour — not a death-trap.
+

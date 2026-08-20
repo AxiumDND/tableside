@@ -15,33 +15,6 @@
 > | **Status** | Ended by radiant, or released by the Unchaining |
 > | **CR** | 8 |
 
-*Tattered shrouds over dead plate, a slab of runed steel for a sword, one purpose: hunt whoever disturbs the tombs. It does not hurry. It does not stop. Steel will not put it down.*
-
-## Look & voice
-
-- **Look** — Tall, broad, faceless under the cowl. Colossal blunt-tipped Rune-Blade; etched characters glow sullen red as it closes.
-- **Manner** — Silent. The runes scream so it doesn't have to. It walks toward its quarry and swings.
-- **Tell** — You hear the runes before you see it.
-
-> [!gmonly]
-> **What he is.** Founder-champion of the old jailer-branch. Volunteered to be sworn past death; soul in the blade, body on the bier in Room L. Lyssa's break-in raised him. With the family's names chiselled off the walls, everyone is a trespasser.
->
-> **Is he hers?** One corrupted thread of the oath: rouse, route, point at noise — never hold, never call off. Her sanctuary sits behind the seal-line he cannot cross. When the party end him on her doorstep, her delight is real.
->
-> **Why Lucian.** The blood door announced kin. He is punishing the last true heir for coming home. Vengeful Tracker always knows where Lucian is. The Signet makes the runes flare.
->
-> **How he ends.** Radiant — runes gutter, Lykta feels the release, Level 8 on the spot. Never ended? The Unchaining releases him anyway. He will not cross the great door.
->
-> **The fight** is [[Session 3]] Movement 2 — lower cavern, Legendaries from round 1. The S2 rotunda staging is superseded.
-
-## Notes
-
-Vulnerability to Radiant is load-bearing — do not drop it. Telegraph: blades ring off; where the light touches, it flinches.
-
-## Combat
-
-**Combatants:** [[The Harbinger of the Rune-Blade]] · party
-
 ```statblock
 layout: Basic 5e Layout
 name: The Harbinger of the Rune-Blade
@@ -89,5 +62,26 @@ legendary_actions:
     desc: "The Harbinger makes one Rune-Blade attack."
 ```
 
+*Tattered shrouds over dead plate, a slab of runed steel for a sword, one purpose: hunt whoever disturbs the tombs. It does not hurry. It does not stop. Steel will not put it down.*
+
+## Look & voice
+
+- **Look** — Tall, broad, faceless under the cowl. Colossal blunt-tipped Rune-Blade; etched characters glow sullen red as it closes.
+- **Manner** — Silent. The runes scream so it doesn't have to. It walks toward its quarry and swings.
+- **Tell** — You hear the runes before you see it.
+
 > [!gmonly]
-> **Legendary 2/round from round 1.** Drop them the moment two PCs are down. Radiant vulnerability is on the block — double it.
+> **What he is.** Founder-champion of the old jailer-branch. Volunteered to be sworn past death; soul in the blade, body on the bier in Room L. Lyssa's break-in raised him. With the family's names chiselled off the walls, everyone is a trespasser.
+>
+> **Is he hers?** One corrupted thread of the oath: rouse, route, point at noise — never hold, never call off. Her sanctuary sits behind the seal-line he cannot cross. When the party end him on her doorstep, her delight is real.
+>
+> **Why Lucian.** The blood door announced kin. He is punishing the last true heir for coming home. Vengeful Tracker always knows where Lucian is. The Signet makes the runes flare.
+>
+> **How he ends.** Radiant — runes gutter, Lykta feels the release, Level 8 on the spot. Never ended? The Unchaining releases him anyway. He will not cross the great door.
+>
+> **The fight** is [[Session 3]] Movement 2 — lower cavern, Legendaries from round 1. The S2 rotunda staging is superseded.
+
+## Notes
+
+Vulnerability to Radiant is load-bearing — do not drop it. Telegraph: blades ring off; where the light touches, it flinches.
+

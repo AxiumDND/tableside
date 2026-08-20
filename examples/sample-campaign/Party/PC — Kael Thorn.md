@@ -1,13 +1,5 @@
 # Kael Thorn
 
-*Human fighter. Greatsword, second wind already spent.*
-
-| | |
-|---|---|
-| **Class** | Fighter 5 |
-| **AC** | 16 |
-| **HP** | 45 |
-
 ```statblock
 layout: Basic 5e Layout
 name: Kael Thorn
@@ -21,3 +13,13 @@ stats: [16, 12, 14, 10, 12, 10]
 senses: "passive Perception 14"
 languages: "Common"
 ```
+
+*Human fighter. Greatsword, second wind already spent.*
+
+| | |
+|---|---|
+| **Class** | Fighter 5 |
+| **AC** | 16 |
+| **HP** | 45 |
+
+

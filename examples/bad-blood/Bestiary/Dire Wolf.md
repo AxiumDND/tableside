@@ -3,19 +3,6 @@
 > [!infobox]+
 > ![[Dire Wolf.webp]]
 >
-*Doorway pressure. Pack Tactics and a knockdown bite.*
-
-Large beast · unaligned · CR 1
-
-| | |
-|---|---|
-| **CR** | 1 |
-| **Role** | Doorway knockdown |
-| **Source** | MM 2024 |
-
-## Notes
-
-Two come through the doors with the ghouls. Too big for the gallery stairs — they stay on the nave floor.
 
 ```statblock
 layout: Basic 5e Layout
@@ -41,3 +28,18 @@ actions:
   - name: Bite
     desc: "+5 to hit, reach 5 ft. Hit: 8 (1d10+3) piercing. If the target is Large or smaller, it has the Prone condition."
 ```
+
+*Doorway pressure. Pack Tactics and a knockdown bite.*
+
+Large beast · unaligned · CR 1
+
+| | |
+|---|---|
+| **CR** | 1 |
+| **Role** | Doorway knockdown |
+| **Source** | MM 2024 |
+
+## Notes
+
+Two come through the doors with the ghouls. Too big for the gallery stairs — they stay on the nave floor.
+

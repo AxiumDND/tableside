@@ -91,18 +91,19 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
           <Ol
             items={[
               <>
-                <Action>Sample</Action> loads Bad Blood (safe to edit). <Action>Open campaign</Action> picks any
-                folder. <Action>New campaign</Action> scaffolds Party, NPCs, Bestiary, Maps, and the rest in an empty
-                folder.
+                <Action>Open campaign</Action> picks any folder. <Action>New campaign</Action> scaffolds Party, NPCs,
+                Bestiary, Maps, and the rest in an empty folder. The empty notes pane can still load the Bad Blood
+                sample.
               </>,
               <>
-                Two windows open: this DM console, and a black <strong>player</strong> window. With a second monitor,
-                pick it in <Action>Player display…</Action> so the TV faces the table.
+                Two windows open: this DM console, and a fullscreen black <strong>player</strong> window. Click the{' '}
+                <Action>Players see</Action> preview and pick the TV. Plug in a display later and choose it there —
+                the player view stays fullscreen.
               </>,
               <>
                 Click a map or portrait in a note so it is selected, then <Action>Show to players</Action> (or{' '}
-                <Code>Alt+S</Code>). It fades in over about five seconds. <Action>Clear</Action> / <Code>Alt+X</Code>{' '}
-                blanks the player screen.
+                <Code>Alt+S</Code>). It fades in over about five seconds. <Action>Clear</Action> on the{' '}
+                <Action>Players see</Action> preview (or <Code>Alt+X</Code>) blanks the player screen.
               </>,
               <>
                 Open <Action>Combat</Action> or <Action>Lookup</Action> from the header when you need them. Dice live
@@ -120,7 +121,7 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
           <Sub>This console</Sub>
           <Ul
             items={[
-              <>Header: campaign name, Combat / Lookup / Help, New / Open / Sample, player display, Clear.</>,
+              <>Header: campaign name, New / Open, Lookup, Combat, Help.</>,
               <>
                 Left: <strong>Players see</strong> preview, file tree, dice tray. Hide the preview if you need height.
               </>,
@@ -193,8 +194,8 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
                 <Code>[[Note Name]]</Code> opens another note. Images in the note stay clickable for Show to players.
               </>,
               <>
-                Party / NPC / Bestiary sheets with a <Code>statblock</Code> fence open in sheet view with{' '}
-                <Action>Add to combat</Action>.
+                Party / NPC / Bestiary sheets with a <Code>statblock</Code> fence open in sheet view: portrait and
+                rollable block first, notes underneath. <Action>Add to combat</Action> sits on the block.
               </>,
               <>
                 Map notes (<Code>```map</Code> fence) show <Action>Pan</Action> / <Action>Pin</Action> /{' '}
@@ -204,7 +205,8 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
             ]}
           />
           <p className="text-[12px] text-muted">
-            Back: note header ←, <Code>Alt+←</Code>, or mouse back. Edits write straight to the campaign folder.
+            Back: note header ←, <Code>Alt+←</Code>, or mouse back. Next: note header →, <Code>Alt+→</Code>, or mouse
+            forward — next file in the same Files folder. Edits write straight to the campaign folder.
           </p>
         </Section>
 
@@ -335,6 +337,9 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
             items={[
               <>
                 <Code>Alt+←</Code> or mouse back — previous note
+              </>,
+              <>
+                <Code>Alt+→</Code> or mouse forward — next file in the same folder
               </>,
               <>
                 <Code>Alt+S</Code> — Show selected image to players
