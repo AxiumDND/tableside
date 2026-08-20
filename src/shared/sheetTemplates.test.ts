@@ -28,6 +28,35 @@ describe('game night sheet names', () => {
   })
 })
 
+describe('creature sheet templates', () => {
+  it('puts the player statblock above notes', () => {
+    const body = fillTemplate(FALLBACK_TEMPLATES.player, 'player', 'Mira Vess')
+    expect(body.indexOf('```statblock')).toBeLessThan(body.indexOf('## At the table'))
+    expect(body).toContain('![[Mira Vess.png]]')
+  })
+
+  it('puts the NPC and monster statblocks above notes', () => {
+    const npc = fillTemplate(FALLBACK_TEMPLATES.npc, 'npc', 'Hale')
+    const monster = fillTemplate(FALLBACK_TEMPLATES.monster, 'monster', 'Ghoul')
+    expect(npc.indexOf('```statblock')).toBeLessThan(npc.indexOf('## Notes'))
+    expect(monster.indexOf('```statblock')).toBeLessThan(monster.indexOf('## Notes'))
+  })
+})
+
+describe('item sheet templates', () => {
+  it('puts gear and spell stats in an infobox table', () => {
+    const gear = fillTemplate(FALLBACK_TEMPLATES.gear, 'gear', 'Acid')
+    expect(gear).toContain('[!infobox]')
+    expect(gear).toContain('![[Acid.png]]')
+    expect(gear).toContain('| **Weight** |')
+    expect(gear).toContain('| **Cost** |')
+    const spell = fillTemplate(FALLBACK_TEMPLATES.spell, 'spell', 'Fireball')
+    expect(spell).toContain('[!infobox]')
+    expect(spell).toContain('| **Casting Time** |')
+    expect(spell).toContain('| **Range** |')
+  })
+})
+
 describe('game night sheet template', () => {
   it('fills the session name, Party links, and leaves monster placeholders', () => {
     const body = fillTemplate(FALLBACK_TEMPLATES.nightsheet, 'nightsheet', 'Session 4', {

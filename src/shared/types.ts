@@ -113,6 +113,7 @@ export interface DisplayInfo {
   label: string
   bounds: { x: number; y: number; width: number; height: number }
   primary: boolean
+  dm?: boolean
 }
 
 export type CombatantCondition = 'bloodied' | 'unconscious' | 'dead'

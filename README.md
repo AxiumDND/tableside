@@ -4,7 +4,7 @@ A local Windows app for running **in-person** 5e-compatible games. Your laptop i
 
 This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table.
 
-Compatible with fifth edition. Rules lookup uses the **System Reference Document 5.2** (2024 rules), already bundled. Current release: **1.1.10**.
+Compatible with fifth edition. Rules lookup uses the **System Reference Document 5.2** (2024 rules), already bundled. Current release: **1.1.15**.
 
 ## Features
 
@@ -40,7 +40,7 @@ Click **Sample** to load **Bad Blood**, the included Barovia three-shot. Tablesi
 
 ### Install on a PC (Windows)
 
-1. Run `npm run dist` (or download `Tableside-Setup-1.1.10.exe` from a GitHub Release).
+1. Run `npm run dist` (or download `Tableside-Setup-1.1.15.exe` from a GitHub Release).
 2. Double-click the installer. It is a per-user install: Start Menu + desktop shortcuts, no admin required. You can pick the folder.
 3. Open **Tableside** from the Start Menu. First launch copies settings and WOTC files from an older `%APPDATA%\table-dm` folder if you already had one.
 
@@ -54,7 +54,7 @@ Uninstall from Windows Settings; campaign folders on disk and `%APPDATA%\Tablesi
 npm run dist
 ```
 
-Writes `dist/Tableside-Setup-1.1.10.exe`. To attach that file to a GitHub Release, tag and push: `git tag v1.1.10 && git push origin v1.1.10`.
+Writes `dist/Tableside-Setup-1.1.15.exe`. To attach that file to a GitHub Release, tag and push: `git tag v1.1.15 && git push origin v1.1.15`.
 
 `npm run fetch-srd` is only needed if you want to refresh the bundled SRD snapshot from the [Open5e API](https://api.open5e.com/) (`srd-2024`).
 

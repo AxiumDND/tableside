@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { pathHasFolder } from '../../../shared/campaignLayout'
 import type { CampaignInfo, Character, CreateNoteMapImage, PlayerMapView } from '../../../shared/types'
 import {
   imageTitle,
@@ -33,6 +34,7 @@ import GettingStarted from './GettingStarted'
 import GmOnly from './GmOnly'
 import MapView from './MapView'
 import ReadAloud from './ReadAloud'
+import ItemSheet from './ItemSheet'
 import NpcSheet from './NpcSheet'
 import { CharacterCard } from './StatBlock'
 import type { FileKind } from './CampaignFiles'
@@ -80,6 +82,8 @@ export default function SessionNotes({
   onOpenNote,
   onBack,
   backLabel,
+  onNext,
+  nextLabel,
   onAddNpcToCombat,
   onAddEncounter,
   onNewCampaign,
@@ -102,6 +106,8 @@ export default function SessionNotes({
   onOpenNote?: (path: string) => void
   onBack?: () => void
   backLabel?: string
+  onNext?: () => void
+  nextLabel?: string
   onAddNpcToCombat?: (block: ParsedStatblock, notePath: string) => void
   onAddEncounter?: (items: EncounterAddItem[]) => void
   onNewCampaign?: () => void
@@ -140,6 +146,9 @@ export default function SessionNotes({
     return null
   }, [kind, markdown, path])
   const npcMode = Boolean(parsedNpc && kind === 'note' && !editing && isNpcSheet(markdown, path))
+  const itemMode =
+    kind === 'note' && Boolean(path) && !editing && (pathHasFolder(path, 'gear') || pathHasFolder(path, 'spells'))
+  const sheetChrome = npcMode || itemMode
   const mapMode = kind === 'note' && !editing && isMapNote(markdown)
   const mapImage = useMemo(
     () => (kind === 'note' && isMapNote(markdown) ? mapImagePath(markdown, path, images) : null),
@@ -395,6 +404,7 @@ export default function SessionNotes({
         )
       }
       if (part.kind === 'gmonly') {
+        if (/^what this page does$/i.test(part.title ?? '')) return null
         return (
           <GmOnly key={key} title={part.title}>
             <Markdown remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform} components={markdownComponents}>
@@ -470,13 +480,29 @@ export default function SessionNotes({
                 ← Back
               </button>
             ) : null}
-            <h2 className="min-w-0 truncate font-display text-lg text-amber">
-              {path ? imageTitle(path).replace(/^PC\s+[—–-]\s+/i, '') : 'Notes'}
-              {dirty ? <span className="ml-2 text-xs font-sans text-amber-dim">unsaved</span> : null}
-            </h2>
+            {onNext ? (
+              <button
+                type="button"
+                title={nextLabel ? `Next: ${nextLabel}` : 'Next'}
+                onClick={onNext}
+                className="shrink-0 rounded border border-line px-2 py-1 text-xs hover:border-amber"
+              >
+                Next →
+              </button>
+            ) : null}
+            {sheetChrome ? (
+              path ? (
+                <span className="min-w-0 truncate text-[11px] text-muted">{path.split(/[\\/]/)[0]}</span>
+              ) : null
+            ) : (
+              <h2 className="min-w-0 truncate font-display text-lg text-amber">
+                {path ? imageTitle(path).replace(/^PC\s+[—–-]\s+/i, '') : 'Notes'}
+                {dirty ? <span className="ml-2 text-xs font-sans text-amber-dim">unsaved</span> : null}
+              </h2>
+            )}
           </div>
           <div className="flex items-center gap-2">
-            {kind === 'note' && path && headings.length > 0 && !editing && !npcMode && !mapMode ? (
+            {kind === 'note' && path && headings.length > 0 && !editing && !sheetChrome && !mapMode ? (
               <button
                 type="button"
                 onClick={() => setShowLinks((open) => !open)}
@@ -528,10 +554,10 @@ export default function SessionNotes({
             ) : null}
           </div>
         </div>
-        {path ? <div className="truncate text-[11px] text-muted">{path}</div> : null}
+        {path && !sheetChrome ? <div className="truncate text-[11px] text-muted">{path}</div> : null}
       </header>
 
-      {kind === 'note' && headings.length > 0 && !editing && !npcMode && !mapMode && showLinks ? (
+      {kind === 'note' && headings.length > 0 && !editing && !sheetChrome && !mapMode && showLinks ? (
         <nav className="max-h-28 overflow-auto border-b border-line px-3 py-2 text-xs">
           {headings.map((h) => (
             <button
@@ -631,7 +657,29 @@ export default function SessionNotes({
             block={parsedNpc.block}
             onSelectImage={onSelectImage}
             onAddToCombat={onAddNpcToCombat ? () => onAddNpcToCombat(parsedNpc.block, path) : undefined}
-            onEdit={() => setEditing(true)}
+            onSetPortrait={async (image: CreateNoteMapImage) => {
+              const result = await window.tabledm.setNotePortrait(path, image)
+              if (!result) return
+              setMarkdown(result.markdown)
+              setOriginal(result.markdown)
+              markdownRef.current = result.markdown
+              originalRef.current = result.markdown
+              onCampaignChange?.(result.campaign)
+            }}
+            renderNotes={(body) =>
+              renderDocument(
+                linkWikiNotes(prepareNoteMarkdown(body, path, images, { injectPortrait: false }), path, noteIndex),
+                'sheet'
+              )
+            }
+          />
+        ) : itemMode ? (
+          <ItemSheet
+            path={path}
+            markdown={markdown}
+            images={images}
+            selectedImage={selectedImage}
+            onSelectImage={onSelectImage}
             onSetPortrait={async (image: CreateNoteMapImage) => {
               const result = await window.tabledm.setNotePortrait(path, image)
               if (!result) return

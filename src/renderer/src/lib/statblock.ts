@@ -356,27 +356,26 @@ export function parsedToBestiaryMarkdown(block: ParsedStatblock): string {
 
   return `# ${name}
 
-*SRD 5.2 monster. Add notes for this table.*
-
-${typeLine}
-
-| | |
-|---|---|
-| **CR** | ${cr} |
-| **Role** |  |
-| **Source** | SRD 5.2 |
-
-## Notes
-
-Add where it appears and how to run it.
-
-## Combat
-
-**Combatants:** [[${name}]] · party
+> [!infobox]+
+> ![[${name}.webp]]
+>
+> | | |
+> |---|---|
+> | **CR** | ${cr} |
+> | **Role** |  |
+> | **Source** | SRD 5.2 |
 
 \`\`\`statblock
 ${yaml.filter(Boolean).join('\n')}
 \`\`\`
+
+*SRD 5.2 monster. Add notes for this table.*
+
+${typeLine}
+
+## Notes
+
+Add where it appears and how to run it.
 `
 }
 

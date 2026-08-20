@@ -8,8 +8,10 @@ import {
   campaignTreeGroup,
   artFolderRelativePath,
   isArtFolderName,
-  isGearFolderName
+  isGearFolderName,
+  adjacentCampaignFile
 } from './campaignLayout'
+import type { CampaignTreeNode } from './types'
 
 describe('gear folders', () => {
   it('treats a root Equipment or Magic Items folder as Gear', () => {
@@ -79,5 +81,36 @@ describe('Art folders', () => {
       )
       .map((node) => node.name)
     expect(order).toEqual(['NPCs', 'Ghoul.md', 'Art'])
+  })
+})
+
+describe('adjacentCampaignFile', () => {
+  const tree: CampaignTreeNode[] = [
+    {
+      name: 'Bestiary',
+      relativePath: 'Bestiary',
+      type: 'dir',
+      children: [
+        {
+          name: 'Art',
+          relativePath: 'Bestiary/Art',
+          type: 'dir',
+          children: [
+            { name: 'Dire Wolf.webp', relativePath: 'Bestiary/Art/Dire Wolf.webp', type: 'file', ext: '.webp' }
+          ]
+        },
+        { name: 'Dire Wolf.md', relativePath: 'Bestiary/Dire Wolf.md', type: 'file', ext: '.md' },
+        { name: 'Ghoul.md', relativePath: 'Bestiary/Ghoul.md', type: 'file', ext: '.md' }
+      ]
+    }
+  ]
+
+  it('moves to the next file in the same folder', () => {
+    expect(adjacentCampaignFile(tree, 'Bestiary/Dire Wolf.md', 1)?.relativePath).toBe('Bestiary/Ghoul.md')
+  })
+
+  it('does not walk into Art or wrap past the last file', () => {
+    expect(adjacentCampaignFile(tree, 'Bestiary/Ghoul.md', 1)).toBeNull()
+    expect(adjacentCampaignFile(tree, 'Bestiary/Dire Wolf.md', -1)).toBeNull()
   })
 })

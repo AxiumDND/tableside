@@ -29,6 +29,11 @@ const api = {
   },
   placePlayerOnDisplay: (displayId: number): Promise<DisplayInfo[]> =>
     ipcRenderer.invoke('player:place-on-display', displayId),
+  onDisplaysChanged: (callback: (displays: DisplayInfo[]) => void) => {
+    const listener = (_event: unknown, displays: DisplayInfo[]) => callback(displays)
+    ipcRenderer.on('app:displays-changed', listener)
+    return () => ipcRenderer.removeListener('app:displays-changed', listener)
+  },
   showImage: (src: string, title: string, mapView?: PlayerMapView | null): Promise<PlayerState> =>
     ipcRenderer.invoke('player:show-image', { src, title, mapView: mapView ?? null }),
   clearPlayer: (): Promise<PlayerState> => ipcRenderer.invoke('player:clear'),

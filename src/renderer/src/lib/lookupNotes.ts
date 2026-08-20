@@ -40,6 +40,27 @@ function sourceLine(record: SrdRecord): string {
   return label ? `\n*From ${label}. Edit this campaign copy.*\n` : ''
 }
 
+function cell(value: string): string {
+  return value.replace(/\|/g, '\\|')
+}
+
+function infoboxMarkdown(imageFile: string | null, tagline: string, fields: { label: string; value: string }[]): string {
+  const lines = ['> [!infobox]+']
+  if (imageFile) lines.push(`> ![[${imageFile}]]`)
+  lines.push('>')
+  if (tagline) {
+    lines.push(`> ### *${tagline}*`, '>')
+  }
+  const filled = fields.filter((field) => field.value)
+  if (filled.length > 0) {
+    lines.push('> | | |', '> |---|---|')
+    for (const field of filled) {
+      lines.push(`> | **${field.label}** | ${cell(field.value)} |`)
+    }
+  }
+  return lines.join('\n')
+}
+
 function spellMarkdown(record: SrdRecord): string {
   const data = record.data
   const level = Number(data.level ?? 0)
@@ -49,11 +70,6 @@ function spellMarkdown(record: SrdRecord): string {
     level === 0
       ? [school, 'Cantrip', classes ? `(${classes})` : ''].filter(Boolean).join(' ')
       : [`Level ${level}`, school, classes ? `(${classes})` : ''].filter(Boolean).join(' ')
-  const lines = [`# ${record.name}`]
-  if (school) {
-    lines.push('', `> [!infobox]+`, `> ![[${school}.webp]]`, '')
-  }
-  lines.push(typeLine)
   const casting = pretty(String(data.castingTime || '').trim())
   const range = String(data.range || '').trim()
   const components = String(data.components || '').trim()
@@ -61,14 +77,19 @@ function spellMarkdown(record: SrdRecord): string {
   if (data.concentration && duration && !/concentration/i.test(duration)) {
     duration = `${duration} (Concentration)`
   }
-  if (data.ritual && casting && !/ritual/i.test(casting)) {
-    lines.push(`Casting Time: ${casting} (Ritual)`)
-  } else if (casting) {
-    lines.push(`Casting Time: ${casting}`)
-  }
-  if (range) lines.push(`Range: ${range}`)
-  if (components) lines.push(`Components: ${components}`)
-  if (duration) lines.push(`Duration: ${duration}`)
+  let castingValue = ''
+  if (data.ritual && casting && !/ritual/i.test(casting)) castingValue = `${casting} (Ritual)`
+  else if (casting) castingValue = casting
+  const lines = [
+    `# ${record.name}`,
+    '',
+    infoboxMarkdown(school ? `${school}.webp` : null, typeLine, [
+      { label: 'Casting Time', value: castingValue },
+      { label: 'Range', value: range },
+      { label: 'Components', value: components },
+      { label: 'Duration', value: duration }
+    ])
+  ]
   const desc = String(data.desc ?? '').trim()
   if (desc) lines.push('', desc)
   const higher = String(data.higherLevel ?? '').trim()
@@ -81,12 +102,13 @@ function spellMarkdown(record: SrdRecord): string {
 function itemMarkdown(record: SrdRecord): string {
   const data = record.data
   const category = fieldValue(data, 'category') || String(data.category ?? '').trim()
-  const lines = [`# ${record.name}`, '', `> [!infobox]+`, `> ![[${record.name}.webp]]`, '']
-  if (category && !category.includes('[object')) lines.push(category)
-  for (const key of ITEM_FIELDS) {
-    const value = fieldValue(data, key)
-    if (value) lines.push(`${key}: ${value}`)
-  }
+  const tagline = category && !category.includes('[object') ? category : ''
+  const fields = ITEM_FIELDS.map((label) => ({ label, value: fieldValue(data, label) })).filter((field) => field.value)
+  const lines = [
+    `# ${record.name}`,
+    '',
+    infoboxMarkdown(`${record.name}.webp`, tagline, fields)
+  ]
   const desc = String(data.desc ?? '').trim()
   if (desc) lines.push('', desc)
   return `${lines.join('\n')}\n${sourceLine(record)}`

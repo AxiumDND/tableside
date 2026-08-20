@@ -1,3 +1,5 @@
+import type { CampaignTreeNode } from './types'
+
 export const SKIP_DIR_NAMES = new Set([
   '.git',
   '.obsidian',
@@ -218,4 +220,38 @@ export function pathHasFolder(
 export function isHiddenCampaignFile(name: string): boolean {
   if (name.startsWith('.')) return true
   return HIDDEN_FILE_NAMES.has(name.toLowerCase())
+}
+
+export function parentRelativePath(path: string): string {
+  const posix = path.replaceAll('\\', '/').replace(/\/+$/, '')
+  const slash = posix.lastIndexOf('/')
+  return slash === -1 ? '' : posix.slice(0, slash)
+}
+
+function findCampaignNode(nodes: CampaignTreeNode[], path: string): CampaignTreeNode | null {
+  const want = path.replaceAll('\\', '/')
+  for (const node of nodes) {
+    if (node.relativePath.replaceAll('\\', '/') === want) return node
+    if (node.children) {
+      const found = findCampaignNode(node.children, want)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+/** Next/previous file in the same Files-tree folder (does not walk into subfolders). */
+export function adjacentCampaignFile(
+  tree: CampaignTreeNode[],
+  currentPath: string,
+  direction: 1 | -1
+): CampaignTreeNode | null {
+  const current = currentPath.replaceAll('\\', '/')
+  if (!current) return null
+  const parentPath = parentRelativePath(current)
+  const siblings = parentPath ? (findCampaignNode(tree, parentPath)?.children ?? []) : tree
+  const files = siblings.filter((node) => node.type === 'file')
+  const index = files.findIndex((node) => node.relativePath.replaceAll('\\', '/') === current)
+  if (index < 0) return null
+  return files[index + direction] ?? null
 }

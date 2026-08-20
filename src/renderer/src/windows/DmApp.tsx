@@ -35,6 +35,7 @@ import { libraryFolderFor, recordToCampaignMarkdown, gearSubfolderFor } from '..
 import { monsterToStatBlock, type SrdRecord } from '../lib/srd'
 import { extractStatblock, fallbackStatblock, parsedToStatBlock, type ParsedStatblock } from '../lib/statblock'
 import { APP_NAME, APP_VERSION } from '../../../shared/version'
+import { adjacentCampaignFile } from '../../../shared/campaignLayout'
 import appIcon from '../assets/icon.png'
 
 const SIDE_PANEL_WIDTH = 'w-[400px]'
@@ -94,7 +95,12 @@ export default function DmApp() {
     setCampaign(info)
     setPlayer(state)
     setDisplays(screens)
-    setPlayerDisplayId(prefs.playerDisplayId ?? '')
+    const saved = prefs.playerDisplayId
+    setPlayerDisplayId(
+      saved != null && screens.some((d) => d.id === saved)
+        ? saved
+        : (screens.find((d) => !d.dm)?.id ?? screens[0]?.id ?? '')
+    )
     setShowPlayerPreview(prefs.showPlayerPreview !== false)
     setRecentCampaigns(prefs.recentCampaigns ?? [])
     if (
@@ -125,7 +131,17 @@ export default function DmApp() {
 
   useEffect(() => {
     void refresh()
-    return window.tabledm.onPlayerState(setPlayer)
+    const stopPlayer = window.tabledm.onPlayerState(setPlayer)
+    const stopDisplays = window.tabledm.onDisplaysChanged((screens) => {
+      setDisplays(screens)
+      setPlayerDisplayId((current) =>
+        screens.some((d) => d.id === current) ? current : (screens.find((d) => !d.dm)?.id ?? screens[0]?.id ?? '')
+      )
+    })
+    return () => {
+      stopPlayer()
+      stopDisplays()
+    }
   }, [refresh])
 
   function applyCampaign(info: CampaignInfo | null): void {
@@ -196,6 +212,20 @@ export default function DmApp() {
     setOpenKind(prev.kind)
     setSelectedImage(prev.kind === 'image' ? prev.path : null)
     void window.tabledm.saveSettings({ lastOpenPath: prev.path, lastOpenKind: prev.kind })
+  }
+
+  function showFile(path: string, kind: FileKind): void {
+    setOpenPath(path)
+    setOpenKind(kind)
+    setSelectedImage(kind === 'image' ? path : null)
+    void window.tabledm.saveSettings({ lastOpenPath: path, lastOpenKind: kind })
+  }
+
+  function goNextFile(): void {
+    if (!campaign) return
+    const next = adjacentCampaignFile(campaign.tree, openPath, 1)
+    if (!next) return
+    showFile(next.relativePath, fileKind(next))
   }
 
   async function openTreeFile(node: CampaignTreeNode): Promise<void> {
@@ -399,6 +429,7 @@ export default function DmApp() {
   }
 
   const combat = campaign?.combat ?? emptyCombat()
+  const nextFile = campaign ? adjacentCampaignFile(campaign.tree, openPath, 1) : null
 
   useEffect(() => {
     const live = campaign?.combat
@@ -436,6 +467,11 @@ export default function DmApp() {
         goBack()
         return
       }
+      if (e.altKey && e.key === 'ArrowRight') {
+        e.preventDefault()
+        goNextFile()
+        return
+      }
       if (!(e.altKey && !e.ctrlKey && !e.metaKey)) return
       const key = e.key.toLowerCase()
       if (key === 's') {
@@ -457,9 +493,15 @@ export default function DmApp() {
       }
     }
     const onMouse = (e: MouseEvent): void => {
-      if (e.button !== 3) return
-      e.preventDefault()
-      goBack()
+      if (e.button === 3) {
+        e.preventDefault()
+        goBack()
+        return
+      }
+      if (e.button === 4) {
+        e.preventDefault()
+        goNextFile()
+      }
     }
     window.addEventListener('keydown', onKey)
     window.addEventListener('mouseup', onMouse)
@@ -467,7 +509,7 @@ export default function DmApp() {
       window.removeEventListener('keydown', onKey)
       window.removeEventListener('mouseup', onMouse)
     }
-  }, [history, openPath, openKind, campaign?.combat, selectedImage])
+  }, [history, openPath, openKind, campaign, selectedImage])
 
   return (
     <DiceLogProvider>
@@ -487,6 +529,21 @@ export default function DmApp() {
           <div className="truncate text-sm">{campaign?.name ?? 'No campaign open'}</div>
           <div className="truncate text-[11px] text-muted">{campaign?.folder ?? 'Choose a folder to begin'}</div>
         </div>
+        <button type="button" onClick={newCampaign} className="rounded border border-line px-3 py-1 text-sm hover:border-amber">
+          New campaign
+        </button>
+        <button type="button" onClick={openFolder} className="rounded border border-line px-3 py-1 text-sm hover:border-amber">
+          Open campaign
+        </button>
+        <button
+          type="button"
+          onClick={() => changeRightPanel((open) => (open === 'lookup' ? null : 'lookup'))}
+          className={`rounded px-3 py-1 text-sm ${
+            rightPanel === 'lookup' ? 'bg-amber font-semibold text-ink' : 'border border-line hover:border-amber'
+          }`}
+        >
+          Lookup
+        </button>
         <button
           type="button"
           onClick={() => {
@@ -501,62 +558,12 @@ export default function DmApp() {
         </button>
         <button
           type="button"
-          onClick={() => changeRightPanel((open) => (open === 'lookup' ? null : 'lookup'))}
-          className={`rounded px-3 py-1 text-sm ${
-            rightPanel === 'lookup' ? 'bg-amber font-semibold text-ink' : 'border border-line hover:border-amber'
-          }`}
-        >
-          Lookup
-        </button>
-        <button
-          type="button"
           onClick={() => changeRightPanel((open) => (open === 'help' ? null : 'help'))}
           className={`rounded px-3 py-1 text-sm ${
             rightPanel === 'help' ? 'bg-amber font-semibold text-ink' : 'border border-line hover:border-amber'
           }`}
         >
           Help
-        </button>
-        <button type="button" onClick={newCampaign} className="rounded border border-line px-3 py-1 text-sm hover:border-amber">
-          New campaign
-        </button>
-        <button type="button" onClick={openFolder} className="rounded border border-line px-3 py-1 text-sm hover:border-amber">
-          Open campaign
-        </button>
-        <button type="button" onClick={openSample} className="rounded border border-line px-3 py-1 text-sm hover:border-amber">
-          Sample
-        </button>
-        {displays.length > 1 ? (
-          <select
-            className="rounded border border-line bg-ink px-2 py-1 text-xs"
-            value={playerDisplayId}
-            onChange={(e) => {
-              if (!e.target.value) return
-              const id = Number(e.target.value)
-              setPlayerDisplayId(id)
-              void window.tabledm.placePlayerOnDisplay(id)
-            }}
-          >
-            <option value="">Player display…</option>
-            {displays.map((d) => (
-              <option key={d.id} value={d.id}>
-                {d.label}
-                {d.primary ? ' (this PC)' : ''}
-              </option>
-            ))}
-          </select>
-        ) : null}
-        <div className="text-right text-xs">
-          <div className="text-muted">Player screen</div>
-          <div>{player.imageTitle || 'Idle'}</div>
-        </div>
-        <button
-          type="button"
-          onClick={clearPlayer}
-          className="rounded bg-amber px-3 py-1 text-sm font-semibold text-ink disabled:bg-line"
-          disabled={!player.imageSrc}
-        >
-          Clear
         </button>
       </header>
 
@@ -565,7 +572,16 @@ export default function DmApp() {
           <PlayerPreview
             state={player}
             hidden={!showPlayerPreview}
+            displays={displays}
+            playerDisplayId={playerDisplayId}
             onClear={() => void clearPlayer()}
+            onPickDisplay={(id) => {
+              setPlayerDisplayId(id)
+              void window.tabledm.placePlayerOnDisplay(id).then(setDisplays)
+            }}
+            onRefreshDisplays={async () => {
+              setDisplays(await window.tabledm.getDisplays())
+            }}
             onToggle={() => {
               setShowPlayerPreview((open) => {
                 const next = !open
@@ -618,6 +634,8 @@ export default function DmApp() {
               ? imageTitle(history[history.length - 1].path).replace(/^PC\s+[—–-]\s+/i, '')
               : undefined
           }
+          onNext={nextFile ? goNextFile : undefined}
+          nextLabel={nextFile ? imageTitle(nextFile.relativePath).replace(/^PC\s+[—–-]\s+/i, '') : undefined}
           onAddNpcToCombat={addNpcFromSheet}
           onAddEncounter={addEncounterItems}
           onCampaignChange={setCampaign}
