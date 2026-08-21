@@ -13,13 +13,24 @@
   "bugs": {
     "url": "https://github.com/AxiumDND/table-dm/issues"
   },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
   "scripts": {
     "dev": "node ./node_modules/electron-vite/bin/electron-vite.js dev",
     "build": "node ./node_modules/electron-vite/bin/electron-vite.js build",
     "preview": "node ./node_modules/electron-vite/bin/electron-vite.js preview",
     "start": "node ./node_modules/electron/cli.js .",
     "dist": "node ./node_modules/electron-vite/bin/electron-vite.js build && electron-builder --win",
-    "fetch-srd": "node scripts/fetch-srd.mjs"
+    "fetch-srd": "node scripts/fetch-srd.mjs",
+    "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",
+    "lint": "eslint . --ext .ts,.tsx --max-warnings 0",
+    "lint:fix": "eslint . --ext .ts,.tsx --fix",
+    "format": "prettier --write \"src/**/*.{ts,tsx,json}\"",
+    "format:check": "prettier --check \"src/**/*.{ts,tsx,json}\"",
+    "validate": "npm run typecheck && npm run lint && npm run format:check",
+    "check-version": "node scripts/check-version.mjs"
   },
   "dependencies": {
     "minisearch": "^7.2.0",
@@ -32,10 +43,16 @@
     "@tailwindcss/vite": "^4.1.12",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
+    "@typescript-eslint/eslint-plugin": "^8.0.0",
+    "@typescript-eslint/parser": "^8.0.0",
     "@vitejs/plugin-react": "^5.0.2",
     "electron": "^37.3.1",
     "electron-builder": "^26.15.3",
     "electron-vite": "^4.0.0",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.37.0",
+    "eslint-plugin-react-hooks": "^5.0.0",
+    "prettier": "^3.3.0",
     "tailwindcss": "^4.1.12",
     "typescript": "^5.9.2",
     "vite": "^7.1.3"
