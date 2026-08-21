@@ -1,7 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, net, protocol, screen, shell } from 'electron';
 import { existsSync } from 'node:fs';
 import { copyFile, cp, mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
-import { join, normalize, relative, basename, dirname, extname } from 'node:path';
+import { join, normalize, relative, basename, dirname, extname, isAbsolute } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import type {
   AppSettings,
@@ -38,6 +38,9 @@ import {
   type SheetTemplateKind,
 } from '../shared/sheetTemplates';
 import { loadWotcLibrary, openWotcFolder } from './wotcLibrary';
+import { createLogger, initializeFileLogging } from './logger';
+import { handleIpcError, safeFileOperation } from './errorHandler';
+import { validateString, validatePath, validateObject, ValidationError } from './validation';
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -51,6 +54,8 @@ protocol.registerSchemesAsPrivileged([
     },
   },
 ]);
+
+const logger = createLogger('Main');
 
 let dmWindow: BrowserWindow | null = null;
 let playerWindow: BrowserWindow | null = null;
@@ -239,11 +244,22 @@ function listDisplays(): DisplayInfo[] {
 }
 
 function safeJoin(root: string, ...parts: string[]): string {
+  // Check for absolute paths in parts (Windows: C:\, D:\, etc. or Unix: /)
+  for (const part of parts) {
+    if (isAbsolute(part)) {
+      logger.warn('Attempted to join absolute path', { root, part });
+      throw new ValidationError('Path parts cannot be absolute');
+    }
+  }
+
   const full = normalize(join(root, ...parts));
   const rel = relative(normalize(root), full);
-  if (rel.startsWith('..')) {
-    throw new Error('Invalid path');
+  
+  if (rel.startsWith('..') || isAbsolute(rel)) {
+    logger.warn('Path traversal attempt blocked', { root, parts, rel });
+    throw new ValidationError('Invalid path: traversal outside root not allowed');
   }
+  
   return full;
 }
 
@@ -685,7 +701,33 @@ function registerIpc(): void {
 
   ipcMain.handle('app:get-settings', () => settings);
 
-  ipcMain.handle('app:save-settings', (_e, partial: AppSettings) => patchSettings(partial ?? {}));
+  ipcMain.handle('app:save-settings', async (_e, partial: unknown) => {
+    try {
+      validateObject(partial, 'settings');
+      
+      // Whitelist allowed settings keys
+      const allowedKeys = [
+        'campaignFolder',
+        'lastOpenPath',
+        'lastOpenKind',
+        'dmWindowBounds',
+        'playerWindowBounds'
+      ] as const;
+      
+      const safePartial: Partial<AppSettings> = {};
+      const partialObj = partial as Record<string, unknown>;
+
+      for (const key of allowedKeys) {
+        if (key in partialObj) {
+          (safePartial as any)[key] = partialObj[key];
+        }
+      }
+      
+      return await patchSettings(safePartial);
+    } catch (error) {
+      return await handleIpcError(error, { operation: 'save settings' });
+    }
+  });
 
   ipcMain.on('app:confirm-close', () => {
     allowQuit = true;
@@ -722,20 +764,61 @@ function registerIpc(): void {
     return loadCampaign(campaignFolder);
   });
 
-  ipcMain.handle('campaign:read-file', async (_e, relativePath: string) => {
-    if (!campaignFolder) return '';
-    return readFile(safeJoin(campaignFolder, relativePath), 'utf8');
+  ipcMain.handle('campaign:read-file', async (_e, relativePath: unknown) => {
+    try {
+      if (!campaignFolder) return '';
+      
+      const validPath = validatePath(relativePath, 'relativePath');
+      const fullPath = safeJoin(campaignFolder, validPath);
+      
+      return await safeFileOperation(
+        () => readFile(fullPath, 'utf8'),
+        'read file',
+        validPath
+      );
+    } catch (error) {
+      return await handleIpcError(error, { operation: 'read file' });
+    }
   });
 
-  ipcMain.handle('campaign:save-file', async (_e, relativePath: string, markdown: string) => {
-    if (!campaignFolder) return;
-    await writeFile(safeJoin(campaignFolder, relativePath), markdown, 'utf8');
+  ipcMain.handle('campaign:save-file', async (_e, relativePath: unknown, markdown: unknown) => {
+    try {
+      if (!campaignFolder) return;
+      
+      const validPath = validatePath(relativePath, 'relativePath');
+      const validMarkdown = validateString(markdown, 'markdown');
+      const fullPath = safeJoin(campaignFolder, validPath);
+      
+      await safeFileOperation(
+        () => writeFile(fullPath, validMarkdown, 'utf8'),
+        'save file',
+        validPath
+      );
+      
+      logger.info('File saved', { path: validPath });
+    } catch (error) {
+      return await handleIpcError(error, { operation: 'save file' });
+    }
   });
 
-  ipcMain.handle('campaign:save-combat', async (_e, combat: CombatState) => {
-    if (!campaignFolder) return null;
-    await writeJson(join(campaignFolder, 'combat.json'), combat);
-    return loadCampaign(campaignFolder);
+  ipcMain.handle('campaign:save-combat', async (_e, combat: unknown) => {
+    try {
+      if (!campaignFolder) return null;
+      
+      validateObject(combat, 'combat');
+      
+      await safeFileOperation(
+        () => writeJson(join(campaignFolder!, 'combat.json'), combat),
+        'save combat state'
+      );
+      
+      logger.debug('Combat state saved');
+      
+      // Return just the combat state, not full campaign reload
+      return combat;
+    } catch (error) {
+      return await handleIpcError(error, { operation: 'save combat' });
+    }
   });
 
   ipcMain.handle(
@@ -762,7 +845,21 @@ function registerIpc(): void {
   ipcMain.handle('wotc:open-folder', () => openWotcFolder());
 }
 
+// Process-level error handlers
+process.on('uncaughtException', (error) => {
+  logger.error('Uncaught exception', error);
+  dialog.showErrorBox('Unexpected Error', `An unexpected error occurred:\n\n${error.message}`);
+});
+
+process.on('unhandledRejection', (reason) => {
+  logger.error('Unhandled promise rejection', reason as Error);
+});
+
 app.whenReady().then(async () => {
+  // Initialize file logging
+  await initializeFileLogging();
+  logger.info('Table DM starting', { version: APP_VERSION });
+  
   app.setAppUserModelId('com.tabledm.app');
 
   protocol.handle('tabledm', async (request) => {

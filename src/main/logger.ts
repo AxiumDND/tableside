@@ -1,6 +1,10 @@
 /**
- * Simple structured logger for the main process
+ * Simple structured logger for the main process with file logging support
  */
+
+import { app } from 'electron';
+import { appendFile, mkdir } from 'node:fs/promises';
+import { join } from 'node:path';
 
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error';
 
@@ -11,6 +15,41 @@ export interface LogEntry {
   message: string;
   data?: unknown;
   error?: Error;
+}
+
+let logFilePath: string | null = null;
+let fileLoggingEnabled = false;
+
+/**
+ * Initialize file logging (call after app is ready)
+ */
+export async function initializeFileLogging(): Promise<void> {
+  try {
+    const logsDir = join(app.getPath('userData'), 'logs');
+    await mkdir(logsDir, { recursive: true });
+    
+    const date = new Date().toISOString().split('T')[0];
+    logFilePath = join(logsDir, `table-dm-${date}.log`);
+    fileLoggingEnabled = true;
+    
+    await appendFile(logFilePath, `\n=== Log started at ${new Date().toISOString()} ===\n`);
+  } catch (error) {
+    console.error('Failed to initialize file logging:', error);
+  }
+}
+
+async function writeToFile(entry: LogEntry): Promise<void> {
+  if (!fileLoggingEnabled || !logFilePath) return;
+  
+  try {
+    const logLine = `[${entry.timestamp}] ${entry.level.toUpperCase()} [${entry.context}] ${entry.message}`;
+    const dataStr = entry.data ? ` ${JSON.stringify(entry.data)}` : '';
+    const errorStr = entry.error ? `\n  Error: ${entry.error.message}\n  Stack: ${entry.error.stack}` : '';
+    
+    await appendFile(logFilePath, `${logLine}${dataStr}${errorStr}\n`);
+  } catch (error) {
+    // Silently fail to avoid logging loops
+  }
 }
 
 class Logger {
@@ -50,6 +89,9 @@ class Logger {
         console.error(formatted, error || data);
         break;
     }
+    
+    // Write to file asynchronously (fire and forget)
+    void writeToFile(entry);
   }
 
   debug(message: string, data?: unknown): void {
@@ -76,4 +118,8 @@ class Logger {
 
 export function createLogger(context: string): Logger {
   return new Logger(context);
+}
+
+export function getLogFilePath(): string | null {
+  return logFilePath;
 }

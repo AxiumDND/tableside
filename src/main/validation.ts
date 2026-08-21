@@ -21,11 +21,12 @@ export function validateString(value: unknown, fieldName: string): string {
 
 /**
  * Validates that a value is a valid file path string
+ * Note: Allows ./ and ../ prefixes for relative paths
  */
 export function validatePath(value: unknown, fieldName: string): string {
   const path = validateString(value, fieldName);
 
-  // Basic path traversal check (more detailed check done by safeJoin in main)
+  // Block suspicious path patterns (but allow ./ and ../ at start)
   if (path.includes('..') && !path.startsWith('./') && !path.startsWith('../')) {
     throw new ValidationError(`${fieldName} contains invalid path traversal`);
   }
