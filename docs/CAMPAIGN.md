@@ -26,6 +26,10 @@ NPCs/             named people
   Art/            NPC portraits
 Bestiary/         creatures
   Art/            creature art (campaign overrides; SRD monsters have bundled defaults)
+Places/           towns, sites, wilderness, dungeons-as-places
+  Art/            city art and interiors (not battlemaps)
+Factions/         guilds, churches, houses, cults
+  Art/            emblems
 Spells/           campaign copies of spells (edit after Lookup)
   Art/            school emblems and spell art
 Gear/
@@ -43,8 +47,8 @@ Maps/
   *.md            map notes (fenced map block + DM-only pins + tokens)
 Handouts/         letters and props
   Art/            letter images
-Templates/        blank Player, NPC, Monster, Spell, Gear, Game Night Sheet, and Map sheets
-Reference/        tracker, locations, cheat sheets
+Templates/        blank Player, NPC, Monster, Spell, Gear, Game Night Sheet, Map, Place, Shop, and Faction sheets
+Reference/        tracker, calendars, cheat sheets
 Archive/          recaps, transcripts, old drafts
 ```
 
@@ -59,6 +63,8 @@ Archive/          recaps, transcripts, old drafts
 | `Assets` | Maps |
 | `Equipment`, `Magic Items` (at the campaign root) | Gear (legacy name) |
 | `Spell` | Spells |
+| `Locations`, `World`, `Setting` | Places |
+| `Faction` | Factions |
 | `Z Archive` | Archive |
 
 Skipped directories (not shown / not scanned as notes): `.obsidian`, `.git`, `node_modules`, `WOTC`, `out`, `dist`, and similar.
@@ -69,7 +75,7 @@ Book text for Lookup is **not** part of a campaign. Put PHB / DMG exports in the
 
 Right-click a folder in the file tree:
 
-- **New player / NPC / monster / spell / gear / game night sheet / map** — copies the matching Templates file and substitutes the name
+- **New player / NPC / monster / spell / gear / game night sheet / map / place / shop / faction** — copies the matching Templates file and substitutes the name
 - **New note** — empty markdown
 - **Add art…** — import images into that folder’s `Art/` (creates `Art/` if needed). Name files like the sheet so portraits attach
 - **Add files…** — import notes, PDFs, or other files into the folder you clicked
@@ -89,6 +95,8 @@ Notes can stay in Obsidian. Tableside understands:
 Portrait files should match the character or creature name when possible. Click an image in a note, then **Show to players** — the player monitor fades it in on a black screen.
 
 **Map notes** (a fenced `map` block) open as a full map with DM-only pins, circular tokens from Party / NPCs / Bestiary, zoom/pan, and drawable fog. Right-click **Maps/** → **New map…** to pick existing art or load a file into `Maps/Art/` named like the note. **Show to players** sends the image, the current crop, fog, and tokens — no pins. See [MARKDOWN.md](MARKDOWN.md).
+
+**Places** are gazetteer notes, not battlemaps. Right-click **Places/** → **New place…** for a town, site, wilderness, or dungeon, or **New shop…** for an inn, stall, forge, or temple. The create dialog includes bundled default art (town, city, dungeon, inn, thieves’ guild, and similar) — pick one, or name the note `Dungeon` / `Inn` / `Thieves' Guild` to attach the matching picture. The shopkeeper stays an NPC (`[[Hale]]` in NPCs, `[[The Weary Mare]]` in Places, linked both ways). **Factions/** → **New faction…** for a guild, church, house, or cult. A settlement note is an index of people and sites — do not dump a whole city onto one page. Stay flat unless a town has many sites (`Places/Vallaki.md` plus `Places/Vallaki/Blue Water Inn.md`).
 
 Supported image types: `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`, `.bmp`. Full rules: [MARKDOWN.md](MARKDOWN.md).
 

@@ -69,6 +69,8 @@ describe('game night sheet template', () => {
     expect(body).not.toContain('{{party}}')
     expect(body).toContain('**Combatants:** [[Monster Name]] · party')
     expect(body).toContain('## 1. The characters')
+    expect(body).toContain('## 5. Locations')
+    expect(body).toContain('[[Place Name]]')
     expect(body).toContain('## 10. Likely endings')
   })
 
@@ -83,5 +85,28 @@ describe('game night sheet template', () => {
     expect(body).toContain('## The characters')
     expect(body).toContain('[[PC — Jasper Alderwick|Jasper Alderwick]]')
     expect(body).toContain('**Combatants:** [[Ghoul]] · party')
+  })
+})
+
+describe('place, shop, and faction templates', () => {
+  it('fills place, shop, and faction names and keeps cross-links', () => {
+    const place = fillTemplate(FALLBACK_TEMPLATES.place, 'place', 'Village of Barovia')
+    expect(place).toContain('# Village of Barovia')
+    expect(place).toContain('![[Village of Barovia.png]]')
+    expect(place).toContain('[[NPC Name]]')
+    expect(place).toContain('[[Shop Name]]')
+    expect(place).not.toContain('Place Name')
+
+    const shop = fillTemplate(FALLBACK_TEMPLATES.shop, 'shop', 'Blue Water Inn')
+    expect(shop).toContain('# Blue Water Inn')
+    expect(shop).toContain('| **Proprietor** | [[NPC Name]] |')
+    expect(shop).toContain('| **Place** | [[Place Name]] |')
+    expect(shop).toContain('| **Standing** | Neutral |')
+    expect(shop).toContain('## Stock')
+
+    const faction = fillTemplate(FALLBACK_TEMPLATES.faction, 'faction', 'Keepers of the Feather')
+    expect(faction).toContain('# Keepers of the Feather')
+    expect(faction).toContain('| **Leader** | [[NPC Name]] |')
+    expect(faction).toContain('| **HQ** | [[Place Name]] |')
   })
 })

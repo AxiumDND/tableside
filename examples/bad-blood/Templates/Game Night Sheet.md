@@ -43,7 +43,8 @@ Three things they can find no matter which way they go:
 
 ## 5. Locations
 
-- [[Map Name]] — what they notice, what's fantastic, what's dangerous
+- [[Place Name]] — what they notice, what's fantastic, what's dangerous
+- Map: [[Map Name]]
 - Set dressing / telegraph:
 
 ## 6. NPCs

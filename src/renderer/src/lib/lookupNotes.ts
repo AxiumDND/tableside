@@ -14,6 +14,7 @@ const ITEM_FIELDS = [
   'Utilize',
   'Craft',
   'Variants',
+  'Type',
   'Weight',
   'Cost',
   'Carrying Capacity',
@@ -135,6 +136,7 @@ export function gearSubfolderFor(record: SrdRecord): string | undefined {
   ) {
     return 'Magic Items'
   }
+  if (record.source === 'axium' || /trade goods|temple goods/i.test(category)) return 'Trade Goods'
   if (record.kind === 'weapon' || /weapon/i.test(category)) return 'Weapons'
   if (/armor|armour/i.test(category) || fieldValue(record.data, 'Armor Class')) return 'Armor'
   return 'Equipment'

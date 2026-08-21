@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { CreateNoteMapImage } from '../../../shared/types'
+import type { StockArtItem } from '../../../shared/stockArt'
+import { stockArtUrl } from '../../../shared/stockArt'
 import type { CampaignImage } from '../lib/images'
 import portraitBlank from '../assets/portrait-blank.png'
 
@@ -9,6 +11,8 @@ export default function SheetArtFrame({
   selectValue,
   selectedImage,
   images,
+  stockArt = [],
+  stockArtLabel = 'Type',
   aspect = 'portrait',
   onSelectImage,
   onSetPortrait,
@@ -19,7 +23,9 @@ export default function SheetArtFrame({
   selectValue: string | null
   selectedImage?: string | null
   images: CampaignImage[]
-  aspect?: 'portrait' | 'square'
+  stockArt?: StockArtItem[]
+  stockArtLabel?: string
+  aspect?: 'portrait' | 'square' | 'wide'
   onSelectImage?: (path: string) => void
   onSetPortrait?: (image: CreateNoteMapImage) => Promise<void>
   onSrdError: () => void
@@ -62,6 +68,17 @@ export default function SheetArtFrame({
     }
   }
 
+  async function useStockArt(id: string): Promise<void> {
+    if (!onSetPortrait || busy) return
+    setBusy(true)
+    try {
+      await onSetPortrait({ kind: 'stock', id })
+      setOpen(false)
+    } finally {
+      setBusy(false)
+    }
+  }
+
   return (
     <div ref={rootRef} className="relative w-full">
       <button
@@ -77,14 +94,36 @@ export default function SheetArtFrame({
         <img
           src={imageSrc ?? portraitBlank}
           alt={hasArt ? title : ''}
-          className={`w-full object-cover ${aspect === 'square' ? 'aspect-square' : 'aspect-[3/4]'}`}
+          className={`w-full object-cover ${
+            aspect === 'square' ? 'aspect-square' : aspect === 'wide' ? 'aspect-[4/3]' : 'aspect-[3/4]'
+          }`}
           onError={() => {
             if (imageSrc) onSrdError()
           }}
         />
       </button>
       {open && onSetPortrait ? (
-        <div className="absolute inset-x-0 bottom-0 space-y-1 rounded-b bg-ink/95 p-1.5">
+        <div className="absolute inset-x-0 bottom-0 z-10 max-h-[85%] space-y-1 overflow-y-auto rounded-b bg-ink/95 p-1.5">
+          {stockArt.length > 0 ? (
+            <div>
+              <p className="px-0.5 text-[10px] text-muted">{stockArtLabel}</p>
+              <div className="mt-0.5 grid grid-cols-3 gap-1">
+                {stockArt.map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    disabled={busy}
+                    title={item.title}
+                    onClick={() => void useStockArt(item.id)}
+                    className="overflow-hidden rounded border border-line text-left hover:border-amber disabled:opacity-50"
+                  >
+                    <img src={stockArtUrl(item.id)} alt="" className="aspect-video w-full object-cover" />
+                    <span className="block truncate px-0.5 py-0.5 text-[9px] text-parchment/90">{item.title}</span>
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
           <button
             type="button"
             disabled={busy}
@@ -115,8 +154,10 @@ export default function SheetArtFrame({
       <p className="mt-1.5 text-[10px] leading-tight text-muted">
         {busy
           ? 'Saving…'
-          : open
-            ? 'Load a file or pick art already in this campaign'
+            : open
+            ? stockArt.length > 0
+              ? 'Pick a type, load a file, or use campaign art'
+              : 'Load a file or pick art already in this campaign'
             : hasArt
               ? selectedImage === selectValue
                 ? 'Selected — Show to players. Click for art options.'

@@ -48,6 +48,14 @@ import {
   type SheetTemplateKind
 } from '../shared/sheetTemplates'
 import { setSheetPortraitEmbed, sheetAcceptsPortrait } from '../shared/sheetPortrait'
+import { matchStockArt } from '../shared/stockArt'
+import {
+  applyShopInventory,
+  generateShopInventory,
+  looksLikeShopNote,
+  resolveShopCatalog,
+  setShopTypeFields
+} from '../shared/shopStock'
 import { loadWotcLibrary, openWotcFolder } from './wotcLibrary'
 
 protocol.registerSchemesAsPrivileged([
@@ -101,6 +109,7 @@ const FILE_MIME: Record<string, string> = {
 let srdPortraitCache: Map<string, string> | null = null
 let srdItemCache: Map<string, string> | null = null
 let srdSchoolCache: Map<string, string> | null = null
+let stockArtCache: Map<string, string> | null = null
 
 function foldPortraitStem(name: string): string {
   return name
@@ -130,6 +139,12 @@ function srdSchoolsDir(): string {
     : join(__dirname, '../../resources/srd-schools')
 }
 
+function stockArtDir(): string {
+  return app.isPackaged
+    ? join(process.resourcesPath, 'stock-art')
+    : join(__dirname, '../../resources/stock-art')
+}
+
 function loadSrdImageCache(cache: Map<string, string> | null, dir: string): Map<string, string> {
   if (cache) return cache
   const next = new Map<string, string>()
@@ -157,6 +172,11 @@ function loadSrdSchoolCache(): Map<string, string> {
   return srdSchoolCache
 }
 
+function loadStockArtCache(): Map<string, string> {
+  if (!stockArtCache) stockArtCache = loadSrdImageCache(stockArtCache, stockArtDir())
+  return stockArtCache
+}
+
 function findSrdPortraitFile(name: string): string | null {
   if (!name.trim()) return null
   return loadSrdPortraitCache().get(foldPortraitStem(name)) ?? null
@@ -170,6 +190,11 @@ function findSrdItemFile(name: string): string | null {
 function findSrdSchoolFile(name: string): string | null {
   if (!name.trim()) return null
   return loadSrdSchoolCache().get(foldPortraitStem(name)) ?? null
+}
+
+function findStockArtFile(name: string): string | null {
+  if (!name.trim()) return null
+  return loadStockArtCache().get(foldPortraitStem(name)) ?? null
 }
 
 function settingsPath(): string {
@@ -570,7 +595,7 @@ async function seedNewCampaignFiles(root: string): Promise<void> {
   if (!existsSync(overview)) {
     await writeFile(
       overview,
-      `# ${title}\n\nOpen **Sessions** for tonight's notes. Put portraits in each folder's **Art** subfolder.\n`,
+      `# ${title}\n\nOpen **Sessions** for tonight's notes. Towns and shops go in **Places/**; shopkeepers stay in **NPCs/**. Put portraits in each folder's **Art** subfolder.\n`,
       'utf8'
     )
   }
@@ -587,7 +612,10 @@ async function seedNewCampaignFiles(root: string): Promise<void> {
     { file: 'Spell.md', kind: 'spell' },
     { file: 'Gear.md', kind: 'gear' },
     { file: 'Game Night Sheet.md', kind: 'nightsheet' },
-    { file: 'Map.md', kind: 'map' }
+    { file: 'Map.md', kind: 'map' },
+    { file: 'Place.md', kind: 'place' },
+    { file: 'Shop.md', kind: 'shop' },
+    { file: 'Faction.md', kind: 'faction' }
   ]
   const existing = new Set((await readdir(templatesDir)).map((name) => name.toLowerCase()))
   for (const seed of seeds) {
@@ -654,12 +682,15 @@ async function refreshStockCreatureTemplates(root: string): Promise<void> {
   const templatesDir = (await existingCanonicalDir(root, 'templates')) ?? join(root, 'Templates')
   await ensureDir(templatesDir)
   const entries = await readdir(templatesDir)
-  const jobs: { kind: 'player' | 'npc' | 'monster' | 'gear' | 'spell'; dest: string; stock: string }[] = [
+  const jobs: { kind: 'player' | 'npc' | 'monster' | 'gear' | 'spell' | 'place' | 'shop' | 'faction'; dest: string; stock: string }[] = [
     { kind: 'player', dest: 'Player.md', stock: '# *Character Name*' },
     { kind: 'npc', dest: 'NPC.md', stock: '# *NPC Name*' },
     { kind: 'monster', dest: 'Monster.md', stock: '# Monster Name' },
     { kind: 'gear', dest: 'Gear.md', stock: '# Item Name' },
-    { kind: 'spell', dest: 'Spell.md', stock: '# Spell Name' }
+    { kind: 'spell', dest: 'Spell.md', stock: '# Spell Name' },
+    { kind: 'place', dest: 'Place.md', stock: '# Place Name' },
+    { kind: 'shop', dest: 'Shop.md', stock: '# Shop Name' },
+    { kind: 'faction', dest: 'Faction.md', stock: '# Faction Name' }
   ]
   for (const job of jobs) {
     const wanted = new Set(TEMPLATE_FILE_NAMES[job.kind])
@@ -752,7 +783,12 @@ async function copyImageToArtFolder(
 ): Promise<string | null> {
   if (!campaignFolder) return null
   const source =
-    choice.kind === 'existing' ? safeJoin(campaignFolder, toPosix(choice.path).replace(/^\/+/, '')) : choice.filePath
+    choice.kind === 'existing'
+      ? safeJoin(campaignFolder, toPosix(choice.path).replace(/^\/+/, ''))
+      : choice.kind === 'stock'
+        ? findStockArtFile(choice.id)
+        : choice.filePath
+  if (!source) return null
   const ext = extname(source).toLowerCase()
   if (!existsSync(source) || !IMAGE_EXT.has(ext)) return null
   const artRel = artFolderRelativePath(noteFolder)
@@ -775,7 +811,11 @@ async function setNotePortrait(
   const stem = displayTitle(basename(dest, extname(dest)))
   const imageFile = await copyImageToArtFolder(folder, stem, image)
   if (!imageFile) return null
-  const markdown = setSheetPortraitEmbed(await readFile(dest, 'utf8'), imageFile)
+  let markdown = setSheetPortraitEmbed(await readFile(dest, 'utf8'), imageFile)
+  if (image.kind === 'stock' && looksLikeShopNote(markdown)) {
+    const catalog = resolveShopCatalog(image.id)
+    markdown = setShopTypeFields(markdown, catalog, false)
+  }
   await writeFile(dest, markdown, 'utf8')
   return { campaign: await loadCampaign(campaignFolder), path: toPosix(relative(campaignFolder, dest)), markdown }
 }
@@ -921,9 +961,25 @@ async function createCampaignNote(
     const imageFile = await resolveCreateMapImage(folder, title.replace(/^pc\s*[—–-]\s*/i, ''), mapImage)
     if (imageFile) body = setMapFenceImage(body, imageFile)
   }
-  if (sheetAcceptsPortrait(template) && mapImage) {
-    const imageFile = await copyImageToArtFolder(folder, displayTitle(basename(fileName, '.md')), mapImage)
+  let artChoice = mapImage
+  if (
+    !artChoice &&
+    (template === 'place' || template === 'shop' || template === 'faction')
+  ) {
+    const hit = matchStockArt(
+      title,
+      template === 'faction' ? 'faction' : template === 'shop' ? 'shop' : 'place'
+    )
+    if (hit) artChoice = { kind: 'stock', id: hit.id }
+  }
+  if (sheetAcceptsPortrait(template) && artChoice) {
+    const imageFile = await copyImageToArtFolder(folder, displayTitle(basename(fileName, '.md')), artChoice)
     if (imageFile) body = setSheetPortraitEmbed(body, imageFile)
+  }
+  if (template === 'shop') {
+    const typeId =
+      artChoice?.kind === 'stock' ? artChoice.id : (matchStockArt(title, 'shop')?.id ?? 'General Store')
+    body = applyShopInventory(body, generateShopInventory(typeId))
   }
   await writeFile(dest, body, 'utf8')
   if (template === 'monster') await copySrdArtToFolder(title.replace(/^pc\s*[—–-]\s*/i, ''), destDir, 'portrait')
@@ -1199,14 +1255,16 @@ app.whenReady().then(async () => {
   protocol.handle('tabledm', async (request) => {
     try {
       const url = new URL(request.url)
-      if (url.hostname === 'srd-portrait' || url.hostname === 'srd-item' || url.hostname === 'srd-school') {
+      if (url.hostname === 'srd-portrait' || url.hostname === 'srd-item' || url.hostname === 'srd-school' || url.hostname === 'stock-art') {
         const name = url.searchParams.get('name') ?? ''
         const full =
           url.hostname === 'srd-item'
             ? findSrdItemFile(name)
             : url.hostname === 'srd-school'
               ? findSrdSchoolFile(name)
-              : findSrdPortraitFile(name)
+              : url.hostname === 'stock-art'
+                ? findStockArtFile(name)
+                : findSrdPortraitFile(name)
         if (!full) return new Response('Not found', { status: 404 })
         const response = await net.fetch(pathToFileURL(full).href)
         const mime = FILE_MIME[extname(full).toLowerCase()]
@@ -1246,6 +1304,7 @@ app.whenReady().then(async () => {
     if (campaignFolder !== settings.campaignFolder) {
       await patchSettings({ campaignFolder })
     }
+    await prepareCampaignFolder(campaignFolder)
     const info = await loadCampaign(campaignFolder)
     playerState = {
       ...emptyPlayerState(),

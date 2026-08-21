@@ -7,6 +7,7 @@ import weapons from '../data/srd/weapons.json'
 import items from '../data/srd/items.json'
 import rules from '../data/srd/rules.json'
 import type { StatBlock } from '../../../shared/types'
+import { AXIUM_SOURCE, AXIUM_GOODS, axiumCategory, axiumSourceLabel } from '../../../shared/tradeGoods'
 import { parsedToBestiaryMarkdown, statBlockToParsed } from './statblock'
 
 export type SrdKind = 'spell' | 'monster' | 'condition' | 'weapon' | 'rule' | 'book' | 'gear'
@@ -137,6 +138,23 @@ export const srdRecords: SrdRecord[] = [
       data: item
     })
   ),
+  ...AXIUM_GOODS.map((item) => ({
+    id: item.id,
+    name: item.name,
+    kind: 'gear' as const,
+    searchText: [item.name, item.group, axiumCategory(item.group), 'axium', item.desc].join(' '),
+    summary: `${item.group} · ${item.price}`,
+    data: {
+      name: item.name,
+      category: axiumCategory(item.group),
+      Type: item.group,
+      Cost: item.price,
+      Weight: item.weight,
+      desc: item.desc
+    },
+    source: AXIUM_SOURCE,
+    sourceLabel: axiumSourceLabel(item.group)
+  })),
   ...asList<Record<string, unknown>>(rules).map((r) =>
     withSrdSource({
       id: String(r.id),
@@ -238,6 +256,15 @@ function matchesFilter(record: SrdRecord, kind?: SrdKind | 'all' | string): bool
   if (kind.startsWith('source:')) return record.source === kind.slice('source:'.length)
   if (kind === 'armor') return isArmorRecord(record)
   if (kind === 'magic') return isMagicItemRecord(record)
+  if (kind === 'trade') return record.source === AXIUM_SOURCE && record.data.category === 'Trade Goods'
+  if (kind === 'temple') return record.source === AXIUM_SOURCE && record.data.category === 'Temple Goods'
+  if (kind === 'armorer') return record.source === AXIUM_SOURCE && record.data.category === 'Armorer Goods'
+  if (kind === 'arms') return record.source === AXIUM_SOURCE && record.data.category === 'Weapon Goods'
+  if (kind === 'stables') return record.source === AXIUM_SOURCE && record.data.category === 'Stable Goods'
+  if (kind === 'store') return record.source === AXIUM_SOURCE && record.data.category === 'Store Goods'
+  if (kind === 'apothecary') return record.source === AXIUM_SOURCE && record.data.category === 'Apothecary Goods'
+  if (kind === 'forge') return record.source === AXIUM_SOURCE && record.data.category === 'Forge Goods'
+  if (kind === 'market') return record.source === AXIUM_SOURCE && record.data.category === 'Market Goods'
   return record.kind === kind
 }
 

@@ -13,8 +13,8 @@
 > | | |
 > |---|---|
 > | **Role** | Patron / informant / obstacle |
-> | **Faction** | |
-> | **Location** | |
+> | **Faction** | [[Faction Name]] |
+> | **Location** | [[Place Name]] |
 > | **Status** | Alive |
 > | **CR** | 2 |
 

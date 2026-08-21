@@ -22,6 +22,8 @@ export const FOLDER_ORDER = [
   'party',
   'npcs',
   'bestiary',
+  'places',
+  'factions',
   'spells',
   'gear',
   'maps',
@@ -32,13 +34,15 @@ export const FOLDER_ORDER = [
 ] as const
 
 /** Subfolders created under Gear/. */
-export const GEAR_SECTIONS = ['Weapons', 'Armor', 'Equipment', 'Magic Items'] as const
+export const GEAR_SECTIONS = ['Weapons', 'Armor', 'Equipment', 'Trade Goods', 'Magic Items'] as const
 
 export const STANDARD_LAYOUT: { canonical: string; name: string; extras: string[] }[] = [
   { canonical: 'sessions', name: 'Sessions', extras: ['Art'] },
   { canonical: 'party', name: 'Party', extras: ['Art'] },
   { canonical: 'npcs', name: 'NPCs', extras: ['Art'] },
   { canonical: 'bestiary', name: 'Bestiary', extras: ['Art'] },
+  { canonical: 'places', name: 'Places', extras: ['Art'] },
+  { canonical: 'factions', name: 'Factions', extras: ['Art'] },
   { canonical: 'spells', name: 'Spells', extras: ['Art'] },
   { canonical: 'gear', name: 'Gear', extras: [...GEAR_SECTIONS] },
   { canonical: 'maps', name: 'Maps', extras: ['Art', 'Print'] },
@@ -73,7 +77,15 @@ const FOLDER_ALIASES: Record<string, string> = {
   archive: 'archive',
   spell: 'spells',
   spells: 'spells',
-  gear: 'gear'
+  gear: 'gear',
+  places: 'places',
+  place: 'places',
+  locations: 'places',
+  location: 'places',
+  world: 'places',
+  setting: 'places',
+  factions: 'factions',
+  faction: 'factions'
 }
 
 export function canonicalFolder(name: string): string {
@@ -86,13 +98,14 @@ export function folderOrderIndex(name: string): number {
   return i === -1 ? 99 : i
 }
 
-/** Sort order for Gear/Weapons, Armor, Equipment, Magic Items. */
+/** Sort order for Gear/Weapons, Armor, Equipment, Trade Goods, Magic Items. */
 export function gearSectionIndex(name: string): number {
   const folded = foldFolderName(name)
   if (folded === 'weapons' || folded === 'weapon') return 0
   if (folded === 'armor' || folded === 'armour') return 1
   if (folded === 'equipment' || folded === 'adventuring gear') return 2
-  if (folded === 'magic items' || folded === 'magic item') return 3
+  if (folded === 'trade goods' || folded === 'trade good') return 3
+  if (folded === 'magic items' || folded === 'magic item') return 4
   return 99
 }
 
@@ -130,6 +143,14 @@ export function isMapsFolderName(name: string): boolean {
   return canonicalFolder(name) === 'maps'
 }
 
+export function isPlacesFolderName(name: string): boolean {
+  return canonicalFolder(name) === 'places'
+}
+
+export function isFactionsFolderName(name: string): boolean {
+  return canonicalFolder(name) === 'factions'
+}
+
 export function isArtFolderName(name: string): boolean {
   return foldFolderName(name) === 'art'
 }
@@ -161,6 +182,8 @@ export function folderUsesArt(folderPath: string): boolean {
       canonical === 'party' ||
       canonical === 'npcs' ||
       canonical === 'bestiary' ||
+      canonical === 'places' ||
+      canonical === 'factions' ||
       canonical === 'spells' ||
       canonical === 'sessions' ||
       canonical === 'maps' ||
@@ -203,7 +226,7 @@ export const LIBRARY_FOLDER_NAMES: Record<CampaignLibraryFolder, string> = {
 
 export function pathHasFolder(
   path: string,
-  kind: 'party' | 'npcs' | 'bestiary' | 'gear' | 'spells' | 'sessions' | 'maps'
+  kind: 'party' | 'npcs' | 'bestiary' | 'gear' | 'spells' | 'sessions' | 'maps' | 'places' | 'factions'
 ): boolean {
   const parts = path.replaceAll('\\', '/').split('/')
   return parts.some((part) => {
@@ -213,6 +236,8 @@ export function pathHasFolder(
     if (kind === 'gear') return isGearFolderName(part)
     if (kind === 'spells') return isSpellsFolderName(part)
     if (kind === 'sessions') return isSessionsFolderName(part)
+    if (kind === 'places') return isPlacesFolderName(part)
+    if (kind === 'factions') return isFactionsFolderName(part)
     return isMapsFolderName(part)
   })
 }
