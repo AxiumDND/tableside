@@ -1,1 +1,677 @@
-[{"id":"srd-2024_battleaxe","name":"Battleaxe","kind":"weapon","category":"","damage":"1d8 Slashing","properties":"[object Object], [object Object]","desc":""},{"id":"srd-2024_blowgun","name":"Blowgun","kind":"weapon","category":"","damage":"1 Piercing","properties":"[object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_club","name":"Club","kind":"weapon","category":"","damage":"1d4 Bludgeoning","properties":"[object Object], [object Object]","desc":""},{"id":"srd-2024_dagger","name":"Dagger","kind":"weapon","category":"","damage":"1d4 Piercing","properties":"[object Object], [object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_dart","name":"Dart","kind":"weapon","category":"","damage":"1d4 Piercing","properties":"[object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_flail","name":"Flail","kind":"weapon","category":"","damage":"1d8 Bludgeoning","properties":"[object Object]","desc":""},{"id":"srd-2024_glaive","name":"Glaive","kind":"weapon","category":"","damage":"1d10 Slashing","properties":"[object Object], [object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_greataxe","name":"Greataxe","kind":"weapon","category":"","damage":"1d12 Slashing","properties":"[object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_greatclub","name":"Greatclub","kind":"weapon","category":"","damage":"1d8 Bludgeoning","properties":"[object Object], [object Object]","desc":""},{"id":"srd-2024_greatsword","name":"Greatsword","kind":"weapon","category":"","damage":"2d6 Slashing","properties":"[object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_halberd","name":"Halberd","kind":"weapon","category":"","damage":"1d10 Slashing","properties":"[object Object], [object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_hand-crossbow","name":"Hand Crossbow","kind":"weapon","category":"","damage":"1d6 Piercing","properties":"[object Object], [object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_handaxe","name":"Handaxe","kind":"weapon","category":"","damage":"1d6 Slashing","properties":"[object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_heavy-crossbow","name":"Heavy Crossbow","kind":"weapon","category":"","damage":"1d10 Piercing","properties":"[object Object], [object Object], [object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_javelin","name":"Javelin","kind":"weapon","category":"","damage":"1d6 Piercing","properties":"[object Object], [object Object]","desc":""},{"id":"srd-2024_lance","name":"Lance","kind":"weapon","category":"","damage":"1d10 Piercing","properties":"[object Object], [object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_light-crossbow","name":"Light Crossbow","kind":"weapon","category":"","damage":"1d8 Piercing","properties":"[object Object], [object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_light-hammer","name":"Light Hammer","kind":"weapon","category":"","damage":"1d4 Bludgeoning","properties":"[object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_longbow","name":"Longbow","kind":"weapon","category":"","damage":"1d8 Piercing","properties":"[object Object], [object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_longsword","name":"Longsword","kind":"weapon","category":"","damage":"1d8 Slashing","properties":"[object Object], [object Object]","desc":""},{"id":"srd-2024_mace","name":"Mace","kind":"weapon","category":"","damage":"1d6 Bludgeoning","properties":"[object Object]","desc":""},{"id":"srd-2024_maul","name":"Maul","kind":"weapon","category":"","damage":"2d6 Bludgeoning","properties":"[object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_morningstar","name":"Morningstar","kind":"weapon","category":"","damage":"1d8 Piercing","properties":"[object Object]","desc":""},{"id":"srd-2024_musket","name":"Musket","kind":"weapon","category":"","damage":"1d12 Piercing","properties":"[object Object], [object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_pike","name":"Pike","kind":"weapon","category":"","damage":"1d10 Piercing","properties":"[object Object], [object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_pistol","name":"Pistol","kind":"weapon","category":"","damage":"1d10 Piercing","properties":"[object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_quarterstaff","name":"Quarterstaff","kind":"weapon","category":"","damage":"1d6 Bludgeoning","properties":"[object Object], [object Object]","desc":""},{"id":"srd-2024_rapier","name":"Rapier","kind":"weapon","category":"","damage":"1d8 Piercing","properties":"[object Object], [object Object]","desc":""},{"id":"srd-2024_scimitar","name":"Scimitar","kind":"weapon","category":"","damage":"1d6 Slashing","properties":"[object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_shortbow","name":"Shortbow","kind":"weapon","category":"","damage":"1d6 Piercing","properties":"[object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_shortsword","name":"Shortsword","kind":"weapon","category":"","damage":"1d6 Piercing","properties":"[object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_sickle","name":"Sickle","kind":"weapon","category":"","damage":"1d4 Slashing","properties":"[object Object], [object Object]","desc":""},{"id":"srd-2024_sling","name":"Sling","kind":"weapon","category":"","damage":"1d4 Bludgeoning","properties":"[object Object], [object Object]","desc":""},{"id":"srd-2024_spear","name":"Spear","kind":"weapon","category":"","damage":"1d6 Piercing","properties":"[object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_trident","name":"Trident","kind":"weapon","category":"","damage":"1d8 Piercing","properties":"[object Object], [object Object], [object Object]","desc":""},{"id":"srd-2024_war-pick","name":"War Pick","kind":"weapon","category":"","damage":"1d8 Piercing","properties":"[object Object], [object Object]","desc":""},{"id":"srd-2024_warhammer","name":"Warhammer","kind":"weapon","category":"","damage":"1d8 Bludgeoning","properties":"[object Object], [object Object]","desc":""},{"id":"srd-2024_whip","name":"Whip","kind":"weapon","category":"","damage":"1d4 Slashing","properties":"[object Object], [object Object], [object Object]","desc":""},{"id":"srd_battleaxe","name":"Battleaxe","kind":"weapon","category":"","damage":"1d8 Slashing","properties":"[object Object]","desc":""},{"id":"srd_blowgun","name":"Blowgun","kind":"weapon","category":"","damage":"1 Piercing","properties":"[object Object], [object Object]","desc":""},{"id":"srd_club","name":"Club","kind":"weapon","category":"","damage":"1d4 Bludgeoning","properties":"[object Object]","desc":""},{"id":"srd_crossbow-hand","name":"Crossbow, hand","kind":"weapon","category":"","damage":"1d6 Piercing","properties":"[object Object], [object Object], [object Object]","desc":""},{"id":"srd_crossbow-heavy","name":"Crossbow, heavy","kind":"weapon","category":"","damage":"1d10 Piercing","properties":"[object Object], [object Object]","desc":""},{"id":"srd_crossbow-light","name":"Crossbow, light","kind":"weapon","category":"","damage":"1d8 Piercing","properties":"[object Object], [object Object]","desc":""},{"id":"srd_dagger","name":"Dagger","kind":"weapon","category":"","damage":"1d4 Piercing","properties":"[object Object], [object Object], [object Object]","desc":""},{"id":"srd_dart","name":"Dart","kind":"weapon","category":"","damage":"1d4 Piercing","properties":"[object Object], [object Object]","desc":""},{"id":"srd_flail","name":"Flail","kind":"weapon","category":"","damage":"1d8 Bludgeoning","properties":"","desc":""},{"id":"srd_glaive","name":"Glaive","kind":"weapon","category":"","damage":"1d10 Slashing","properties":"[object Object], [object Object]","desc":""},{"id":"srd_greataxe","name":"Greataxe","kind":"weapon","category":"","damage":"1d12 Slashing","properties":"[object Object]","desc":""},{"id":"srd_greatclub","name":"Greatclub","kind":"weapon","category":"","damage":"1d8 Bludgeoning","properties":"[object Object]","desc":""},{"id":"srd_greatsword","name":"Greatsword","kind":"weapon","category":"","damage":"2d6 Slashing","properties":"[object Object]","desc":""},{"id":"srd_halberd","name":"Halberd","kind":"weapon","category":"","damage":"1d10 Slashing","properties":"[object Object], [object Object]","desc":""},{"id":"srd_handaxe","name":"Handaxe","kind":"weapon","category":"","damage":"1d6 Slashing","properties":"[object Object]","desc":""},{"id":"srd_javelin","name":"Javelin","kind":"weapon","category":"","damage":"1d6 Piercing","properties":"[object Object]","desc":""},{"id":"srd_lance","name":"Lance","kind":"weapon","category":"","damage":"1d12 Piercing","properties":"[object Object], [object Object]","desc":""},{"id":"srd_light-hammer","name":"Light hammer","kind":"weapon","category":"","damage":"1d4 Bludgeoning","properties":"[object Object], [object Object]","desc":""},{"id":"srd_longbow","name":"Longbow","kind":"weapon","category":"","damage":"1d8 Piercing","properties":"[object Object], [object Object]","desc":""},{"id":"srd_longsword","name":"Longsword","kind":"weapon","category":"","damage":"1d8 Slashing","properties":"[object Object]","desc":""},{"id":"srd_mace","name":"Mace","kind":"weapon","category":"","damage":"1d6 Bludgeoning","properties":"","desc":""},{"id":"srd_maul","name":"Maul","kind":"weapon","category":"","damage":"2d6 Bludgeoning","properties":"[object Object]","desc":""},{"id":"srd_morningstar","name":"Morningstar","kind":"weapon","category":"","damage":"1d8 Piercing","properties":"","desc":""},{"id":"srd_net","name":"Net","kind":"weapon","category":"","damage":"0 Bludgeoning","properties":"[object Object], [object Object]","desc":""},{"id":"srd_pike","name":"Pike","kind":"weapon","category":"","damage":"1d10 Piercing","properties":"[object Object], [object Object]","desc":""},{"id":"srd_quarterstaff","name":"Quarterstaff","kind":"weapon","category":"","damage":"1d6 Bludgeoning","properties":"[object Object]","desc":""},{"id":"srd_rapier","name":"Rapier","kind":"weapon","category":"","damage":"1d8 Piercing","properties":"[object Object]","desc":""},{"id":"srd_scimitar","name":"Scimitar","kind":"weapon","category":"","damage":"1d6 Slashing","properties":"[object Object], [object Object]","desc":""},{"id":"srd_shortbow","name":"Shortbow","kind":"weapon","category":"","damage":"1d6 Piercing","properties":"[object Object], [object Object]","desc":""},{"id":"srd_shortsword","name":"Shortsword","kind":"weapon","category":"","damage":"1d6 Slashing","properties":"[object Object], [object Object]","desc":""},{"id":"srd_sickle","name":"Sickle","kind":"weapon","category":"","damage":"1d4 Slashing","properties":"[object Object]","desc":""},{"id":"srd_sling","name":"Sling","kind":"weapon","category":"","damage":"1d4 Bludgeoning","properties":"[object Object]","desc":""},{"id":"srd_spear","name":"Spear","kind":"weapon","category":"","damage":"1d6 Piercing","properties":"[object Object], [object Object]","desc":""},{"id":"srd_trident","name":"Trident","kind":"weapon","category":"","damage":"1d6 Piercing","properties":"[object Object], [object Object], [object Object]","desc":""},{"id":"srd_war-pick","name":"War Pick","kind":"weapon","category":"","damage":"1d8 Piercing","properties":"","desc":""},{"id":"srd_warhammer","name":"Warhammer","kind":"weapon","category":"","damage":"1d8 Bludgeoning","properties":"[object Object]","desc":""},{"id":"srd_whip","name":"Whip","kind":"weapon","category":"","damage":"1d4 Slashing","properties":"[object Object]","desc":""}]
+[
+  {
+    "id": "srd-2024_battleaxe",
+    "name": "Battleaxe",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Slashing",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_blowgun",
+    "name": "Blowgun",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1 Piercing",
+    "properties": "[object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_club",
+    "name": "Club",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d4 Bludgeoning",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_dagger",
+    "name": "Dagger",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d4 Piercing",
+    "properties": "[object Object], [object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_dart",
+    "name": "Dart",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d4 Piercing",
+    "properties": "[object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_flail",
+    "name": "Flail",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Bludgeoning",
+    "properties": "[object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_glaive",
+    "name": "Glaive",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d10 Slashing",
+    "properties": "[object Object], [object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_greataxe",
+    "name": "Greataxe",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d12 Slashing",
+    "properties": "[object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_greatclub",
+    "name": "Greatclub",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Bludgeoning",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_greatsword",
+    "name": "Greatsword",
+    "kind": "weapon",
+    "category": "",
+    "damage": "2d6 Slashing",
+    "properties": "[object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_halberd",
+    "name": "Halberd",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d10 Slashing",
+    "properties": "[object Object], [object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_hand-crossbow",
+    "name": "Hand Crossbow",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d6 Piercing",
+    "properties": "[object Object], [object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_handaxe",
+    "name": "Handaxe",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d6 Slashing",
+    "properties": "[object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_heavy-crossbow",
+    "name": "Heavy Crossbow",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d10 Piercing",
+    "properties": "[object Object], [object Object], [object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_javelin",
+    "name": "Javelin",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d6 Piercing",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_lance",
+    "name": "Lance",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d10 Piercing",
+    "properties": "[object Object], [object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_light-crossbow",
+    "name": "Light Crossbow",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Piercing",
+    "properties": "[object Object], [object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_light-hammer",
+    "name": "Light Hammer",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d4 Bludgeoning",
+    "properties": "[object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_longbow",
+    "name": "Longbow",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Piercing",
+    "properties": "[object Object], [object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_longsword",
+    "name": "Longsword",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Slashing",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_mace",
+    "name": "Mace",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d6 Bludgeoning",
+    "properties": "[object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_maul",
+    "name": "Maul",
+    "kind": "weapon",
+    "category": "",
+    "damage": "2d6 Bludgeoning",
+    "properties": "[object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_morningstar",
+    "name": "Morningstar",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Piercing",
+    "properties": "[object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_musket",
+    "name": "Musket",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d12 Piercing",
+    "properties": "[object Object], [object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_pike",
+    "name": "Pike",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d10 Piercing",
+    "properties": "[object Object], [object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_pistol",
+    "name": "Pistol",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d10 Piercing",
+    "properties": "[object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_quarterstaff",
+    "name": "Quarterstaff",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d6 Bludgeoning",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_rapier",
+    "name": "Rapier",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Piercing",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_scimitar",
+    "name": "Scimitar",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d6 Slashing",
+    "properties": "[object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_shortbow",
+    "name": "Shortbow",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d6 Piercing",
+    "properties": "[object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_shortsword",
+    "name": "Shortsword",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d6 Piercing",
+    "properties": "[object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_sickle",
+    "name": "Sickle",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d4 Slashing",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_sling",
+    "name": "Sling",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d4 Bludgeoning",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_spear",
+    "name": "Spear",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d6 Piercing",
+    "properties": "[object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_trident",
+    "name": "Trident",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Piercing",
+    "properties": "[object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_war-pick",
+    "name": "War Pick",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Piercing",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_warhammer",
+    "name": "Warhammer",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Bludgeoning",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd-2024_whip",
+    "name": "Whip",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d4 Slashing",
+    "properties": "[object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_battleaxe",
+    "name": "Battleaxe",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Slashing",
+    "properties": "[object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_blowgun",
+    "name": "Blowgun",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1 Piercing",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_club",
+    "name": "Club",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d4 Bludgeoning",
+    "properties": "[object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_crossbow-hand",
+    "name": "Crossbow, hand",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d6 Piercing",
+    "properties": "[object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_crossbow-heavy",
+    "name": "Crossbow, heavy",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d10 Piercing",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_crossbow-light",
+    "name": "Crossbow, light",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Piercing",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_dagger",
+    "name": "Dagger",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d4 Piercing",
+    "properties": "[object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_dart",
+    "name": "Dart",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d4 Piercing",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_flail",
+    "name": "Flail",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Bludgeoning",
+    "properties": "",
+    "desc": ""
+  },
+  {
+    "id": "srd_glaive",
+    "name": "Glaive",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d10 Slashing",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_greataxe",
+    "name": "Greataxe",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d12 Slashing",
+    "properties": "[object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_greatclub",
+    "name": "Greatclub",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Bludgeoning",
+    "properties": "[object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_greatsword",
+    "name": "Greatsword",
+    "kind": "weapon",
+    "category": "",
+    "damage": "2d6 Slashing",
+    "properties": "[object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_halberd",
+    "name": "Halberd",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d10 Slashing",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_handaxe",
+    "name": "Handaxe",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d6 Slashing",
+    "properties": "[object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_javelin",
+    "name": "Javelin",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d6 Piercing",
+    "properties": "[object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_lance",
+    "name": "Lance",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d12 Piercing",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_light-hammer",
+    "name": "Light hammer",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d4 Bludgeoning",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_longbow",
+    "name": "Longbow",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Piercing",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_longsword",
+    "name": "Longsword",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Slashing",
+    "properties": "[object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_mace",
+    "name": "Mace",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d6 Bludgeoning",
+    "properties": "",
+    "desc": ""
+  },
+  {
+    "id": "srd_maul",
+    "name": "Maul",
+    "kind": "weapon",
+    "category": "",
+    "damage": "2d6 Bludgeoning",
+    "properties": "[object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_morningstar",
+    "name": "Morningstar",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Piercing",
+    "properties": "",
+    "desc": ""
+  },
+  {
+    "id": "srd_net",
+    "name": "Net",
+    "kind": "weapon",
+    "category": "",
+    "damage": "0 Bludgeoning",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_pike",
+    "name": "Pike",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d10 Piercing",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_quarterstaff",
+    "name": "Quarterstaff",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d6 Bludgeoning",
+    "properties": "[object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_rapier",
+    "name": "Rapier",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Piercing",
+    "properties": "[object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_scimitar",
+    "name": "Scimitar",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d6 Slashing",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_shortbow",
+    "name": "Shortbow",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d6 Piercing",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_shortsword",
+    "name": "Shortsword",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d6 Slashing",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_sickle",
+    "name": "Sickle",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d4 Slashing",
+    "properties": "[object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_sling",
+    "name": "Sling",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d4 Bludgeoning",
+    "properties": "[object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_spear",
+    "name": "Spear",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d6 Piercing",
+    "properties": "[object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_trident",
+    "name": "Trident",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d6 Piercing",
+    "properties": "[object Object], [object Object], [object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_war-pick",
+    "name": "War Pick",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Piercing",
+    "properties": "",
+    "desc": ""
+  },
+  {
+    "id": "srd_warhammer",
+    "name": "Warhammer",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d8 Bludgeoning",
+    "properties": "[object Object]",
+    "desc": ""
+  },
+  {
+    "id": "srd_whip",
+    "name": "Whip",
+    "kind": "weapon",
+    "category": "",
+    "damage": "1d4 Slashing",
+    "properties": "[object Object]",
+    "desc": ""
+  }
+]

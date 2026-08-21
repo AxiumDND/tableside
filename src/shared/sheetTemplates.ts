@@ -1,4 +1,4 @@
-export type SheetTemplateKind = 'blank' | 'player' | 'npc' | 'monster' | 'spell' | 'gear'
+export type SheetTemplateKind = 'blank' | 'player' | 'npc' | 'monster' | 'spell' | 'gear';
 
 const PLAYER = `# *Character Name*
 
@@ -66,7 +66,7 @@ actions:
   - name: Longsword
     desc: "+6 to hit, reach 5 ft. Hit: 8 (1d8+4) slashing."
 \`\`\`
-`
+`;
 
 const NPC = `# *NPC Name*
 
@@ -123,7 +123,7 @@ actions:
   - name: Shortsword
     desc: "+4 to hit, reach 5 ft. Hit: 5 (1d6+2) piercing."
 \`\`\`
-`
+`;
 
 const MONSTER = `# Monster Name
 
@@ -170,7 +170,7 @@ actions:
   - name: Claw
     desc: "+4 to hit, reach 5 ft. Hit: 4 (1d4+2) slashing."
 \`\`\`
-`
+`;
 
 const SPELL = `# Spell Name
 
@@ -183,7 +183,7 @@ Duration: Instantaneous
 What the spell does at the table.
 
 Using a Higher-Level Spell Slot. 
-`
+`;
 
 const GEAR = `# Item Name
 
@@ -196,62 +196,73 @@ Weight:
 Cost: 
 
 What it does, or any house-rule notes.
-`
+`;
 
 export const FALLBACK_TEMPLATES: Record<Exclude<SheetTemplateKind, 'blank'>, string> = {
   player: PLAYER,
   npc: NPC,
   monster: MONSTER,
   spell: SPELL,
-  gear: GEAR
-}
+  gear: GEAR,
+};
 
 export const TEMPLATE_PLACEHOLDERS: Record<Exclude<SheetTemplateKind, 'blank'>, string> = {
   player: 'Character Name',
   npc: 'NPC Name',
   monster: 'Monster Name',
   spell: 'Spell Name',
-  gear: 'Item Name'
-}
+  gear: 'Item Name',
+};
 
 export const TEMPLATE_FILE_NAMES: Record<Exclude<SheetTemplateKind, 'blank'>, string[]> = {
   player: ['player.md', 'pc.md', 'character.md'],
   npc: ['npc.md'],
   monster: ['monster.md', 'creature.md'],
   spell: ['spell.md'],
-  gear: ['gear.md', 'item.md', 'equipment.md']
-}
+  gear: ['gear.md', 'item.md', 'equipment.md'],
+};
 
 export function displayTitle(fileStem: string): string {
-  return fileStem.replace(/^pc\s*[—–-]\s*/i, '').trim()
+  return fileStem.replace(/^pc\s*[—–-]\s*/i, '').trim();
 }
 
-export function fillTemplate(source: string, kind: Exclude<SheetTemplateKind, 'blank'>, name: string): string {
-  const placeholder = TEMPLATE_PLACEHOLDERS[kind]
-  const title = displayTitle(name)
+export function fillTemplate(
+  source: string,
+  kind: Exclude<SheetTemplateKind, 'blank'>,
+  name: string
+): string {
+  const placeholder = TEMPLATE_PLACEHOLDERS[kind];
+  const title = displayTitle(name);
   return source
     .replace(/^<!--[\s\S]*?-->\s*/, '')
     .split(placeholder)
-    .join(title)
+    .join(title);
 }
 
-export function rewriteDuplicatedMarkdown(source: string, fromStem: string, toStem: string): string {
-  const fromTitle = displayTitle(fromStem)
-  const toTitle = displayTitle(toStem)
-  if (!fromTitle || fromTitle === toTitle) return source
-  const escaped = fromTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+export function rewriteDuplicatedMarkdown(
+  source: string,
+  fromStem: string,
+  toStem: string
+): string {
+  const fromTitle = displayTitle(fromStem);
+  const toTitle = displayTitle(toStem);
+  if (!fromTitle || fromTitle === toTitle) return source;
+  const escaped = fromTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
   return source
     .replace(new RegExp(`^#\\s+\\*?${escaped}\\*?\\s*$`, 'm'), `# *${toTitle}*`)
     .replace(new RegExp(`^#\\s+${escaped}\\s*$`, 'm'), `# ${toTitle}`)
     .replace(new RegExp(`^name:\\s*${escaped}\\s*$`, 'm'), `name: ${toTitle}`)
     .replace(new RegExp(`\\[\\[${escaped}(\\]\\]|\\|)`, 'g'), `[[${toTitle}$1`)
-    .replace(new RegExp(`!\\[\\[${escaped}(\\.[a-z0-9]+)?(\\|[^\\]]*)?\\]\\]`, 'gi'), `![[${toTitle}$1$2]]`)
+    .replace(
+      new RegExp(`!\\[\\[${escaped}(\\.[a-z0-9]+)?(\\|[^\\]]*)?\\]\\]`, 'gi'),
+      `![[${toTitle}$1$2]]`
+    );
 }
 
 export function sanitizeFileName(name: string, fallback = 'Untitled'): string {
   const cleaned = name
     .replace(/[<>:"/\\|?*]/g, '')
     .replace(/\s+/g, ' ')
-    .trim()
-  return cleaned || fallback
+    .trim();
+  return cleaned || fallback;
 }

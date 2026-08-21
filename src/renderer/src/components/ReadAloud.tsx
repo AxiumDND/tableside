@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { ReactNode } from 'react';
 
 function BookMark() {
   return (
@@ -8,7 +8,7 @@ function BookMark() {
         d="M7 3h10a2 2 0 0 1 2 2v16l-7-3.2L5 21V5a2 2 0 0 1 2-2zm0 2v13.1l5-2.3 5 2.3V5H7z"
       />
     </svg>
-  )
+  );
 }
 
 export default function ReadAloud({ title, children }: { title?: string; children: ReactNode }) {
@@ -22,11 +22,17 @@ export default function ReadAloud({ title, children }: { title?: string; childre
           <span className="text-amber">
             <BookMark />
           </span>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber">Read aloud</span>
-          {title ? <span className="max-w-[14rem] truncate text-[11px] font-normal italic text-muted">{title}</span> : null}
+          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber">
+            Read aloud
+          </span>
+          {title ? (
+            <span className="max-w-[14rem] truncate text-[11px] font-normal italic text-muted">
+              {title}
+            </span>
+          ) : null}
         </div>
         <div className="read-aloud-body pl-2">{children}</div>
       </div>
     </section>
-  )
+  );
 }

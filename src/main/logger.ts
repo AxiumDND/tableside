@@ -35,10 +35,12 @@ class Logger {
     switch (level) {
       case 'debug':
         if (process.env.DEBUG) {
+          // eslint-disable-next-line no-console
           console.log(formatted, data);
         }
         break;
       case 'info':
+        // eslint-disable-next-line no-console
         console.log(formatted, data);
         break;
       case 'warn':

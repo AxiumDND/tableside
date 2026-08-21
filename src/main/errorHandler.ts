@@ -22,7 +22,6 @@ export async function handleIpcError(
   showDialog = false
 ): Promise<{ success: false; error: string }> {
   const errorMessage = error instanceof Error ? error.message : String(error);
-  const errorStack = error instanceof Error ? error.stack : undefined;
 
   logger.error(`IPC Error in ${context.operation}`, error as Error, {
     ...context.metadata,
@@ -79,9 +78,9 @@ export async function safeFileOperation<T>(
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     const fileContext = filePath ? ` (${filePath})` : '';
-    
+
     logger.error(`File operation failed: ${operationName}${fileContext}`, error as Error);
-    
+
     throw new Error(`Failed to ${operationName}${fileContext}: ${message}`);
   }
 }

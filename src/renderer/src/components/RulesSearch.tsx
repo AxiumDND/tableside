@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react';
 import {
   monsterToStatBlock,
   searchSrd,
@@ -7,13 +7,13 @@ import {
   SRD_SOURCE_LABEL,
   srdCounts,
   type SrdKind,
-  type SrdRecord
-} from '../lib/srd'
-import { extraSourcesFromRecords, parseWotcFiles } from '../lib/wotcParse'
-import { libraryFolderFor } from '../lib/lookupNotes'
-import { LIBRARY_FOLDER_NAMES } from '../../../shared/campaignLayout'
-import { statBlockToParsed } from '../lib/statblock'
-import RollableStatBlock from './RollableStatBlock'
+  type SrdRecord,
+} from '../lib/srd';
+import { extraSourcesFromRecords, parseWotcFiles } from '../lib/wotcParse';
+import { libraryFolderFor } from '../lib/lookupNotes';
+import { LIBRARY_FOLDER_NAMES } from '../../../shared/campaignLayout';
+import { statBlockToParsed } from '../lib/statblock';
+import RollableStatBlock from './RollableStatBlock';
 
 const FILTERS: { id: SrdKind | 'all' | string; label: string }[] = [
   { id: 'all', label: 'All' },
@@ -22,23 +22,26 @@ const FILTERS: { id: SrdKind | 'all' | string; label: string }[] = [
   { id: 'condition', label: 'Conditions' },
   { id: 'spell', label: 'Spells' },
   { id: 'monster', label: 'Monsters' },
-  { id: 'weapon', label: 'Weapons' }
-]
+  { id: 'weapon', label: 'Weapons' },
+];
 
-const NAMED_LEAD = /^([A-Z][\w'’ /-]{0,48}\.)(\s+)/
+const NAMED_LEAD = /^([A-Z][\w'’ /-]{0,48}\.)(\s+)/;
 
 function SpellProse({ text }: { text: string }) {
   const paragraphs = text
     .split(/\n\n+/)
     .map((part) => part.trim())
-    .filter(Boolean)
-  if (paragraphs.length === 0) return null
+    .filter(Boolean);
+  if (paragraphs.length === 0) return null;
   return (
     <div className="space-y-2">
       {paragraphs.map((paragraph, index) => {
-        const named = NAMED_LEAD.exec(paragraph)
+        const named = NAMED_LEAD.exec(paragraph);
         return (
-          <p key={`${index}-${paragraph.slice(0, 24)}`} className="leading-relaxed whitespace-pre-line text-parchment/90">
+          <p
+            key={`${index}-${paragraph.slice(0, 24)}`}
+            className="leading-relaxed whitespace-pre-line text-parchment/90"
+          >
             {named ? (
               <>
                 <span className="font-semibold text-parchment">{named[1]} </span>
@@ -48,10 +51,10 @@ function SpellProse({ text }: { text: string }) {
               paragraph
             )}
           </p>
-        )
+        );
       })}
     </div>
-  )
+  );
 }
 
 function KindBadge({ record }: { record: SrdRecord }) {
@@ -62,24 +65,28 @@ function KindBadge({ record }: { record: SrdRecord }) {
     weapon: 'text-moss',
     rule: 'text-muted',
     book: 'text-amber',
-    gear: 'text-moss'
-  }
+    gear: 'text-moss',
+  };
   return (
     <span className="flex shrink-0 items-baseline gap-1.5">
-      <span className={`text-[10px] uppercase tracking-wider ${colors[record.kind]}`}>{record.kind}</span>
+      <span className={`text-[10px] uppercase tracking-wider ${colors[record.kind]}`}>
+        {record.kind}
+      </span>
       {record.sourceLabel ? (
-        <span className="text-[10px] uppercase tracking-wider text-muted">{record.sourceLabel}</span>
+        <span className="text-[10px] uppercase tracking-wider text-muted">
+          {record.sourceLabel}
+        </span>
       ) : null}
     </span>
-  )
+  );
 }
 
 function SourceNote({ record }: { record: SrdRecord }) {
-  if (!record.sourceLabel) return null
+  if (!record.sourceLabel) return null;
   if (!record.source || record.source === 'srd') {
-    return <p className="text-[10px] text-muted">{record.sourceLabel}</p>
+    return <p className="text-[10px] text-muted">{record.sourceLabel}</p>;
   }
-  return <p className="text-[10px] text-muted">From your {record.sourceLabel} file</p>
+  return <p className="text-[10px] text-muted">From your {record.sourceLabel} file</p>;
 }
 
 function SaveToCampaignButton({
@@ -87,17 +94,17 @@ function SaveToCampaignButton({
   onSave,
   canSave,
   busy,
-  status
+  status,
 }: {
-  record: SrdRecord
-  onSave?: (record: SrdRecord) => void
-  canSave?: boolean
-  busy?: boolean
-  status?: 'added' | 'exists' | null
+  record: SrdRecord;
+  onSave?: (record: SrdRecord) => void;
+  canSave?: boolean;
+  busy?: boolean;
+  status?: 'added' | 'exists' | null;
 }) {
-  const folder = libraryFolderFor(record)
-  if (!onSave || !folder) return null
-  const label = LIBRARY_FOLDER_NAMES[folder]
+  const folder = libraryFolderFor(record);
+  if (!onSave || !folder) return null;
+  const label = LIBRARY_FOLDER_NAMES[folder];
   return (
     <button
       type="button"
@@ -114,7 +121,7 @@ function SaveToCampaignButton({
             ? `Added to ${label}`
             : `Add to ${label}`}
     </button>
-  )
+  );
 }
 
 function Detail({
@@ -123,16 +130,16 @@ function Detail({
   onSaveToCampaign,
   canSaveToCampaign,
   saveBusy,
-  saveStatus
+  saveStatus,
 }: {
-  record: SrdRecord
-  onAddMonster?: (record: SrdRecord) => void
-  onSaveToCampaign?: (record: SrdRecord) => void
-  canSaveToCampaign?: boolean
-  saveBusy?: boolean
-  saveStatus?: 'added' | 'exists' | null
+  record: SrdRecord;
+  onAddMonster?: (record: SrdRecord) => void;
+  onSaveToCampaign?: (record: SrdRecord) => void;
+  canSaveToCampaign?: boolean;
+  saveBusy?: boolean;
+  saveStatus?: 'added' | 'exists' | null;
 }) {
-  const data = record.data
+  const data = record.data;
   if (record.kind === 'monster') {
     return (
       <div>
@@ -157,7 +164,7 @@ function Detail({
         </div>
         <SourceNote record={record} />
       </div>
-    )
+    );
   }
 
   const itemFields = (
@@ -177,13 +184,13 @@ function Detail({
       ['Cost', 'Cost'],
       ['Carrying Capacity', 'Carrying Capacity'],
       ['Rarity', 'Rarity'],
-      ['Attunement', 'Attunement']
+      ['Attunement', 'Attunement'],
     ] as const
   ).flatMap(([key, label]) => {
-    const value = data[key] ?? data[key.toLowerCase()]
-    if (typeof value !== 'string' || !value || value.includes('[object')) return []
-    return [{ label, value }]
-  })
+    const value = data[key] ?? data[key.toLowerCase()];
+    if (typeof value !== 'string' || !value || value.includes('[object')) return [];
+    return [{ label, value }];
+  });
 
   if (
     record.kind === 'weapon' ||
@@ -210,7 +217,7 @@ function Detail({
         />
         <SourceNote record={record} />
       </div>
-    )
+    );
   }
 
   if (record.kind === 'spell') {
@@ -239,9 +246,7 @@ function Detail({
         ) : null}
         <SpellProse text={String(data.desc ?? '')} />
         {data.higherLevel ? (
-          <SpellProse
-            text={`Using a Higher-Level Spell Slot. ${String(data.higherLevel)}`}
-          />
+          <SpellProse text={`Using a Higher-Level Spell Slot. ${String(data.higherLevel)}`} />
         ) : null}
         <SaveToCampaignButton
           record={record}
@@ -252,7 +257,7 @@ function Detail({
         />
         <SourceNote record={record} />
       </div>
-    )
+    );
   }
 
   return (
@@ -262,58 +267,57 @@ function Detail({
       <SpellProse text={String(data.desc ?? '')} />
       <SourceNote record={record} />
     </div>
-  )
+  );
 }
 
 export default function RulesSearch({
   onAddMonster,
   onSaveToCampaign,
   canSaveToCampaign,
-  onClose
+  onClose,
 }: {
-  onAddMonster?: (record: SrdRecord) => void
-  onSaveToCampaign?: (record: SrdRecord) => Promise<'added' | 'exists' | void> | 'added' | 'exists' | void
-  canSaveToCampaign?: boolean
-  onClose?: () => void
+  onAddMonster?: (record: SrdRecord) => void;
+  onSaveToCampaign?: (
+    record: SrdRecord
+  ) => Promise<'added' | 'exists' | void> | 'added' | 'exists' | void;
+  canSaveToCampaign?: boolean;
+  onClose?: () => void;
 }) {
-  const [query, setQuery] = useState('')
-  const [kind, setKind] = useState<SrdKind | 'all' | string>('all')
-  const [selected, setSelected] = useState<SrdRecord | null>(null)
-  const [saveBusy, setSaveBusy] = useState(false)
-  const [saveStatus, setSaveStatus] = useState<'added' | 'exists' | null>(null)
+  const [query, setQuery] = useState('');
+  const [kind, setKind] = useState<SrdKind | 'all' | string>('all');
+  const [selected, setSelected] = useState<SrdRecord | null>(null);
+  const [saveBusy, setSaveBusy] = useState(false);
+  const [saveStatus, setSaveStatus] = useState<'added' | 'exists' | null>(null);
   const [extraSources, setExtraSources] = useState<
     { id: string; label: string; kind: SrdKind; count: number }[]
-  >([])
-  const [wotcFolder, setWotcFolder] = useState('')
+  >([]);
+  const [wotcFolder, setWotcFolder] = useState('');
 
   useEffect(() => {
-    setSaveStatus(null)
-    setSaveBusy(false)
-  }, [selected?.id])
+    setSaveStatus(null);
+    setSaveBusy(false);
+  }, [selected?.id]);
 
   useEffect(() => {
     void window.tabledm.loadWotcLibrary().then((library) => {
-      const records = parseWotcFiles(library.files)
-      setExtraRecords(records)
-      setExtraSources(extraSourcesFromRecords(records))
-      setWotcFolder(library.folder)
-    })
-  }, [])
+      const records = parseWotcFiles(library.files);
+      setExtraRecords(records);
+      setExtraSources(extraSourcesFromRecords(records));
+      setWotcFolder(library.folder);
+    });
+  }, []);
 
-  const results = useMemo(
-    () => searchSrd(query, kind).slice(0, 30),
-    [query, kind, extraSources]
-  )
+  const results = useMemo(() => searchSrd(query, kind).slice(0, 30), [query, kind, extraSources]);
   const filters = useMemo(
     () => [
       ...FILTERS,
       ...extraSources.map((source) => ({
         id: `source:${source.id}`,
-        label: source.label
-      }))
+        label: source.label,
+      })),
     ],
     [extraSources]
-  )
+  );
 
   return (
     <section className="flex min-h-0 flex-1 flex-col border-l border-line bg-panel">
@@ -328,7 +332,11 @@ export default function RulesSearch({
                 : ` · ${srdCounts.monsters} monsters`}
             </span>
             {onClose ? (
-              <button type="button" onClick={onClose} className="text-xs text-muted hover:text-amber">
+              <button
+                type="button"
+                onClick={onClose}
+                className="text-xs text-muted hover:text-amber"
+              >
                 Hide
               </button>
             ) : null}
@@ -373,12 +381,12 @@ export default function RulesSearch({
               onSaveToCampaign={
                 onSaveToCampaign
                   ? (record) => {
-                      setSaveBusy(true)
+                      setSaveBusy(true);
                       void Promise.resolve(onSaveToCampaign(record))
                         .then((status) => {
-                          if (status === 'added' || status === 'exists') setSaveStatus(status)
+                          if (status === 'added' || status === 'exists') setSaveStatus(status);
                         })
-                        .finally(() => setSaveBusy(false))
+                        .finally(() => setSaveBusy(false));
                     }
                   : undefined
               }
@@ -439,5 +447,5 @@ export default function RulesSearch({
         <p>{SRD_ATTRIBUTION}</p>
       </div>
     </section>
-  )
+  );
 }

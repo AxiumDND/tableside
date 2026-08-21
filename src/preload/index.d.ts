@@ -1,9 +1,9 @@
-import type { TableDmApi } from './index'
+import type { TableDmApi } from './index';
 
 declare global {
   interface Window {
-    tabledm: TableDmApi
+    tabledm: TableDmApi;
   }
 }
 
-export {}
+export {};

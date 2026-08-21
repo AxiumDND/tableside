@@ -1,55 +1,57 @@
-import { useEffect, type ReactNode } from 'react'
-import Markdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
+import { useEffect, type ReactNode } from 'react';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import {
   campaignFileUrl,
   markdownUrlTransform,
   portraitForNote,
   resolveImageRef,
-  type CampaignImage
-} from '../lib/images'
-import { extractFacts, extractHook, extractTagline, type ParsedStatblock } from '../lib/statblock'
-import RollableStatBlock from './RollableStatBlock'
+  type CampaignImage,
+} from '../lib/images';
+import { extractFacts, extractHook, extractTagline, type ParsedStatblock } from '../lib/statblock';
+import RollableStatBlock from './RollableStatBlock';
 
 function looksLikeEmbed(text: string): boolean {
-  return /!\[\[|\]\]|\.(png|jpe?g|webp|gif|svg)\b/i.test(text)
+  return /!\[\[|\]\]|\.(png|jpe?g|webp|gif|svg)\b/i.test(text);
 }
 
 function titleFrom(path: string, markdown: string): string {
-  const heading = /^#\s+\*?(.+?)\*?\s*$/m.exec(markdown)
+  const heading = /^#\s+\*?(.+?)\*?\s*$/m.exec(markdown);
   if (heading) {
-    const text = heading[1].replace(/\*/g, '').trim()
-    if (text && !looksLikeEmbed(text)) return text
+    const text = heading[1].replace(/\*/g, '').trim();
+    if (text && !looksLikeEmbed(text)) return text;
   }
-  const infobox = /\[!infobox\]\+?[^\S\n]*(.*)$/im.exec(markdown)
-  const extra = infobox?.[1]?.trim()
-  if (extra && !looksLikeEmbed(extra)) return extra
-  return (path.split('/').pop() ?? path).replace(/\.[^.]+$/, '')
+  const infobox = /\[!infobox\]\+?[^\S\n]*(.*)$/im.exec(markdown);
+  const extra = infobox?.[1]?.trim();
+  if (extra && !looksLikeEmbed(extra)) return extra;
+  return (path.split('/').pop() ?? path).replace(/\.[^.]+$/, '');
 }
 
 function firstImage(markdown: string, path: string, images: CampaignImage[]): string | null {
-  const wiki = /!\[\[([^\]\n]+)\]\]/.exec(markdown)
-  if (wiki) return resolveImageRef(wiki[1], path, images)
-  const md = /!\[[^\]]*\]\(([^)]+)\)/.exec(markdown)
-  if (md) return resolveImageRef(md[1], path, images)
-  return portraitForNote(path, images) ?? portraitForNote(titleFrom(path, markdown) + '.md', images)
+  const wiki = /!\[\[([^\]\n]+)\]\]/.exec(markdown);
+  if (wiki) return resolveImageRef(wiki[1], path, images);
+  const md = /!\[[^\]]*\]\(([^)]+)\)/.exec(markdown);
+  if (md) return resolveImageRef(md[1], path, images);
+  return (
+    portraitForNote(path, images) ?? portraitForNote(titleFrom(path, markdown) + '.md', images)
+  );
 }
 
 function stripInfobox(markdown: string): string {
-  const lines = markdown.replace(/\r/g, '').split('\n')
-  const out: string[] = []
-  let i = 0
+  const lines = markdown.replace(/\r/g, '').split('\n');
+  const out: string[] = [];
+  let i = 0;
   while (i < lines.length) {
     if (/^\s*>?\s*\[!infobox\]/i.test(lines[i])) {
-      i += 1
-      while (i < lines.length && /^>/.test(lines[i])) i += 1
-      while (i < lines.length && !lines[i].trim()) i += 1
-      continue
+      i += 1;
+      while (i < lines.length && /^>/.test(lines[i])) i += 1;
+      while (i < lines.length && !lines[i].trim()) i += 1;
+      continue;
     }
-    out.push(lines[i])
-    i += 1
+    out.push(lines[i]);
+    i += 1;
   }
-  return out.join('\n')
+  return out.join('\n');
 }
 
 function notesBody(markdown: string): string {
@@ -59,23 +61,28 @@ function notesBody(markdown: string): string {
     .replace(/!\[\[.*?\]\]/g, '')
     .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
     .replace(/```statblock[\s\S]*?```/gi, '')
-    .replace(/^##?\s+Stat block[\s\S]*?(?=^## |\n#\w|\z)/im, '')
-    .replace(/layout:\s*Basic 5e Layout[\s\S]*?(?=\n#\w|\z)/i, '')
-    .replace(/^##?\s+Midjourney prompt[\s\S]*?(?=^## |\z)/im, '')
+    .replace(/^##?\s+Stat block[\s\S]*?(?=^## |\n#\w|$)/im, '')
+    .replace(/layout:\s*Basic 5e Layout[\s\S]*?(?=\n#\w|$)/i, '')
+    .replace(/^##?\s+Midjourney prompt[\s\S]*?(?=^## |$)/im, '')
     .replace(/^#[a-z0-9_-]+(?:\s+#[a-z0-9_-]+)*\s*$/gim, '')
     .replace(/^(\*[^*\n][\s\S]*?\*)\s*$/m, '')
-    .trim()
+    .trim();
 
-  const heading = text.search(/^##\s/m)
+  const heading = text.search(/^##\s/m);
   if (heading > 0) {
-    const before = text.slice(0, heading).replace(/^\|.*\|\s*\n\|[-| :]+\|\s*\n(?:\|.*\|\s*\n)*/gm, '')
-    text = `${before}${text.slice(heading)}`
+    const before = text
+      .slice(0, heading)
+      .replace(/^\|.*\|\s*\n\|[-| :]+\|\s*\n(?:\|.*\|\s*\n)*/gm, '');
+    text = `${before}${text.slice(heading)}`;
   }
-  return text.trim()
+  return text.trim();
 }
 
 function cleanWiki(value: string): string {
-  return value.replace(/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g, (_all, name: string, alias?: string) => alias || name)
+  return value.replace(
+    /\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,
+    (_all, name: string, alias?: string) => alias || name
+  );
 }
 
 export default function NpcSheet({
@@ -87,28 +94,28 @@ export default function NpcSheet({
   onSelectImage,
   onAddToCombat,
   onEdit,
-  renderNotes
+  renderNotes,
 }: {
-  path: string
-  markdown: string
-  images: CampaignImage[]
-  selectedImage?: string | null
-  block: ParsedStatblock
-  onSelectImage?: (path: string) => void
-  onAddToCombat?: () => void
-  onEdit?: () => void
-  renderNotes?: (markdown: string) => ReactNode
+  path: string;
+  markdown: string;
+  images: CampaignImage[];
+  selectedImage?: string | null;
+  block: ParsedStatblock;
+  onSelectImage?: (path: string) => void;
+  onAddToCombat?: () => void;
+  onEdit?: () => void;
+  renderNotes?: (markdown: string) => ReactNode;
 }) {
-  const title = titleFrom(path, markdown)
-  const tagline = extractTagline(markdown)
-  const hook = extractHook(markdown)
-  const facts = extractFacts(markdown).slice(0, 8)
-  const imagePath = firstImage(markdown, path, images)
-  const notes = notesBody(markdown)
+  const title = titleFrom(path, markdown);
+  const tagline = extractTagline(markdown);
+  const hook = extractHook(markdown);
+  const facts = extractFacts(markdown).slice(0, 8);
+  const imagePath = firstImage(markdown, path, images);
+  const notes = notesBody(markdown);
 
   useEffect(() => {
-    if (imagePath && onSelectImage) onSelectImage(imagePath)
-  }, [imagePath])
+    if (imagePath && onSelectImage) onSelectImage(imagePath);
+  }, [imagePath]);
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-5 pb-6">
@@ -121,9 +128,15 @@ export default function NpcSheet({
               selectedImage === imagePath ? 'border-amber' : 'border-line hover:border-amber-dim'
             }`}
           >
-            <img src={campaignFileUrl(imagePath)} alt={title} className="aspect-[2/3] w-full object-cover" />
+            <img
+              src={campaignFileUrl(imagePath)}
+              alt={title}
+              className="aspect-[2/3] w-full object-cover"
+            />
             <span className="block bg-ink px-2 py-1 text-[11px] text-muted">
-              {selectedImage === imagePath ? 'Selected — Show to players' : 'Click portrait to select'}
+              {selectedImage === imagePath
+                ? 'Selected — Show to players'
+                : 'Click portrait to select'}
             </span>
           </button>
         ) : (
@@ -161,7 +174,9 @@ export default function NpcSheet({
 
       {notes ? (
         <section className={renderNotes ? 'text-[15px]' : 'markdown-body text-[15px]'}>
-          {renderNotes ? renderNotes(notes) : (
+          {renderNotes ? (
+            renderNotes(notes)
+          ) : (
             <Markdown remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform}>
               {notes}
             </Markdown>
@@ -176,5 +191,5 @@ export default function NpcSheet({
         </div>
       </section>
     </div>
-  )
+  );
 }

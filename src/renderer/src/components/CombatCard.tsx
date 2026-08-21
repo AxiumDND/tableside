@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { ReactNode } from 'react';
 
 function CrossedSwords() {
   return (
@@ -8,17 +8,17 @@ function CrossedSwords() {
         d="M3.2 2.1 12 10.2l1.4-1.4 1.1 1.1-1.3 1.3 7.6 7.6-1.4 1.4-7.6-7.6-1.3 1.3-1.1-1.1 1.4-1.4L2.1 3.2zm17.6 0L13.3 9.6l1.1 1.1 1.4-1.4 7.1-7.2zM8.2 14.3l1.1 1.1-4 6.5H3.1l5.1-7.6zm7.6 0 5.1 7.6h-2.2l-4-6.5 1.1-1.1z"
       />
     </svg>
-  )
+  );
 }
 
 export default function CombatCard({
   adding,
   onAdd,
-  children
+  children,
 }: {
-  adding?: boolean
-  onAdd?: () => void
-  children: ReactNode
+  adding?: boolean;
+  onAdd?: () => void;
+  children: ReactNode;
 }) {
   return (
     <section className="combat-card my-4">
@@ -28,7 +28,9 @@ export default function CombatCard({
           <span className="text-blood">
             <CrossedSwords />
           </span>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-blood">Combat</span>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-blood">
+            Combat
+          </span>
         </div>
         {onAdd ? (
           <div className="absolute -top-3 right-3 bg-panel pl-2">
@@ -45,5 +47,5 @@ export default function CombatCard({
         <div className="combat-card-body markdown-body text-base">{children}</div>
       </div>
     </section>
-  )
+  );
 }

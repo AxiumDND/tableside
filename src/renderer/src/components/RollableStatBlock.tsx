@@ -1,15 +1,22 @@
-import { useState, type ReactNode } from 'react'
-import { abilityMod, extractRolls, formatMod, rollD20, rollExpr, type DiceResult } from '../lib/dice'
-import { type ParsedStatblock } from '../lib/statblock'
-import { useDiceLog } from './DiceTray'
+import { useState, type ReactNode } from 'react';
+import {
+  abilityMod,
+  extractRolls,
+  formatMod,
+  rollD20,
+  rollExpr,
+  type DiceResult,
+} from '../lib/dice';
+import { type ParsedStatblock } from '../lib/statblock';
+import { useDiceLog } from './DiceTray';
 
-const ABILITY_LABELS = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'] as const
-const ABILITY_KEYS = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const
+const ABILITY_LABELS = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'] as const;
+const ABILITY_KEYS = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const;
 
 const KEYWORD_SPLIT =
-  /(\b(?:Blinded|Charmed|Deafened|Exhaustion|Frightened|Grappled|Incapacitated|Invisible|Paralyzed|Petrified|Poisoned|Prone|Restrained|Stunned|Unconscious|Concentration|Darkvision|Blindsight|Tremorsense|Truesight|Advantage|Disadvantage|Recharge\s+\d+[–-]\d+|DC\s+\d+)\b)/gi
+  /(\b(?:Blinded|Charmed|Deafened|Exhaustion|Frightened|Grappled|Incapacitated|Invisible|Paralyzed|Petrified|Poisoned|Prone|Restrained|Stunned|Unconscious|Concentration|Darkvision|Blindsight|Tremorsense|Truesight|Advantage|Disadvantage|Recharge\s+\d+[–-]\d+|DC\s+\d+)\b)/gi;
 const KEYWORD_TEST =
-  /^(Blinded|Charmed|Deafened|Exhaustion|Frightened|Grappled|Incapacitated|Invisible|Paralyzed|Petrified|Poisoned|Prone|Restrained|Stunned|Unconscious|Concentration|Darkvision|Blindsight|Tremorsense|Truesight|Advantage|Disadvantage|Recharge\s+\d+[–-]\d+|DC\s+\d+)$/i
+  /^(Blinded|Charmed|Deafened|Exhaustion|Frightened|Grappled|Incapacitated|Invisible|Paralyzed|Petrified|Poisoned|Prone|Restrained|Stunned|Unconscious|Concentration|Darkvision|Blindsight|Tremorsense|Truesight|Advantage|Disadvantage|Recharge\s+\d+[–-]\d+|DC\s+\d+)$/i;
 
 function KeywordText({ text }: { text: string }): ReactNode {
   return text.split(KEYWORD_SPLIT).map((part, index) =>
@@ -20,10 +27,18 @@ function KeywordText({ text }: { text: string }): ReactNode {
     ) : (
       part
     )
-  )
+  );
 }
 
-function RollChip({ label, expr, onRoll }: { label: string; expr: string; onRoll: (result: DiceResult) => void }) {
+function RollChip({
+  label,
+  expr,
+  onRoll,
+}: {
+  label: string;
+  expr: string;
+  onRoll: (result: DiceResult) => void;
+}) {
   return (
     <button
       type="button"
@@ -32,25 +47,25 @@ function RollChip({ label, expr, onRoll }: { label: string; expr: string; onRoll
     >
       {label} {expr}
     </button>
-  )
+  );
 }
 
 function ActionBlock({
   title,
   items,
-  onRoll
+  onRoll,
 }: {
-  title: string
-  items: { name: string; desc: string }[]
-  onRoll: (result: DiceResult) => void
+  title: string;
+  items: { name: string; desc: string }[];
+  onRoll: (result: DiceResult) => void;
 }) {
-  if (!items.length) return null
+  if (!items.length) return null;
   return (
     <div className="mt-3 border-t border-amber-dim/35 pt-2">
       <h4 className="font-display text-[11px] uppercase tracking-[0.18em] text-amber">{title}</h4>
       <div className="mt-1.5 space-y-2 text-[13px] leading-snug">
         {items.map((item) => {
-          const rolls = extractRolls(item.desc)
+          const rolls = extractRolls(item.desc);
           return (
             <div key={title + item.name}>
               <p>
@@ -72,36 +87,36 @@ function ActionBlock({
                 </div>
               ) : null}
             </div>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }
 
 function saveFor(block: ParsedStatblock, index: number): number {
-  const key = ABILITY_KEYS[index]
-  if (block.saves[key] != null) return block.saves[key]
-  return abilityMod(block.stats[index] ?? 10)
+  const key = ABILITY_KEYS[index];
+  if (block.saves[key] != null) return block.saves[key];
+  return abilityMod(block.stats[index] ?? 10);
 }
 
 export default function RollableStatBlock({
   block,
   onAddToCombat,
-  hideToolbar
+  hideToolbar,
 }: {
-  block: ParsedStatblock
-  onAddToCombat?: () => void
-  hideToolbar?: boolean
+  block: ParsedStatblock;
+  onAddToCombat?: () => void;
+  hideToolbar?: boolean;
 }) {
-  const [last, setLast] = useState<DiceResult | null>(null)
-  const dice = useDiceLog()
-  const init = block.initiative ?? abilityMod(block.stats[1] ?? 10)
-  const immunities = [block.immunities, block.conditionImmunities].filter(Boolean).join('; ')
+  const [last, setLast] = useState<DiceResult | null>(null);
+  const dice = useDiceLog();
+  const init = block.initiative ?? abilityMod(block.stats[1] ?? 10);
+  const immunities = [block.immunities, block.conditionImmunities].filter(Boolean).join('; ');
 
   function noteRoll(result: DiceResult): void {
-    setLast(result)
-    dice.record(result, block.name)
+    setLast(result);
+    dice.record(result, block.name);
   }
 
   return (
@@ -132,7 +147,9 @@ export default function RollableStatBlock({
           <span className="text-xs text-muted">{last.detail}</span>
         </div>
       ) : (
-        <p className="mt-2 text-[11px] text-muted">Click Init, a score, a save, or an attack to roll.</p>
+        <p className="mt-2 text-[11px] text-muted">
+          Click Init, a score, a save, or an attack to roll.
+        </p>
       )}
 
       <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-0.5 text-[13px]">
@@ -161,9 +178,9 @@ export default function RollableStatBlock({
 
       <div className="mt-3 grid grid-cols-6 gap-1 text-center">
         {ABILITY_LABELS.map((label, index) => {
-          const score = block.stats[index] ?? 10
-          const mod = abilityMod(score)
-          const save = saveFor(block, index)
+          const score = block.stats[index] ?? 10;
+          const mod = abilityMod(score);
+          const save = saveFor(block, index);
           return (
             <div key={label} className="rounded bg-panel-2 py-1">
               <div className="text-[10px] tracking-wide text-muted">{label}</div>
@@ -185,7 +202,7 @@ export default function RollableStatBlock({
                 Save {formatMod(save)}
               </button>
             </div>
-          )
+          );
         })}
       </div>
 
@@ -237,5 +254,5 @@ export default function RollableStatBlock({
       <ActionBlock title="Reactions" items={block.reactions} onRoll={noteRoll} />
       <ActionBlock title="Legendary Actions" items={block.legendary} onRoll={noteRoll} />
     </section>
-  )
+  );
 }

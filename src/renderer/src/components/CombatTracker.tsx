@@ -1,14 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
-import type { Combatant, CombatantKind, CombatState } from '../../../shared/types'
-import { combatantCondition, initiativeBonus, sortCombatants } from '../lib/combat'
-import { formatMod, rollD20 } from '../lib/dice'
-import { statBlockToParsed } from '../lib/statblock'
-import { useDiceLog } from './DiceTray'
-import RollableStatBlock from './RollableStatBlock'
-import { combatantToBlock } from './StatBlock'
+import { useEffect, useMemo, useState } from 'react';
+import type { Combatant, CombatantKind, CombatState } from '../../../shared/types';
+import { combatantCondition, initiativeBonus, sortCombatants } from '../lib/combat';
+import { formatMod, rollD20 } from '../lib/dice';
+import { statBlockToParsed } from '../lib/statblock';
+import { useDiceLog } from './DiceTray';
+import RollableStatBlock from './RollableStatBlock';
+import { combatantToBlock } from './StatBlock';
 
 function uid(): string {
-  return crypto.randomUUID()
+  return crypto.randomUUID();
 }
 
 export default function CombatTracker({
@@ -18,62 +18,69 @@ export default function CombatTracker({
   onAddParty,
   onAddBestiary,
   onChange,
-  onClose
+  onClose,
 }: {
-  combat: CombatState
-  bestiary?: { path: string; name: string }[]
-  partyCount?: number
-  onAddParty?: () => void
-  onAddBestiary?: (path: string) => void
-  onChange: (next: CombatState) => void
-  onClose?: () => void
+  combat: CombatState;
+  bestiary?: { path: string; name: string }[];
+  partyCount?: number;
+  onAddParty?: () => void;
+  onAddBestiary?: (path: string) => void;
+  onChange: (next: CombatState) => void;
+  onClose?: () => void;
 }) {
-  const [draft, setDraft] = useState({ name: '', initiative: '', hp: '', ac: '' })
-  const [beastQuery, setBeastQuery] = useState('')
-  const [lastRoll, setLastRoll] = useState('')
-  const [viewedId, setViewedId] = useState<string | null>(null)
-  const [confirmClear, setConfirmClear] = useState(false)
-  const [confirmRemove, setConfirmRemove] = useState<Combatant | null>(null)
-  const dice = useDiceLog()
-  const ordered = useMemo(() => sortCombatants(combat.combatants), [combat.combatants])
-  const round = combat.round ?? 0
-  const started = round > 0
+  const [draft, setDraft] = useState({ name: '', initiative: '', hp: '', ac: '' });
+  const [beastQuery, setBeastQuery] = useState('');
+  const [lastRoll, setLastRoll] = useState('');
+  const [viewedId, setViewedId] = useState<string | null>(null);
+  const [confirmClear, setConfirmClear] = useState(false);
+  const [confirmRemove, setConfirmRemove] = useState<Combatant | null>(null);
+  const dice = useDiceLog();
+  const ordered = useMemo(() => sortCombatants(combat.combatants), [combat.combatants]);
+  const round = combat.round ?? 0;
+  const started = round > 0;
   const turnId =
-    started && combat.activeId && ordered.some((c) => c.id === combat.activeId) ? combat.activeId : null
+    started && combat.activeId && ordered.some((c) => c.id === combat.activeId)
+      ? combat.activeId
+      : null;
   const viewed =
-    ordered.find((c) => c.id === viewedId) ?? ordered.find((c) => c.id === turnId) ?? ordered[0] ?? null
-  const viewedParsed = viewed ? statBlockToParsed(combatantToBlock(viewed) ?? { name: viewed.name }, viewed.name) : null
-  const partyInCombat = combat.combatants.filter((c) => c.kind === 'pc').length
+    ordered.find((c) => c.id === viewedId) ??
+    ordered.find((c) => c.id === turnId) ??
+    ordered[0] ??
+    null;
+  const viewedParsed = viewed
+    ? statBlockToParsed(combatantToBlock(viewed) ?? { name: viewed.name }, viewed.name)
+    : null;
+  const partyInCombat = combat.combatants.filter((c) => c.kind === 'pc').length;
   const beasts = useMemo(() => {
-    const q = beastQuery.trim().toLowerCase()
-    return q ? bestiary.filter((b) => b.name.toLowerCase().includes(q)) : bestiary
-  }, [bestiary, beastQuery])
+    const q = beastQuery.trim().toLowerCase();
+    return q ? bestiary.filter((b) => b.name.toLowerCase().includes(q)) : bestiary;
+  }, [bestiary, beastQuery]);
 
   useEffect(() => {
-    if (!confirmClear && !confirmRemove) return
+    if (!confirmClear && !confirmRemove) return;
     const onKey = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') {
-        setConfirmClear(false)
-        setConfirmRemove(null)
+        setConfirmClear(false);
+        setConfirmRemove(null);
       }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [confirmClear, confirmRemove])
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [confirmClear, confirmRemove]);
 
   function update(partial: Partial<CombatState>): void {
-    onChange({ ...combat, ...partial })
+    onChange({ ...combat, ...partial });
   }
 
   function patchCombatant(id: string, partial: Partial<Combatant>): void {
     update({
-      combatants: combat.combatants.map((c) => (c.id === id ? { ...c, ...partial } : c))
-    })
+      combatants: combat.combatants.map((c) => (c.id === id ? { ...c, ...partial } : c)),
+    });
   }
 
   function addManual(): void {
-    if (!draft.name.trim()) return
-    const hp = Number(draft.hp || 10)
+    if (!draft.name.trim()) return;
+    const hp = Number(draft.hp || 10);
     const next: Combatant = {
       id: uid(),
       name: draft.name.trim(),
@@ -81,70 +88,70 @@ export default function CombatTracker({
       initiative: Number(draft.initiative || 0),
       hp,
       maxHp: hp,
-      ac: Number(draft.ac || 10)
-    }
-    update({ combatants: [...combat.combatants, next] })
-    setDraft({ name: '', initiative: '', hp: '', ac: '' })
+      ac: Number(draft.ac || 10),
+    };
+    update({ combatants: [...combat.combatants, next] });
+    setDraft({ name: '', initiative: '', hp: '', ac: '' });
   }
 
   function startCombat(): void {
-    if (ordered.length === 0) return
-    const first = ordered[0]
-    setViewedId(first.id)
-    update({ activeId: first.id, round: 1 })
+    if (ordered.length === 0) return;
+    const first = ordered[0];
+    setViewedId(first.id);
+    update({ activeId: first.id, round: 1 });
   }
 
   function nextTurn(): void {
-    if (ordered.length === 0) return
+    if (ordered.length === 0) return;
     if (!started || !turnId) {
-      startCombat()
-      return
+      startCombat();
+      return;
     }
-    const idx = ordered.findIndex((c) => c.id === turnId)
-    const nextIdx = (idx + 1) % ordered.length
-    const nxt = ordered[nextIdx]
+    const idx = ordered.findIndex((c) => c.id === turnId);
+    const nextIdx = (idx + 1) % ordered.length;
+    const nxt = ordered[nextIdx];
     update({
       activeId: nxt.id,
-      round: nextIdx === 0 ? round + 1 : round
-    })
+      round: nextIdx === 0 ? round + 1 : round,
+    });
   }
 
   function rollOne(c: Combatant) {
-    const bonus = initiativeBonus(c)
-    return { ...rollD20(bonus, 'Init'), bonus }
+    const bonus = initiativeBonus(c);
+    return { ...rollD20(bonus, 'Init'), bonus };
   }
 
   function applyRolls(which: CombatantKind[] | 'all'): void {
-    const notes: string[] = []
-    const batch: { result: ReturnType<typeof rollD20>; source: string }[] = []
+    const notes: string[] = [];
+    const batch: { result: ReturnType<typeof rollD20>; source: string }[] = [];
     const next = combat.combatants.map((c) => {
-      if (which !== 'all' && !which.includes(c.kind)) return c
-      const rolled = rollOne(c)
-      const name = c.name.split('(')[0].trim()
-      notes.push(`${name} ${rolled.total} (${rolled.detail})`)
-      batch.push({ result: rolled, source: name })
-      return { ...c, initiative: rolled.total }
-    })
-    update({ combatants: next })
-    setLastRoll(notes.join(' · '))
-    dice.recordMany(batch)
+      if (which !== 'all' && !which.includes(c.kind)) return c;
+      const rolled = rollOne(c);
+      const name = c.name.split('(')[0].trim();
+      notes.push(`${name} ${rolled.total} (${rolled.detail})`);
+      batch.push({ result: rolled, source: name });
+      return { ...c, initiative: rolled.total };
+    });
+    update({ combatants: next });
+    setLastRoll(notes.join(' · '));
+    dice.recordMany(batch);
   }
 
   function clearCombat(): void {
-    setLastRoll('')
-    setViewedId(null)
-    setConfirmClear(false)
-    setConfirmRemove(null)
-    update({ combatants: [], activeId: null, round: 0, showOrderToPlayers: false })
+    setLastRoll('');
+    setViewedId(null);
+    setConfirmClear(false);
+    setConfirmRemove(null);
+    update({ combatants: [], activeId: null, round: 0, showOrderToPlayers: false });
   }
 
   function removeCombatant(id: string): void {
-    setConfirmRemove(null)
-    if (viewedId === id) setViewedId(null)
+    setConfirmRemove(null);
+    if (viewedId === id) setViewedId(null);
     update({
       combatants: combat.combatants.filter((x) => x.id !== id),
-      activeId: combat.activeId === id ? null : combat.activeId
-    })
+      activeId: combat.activeId === id ? null : combat.activeId,
+    });
   }
 
   return (
@@ -154,7 +161,11 @@ export default function CombatTracker({
           <h2 className="font-display text-lg text-amber">Combat</h2>
           <div className="flex items-center gap-3">
             {onClose ? (
-              <button type="button" onClick={onClose} className="text-xs text-muted hover:text-amber">
+              <button
+                type="button"
+                onClick={onClose}
+                className="text-xs text-muted hover:text-amber"
+              >
                 Hide
               </button>
             ) : null}
@@ -233,10 +244,10 @@ export default function CombatTracker({
             type="button"
             onClick={() => {
               if (combat.combatants.length === 0) {
-                clearCombat()
-                return
+                clearCombat();
+                return;
               }
-              setConfirmClear(true)
+              setConfirmClear(true);
             }}
             className="text-[11px] text-muted hover:text-blood"
           >
@@ -253,11 +264,11 @@ export default function CombatTracker({
         </div>
         <ul>
           {ordered.map((c) => {
-            const onTurn = c.id === turnId
-            const inspecting = viewed?.id === c.id
-            const ratio = c.maxHp > 0 ? c.hp / c.maxHp : 0
-            const bonus = initiativeBonus(c)
-            const condition = combatantCondition(c)
+            const onTurn = c.id === turnId;
+            const inspecting = viewed?.id === c.id;
+            const ratio = c.maxHp > 0 ? c.hp / c.maxHp : 0;
+            const bonus = initiativeBonus(c);
+            const condition = combatantCondition(c);
             return (
               <li
                 key={c.id}
@@ -268,11 +279,11 @@ export default function CombatTracker({
                     type="button"
                     title={`Roll initiative 1d20${formatMod(bonus)}`}
                     onClick={() => {
-                      const rolled = rollOne(c)
-                      patchCombatant(c.id, { initiative: rolled.total })
-                      const name = c.name.split('(')[0].trim()
-                      setLastRoll(`${name} ${rolled.total} (${rolled.detail})`)
-                      dice.record(rolled, name)
+                      const rolled = rollOne(c);
+                      patchCombatant(c.id, { initiative: rolled.total });
+                      const name = c.name.split('(')[0].trim();
+                      setLastRoll(`${name} ${rolled.total} (${rolled.detail})`);
+                      dice.record(rolled, name);
                     }}
                     className="shrink-0 rounded border border-line px-1.5 py-0.5 text-[11px] font-semibold text-amber hover:border-amber"
                   >
@@ -281,9 +292,7 @@ export default function CombatTracker({
                   <input
                     type="number"
                     value={c.initiative}
-                    onChange={(e) =>
-                      patchCombatant(c.id, { initiative: Number(e.target.value) })
-                    }
+                    onChange={(e) => patchCombatant(c.id, { initiative: Number(e.target.value) })}
                     className="w-12 rounded border border-line bg-ink px-1 text-center text-sm"
                     title="Initiative total — type a PC's roll here"
                   />
@@ -300,7 +309,9 @@ export default function CombatTracker({
                   >
                     {c.name}
                     <span className="ml-2 text-[10px] uppercase text-muted">{c.kind}</span>
-                    {onTurn ? <span className="ml-2 text-[10px] uppercase text-amber">Turn</span> : null}
+                    {onTurn ? (
+                      <span className="ml-2 text-[10px] uppercase text-amber">Turn</span>
+                    ) : null}
                     {condition === 'dead' ? (
                       <span className="ml-2 text-[10px] uppercase text-blood">Dead</span>
                     ) : null}
@@ -309,13 +320,19 @@ export default function CombatTracker({
                     ) : null}
                   </button>
                   <span className="text-xs text-muted">AC {c.ac}</span>
-                  <button type="button" onClick={() => patchCombatant(c.id, { hp: Math.max(0, c.hp - 1) })}>
+                  <button
+                    type="button"
+                    onClick={() => patchCombatant(c.id, { hp: Math.max(0, c.hp - 1) })}
+                  >
                     −
                   </button>
                   <span className={`w-12 text-center text-sm ${ratio <= 0.3 ? 'text-blood' : ''}`}>
                     {c.hp}/{c.maxHp}
                   </span>
-                  <button type="button" onClick={() => patchCombatant(c.id, { hp: Math.min(c.maxHp, c.hp + 1) })}>
+                  <button
+                    type="button"
+                    onClick={() => patchCombatant(c.id, { hp: Math.min(c.maxHp, c.hp + 1) })}
+                  >
                     +
                   </button>
                   <button
@@ -328,12 +345,14 @@ export default function CombatTracker({
                   </button>
                 </div>
               </li>
-            )
+            );
           })}
         </ul>
 
         {ordered.length === 0 ? (
-          <p className="px-3 py-3 text-sm text-muted">Add the party, then pick creatures from the Bestiary.</p>
+          <p className="px-3 py-3 text-sm text-muted">
+            Add the party, then pick creatures from the Bestiary.
+          </p>
         ) : null}
 
         <div className="border-t border-line px-3 py-2">
@@ -382,8 +401,8 @@ export default function CombatTracker({
         <form
           className="grid grid-cols-12 gap-1 px-3 py-2 text-xs"
           onSubmit={(e) => {
-            e.preventDefault()
-            addManual()
+            e.preventDefault();
+            addManual();
           }}
         >
           <input
@@ -498,5 +517,5 @@ export default function CombatTracker({
         </div>
       ) : null}
     </section>
-  )
+  );
 }

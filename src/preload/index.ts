@@ -1,8 +1,14 @@
-import { contextBridge, ipcRenderer } from 'electron'
-import type { AppSettings, CampaignInfo, CombatState, DisplayInfo, PlayerState } from '../shared/types'
-import type { CampaignLibraryFolder } from '../shared/campaignLayout'
-import type { SheetTemplateKind } from '../shared/sheetTemplates'
-import type { WotcLibrary } from '../shared/wotc'
+import { contextBridge, ipcRenderer } from 'electron';
+import type {
+  AppSettings,
+  CampaignInfo,
+  CombatState,
+  DisplayInfo,
+  PlayerState,
+} from '../shared/types';
+import type { CampaignLibraryFolder } from '../shared/campaignLayout';
+import type { SheetTemplateKind } from '../shared/sheetTemplates';
+import type { WotcLibrary } from '../shared/wotc';
 
 const api = {
   getDisplays: (): Promise<DisplayInfo[]> => ipcRenderer.invoke('app:displays'),
@@ -11,13 +17,13 @@ const api = {
     ipcRenderer.invoke('app:save-settings', partial),
   onWillClose: (callback: () => void | Promise<void>) => {
     const listener = () => {
-      void callback()
-    }
-    ipcRenderer.on('app:will-close', listener)
-    return () => ipcRenderer.removeListener('app:will-close', listener)
+      void callback();
+    };
+    ipcRenderer.on('app:will-close', listener);
+    return () => ipcRenderer.removeListener('app:will-close', listener);
   },
   confirmClose: (): void => {
-    ipcRenderer.send('app:confirm-close')
+    ipcRenderer.send('app:confirm-close');
   },
   placePlayerOnDisplay: (displayId: number): Promise<DisplayInfo[]> =>
     ipcRenderer.invoke('player:place-on-display', displayId),
@@ -25,19 +31,21 @@ const api = {
     ipcRenderer.invoke('player:show-image', { src, title }),
   clearPlayer: (): Promise<PlayerState> => ipcRenderer.invoke('player:clear'),
   setPlayerInitiative: (payload: {
-    entries: PlayerState['initiative']
-    show: boolean
-    round?: number
+    entries: PlayerState['initiative'];
+    show: boolean;
+    round?: number;
   }): Promise<PlayerState> => ipcRenderer.invoke('player:set-initiative', payload),
   getPlayerState: (): Promise<PlayerState> => ipcRenderer.invoke('player:get-state'),
   onPlayerState: (callback: (state: PlayerState) => void) => {
-    const listener = (_event: unknown, state: PlayerState) => callback(state)
-    ipcRenderer.on('player:state', listener)
-    return () => ipcRenderer.removeListener('player:state', listener)
+    const listener = (_event: unknown, state: PlayerState) => callback(state);
+    ipcRenderer.on('player:state', listener);
+    return () => ipcRenderer.removeListener('player:state', listener);
   },
-  pickCampaignFolder: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:pick-folder'),
+  pickCampaignFolder: (): Promise<CampaignInfo | null> =>
+    ipcRenderer.invoke('campaign:pick-folder'),
   newCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:new'),
-  openSampleCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:open-sample'),
+  openSampleCampaign: (): Promise<CampaignInfo | null> =>
+    ipcRenderer.invoke('campaign:open-sample'),
   getCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:get'),
   readFile: (relativePath: string): Promise<string> =>
     ipcRenderer.invoke('campaign:read-file', relativePath),
@@ -65,9 +73,9 @@ const api = {
   ): Promise<{ campaign: CampaignInfo; path: string; existed: boolean } | null> =>
     ipcRenderer.invoke('campaign:save-to-library', folder, name, contents),
   loadWotcLibrary: (): Promise<WotcLibrary> => ipcRenderer.invoke('wotc:load'),
-  openWotcFolder: (): Promise<string> => ipcRenderer.invoke('wotc:open-folder')
-}
+  openWotcFolder: (): Promise<string> => ipcRenderer.invoke('wotc:open-folder'),
+};
 
-export type TableDmApi = typeof api
+export type TableDmApi = typeof api;
 
-contextBridge.exposeInMainWorld('tabledm', api)
+contextBridge.exposeInMainWorld('tabledm', api);

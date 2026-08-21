@@ -1,92 +1,92 @@
-import type { SrdKind, SrdRecord } from './srd'
+import type { SrdKind, SrdRecord } from './srd';
 
 const TYPE_LINE =
-  /^(?:([A-Za-z]+)\s+)?Cantrip\s+\((.+)\)\s*$|^Level\s+(\d+)\s+([A-Za-z]+)\s+\((.+)\)\s*$/
-const SECTION = /^Spells\s+\([A-Z0-9]\)$/i
-const FIELD = /^(?:[-*]\s+)?(?:\*\*)?(Casting Time|Range|Components|Duration)(?:\*\*)?:\s*(.*)$/i
-const HIGHER = /^(?:\*\*)?Using a Higher-Level Spell Slot\.(?:\*\*)?\s*/i
-const HEADING = /^#{1,3}\s+(.+)$/
+  /^(?:([A-Za-z]+)\s+)?Cantrip\s+\((.+)\)\s*$|^Level\s+(\d+)\s+([A-Za-z]+)\s+\((.+)\)\s*$/;
+const SECTION = /^Spells\s+\([A-Z0-9]\)$/i;
+const FIELD = /^(?:[-*]\s+)?(?:\*\*)?(Casting Time|Range|Components|Duration)(?:\*\*)?:\s*(.*)$/i;
+const HIGHER = /^(?:\*\*)?Using a Higher-Level Spell Slot\.(?:\*\*)?\s*/i;
+const HEADING = /^#{1,3}\s+(.+)$/;
 
 function slug(value: string): string {
   return value
     .toLowerCase()
     .replace(/['’]/g, '')
     .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
+    .replace(/^-|-$/g, '');
 }
 
 function sourceIdFromName(fileName: string): string {
-  const stem = fileName.replace(/\.[^.]+$/, '')
-  return slug(stem) || 'wotc'
+  const stem = fileName.replace(/\.[^.]+$/, '');
+  return slug(stem) || 'wotc';
 }
 
 function sourceLabelFromName(fileName: string): string {
-  const stem = fileName.replace(/\.[^.]+$/, '')
-  if (/equipment|gear/i.test(stem)) return 'PHB Gear'
-  if (/magic item/i.test(stem) || /dungeon master/i.test(stem)) return 'DMG Items'
-  if (/player'?s?\s*handbook|phb/i.test(stem) && /spell/i.test(stem)) return 'PHB 2024'
-  if (/monster\s*manual|\bmm\b/i.test(stem)) return 'Monster Manual'
-  return stem.replace(/\s+/g, ' ').trim() || 'WOTC'
+  const stem = fileName.replace(/\.[^.]+$/, '');
+  if (/equipment|gear/i.test(stem)) return 'PHB Gear';
+  if (/magic item/i.test(stem) || /dungeon master/i.test(stem)) return 'DMG Items';
+  if (/player'?s?\s*handbook|phb/i.test(stem) && /spell/i.test(stem)) return 'PHB 2024';
+  if (/monster\s*manual|\bmm\b/i.test(stem)) return 'Monster Manual';
+  return stem.replace(/\s+/g, ' ').trim() || 'WOTC';
 }
 
 function isTypeLine(line: string): boolean {
-  return TYPE_LINE.test(line)
+  return TYPE_LINE.test(line);
 }
 
 function nextNonEmpty(lines: string[], start: number): number {
-  let i = start
-  while (i < lines.length && !lines[i].trim()) i += 1
-  return i
+  let i = start;
+  while (i < lines.length && !lines[i].trim()) i += 1;
+  return i;
 }
 
 function looksLikeSpellList(fileName: string, text: string): boolean {
-  if (/spell/i.test(fileName)) return true
-  return /Casting Time:/i.test(text) && /Level \s*\d+/i.test(text) && TYPE_LINE.test(text)
+  if (/spell/i.test(fileName)) return true;
+  return /Casting Time:/i.test(text) && /Level \s*\d+/i.test(text) && TYPE_LINE.test(text);
 }
 
 function looksLikeEquipment(fileName: string, text: string): boolean {
-  if (/equipment|gear/i.test(fileName)) return true
-  return /^## /m.test(text) && /^(Damage|Armor Class|Cost):/m.test(text)
+  if (/equipment|gear/i.test(fileName)) return true;
+  return /^## /m.test(text) && /^(Damage|Armor Class|Cost):/m.test(text);
 }
 
 function looksLikeMagicItems(fileName: string, text: string): boolean {
-  if (/magic item/i.test(fileName) || /dungeon master/i.test(fileName)) return true
-  return /^## /m.test(text) && /^Rarity:/m.test(text)
+  if (/magic item/i.test(fileName) || /dungeon master/i.test(fileName)) return true;
+  return /^## /m.test(text) && /^Rarity:/m.test(text);
 }
 
 const EQUIPMENT_FIELD =
-  /^(Damage|Properties|Mastery|Weight|Cost|Armor Class|Strength|Stealth|Don|Ability|Utilize|Craft|Variants|Carrying Capacity|Speed|Crew|Passengers|Cargo \(Tons\)|AC|HP|Damage Threshold|Rarity|Attunement):\s*(.*)$/i
+  /^(Damage|Properties|Mastery|Weight|Cost|Armor Class|Strength|Stealth|Don|Ability|Utilize|Craft|Variants|Carrying Capacity|Speed|Crew|Passengers|Cargo \(Tons\)|AC|HP|Damage Threshold|Rarity|Attunement):\s*(.*)$/i;
 
 function equipmentKind(category: string, fields: Record<string, string>): SrdKind {
-  if (fields.Damage || /weapon/i.test(category)) return 'weapon'
-  if (category === 'Rule' || category === 'Lifestyle') return 'rule'
-  return 'gear'
+  if (fields.Damage || /weapon/i.test(category)) return 'weapon';
+  if (category === 'Rule' || category === 'Lifestyle') return 'rule';
+  return 'gear';
 }
 
 export function parsePhbEquipment(text: string, fileName: string): SrdRecord[] {
-  const source = sourceIdFromName(fileName)
-  const sourceLabel = sourceLabelFromName(fileName)
-  const blocks = text.replace(/\r\n/g, '\n').split(/^## /m).slice(1)
-  const records: SrdRecord[] = []
+  const source = sourceIdFromName(fileName);
+  const sourceLabel = sourceLabelFromName(fileName);
+  const blocks = text.replace(/\r\n/g, '\n').split(/^## /m).slice(1);
+  const records: SrdRecord[] = [];
 
   for (const block of blocks) {
-    const lines = block.split('\n').map((line) => line.trim())
-    const name = lines[0]?.replace(/^#+\s*/, '').trim()
-    if (!name) continue
-    let category = ''
-    const fields: Record<string, string> = {}
-    const body: string[] = []
-    let startedBody = false
+    const lines = block.split('\n').map((line) => line.trim());
+    const name = lines[0]?.replace(/^#+\s*/, '').trim();
+    if (!name) continue;
+    let category = '';
+    const fields: Record<string, string> = {};
+    const body: string[] = [];
+    let startedBody = false;
 
     for (const line of lines.slice(1)) {
       if (!line) {
-        if (Object.keys(fields).length > 0 || category) startedBody = true
-        continue
+        if (Object.keys(fields).length > 0 || category) startedBody = true;
+        continue;
       }
-      const field = EQUIPMENT_FIELD.exec(line)
+      const field = EQUIPMENT_FIELD.exec(line);
       if (field && !startedBody) {
-        fields[field[1]] = field[2]
-        continue
+        fields[field[1]] = field[2];
+        continue;
       }
       if (
         !category &&
@@ -98,24 +98,29 @@ export function parsePhbEquipment(text: string, fileName: string): SrdRecord[] {
             line
           ))
       ) {
-        category = line
-        continue
+        category = line;
+        continue;
       }
-      startedBody = true
-      body.push(line)
+      startedBody = true;
+      body.push(line);
     }
 
-    const desc = body.join('\n').replace(/\n{3,}/g, '\n\n').trim()
-    const kind = equipmentKind(category, fields)
+    const desc = body
+      .join('\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+    const kind = equipmentKind(category, fields);
     const summary = [category, fields.Damage, fields['Armor Class'], fields.Cost, fields.Weight]
       .filter(Boolean)
-      .join(' · ')
+      .join(' · ');
 
     records.push({
       id: `${source}_${slug(name)}`,
       name,
       kind,
-      searchText: [name, category, desc, ...Object.values(fields), sourceLabel].filter(Boolean).join(' '),
+      searchText: [name, category, desc, ...Object.values(fields), sourceLabel]
+        .filter(Boolean)
+        .join(' '),
       summary: summary || sourceLabel,
       source,
       sourceLabel,
@@ -127,162 +132,180 @@ export function parsePhbEquipment(text: string, fileName: string): SrdRecord[] {
         damage: fields.Damage,
         properties: fields.Properties,
         cost: fields.Cost,
-        weight: fields.Weight
-      }
-    })
+        weight: fields.Weight,
+      },
+    });
   }
 
-  return records
+  return records;
 }
 
 export function parsePhbMagicItems(text: string, fileName: string): SrdRecord[] {
   return parsePhbEquipment(text, fileName).map((record) => {
-    const rarity = String(record.data.Rarity ?? '')
-    const attunement = String(record.data.Attunement ?? '')
-    const category = String(record.data.category ?? '')
+    const rarity = String(record.data.Rarity ?? '');
+    const attunement = String(record.data.Attunement ?? '');
+    const category = String(record.data.category ?? '');
     return {
       ...record,
       kind: 'gear' as const,
-      summary: [category, rarity, attunement].filter(Boolean).join(' · ') || record.summary
-    }
-  })
+      summary: [category, rarity, attunement].filter(Boolean).join(' · ') || record.summary,
+    };
+  });
 }
 
 function isArtistCredit(line: string): boolean {
-  const words = line.split(/\s+/).filter(Boolean)
+  const words = line.split(/\s+/).filter(Boolean);
   if (words.length === 1) {
     return (
       line.length >= 6 &&
       /^[A-Z]+$/.test(line) &&
       !/^(CONCENTRATION|INSTANTANEOUS|UNALIGNED|CONSTRUCT|HUMANOID|UNDEAD)$/.test(line)
-    )
+    );
   }
-  if (words.length < 2 || words.length > 4 || line.length > 42) return false
-  if (/^(AC|HP|CR|DC|STR|DEX|CON|INT|WIS|CHA)\b/.test(line)) return false
-  return words.every((word) => /^[A-Z][A-Z.'’-]*$/.test(word) || /^[A-Z]\.$/.test(word))
+  if (words.length < 2 || words.length > 4 || line.length > 42) return false;
+  if (/^(AC|HP|CR|DC|STR|DEX|CON|INT|WIS|CHA)\b/.test(line)) return false;
+  return words.every((word) => /^[A-Z][A-Z.'’-]*$/.test(word) || /^[A-Z]\.$/.test(word));
 }
 
 function isArtCaption(line: string, prevArtist: boolean): boolean {
-  if (/Affected by the Spell/i.test(line)) return true
-  if (!prevArtist) return false
-  if (line.length > 180) return false
-  return !/\b(AC|HP|DC|damage|saving throw|spell slot|Hit Points|creature|target|duration)\b/i.test(line)
+  if (/Affected by the Spell/i.test(line)) return true;
+  if (!prevArtist) return false;
+  if (line.length > 180) return false;
+  return !/\b(AC|HP|DC|damage|saving throw|spell slot|Hit Points|creature|target|duration)\b/i.test(
+    line
+  );
 }
 
 function isJunkLine(line: string, prevArtist: boolean): boolean {
-  return isArtistCredit(line) || isArtCaption(line, prevArtist)
+  return isArtistCredit(line) || isArtCaption(line, prevArtist);
 }
 
 function isCompactLine(line: string): boolean {
-  if (/\t/.test(line)) return true
-  if (/^(AC|HP|Speed|Mod|STR|DEX|CON|INT|WIS|CHA|Immunities|Senses|Languages|CR|Actions)\b/.test(line)) {
-    return true
+  if (/\t/.test(line)) return true;
+  if (
+    /^(AC|HP|Speed|Mod|STR|DEX|CON|INT|WIS|CHA|Immunities|Senses|Languages|CR|Actions)\b/.test(line)
+  ) {
+    return true;
   }
-  return line.length < 70 && !/[.!?]$/.test(line)
+  return line.length < 70 && !/[.!?]$/.test(line);
 }
 
 function joinSpellBody(lines: string[]): string {
-  if (lines.length === 0) return ''
-  let text = lines[0]
+  if (lines.length === 0) return '';
+  let text = lines[0];
   for (let i = 1; i < lines.length; i += 1) {
-    const tight = isCompactLine(lines[i]) && isCompactLine(lines[i - 1])
-    text += tight ? '\n' : '\n\n'
-    text += lines[i]
+    const tight = isCompactLine(lines[i]) && isCompactLine(lines[i - 1]);
+    text += tight ? '\n' : '\n\n';
+    text += lines[i];
   }
-  return text
+  return text;
 }
 
 function parseTypeLine(line: string): { level: number; school: string; classes: string[] } | null {
-  const cantrip = /^(?:([A-Za-z]+)\s+)?Cantrip\s+\((.+)\)\s*$/.exec(line)
+  const cantrip = /^(?:([A-Za-z]+)\s+)?Cantrip\s+\((.+)\)\s*$/.exec(line);
   if (cantrip) {
     return {
       level: 0,
       school: cantrip[1] ?? '',
-      classes: cantrip[2].split(',').map((part) => part.trim()).filter(Boolean)
-    }
+      classes: cantrip[2]
+        .split(',')
+        .map((part) => part.trim())
+        .filter(Boolean),
+    };
   }
-  const leveled = /^Level\s+(\d+)\s+([A-Za-z]+)\s+\((.+)\)\s*$/.exec(line)
+  const leveled = /^Level\s+(\d+)\s+([A-Za-z]+)\s+\((.+)\)\s*$/.exec(line);
   if (leveled) {
     return {
       level: Number(leveled[1]),
       school: leveled[2],
-      classes: leveled[3].split(',').map((part) => part.trim()).filter(Boolean)
-    }
+      classes: leveled[3]
+        .split(',')
+        .map((part) => part.trim())
+        .filter(Boolean),
+    };
   }
-  return null
+  return null;
 }
 
 function spellSummary(level: number, school: string, castingTime: string, range: string): string {
-  const tier = level === 0 ? 'Cantrip' : `Level ${level}`
-  return [tier, school, castingTime, range].filter(Boolean).join(' · ')
+  const tier = level === 0 ? 'Cantrip' : `Level ${level}`;
+  return [tier, school, castingTime, range].filter(Boolean).join(' · ');
 }
 
 export function parsePhbSpellList(text: string, fileName: string): SrdRecord[] {
-  const source = sourceIdFromName(fileName)
-  const sourceLabel = sourceLabelFromName(fileName)
-  const lines = text.replace(/\r\n/g, '\n').split('\n')
-  const records: SrdRecord[] = []
+  const source = sourceIdFromName(fileName);
+  const sourceLabel = sourceLabelFromName(fileName);
+  const lines = text.replace(/\r\n/g, '\n').split('\n');
+  const records: SrdRecord[] = [];
 
-  const starts: number[] = []
+  const starts: number[] = [];
   for (let i = 0; i < lines.length; i += 1) {
-    const raw = lines[i].trim()
-    const heading = HEADING.exec(raw)
-    const name = heading?.[1]?.trim() ?? raw
-    if (!name || raw.startsWith('# ') || SECTION.test(name) || FIELD.test(name) || isTypeLine(name)) {
-      continue
+    const raw = lines[i].trim();
+    const heading = HEADING.exec(raw);
+    const name = heading?.[1]?.trim() ?? raw;
+    if (
+      !name ||
+      raw.startsWith('# ') ||
+      SECTION.test(name) ||
+      FIELD.test(name) ||
+      isTypeLine(name)
+    ) {
+      continue;
     }
-    const typeAt = nextNonEmpty(lines, i + 1)
-    if (typeAt < lines.length && isTypeLine(lines[typeAt].trim())) starts.push(i)
+    const typeAt = nextNonEmpty(lines, i + 1);
+    if (typeAt < lines.length && isTypeLine(lines[typeAt].trim())) starts.push(i);
   }
 
   for (let s = 0; s < starts.length; s += 1) {
-    const nameAt = starts[s]
-    const rawName = lines[nameAt].trim()
-    const name = (HEADING.exec(rawName)?.[1] ?? rawName).trim()
-    const typeAt = nextNonEmpty(lines, nameAt + 1)
-    const typed = parseTypeLine(lines[typeAt].trim())
-    if (!typed) continue
+    const nameAt = starts[s];
+    const rawName = lines[nameAt].trim();
+    const name = (HEADING.exec(rawName)?.[1] ?? rawName).trim();
+    const typeAt = nextNonEmpty(lines, nameAt + 1);
+    const typed = parseTypeLine(lines[typeAt].trim());
+    if (!typed) continue;
 
-    const end = s + 1 < starts.length ? starts[s + 1] : lines.length
-    let castingTime = ''
-    let range = ''
-    let components = ''
-    let duration = ''
-    const body: string[] = []
+    const end = s + 1 < starts.length ? starts[s + 1] : lines.length;
+    let castingTime = '';
+    let range = '';
+    let components = '';
+    let duration = '';
+    const body: string[] = [];
 
-    let prevArtist = false
+    let prevArtist = false;
     for (let i = typeAt + 1; i < end; i += 1) {
-      const line = lines[i].trim()
-      if (!line || SECTION.test(line)) continue
-      const field = FIELD.exec(line)
+      const line = lines[i].trim();
+      if (!line || SECTION.test(line)) continue;
+      const field = FIELD.exec(line);
       if (field) {
-        const key = field[1].toLowerCase()
-        if (key === 'casting time') castingTime = field[2]
-        else if (key === 'range') range = field[2]
-        else if (key === 'components') components = field[2]
-        else if (key === 'duration') duration = field[2]
-        prevArtist = false
-        continue
+        const key = field[1].toLowerCase();
+        if (key === 'casting time') castingTime = field[2];
+        else if (key === 'range') range = field[2];
+        else if (key === 'components') components = field[2];
+        else if (key === 'duration') duration = field[2];
+        prevArtist = false;
+        continue;
       }
       if (isJunkLine(line, prevArtist)) {
-        prevArtist = isArtistCredit(line)
-        continue
+        prevArtist = isArtistCredit(line);
+        continue;
       }
-      prevArtist = false
-      body.push(line)
+      prevArtist = false;
+      body.push(line);
     }
 
-    const higherIndex = body.findIndex((line) => HIGHER.test(line))
-    const descLines = higherIndex === -1 ? body : body.slice(0, higherIndex)
-    const higherLines = higherIndex === -1 ? [] : body.slice(higherIndex)
-    const desc = joinSpellBody(descLines)
-    const higherLevel = joinSpellBody(higherLines).replace(HIGHER, '')
+    const higherIndex = body.findIndex((line) => HIGHER.test(line));
+    const descLines = higherIndex === -1 ? body : body.slice(0, higherIndex);
+    const higherLines = higherIndex === -1 ? [] : body.slice(higherIndex);
+    const desc = joinSpellBody(descLines);
+    const higherLevel = joinSpellBody(higherLines).replace(HIGHER, '');
 
     records.push({
       id: `${source}_${slug(name)}`,
       name,
       kind: 'spell',
-      searchText: [name, typed.school, desc, typed.classes.join(' '), sourceLabel].filter(Boolean).join(' '),
+      searchText: [name, typed.school, desc, typed.classes.join(' '), sourceLabel]
+        .filter(Boolean)
+        .join(' '),
       summary: spellSummary(typed.level, typed.school, castingTime, range),
       source,
       sourceLabel,
@@ -300,30 +323,30 @@ export function parsePhbSpellList(text: string, fileName: string): SrdRecord[] {
         ritual: /ritual/i.test(castingTime),
         desc,
         higherLevel,
-        classes: typed.classes
-      }
-    })
+        classes: typed.classes,
+      },
+    });
   }
 
-  return records
+  return records;
 }
 
 function parseGenericBook(text: string, fileName: string): SrdRecord[] {
-  const source = sourceIdFromName(fileName)
-  const sourceLabel = sourceLabelFromName(fileName)
+  const source = sourceIdFromName(fileName);
+  const sourceLabel = sourceLabelFromName(fileName);
   const blocks = text
     .replace(/\r\n/g, '\n')
     .split(/\n{2,}/)
     .map((block) => block.trim())
-    .filter(Boolean)
+    .filter(Boolean);
 
-  const records: SrdRecord[] = []
+  const records: SrdRecord[] = [];
   for (const block of blocks) {
-    const lines = block.split('\n')
-    const heading = lines[0].replace(/^#+\s*/, '').trim()
-    if (!heading || heading.length > 80 || SECTION.test(heading)) continue
-    const desc = lines.slice(1).join('\n').trim()
-    if (!desc) continue
+    const lines = block.split('\n');
+    const heading = lines[0].replace(/^#+\s*/, '').trim();
+    if (!heading || heading.length > 80 || SECTION.test(heading)) continue;
+    const desc = lines.slice(1).join('\n').trim();
+    if (!desc) continue;
     records.push({
       id: `${source}_${slug(heading)}`,
       name: heading,
@@ -332,15 +355,15 @@ function parseGenericBook(text: string, fileName: string): SrdRecord[] {
       summary: sourceLabel,
       source,
       sourceLabel,
-      data: { name: heading, desc }
-    })
+      data: { name: heading, desc },
+    });
   }
-  return records
+  return records;
 }
 
 export function parseWotcFiles(files: { name: string; text: string }[]): SrdRecord[] {
-  const records: SrdRecord[] = []
-  const seen = new Set<string>()
+  const records: SrdRecord[] = [];
+  const seen = new Set<string>();
   for (const file of files) {
     const parsed = looksLikeSpellList(file.name, file.text)
       ? parsePhbSpellList(file.text, file.name)
@@ -348,31 +371,33 @@ export function parseWotcFiles(files: { name: string; text: string }[]): SrdReco
         ? parsePhbEquipment(file.text, file.name)
         : looksLikeMagicItems(file.name, file.text)
           ? parsePhbMagicItems(file.text, file.name)
-          : parseGenericBook(file.text, file.name)
+          : parseGenericBook(file.text, file.name);
     for (const record of parsed) {
-      if (seen.has(record.id)) continue
-      seen.add(record.id)
-      records.push(record)
+      if (seen.has(record.id)) continue;
+      seen.add(record.id);
+      records.push(record);
     }
   }
-  return records
+  return records;
 }
 
-export function extraSourcesFromRecords(records: SrdRecord[]): { id: string; label: string; kind: SrdKind; count: number }[] {
-  const map = new Map<string, { id: string; label: string; kind: SrdKind; count: number }>()
+export function extraSourcesFromRecords(
+  records: SrdRecord[]
+): { id: string; label: string; kind: SrdKind; count: number }[] {
+  const map = new Map<string, { id: string; label: string; kind: SrdKind; count: number }>();
   for (const record of records) {
-    if (!record.source) continue
-    const current = map.get(record.source)
+    if (!record.source) continue;
+    const current = map.get(record.source);
     if (current) {
-      current.count += 1
-      continue
+      current.count += 1;
+      continue;
     }
     map.set(record.source, {
       id: record.source,
       label: record.sourceLabel ?? record.source,
       kind: record.kind,
-      count: 1
-    })
+      count: 1,
+    });
   }
-  return [...map.values()]
+  return [...map.values()];
 }

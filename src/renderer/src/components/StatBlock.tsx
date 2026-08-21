@@ -1,4 +1,4 @@
-import type { Character, Combatant, StatBlock as StatBlockData } from '../../../shared/types'
+import type { Character, Combatant, StatBlock as StatBlockData } from '../../../shared/types';
 
 function scoreLine(block: StatBlockData): { label: string; score: number; mod: number }[] {
   const keys = [
@@ -7,20 +7,20 @@ function scoreLine(block: StatBlockData): { label: string; score: number; mod: n
     ['CON', 'constitution'],
     ['INT', 'intelligence'],
     ['WIS', 'wisdom'],
-    ['CHA', 'charisma']
-  ] as const
+    ['CHA', 'charisma'],
+  ] as const;
   return keys
     .map(([label, key]) => {
-      const score = block.scores?.[key]
-      if (score == null) return null
-      const mod = block.modifiers?.[key] ?? Math.floor((score - 10) / 2)
-      return { label, score, mod }
+      const score = block.scores?.[key];
+      if (score == null) return null;
+      const mod = block.modifiers?.[key] ?? Math.floor((score - 10) / 2);
+      return { label: label as string, score, mod };
     })
-    .filter((row): row is { label: string; score: number; mod: number } => Boolean(row))
+    .filter((row): row is { label: string; score: number; mod: number } => row !== null);
 }
 
 function ActionList({ title, items }: { title: string; items?: { name: string; desc: string }[] }) {
-  if (!items?.length) return null
+  if (!items?.length) return null;
   return (
     <div className="mt-3">
       <h4 className="font-display text-amber">{title}</h4>
@@ -32,11 +32,11 @@ function ActionList({ title, items }: { title: string; items?: { name: string; d
         ))}
       </div>
     </div>
-  )
+  );
 }
 
 export function MonsterStatBlock({ block }: { block: StatBlockData }) {
-  const scores = scoreLine(block)
+  const scores = scoreLine(block);
   return (
     <div className="text-sm">
       <div className="font-display text-xl text-amber">{block.name}</div>
@@ -110,19 +110,19 @@ export function MonsterStatBlock({ block }: { block: StatBlockData }) {
       <ActionList title="Reactions" items={block.reactions} />
       <ActionList title="Legendary Actions" items={block.legendary} />
     </div>
-  )
+  );
 }
 
 export function CharacterCard({
   character,
   compact,
-  onSelect
+  onSelect,
 }: {
-  character: Character
-  compact?: boolean
-  onSelect?: () => void
+  character: Character;
+  compact?: boolean;
+  onSelect?: () => void;
 }) {
-  const ratio = character.maxHp > 0 ? character.hp / character.maxHp : 0
+  const ratio = character.maxHp > 0 ? character.hp / character.maxHp : 0;
   return (
     <button
       type="button"
@@ -149,15 +149,15 @@ export function CharacterCard({
         {character.passivePerception != null ? <span>PP {character.passivePerception}</span> : null}
       </div>
     </button>
-  )
+  );
 }
 
 export function combatantToBlock(c: Combatant): StatBlockData | null {
-  if (c.statBlock) return c.statBlock
+  if (c.statBlock) return c.statBlock;
   return {
     name: c.name,
     ac: c.ac,
     hp: c.maxHp,
-    type: c.kind
-  }
+    type: c.kind,
+  };
 }

@@ -24,12 +24,12 @@ export function validateString(value: unknown, fieldName: string): string {
  */
 export function validatePath(value: unknown, fieldName: string): string {
   const path = validateString(value, fieldName);
-  
+
   // Basic path traversal check (more detailed check done by safeJoin in main)
   if (path.includes('..') && !path.startsWith('./') && !path.startsWith('../')) {
     throw new ValidationError(`${fieldName} contains invalid path traversal`);
   }
-  
+
   return path;
 }
 

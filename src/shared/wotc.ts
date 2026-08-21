@@ -1,11 +1,11 @@
 export interface WotcFile {
-  name: string
-  text: string
+  name: string;
+  text: string;
 }
 
 export interface WotcLibrary {
-  folder: string
-  files: WotcFile[]
+  folder: string;
+  files: WotcFile[];
 }
 
 export const WOTC_README = `WOTC lookup files
@@ -185,4 +185,4 @@ CHECKLIST
 4. Field names match the examples above, including the colon.
 5. Open Lookup — a new chip should appear, and a search for the first entry
    should find it.
-`
+`;

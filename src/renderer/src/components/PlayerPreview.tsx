@@ -1,16 +1,16 @@
-import type { PlayerState } from '../../../shared/types'
-import PlayerView from './PlayerView'
+import type { PlayerState } from '../../../shared/types';
+import PlayerView from './PlayerView';
 
 export default function PlayerPreview({
   state,
   hidden,
   onClear,
-  onToggle
+  onToggle,
 }: {
-  state: PlayerState
-  hidden?: boolean
-  onClear: () => void
-  onToggle: () => void
+  state: PlayerState;
+  hidden?: boolean;
+  onClear: () => void;
+  onToggle: () => void;
 }) {
   return (
     <div className="shrink-0 border-b border-line bg-ink">
@@ -45,5 +45,5 @@ export default function PlayerPreview({
         </div>
       )}
     </div>
-  )
+  );
 }
