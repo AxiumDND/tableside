@@ -6,16 +6,19 @@ import {
   folderUsesArt,
   isArtFolderName,
   isBestiaryFolderName,
+  isFactionsFolderName,
   isGearFolderName,
   isMapsFolderName,
   isNpcFolderName,
   isPartyFolderName,
+  isPlacesFolderName,
   isSessionsFolderName,
   isSpellsFolderName
 } from '../../../shared/campaignLayout'
 import { mapArtRelativeFolder } from '../../../shared/mapCreate'
 import { sanitizeFileName, type SheetTemplateKind } from '../../../shared/sheetTemplates'
 import { sheetAcceptsPortrait } from '../../../shared/sheetPortrait'
+import { stockArtForTemplate, stockArtUrl } from '../../../shared/stockArt'
 import { IMAGE_EXT, campaignFileUrl, flattenImages } from '../lib/images'
 import { parentFolderLabel, searchCampaignFiles } from '../lib/campaignSearch'
 
@@ -54,7 +57,9 @@ function fileExt(path: string): string {
   return dot === -1 ? '' : name.slice(dot)
 }
 
-function folderKind(name: string): 'party' | 'npcs' | 'bestiary' | 'spells' | 'gear' | 'sessions' | 'maps' | null {
+function folderKind(
+  name: string
+): 'party' | 'npcs' | 'bestiary' | 'spells' | 'gear' | 'sessions' | 'maps' | 'places' | 'factions' | null {
   if (isPartyFolderName(name)) return 'party'
   if (isNpcFolderName(name)) return 'npcs'
   if (isBestiaryFolderName(name)) return 'bestiary'
@@ -62,6 +67,8 @@ function folderKind(name: string): 'party' | 'npcs' | 'bestiary' | 'spells' | 'g
   if (isGearFolderName(name)) return 'gear'
   if (isSessionsFolderName(name)) return 'sessions'
   if (isMapsFolderName(name)) return 'maps'
+  if (isPlacesFolderName(name)) return 'places'
+  if (isFactionsFolderName(name)) return 'factions'
   return null
 }
 
@@ -307,7 +314,7 @@ export default function CampaignFiles({
     event.preventDefault()
     event.stopPropagation()
     const x = Math.min(event.clientX, window.innerWidth - 200)
-    const y = Math.min(event.clientY, window.innerHeight - 220)
+    const y = Math.min(event.clientY, window.innerHeight - 360)
     setMenu(node ? { kind: 'node', x, y, node } : { kind: 'root', x, y })
   }
 
@@ -320,7 +327,10 @@ export default function CampaignFiles({
       spell: 'New spell',
       gear: 'New gear',
       nightsheet: 'New game night sheet',
-      map: 'New map'
+      map: 'New map',
+      place: 'New place',
+      shop: 'New shop',
+      faction: 'New faction'
     }
     setPrompt({ kind: 'create', folder, template, title: titles[template] })
     setName('')
@@ -412,6 +422,8 @@ export default function CampaignFiles({
     prompt?.kind === 'create' && (prompt.template === 'map' || sheetAcceptsPortrait(prompt.template))
   const createArtFolder =
     prompt?.kind === 'create' ? (prompt.template === 'map' ? mapArtRelativeFolder(prompt.folder) : artFolderRelativePath(prompt.folder)) : ''
+  const stockArt =
+    prompt?.kind === 'create' ? stockArtForTemplate(prompt.template) : []
 
   return (
     <aside className="flex min-h-0 flex-1 flex-col bg-ink">
@@ -545,6 +557,15 @@ export default function CampaignFiles({
               {folderHint === 'maps' || !folderHint ? (
                 <MenuItem label="New map…" onClick={() => startCreate(folderPath, 'map')} />
               ) : null}
+              {folderHint === 'places' || !folderHint ? (
+                <>
+                  <MenuItem label="New place…" onClick={() => startCreate(folderPath, 'place')} />
+                  <MenuItem label="New shop…" onClick={() => startCreate(folderPath, 'shop')} />
+                </>
+              ) : null}
+              {folderHint === 'factions' || !folderHint ? (
+                <MenuItem label="New faction…" onClick={() => startCreate(folderPath, 'faction')} />
+              ) : null}
               <MenuItem label="New note…" onClick={() => startCreate(folderPath, 'blank')} />
               {canAddArt ? (
                 <MenuItem label="Add art…" onClick={() => void addFiles(folderPath, 'art')} />
@@ -562,7 +583,7 @@ export default function CampaignFiles({
         >
           <form
             className={`w-full rounded border border-line bg-panel p-4 ${
-              createWantsArt ? 'max-w-md' : 'max-w-sm'
+              createWantsArt && stockArt.length > 0 ? 'max-w-xl' : createWantsArt ? 'max-w-md' : 'max-w-sm'
             }`}
             onClick={(event) => event.stopPropagation()}
             onKeyDown={(event) => {
@@ -581,6 +602,12 @@ export default function CampaignFiles({
                   ? 'Lazy DM 10-step game night sheet. Existing Party characters are linked in. Combatants lines feed Add to initiative.'
                   : prompt.kind === 'create' && prompt.template === 'map'
                   ? 'Pick a campaign image, or load one — loaded files go in this folder’s Art/ and are named after the map.'
+                  : prompt.kind === 'create' && prompt.template === 'place'
+                    ? 'Town, site, wilderness, or dungeon. Pick default art below, or load your own.'
+                    : prompt.kind === 'create' && prompt.template === 'shop'
+                      ? 'Pick a shop type below. Stock and services roll from that type. Link the proprietor as an NPC.'
+                      : prompt.kind === 'create' && prompt.template === 'faction'
+                        ? 'Guild, church, house, or cult. Pick a default emblem or scene below.'
                   : prompt.kind === 'create' && sheetAcceptsPortrait(prompt.template)
                     ? 'Optional portrait — load a file or pick campaign art. It lands in this folder’s Art/ named like the sheet. You can also load art later from the sheet.'
                   : prompt.kind === 'create' && prompt.template !== 'blank'
@@ -603,8 +630,55 @@ export default function CampaignFiles({
             )}
             {prompt.kind === 'create' && createWantsArt ? (
               <div className="mt-3 space-y-2">
+                {stockArt.length > 0 ? (
+                  <div>
+                    <p className="text-[11px] text-muted">
+                      {prompt.template === 'shop'
+                        ? 'Shop type'
+                        : prompt.template === 'faction'
+                          ? 'Emblem'
+                          : prompt.template === 'place'
+                            ? 'Place type'
+                            : 'Default art'}
+                    </p>
+                    <div className="mt-1 grid max-h-56 grid-cols-4 gap-1.5 overflow-y-auto pr-0.5">
+                      {stockArt.map((item) => {
+                        const selected = mapImage?.kind === 'stock' && mapImage.id === item.id
+                        return (
+                          <button
+                            key={item.id}
+                            type="button"
+                            onClick={() =>
+                              setMapImage(selected ? null : { kind: 'stock', id: item.id })
+                            }
+                            className={`overflow-hidden rounded border text-left ${
+                              selected ? 'border-amber ring-1 ring-amber' : 'border-line hover:border-amber'
+                            }`}
+                          >
+                            <img
+                              src={stockArtUrl(item.id)}
+                              alt=""
+                              className={`w-full object-cover ${
+                                item.group === 'faction' ? 'aspect-square' : 'aspect-video'
+                              }`}
+                            />
+                            <span className="block truncate px-1 py-0.5 text-[10px] text-parchment/90">
+                              {item.title}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ) : null}
                 <label className="block text-[11px] text-muted">
-                  {prompt.template === 'map' ? 'Map image' : 'Portrait'}
+                  {prompt.template === 'map'
+                    ? 'Map image'
+                    : stockArt.length > 0
+                      ? 'Or campaign art'
+                    : prompt.template === 'place' || prompt.template === 'shop' || prompt.template === 'faction'
+                      ? 'Art'
+                      : 'Portrait'}
                   <select
                     value={mapImage?.kind === 'existing' ? mapImage.path : ''}
                     onChange={(event) => {
@@ -636,6 +710,11 @@ export default function CampaignFiles({
                       {name.trim()
                         ? ` → ${createArtFolder}/${sanitizeFileName(name)}${fileExt(mapImage.filePath)}`
                         : ` → ${createArtFolder}/ (named after the ${prompt.template === 'map' ? 'map' : 'sheet'})`}
+                    </span>
+                  ) : mapImage?.kind === 'stock' ? (
+                    <span className="min-w-0 truncate text-[11px] text-muted">
+                      {mapImage.id}
+                      {name.trim() ? ` → ${createArtFolder}/${sanitizeFileName(name)}.webp` : ''}
                     </span>
                   ) : null}
                 </div>

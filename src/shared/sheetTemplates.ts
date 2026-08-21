@@ -1,4 +1,15 @@
-export type SheetTemplateKind = 'blank' | 'player' | 'npc' | 'monster' | 'spell' | 'gear' | 'nightsheet' | 'map'
+export type SheetTemplateKind =
+  | 'blank'
+  | 'player'
+  | 'npc'
+  | 'monster'
+  | 'spell'
+  | 'gear'
+  | 'nightsheet'
+  | 'map'
+  | 'place'
+  | 'shop'
+  | 'faction'
 
 const PLAYER = `<!--
   Party sheet template. Right-click Party/ → New player… (or copy into Party/ and rename).
@@ -84,8 +95,8 @@ const NPC = `<!--
 > | | |
 > |---|---|
 > | **Role** | Patron / informant / obstacle |
-> | **Faction** | |
-> | **Location** | |
+> | **Faction** | [[Faction Name]] |
+> | **Location** | [[Place Name]] |
 > | **Status** | Alive |
 > | **CR** | 2 |
 
@@ -270,7 +281,8 @@ Three things they can find no matter which way they go:
 
 ## 5. Locations
 
-- [[Map Name]] — what they notice, what's fantastic, what's dangerous
+- [[Place Name]] — what they notice, what's fantastic, what's dangerous
+- Map: [[Map Name]]
 - Set dressing / telegraph:
 
 ## 6. NPCs
@@ -332,6 +344,130 @@ Prep notes for this map.
 Read-aloud, checks, loot.
 `
 
+const PLACE = `<!--
+  Place note template. Right-click Places/ → New place… (or copy into Places/ and rename).
+  Settlements, sites, wilderness, and dungeons — not battlemaps (those stay in Maps/).
+  Art: Places/Art/Place Name.png, or Load art on the sheet. Shopkeepers stay in NPCs/.
+  See docs/CAMPAIGN.md.
+-->
+# Place Name
+
+> [!infobox]+
+> ![[Place Name.png]]
+>
+> ### *What this place is in one line*
+>
+> | | |
+> |---|---|
+> | **Type** | Settlement / site / wilderness / dungeon |
+> | **Region** | |
+> | **Ruler / faction** | [[Faction Name]] |
+> | **Map** | [[Map Name]] |
+> | **Mood** | |
+
+> [!readaloud]
+> First thing they see, hear, and smell.
+
+## At a glance
+
+- **Notice** — 
+- **Fantastic** — 
+- **Dangerous** — 
+
+## People
+
+- [[NPC Name]] — 
+
+## Sites
+
+- [[Shop Name]] — 
+
+## Rumors
+
+- 
+
+> [!gmonly]
+> Truth, timers, what happens if they stay, leave, or pick a fight.
+`
+
+const SHOP = `<!--
+  Shop / inn / stall template. Right-click Places/ → New shop…
+  The stall is a Place note; the proprietor is an NPC. Link both ways.
+  Art: Places/Art/Shop Name.png, or Load art on the sheet. Stock can wikilink Gear notes.
+  See docs/CAMPAIGN.md.
+-->
+# Shop Name
+
+> [!infobox]+
+> ![[Shop Name.png]]
+>
+> ### *What they sell in one line*
+>
+> | | |
+> |---|---|
+> | **Type** | Tavern / armorer / stables / weapons / store / apothecary |
+> | **Place** | [[Place Name]] |
+> | **Proprietor** | [[NPC Name]] |
+> | **Hours** | |
+> | **Attitude** | Wary / helpful / greedy |
+> | **Standing** | Neutral |
+> | **Map** | [[Map Name]] |
+
+> [!readaloud]
+> The room when they walk in.
+
+## Stock
+
+| Item | Price | Notes |
+|---|---|---|
+| [[Item Name]] | | |
+
+## Services
+
+- What they will / will not do
+
+> [!gmonly]
+> Real inventory, stolen goods, who they report to, the adventure hook.
+`
+
+const FACTION = `<!--
+  Faction template. Right-click Factions/ → New faction…
+  Guilds, churches, houses, cults. Members stay in NPCs/; the HQ is a Place.
+  Art: Factions/Art/Faction Name.png for an emblem, or Load art on the sheet.
+  See docs/CAMPAIGN.md.
+-->
+# Faction Name
+
+> [!infobox]+
+> ![[Faction Name.png]]
+>
+> ### *What they want in one line*
+>
+> | | |
+> |---|---|
+> | **Type** | Guild / church / house / cult |
+> | **Leader** | [[NPC Name]] |
+> | **HQ** | [[Place Name]] |
+> | **Attitude** | Unknown / friendly / hostile |
+
+## Goals
+
+- 
+- 
+- 
+
+## Members
+
+- [[NPC Name]] — 
+
+## Methods
+
+How they work: favors, coin, threats, faith.
+
+> [!gmonly]
+> Secrets, timers, what happens if the party joins, crosses, or ignores them.
+`
+
 export const FALLBACK_TEMPLATES: Record<Exclude<SheetTemplateKind, 'blank'>, string> = {
   player: PLAYER,
   npc: NPC,
@@ -339,7 +475,10 @@ export const FALLBACK_TEMPLATES: Record<Exclude<SheetTemplateKind, 'blank'>, str
   spell: SPELL,
   gear: GEAR,
   nightsheet: NIGHTSHEET,
-  map: MAP
+  map: MAP,
+  place: PLACE,
+  shop: SHOP,
+  faction: FACTION
 }
 
 export const TEMPLATE_PLACEHOLDERS: Record<Exclude<SheetTemplateKind, 'blank'>, string> = {
@@ -349,7 +488,10 @@ export const TEMPLATE_PLACEHOLDERS: Record<Exclude<SheetTemplateKind, 'blank'>, 
   spell: 'Spell Name',
   gear: 'Item Name',
   nightsheet: 'Session Name',
-  map: 'Map Name'
+  map: 'Map Name',
+  place: 'Place Name',
+  shop: 'Shop Name',
+  faction: 'Faction Name'
 }
 
 export const TEMPLATE_FILE_NAMES: Record<Exclude<SheetTemplateKind, 'blank'>, string[]> = {
@@ -359,7 +501,10 @@ export const TEMPLATE_FILE_NAMES: Record<Exclude<SheetTemplateKind, 'blank'>, st
   spell: ['spell.md'],
   gear: ['gear.md', 'item.md', 'equipment.md'],
   nightsheet: ['game night sheet.md', 'gamenightsheet.md', 'night sheet.md', 'nightsheet.md'],
-  map: ['map.md']
+  map: ['map.md'],
+  place: ['place.md', 'location.md', 'settlement.md'],
+  shop: ['shop.md', 'merchant.md', 'inn.md'],
+  faction: ['faction.md']
 }
 
 export function displayTitle(fileStem: string): string {

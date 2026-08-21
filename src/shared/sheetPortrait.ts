@@ -1,3 +1,5 @@
+import type { SheetTemplateKind } from './sheetTemplates'
+
 const IMAGE_WIKI = /!\[\[([^\]\n]+\.(?:png|jpe?g|webp|gif|svg|bmp))\]\]/i
 
 /** Point the sheet’s portrait embed at a file in that folder’s Art/. */
@@ -10,14 +12,15 @@ export function setSheetPortraitEmbed(markdown: string, fileName: string): strin
   return markdown.replace(/^(# .+\r?\n)/, `$1\n${embed}\n`)
 }
 
-export function sheetAcceptsPortrait(
-  template: 'blank' | 'player' | 'npc' | 'monster' | 'spell' | 'gear' | 'nightsheet' | 'map'
-): boolean {
+export function sheetAcceptsPortrait(template: SheetTemplateKind): boolean {
   return (
     template === 'player' ||
     template === 'npc' ||
     template === 'monster' ||
     template === 'spell' ||
-    template === 'gear'
+    template === 'gear' ||
+    template === 'place' ||
+    template === 'shop' ||
+    template === 'faction'
   )
 }

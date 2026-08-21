@@ -172,10 +172,11 @@ export interface AppSettings {
   recentCampaigns?: RecentCampaign[]
 }
 
-/** Optional image when creating a map note. */
+/** Optional image when creating a map or sheet note. */
 export type CreateNoteMapImage =
   | { kind: 'existing'; path: string }
   | { kind: 'import'; filePath: string }
+  | { kind: 'stock'; id: string }
 
 export const emptyCombat = (): CombatState => ({
   combatants: [],

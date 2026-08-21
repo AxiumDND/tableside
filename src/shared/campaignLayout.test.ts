@@ -22,15 +22,15 @@ describe('gear folders', () => {
     expect(isGearFolderName('Weapons')).toBe(false)
   })
 
-  it('orders Gear subsections Weapons, Armor, Equipment, Magic Items', () => {
-    const names = ['Magic Items', 'Weapons', 'Art', 'Equipment', 'Armor']
+  it('orders Gear subsections Weapons, Armor, Equipment, Trade Goods, Magic Items', () => {
+    const names = ['Magic Items', 'Weapons', 'Art', 'Trade Goods', 'Equipment', 'Armor']
     names.sort((a, b) => {
       const ga = gearSectionIndex(a)
       const gb = gearSectionIndex(b)
       if (ga !== gb) return ga - gb
       return a.localeCompare(b)
     })
-    expect(names).toEqual(['Weapons', 'Armor', 'Equipment', 'Magic Items', 'Art'])
+    expect(names).toEqual(['Weapons', 'Armor', 'Equipment', 'Trade Goods', 'Magic Items', 'Art'])
   })
 
   it('keeps top-level Gear in the standard folder order', () => {
@@ -63,10 +63,21 @@ describe('Art folders', () => {
     expect(folderUsesArt('Bestiary')).toBe(true)
     expect(folderUsesArt('Bestiary/Art')).toBe(true)
     expect(folderUsesArt('Spells')).toBe(true)
+    expect(folderUsesArt('Places')).toBe(true)
+    expect(folderUsesArt('Locations')).toBe(true)
+    expect(folderUsesArt('Factions')).toBe(true)
     expect(folderUsesArt('Gear/Weapons')).toBe(true)
     expect(folderUsesArt('Gear')).toBe(false)
     expect(folderUsesArt('Maps/Print')).toBe(false)
     expect(folderUsesArt('Templates')).toBe(false)
+  })
+
+  it('treats Locations / World as Places', () => {
+    expect(folderMatchesCanonical('Places', 'places')).toBe(true)
+    expect(folderMatchesCanonical('Locations', 'places')).toBe(true)
+    expect(folderMatchesCanonical('World', 'places')).toBe(true)
+    expect(folderOrderIndex('Places')).toBeLessThan(folderOrderIndex('Maps'))
+    expect(folderOrderIndex('Factions')).toBeLessThan(folderOrderIndex('Maps'))
   })
 
   it('sorts notes before Art folders', () => {

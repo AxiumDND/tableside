@@ -26,6 +26,15 @@ const FILTERS: { id: SrdKind | 'all' | string; label: string }[] = [
   { id: 'weapon', label: 'Weapons' },
   { id: 'armor', label: 'Armor' },
   { id: 'gear', label: 'Gear' },
+  { id: 'trade', label: 'Trade Goods' },
+  { id: 'temple', label: 'Temple Goods' },
+  { id: 'armorer', label: 'Armorer Goods' },
+  { id: 'arms', label: 'Weapon Goods' },
+  { id: 'stables', label: 'Stable Goods' },
+  { id: 'store', label: 'Store Goods' },
+  { id: 'apothecary', label: 'Apothecary' },
+  { id: 'forge', label: 'Forge' },
+  { id: 'market', label: 'Market Goods' },
   { id: 'magic', label: 'Magic Items' }
 ]
 

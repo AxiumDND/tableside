@@ -38,6 +38,16 @@ import ItemSheet from './ItemSheet'
 import NpcSheet from './NpcSheet'
 import { CharacterCard } from './StatBlock'
 import type { FileKind } from './CampaignFiles'
+import type { ShopStockOffer } from '../../../shared/shopCatalogs'
+import {
+  applyShopInventory,
+  applyShopStock,
+  generateShopInventory,
+  looksLikeShopNote,
+  shopTypeFromMarkdown
+} from '../../../shared/shopStock'
+import { applyShopStanding, type ShopStanding } from '../../../shared/shopStanding'
+import { matchStockArt } from '../../../shared/stockArt'
 
 interface Heading {
   id: string
@@ -147,7 +157,13 @@ export default function SessionNotes({
   }, [kind, markdown, path])
   const npcMode = Boolean(parsedNpc && kind === 'note' && !editing && isNpcSheet(markdown, path))
   const itemMode =
-    kind === 'note' && Boolean(path) && !editing && (pathHasFolder(path, 'gear') || pathHasFolder(path, 'spells'))
+    kind === 'note' &&
+    Boolean(path) &&
+    !editing &&
+    (pathHasFolder(path, 'gear') ||
+      pathHasFolder(path, 'spells') ||
+      pathHasFolder(path, 'places') ||
+      pathHasFolder(path, 'factions'))
   const sheetChrome = npcMode || itemMode
   const mapMode = kind === 'note' && !editing && isMapNote(markdown)
   const mapImage = useMemo(
@@ -276,6 +292,33 @@ export default function SessionNotes({
       return
     }
     setEditing(false)
+  }
+
+  async function persistShopMarkdown(next: string): Promise<void> {
+    if (!path) return
+    await window.tabledm.saveFile(path, next)
+    setMarkdown(next)
+    setOriginal(next)
+    markdownRef.current = next
+    originalRef.current = next
+  }
+
+  async function rerollShopStock(): Promise<void> {
+    if (!path) return
+    const stem = (path.split('/').pop() ?? '').replace(/\.md$/i, '')
+    const type =
+      shopTypeFromMarkdown(markdownRef.current) ||
+      matchStockArt(stem, 'shop')?.id ||
+      'General Store'
+    await persistShopMarkdown(applyShopInventory(markdownRef.current, generateShopInventory(type)))
+  }
+
+  async function changeShopStock(stock: ShopStockOffer[]): Promise<void> {
+    await persistShopMarkdown(applyShopStock(markdownRef.current, stock))
+  }
+
+  async function changeShopStanding(standing: ShopStanding): Promise<void> {
+    await persistShopMarkdown(applyShopStanding(markdownRef.current, standing))
   }
 
   function jump(id: string): void {
@@ -533,14 +576,26 @@ export default function SessionNotes({
                   </button>
                 </>
               ) : (
-                <button
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => setEditing(true)}
-                  className="rounded border border-line px-2.5 py-1 text-xs hover:border-amber"
-                >
-                  Edit
-                </button>
+                <>
+                  {pathHasFolder(path, 'places') && looksLikeShopNote(markdown) ? (
+                    <button
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => void rerollShopStock()}
+                      className="rounded border border-line px-2.5 py-1 text-xs hover:border-amber"
+                    >
+                      Reroll stock
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => setEditing(true)}
+                    className="rounded border border-line px-2.5 py-1 text-xs hover:border-amber"
+                  >
+                    Edit
+                  </button>
+                </>
               )
             ) : null}
             {canShow ? (
@@ -689,6 +744,9 @@ export default function SessionNotes({
               originalRef.current = result.markdown
               onCampaignChange?.(result.campaign)
             }}
+            onRerollStock={rerollShopStock}
+            onChangeStock={changeShopStock}
+            onChangeStanding={changeShopStanding}
             renderNotes={(body) =>
               renderDocument(
                 linkWikiNotes(prepareNoteMarkdown(body, path, images, { injectPortrait: false }), path, noteIndex),

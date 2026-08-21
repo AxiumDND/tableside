@@ -99,7 +99,7 @@ Format and placement of personal PHB/DMG text files: [WOTC/README.md](../WOTC/RE
 
 ## Packaging notes
 
-`electron-builder` ships `examples/bad-blood` as an extra resource, plus `srd-portraits`, `srd-items`, and `srd-schools`. Product name is **Tableside** (`com.tabledm.app`). `npm run dist` writes `dist/Tableside-Setup-<version>.exe` (per-user NSIS: Start Menu + desktop shortcuts, custom icon). Window and installer icons live in `resources/icon.ico` (regenerate with `node scripts/make-app-icon.mjs`). First launch copies `%APPDATA%\table-dm` settings/WOTC/samples into `%APPDATA%\Tableside` if needed.
+`electron-builder` ships `examples/bad-blood` as an extra resource, plus `srd-portraits`, `srd-items`, `srd-schools`, and `stock-art`. Product name is **Tableside** (`com.tabledm.app`). `npm run dist` writes `dist/Tableside-Setup-<version>.exe` (per-user NSIS: Start Menu + desktop shortcuts, custom icon). Window and installer icons live in `resources/icon.ico` (regenerate with `node scripts/make-app-icon.mjs`). First launch copies `%APPDATA%\table-dm` settings/WOTC/samples into `%APPDATA%\Tableside` if needed.
 
 ## Where behavior lives
 

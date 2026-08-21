@@ -216,10 +216,13 @@ Facts in that table surface in the sheet chrome. Keep the combat numbers in sync
 | `Gear.md` / `Item.md` / `Equipment.md` | Gear note |
 | `Game Night Sheet.md` / `Night Sheet.md` / `nightsheet.md` | Game night sheet |
 | `Map.md` | Map note (image + DM pins + tokens) |
+| `Place.md` / `Location.md` / `Settlement.md` | Place note (town, site, wilderness, dungeon) |
+| `Shop.md` / `Merchant.md` / `Inn.md` | Shop note (inn, stall, forge, temple) |
+| `Faction.md` | Faction note (guild, church, house, cult) |
 
 **New campaign** writes these from built-in fallbacks if missing. Leading HTML comments (`<!-- … -->`) are stripped when filling a new note from a template.
 
-Placeholder text such as `Character Name` / `NPC Name` / `Monster Name` is replaced with the name you enter. Game night sheets also replace `{{party}}` with wikilinks to every `Party/` sheet.
+Placeholder text such as `Character Name` / `NPC Name` / `Monster Name` / `Place Name` / `Shop Name` / `Faction Name` is replaced with the name you enter. Game night sheets also replace `{{party}}` with wikilinks to every `Party/` sheet.
 
 ## Editing tips
 

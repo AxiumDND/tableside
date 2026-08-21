@@ -6,7 +6,7 @@ import {
   parseNightEncounters,
   type CampaignNote
 } from './notes'
-import { parseStatblockYaml } from './statblock'
+import { isNpcSheet, parseStatblockYaml } from './statblock'
 import { abilityMod, extractRolls, formatMod } from './dice'
 import { parseWotcFiles } from './wotcParse'
 
@@ -56,6 +56,22 @@ describe('night sheet parsing', () => {
 describe('campaign note lists', () => {
   it('lists npc sheets separately from party and bestiary', () => {
     expect(npcNotes(notes).map((n) => n.stem)).toEqual(['Hale'])
+  })
+})
+
+describe('isNpcSheet', () => {
+  const infobox = '# Blue Water Inn\n\n> [!infobox]+\n> ### *Warm rooms*\n'
+
+  it('treats Party and NPC notes as creature sheets', () => {
+    expect(isNpcSheet(infobox, 'NPCs/Hale.md')).toBe(true)
+    expect(isNpcSheet('```statblock\nname: Wolf\n```', 'Bestiary/Wolf.md')).toBe(true)
+  })
+
+  it('does not treat Places, Factions, Gear, or Spells as creature sheets', () => {
+    expect(isNpcSheet(infobox, 'Places/Blue Water Inn.md')).toBe(false)
+    expect(isNpcSheet(infobox, 'Locations/Vallaki.md')).toBe(false)
+    expect(isNpcSheet(infobox, 'Factions/Keepers of the Feather.md')).toBe(false)
+    expect(isNpcSheet(infobox, 'Gear/Magic Items/Ring.md')).toBe(false)
   })
 })
 

@@ -209,7 +209,14 @@ export function extractStatblock(markdown: string): { block: ParsedStatblock; re
 }
 
 export function isNpcSheet(markdown: string, path: string): boolean {
-  if (pathHasFolder(path, 'gear') || pathHasFolder(path, 'spells')) return false
+  if (
+    pathHasFolder(path, 'gear') ||
+    pathHasFolder(path, 'spells') ||
+    pathHasFolder(path, 'places') ||
+    pathHasFolder(path, 'factions')
+  ) {
+    return false
+  }
   return (
     /```statblock/i.test(markdown) ||
     /layout:\s*Basic 5e Layout/i.test(markdown) ||

@@ -21,12 +21,16 @@ describe('setSheetPortraitEmbed', () => {
 })
 
 describe('sheetAcceptsPortrait', () => {
-  it('is true for creature, gear, and spell sheets', () => {
+  it('is true for creature, gear, spell, place, shop, and faction sheets', () => {
     expect(sheetAcceptsPortrait('player')).toBe(true)
     expect(sheetAcceptsPortrait('npc')).toBe(true)
     expect(sheetAcceptsPortrait('monster')).toBe(true)
     expect(sheetAcceptsPortrait('gear')).toBe(true)
     expect(sheetAcceptsPortrait('spell')).toBe(true)
+    expect(sheetAcceptsPortrait('place')).toBe(true)
+    expect(sheetAcceptsPortrait('shop')).toBe(true)
+    expect(sheetAcceptsPortrait('faction')).toBe(true)
     expect(sheetAcceptsPortrait('map')).toBe(false)
+    expect(sheetAcceptsPortrait('nightsheet')).toBe(false)
   })
 })

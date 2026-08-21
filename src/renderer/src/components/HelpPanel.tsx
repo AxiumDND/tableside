@@ -92,8 +92,8 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
             items={[
               <>
                 <Action>Open campaign</Action> picks any folder. <Action>New campaign</Action> scaffolds Party, NPCs,
-                Bestiary, Maps, and the rest in an empty folder. The empty notes pane can still load the Bad Blood
-                sample.
+                Places, Factions, Maps, and the rest in an empty folder. The empty notes pane can still load the Bad
+                Blood sample.
               </>,
               <>
                 Two windows open: this DM console, and a fullscreen black <strong>player</strong> window. Click the{' '}
@@ -161,10 +161,10 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
                 art by name. <Code>Esc</Code> clears, then hides the box.
               </>,
               <>
-                Right-click a folder for Templates (player, NPC, monster, spell, gear, game night sheet, map).{' '}
-                <Action>Add art…</Action> on Party, NPCs, Bestiary, Spells, Sessions, Maps, Handouts, a Gear
-                subsection, or the <Code>Art/</Code> folder itself — pictures go in that folder’s{' '}
-                <Code>Art/</Code>. Name them like the sheet (<Code>Ghoul.webp</Code>) so portraits attach.{' '}
+                Right-click a folder for Templates (player, NPC, monster, spell, gear, game night sheet, map, place,
+                shop, faction). <Action>Add art…</Action> on Party, NPCs, Bestiary, Places, Factions, Spells, Sessions,
+                Maps, Handouts, a Gear subsection, or the <Code>Art/</Code> folder itself — pictures go in that
+                folder’s <Code>Art/</Code>. Name them like the sheet (<Code>Ghoul.webp</Code>) so portraits attach.{' '}
                 <Action>Add files…</Action> still imports notes and PDFs into the folder you clicked. Player, NPC, and
                 monster sheets show a portrait frame — click it for <Action>Load art…</Action> or campaign art, or add
                 art when you create the sheet.
@@ -175,7 +175,15 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
               </>,
               <>
                 <Action>New map…</Action> picks existing art or <Action>Load image…</Action>. Loaded files copy into
-                that folder’s <Code>Art/</Code> (usually <Code>Maps/Art/</Code>) named like the note.
+                that folder’s <Code>Art/</Code> (usually <Code>Maps/Art/</Code>) named like the note.{' '}
+                <Action>New place…</Action> / <Action>New shop…</Action> on <Code>Places/</Code>. Shops pick a type
+                as art (tavern, armorer, stables, weapons, general store, apothecary). That type fills the shop’s
+                stock table from bundled random tables — <Action>Reroll stock</Action>, <Action>Add item…</Action>, or
+                Remove a row if you want a new or trimmed list. Liked / Neutral / Hated on the stock board is how the
+                party is known here: liked pays 20% less than list, hated pays half again. List prices stay in the note.
+                Places pick town, dungeon, inn, and so on; factions
+                pick an emblem.{' '}
+                <Action>New faction…</Action> on <Code>Factions/</Code>. Shopkeepers stay in <Code>NPCs/</Code>.
               </>,
               <>
                 <Code>campaign.json</Code>, <Code>combat.json</Code>, and <Code>README.md</Code> stay hidden from the
@@ -295,7 +303,8 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
             items={[
               <>Open a campaign, then open <Action>Lookup</Action>.</>,
               <>
-                Search, or pick a chip to list everything in that category (Spells, Monsters, Armor, Magic Items, …). A
+                Search, or pick a chip to list everything in that category (Spells, Monsters, Trade Goods, Temple
+                Goods, Apothecary, Forge, …). A
                 selected chip with an empty search lists every matching entry.
               </>,
               <>
@@ -304,7 +313,7 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
               </>,
               <>
                 <Action>Add to Bestiary / Spells / Gear</Action> writes a markdown note you can edit. Gear goes under
-                Weapons, Armor, Equipment, or Magic Items. A monster also copies its default portrait into{' '}
+                Weapons, Armor, Equipment, Trade Goods, or Magic Items. A monster also copies its default portrait into{' '}
                 <Code>Bestiary/Art/</Code> if the campaign does not already have one. A spell copies its school emblem
                 into <Code>Spells/Art/</Code>.
               </>,

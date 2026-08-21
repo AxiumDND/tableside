@@ -24,10 +24,10 @@ describe('gearSubfolderFor', () => {
     ).toBe('Armor')
   })
 
-  it('sends adventuring gear to Gear/Equipment', () => {
-    expect(gearSubfolderFor(record({ kind: 'gear', data: { category: 'Adventuring Gear' } }))).toBe(
-      'Equipment'
-    )
+  it('sends Axium trade goods to Gear/Trade Goods', () => {
+    expect(
+      gearSubfolderFor(record({ kind: 'gear', source: 'axium', data: { category: 'Trade Goods', Type: 'Drink' } }))
+    ).toBe('Trade Goods')
   })
 
   it('sends DMG items to Gear/Magic Items', () => {
