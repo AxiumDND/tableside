@@ -181,7 +181,7 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
                 stock table from bundled random tables — <Action>Reroll stock</Action>, <Action>Add item…</Action>, or
                 Remove a row if you want a new or trimmed list. Liked / Neutral / Hated on the stock board is how the
                 party is known here: liked pays 20% less than list, hated pays half again. List prices stay in the note.
-                Places pick town, dungeon, inn, and so on; factions
+                Places pick town, dungeon, mountain, swamp, and so on; factions
                 pick an emblem.{' '}
                 <Action>New faction…</Action> on <Code>Factions/</Code>. Shopkeepers stay in <Code>NPCs/</Code>.
               </>,
