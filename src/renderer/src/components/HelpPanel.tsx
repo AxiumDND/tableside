@@ -143,9 +143,9 @@ export default function HelpPanel({
                 campaign instead.
               </>,
               <>
-                Two windows open: this DM console, and a fullscreen black <strong>player</strong> window. Click the{' '}
-                <Action>Players see</Action> preview and pick the TV. Plug in a display later and choose it there —
-                the player view stays fullscreen.
+                This DM console always opens. The fullscreen <strong>player</strong> window stays hidden until a second
+                monitor is connected, then it appears there. Click the <Action>Players see</Action> preview to pick the
+                TV. Unplug the second screen and the player view hides again.
               </>,
               <>
                 Click a map or portrait in a note so it is selected, then <Action>Show to players</Action> (or{' '}

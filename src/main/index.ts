@@ -391,6 +391,10 @@ function dmDisplayId(): number {
   return screen.getPrimaryDisplay().id
 }
 
+function hasSecondDisplay(): boolean {
+  return screen.getAllDisplays().length > 1
+}
+
 function targetPlayerDisplay(displayId?: number): Electron.Display {
   const displays = screen.getAllDisplays()
   const wanted = displayId ?? settings.playerDisplayId
@@ -425,9 +429,44 @@ function fullscreenPlayerOnDisplay(display: Electron.Display): void {
   win.setFullScreen(false)
 }
 
-function createPlayerWindow(): void {
-  if (playerWindow && !playerWindow.isDestroyed()) return
-  const display = targetPlayerDisplay()
+function hidePlayerWindow(): void {
+  if (!playerWindow || playerWindow.isDestroyed()) return
+  const win = playerWindow
+  const hide = (): void => {
+    if (win.isDestroyed()) return
+    win.hide()
+    win.setSkipTaskbar(true)
+  }
+  if (win.isFullScreen()) {
+    win.once('leave-full-screen', hide)
+    win.setFullScreen(false)
+    setTimeout(hide, 250)
+    return
+  }
+  hide()
+}
+
+function showPlayerWindow(display?: Electron.Display): void {
+  if (!hasSecondDisplay()) {
+    hidePlayerWindow()
+    return
+  }
+  const target = display ?? targetPlayerDisplay()
+  if (!playerWindow || playerWindow.isDestroyed()) {
+    createPlayerWindow(target)
+    return
+  }
+  playerWindow.setSkipTaskbar(false)
+  playerWindow.show()
+  fullscreenPlayerOnDisplay(target)
+}
+
+function createPlayerWindow(display = targetPlayerDisplay()): void {
+  if (!hasSecondDisplay()) return
+  if (playerWindow && !playerWindow.isDestroyed()) {
+    showPlayerWindow(display)
+    return
+  }
   const bounds = display.bounds
   const icon = appIconPath()
   playerWindow = new BrowserWindow({
@@ -435,6 +474,7 @@ function createPlayerWindow(): void {
     y: bounds.y,
     width: bounds.width,
     height: bounds.height,
+    show: false,
     frame: false,
     fullscreen: false,
     fullscreenable: true,
@@ -456,7 +496,14 @@ function createPlayerWindow(): void {
   playerWindow.webContents.on('did-finish-load', () => {
     playerWindow?.webContents.send('player:state', playerState)
   })
+  playerWindow.setSkipTaskbar(false)
+  playerWindow.show()
   fullscreenPlayerOnDisplay(display)
+}
+
+function syncPlayerWindow(): void {
+  if (hasSecondDisplay()) showPlayerWindow()
+  else hidePlayerWindow()
 }
 
 function sendPlayerState(): void {
@@ -485,7 +532,7 @@ function broadcastDisplays(): void {
 
 function watchDisplays(): void {
   const replacePlayer = (): void => {
-    fullscreenPlayerOnDisplay(targetPlayerDisplay())
+    syncPlayerWindow()
     broadcastDisplays()
   }
   screen.on('display-added', replacePlayer)
@@ -1177,8 +1224,7 @@ function registerIpc(): void {
         mapView: payload.mapView ?? null
       }
       sendPlayerState()
-      if (!playerWindow || playerWindow.isDestroyed()) createPlayerWindow()
-      else fullscreenPlayerOnDisplay(targetPlayerDisplay())
+      syncPlayerWindow()
       return playerState
     }
   )
@@ -1212,8 +1258,8 @@ function registerIpc(): void {
     const display = screen.getAllDisplays().find((d) => d.id === displayId)
     if (!display) return listDisplays()
     await patchSettings({ playerDisplayId: displayId })
-    if (!playerWindow || playerWindow.isDestroyed()) createPlayerWindow()
-    else fullscreenPlayerOnDisplay(display)
+    if (hasSecondDisplay()) showPlayerWindow(display)
+    else hidePlayerWindow()
     return listDisplays()
   })
 
@@ -1421,14 +1467,14 @@ app.whenReady().then(async () => {
   }
 
   createDmWindow()
-  createPlayerWindow()
+  syncPlayerWindow()
   watchDisplays()
   scheduleLaunchUpdateCheck()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {
       createDmWindow()
-      createPlayerWindow()
+      syncPlayerWindow()
     }
   })
 })

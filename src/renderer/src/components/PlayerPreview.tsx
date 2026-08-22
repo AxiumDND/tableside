@@ -127,7 +127,11 @@ export default function PlayerPreview({
             </div>
           </button>
           <p className="mt-1 text-center text-[10px] text-muted">
-            {picking ? 'Choose a monitor' : 'Click to choose monitor'}
+            {displays.length < 2
+              ? 'Player screen waits for a second monitor'
+              : picking
+                ? 'Choose a monitor'
+                : 'Click to choose monitor'}
           </p>
           {picking ? (
             <div className="absolute inset-0 z-10 flex flex-col justify-end rounded bg-ink/95 p-1.5">
