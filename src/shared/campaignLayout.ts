@@ -18,6 +18,7 @@ export const SKIP_DIR_NAMES = new Set([
 export const HIDDEN_FILE_NAMES = new Set(['campaign.json', 'combat.json', 'readme.md'])
 
 export const FOLDER_ORDER = [
+  'start here',
   'sessions',
   'party',
   'npcs',
@@ -63,6 +64,9 @@ function foldFolderName(name: string): string {
 }
 
 const FOLDER_ALIASES: Record<string, string> = {
+  start: 'start here',
+  starthere: 'start here',
+  'getting started': 'start here',
   'the party': 'party',
   pcs: 'party',
   pc: 'party',

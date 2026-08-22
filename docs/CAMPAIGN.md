@@ -11,13 +11,14 @@ Also read:
 
 ## Folder layout
 
-**New campaign** creates this layout (plus `Overview.md` and Templates). **Open campaign** reads any folder live and creates missing standard folders. Folder names match case-insensitively (`Party` / `party`, `NPCs` / `npcs`).
+**New campaign** creates this layout (plus `Start Here/Overview.md` and Templates). **Open campaign** reads any folder live and creates missing standard folders. A root `Overview.md` moves into **Start Here** if that folder does not already have one. Folder names match case-insensitively (`Party` / `party`, `NPCs` / `npcs`).
 
 ```
 campaign.json     campaign name (hidden in the file tree)
 combat.json       live initiative (hidden)
-Overview.md       hub note — opens first if present
 
+Start Here/       hub notes — opens first if present
+  Overview.md     campaign hook and links
 Sessions/         run guides and game night sheets
   Art/            establishing shots
 Party/            PC sheets (Add all players)
@@ -65,6 +66,7 @@ Archive/          recaps, transcripts, old drafts
 | `Spell` | Spells |
 | `Locations`, `World`, `Setting` | Places |
 | `Faction` | Factions |
+| `Start`, `Getting Started` | Start Here |
 | `Z Archive` | Archive |
 
 Skipped directories (not shown / not scanned as notes): `.obsidian`, `.git`, `node_modules`, `WOTC`, `out`, `dist`, and similar.

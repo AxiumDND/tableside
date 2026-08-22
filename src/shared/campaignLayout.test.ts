@@ -34,6 +34,8 @@ describe('gear folders', () => {
   })
 
   it('keeps top-level Gear in the standard folder order', () => {
+    expect(folderOrderIndex('Start Here')).toBeLessThan(folderOrderIndex('Sessions'))
+    expect(folderOrderIndex('Getting Started')).toBe(folderOrderIndex('Start Here'))
     expect(folderOrderIndex('Gear')).toBeLessThan(folderOrderIndex('Maps'))
     expect(folderOrderIndex('Weapons')).toBe(99)
   })

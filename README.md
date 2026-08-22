@@ -4,11 +4,11 @@ A local Windows app for running **in-person** 5e-compatible games. Your laptop i
 
 This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table.
 
-Compatible with fifth edition. Rules lookup uses the **System Reference Document 5.2** (2024 rules), already bundled. Current release: **1.1.21**.
+Compatible with fifth edition. Rules lookup uses the **System Reference Document 5.2** (2024 rules), already bundled. Current release: **1.1.22**.
 
 ## Install (Windows)
 
-**[Download the latest installer](https://github.com/AxiumDND/tableside/releases/latest)** — look for `Tableside-Setup-1.1.21.exe`. No account, no admin.
+**[Download the latest installer](https://github.com/AxiumDND/tableside/releases/latest)** — look for `Tableside-Setup-1.1.22.exe`. No account, no admin.
 
 1. Run the installer. It is a per-user install: Start Menu + desktop shortcuts. You can pick the folder.
 2. Open **Tableside** from the Start Menu.
@@ -23,6 +23,8 @@ Older builds used `%APPDATA%\table-dm`. First launch copies settings and optiona
 ## Who made this
 
 I'm one person — a DM first, and only a basic coder. Tableside would not exist without AI as a pair programmer. I decide what the app should do at the table, and I review what goes into the repo. This is a hobby tool for in-person games, not a studio product. If you want something built by a full team, this isn't that. If you want something a single GM made so the laptop and the player TV just work, this is it.
+
+Questions or thanks: [tableside.gm@gmail.com](mailto:tableside.gm@gmail.com). If it helped at your table, you can [buy me a coffee](https://ko-fi.com/tablesidegm).
 
 ## Features
 
@@ -55,7 +57,7 @@ npm start
 npm run dist
 ```
 
-Writes `dist/Tableside-Setup-1.1.21.exe`. Pushing a `v1.1.21` tag builds that file and attaches it to the [GitHub Release](https://github.com/AxiumDND/tableside/releases/latest).
+Writes `dist/Tableside-Setup-1.1.22.exe`. Pushing a `v1.1.22` tag builds that file and attaches it to the [GitHub Release](https://github.com/AxiumDND/tableside/releases/latest).
 
 `npm run fetch-srd` is only needed if you want to refresh the bundled SRD snapshot from the [Open5e API](https://api.open5e.com/) (`srd-2024`).
 
@@ -79,7 +81,7 @@ The bundled sample is **[examples/greystead](examples/greystead)**. Tableside co
 Campaigns are ordinary folders on disk. **New campaign** scaffolds the standard layout; **Open campaign** reads any folder and fills in missing pieces.
 
 ```
-Overview.md       hub note
+Start Here/       hub notes (Overview.md — opens first)
 Sessions/         run guides and game night sheets (+ Art/)
 Party/            PC sheets (+ Art/)
 NPCs/             named people (+ Art/)

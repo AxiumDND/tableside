@@ -92,8 +92,9 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
             items={[
               <>
                 <Action>Open campaign</Action> picks any folder. <Action>New campaign</Action> scaffolds Party, NPCs,
-                Places, Factions, Maps, and the rest in an empty folder. First launch with no folder opens the
-                Greystead one-shot; <Action>Sample</Action> loads that same copy.
+                Places, Factions, Maps, and the rest in an empty folder, with the hub note in{' '}
+                <Code>Start Here</Code>. First launch with no folder opens the Greystead one-shot;{' '}
+                <Action>Sample</Action> loads that same copy. Open <Code>Start Here</Code> first.
               </>,
               <>
                 Two windows open: this DM console, and a fullscreen black <strong>player</strong> window. Click the{' '}
@@ -373,6 +374,18 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
           </p>
         </Section>
       </div>
+      <footer className="border-t border-line px-3 py-2 text-[11px] leading-relaxed text-muted">
+        Built by one GM. If it helped at your table, you can{' '}
+        <a
+          href="https://ko-fi.com/tablesidegm"
+          target="_blank"
+          rel="noreferrer"
+          className="text-amber underline hover:text-amber-dim"
+        >
+          buy me a coffee
+        </a>
+        .
+      </footer>
     </aside>
   )
 }

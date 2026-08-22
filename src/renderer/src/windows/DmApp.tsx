@@ -35,7 +35,7 @@ import { libraryFolderFor, recordToCampaignMarkdown, gearSubfolderFor } from '..
 import { monsterToStatBlock, type SrdRecord } from '../lib/srd'
 import { extractStatblock, fallbackStatblock, parsedToStatBlock, type ParsedStatblock } from '../lib/statblock'
 import { APP_NAME, APP_VERSION } from '../../../shared/version'
-import { adjacentCampaignFile } from '../../../shared/campaignLayout'
+import { adjacentCampaignFile, canonicalFolder } from '../../../shared/campaignLayout'
 import appIcon from '../assets/icon.png'
 
 const SIDE_PANEL_WIDTH = 'w-[400px]'
@@ -60,6 +60,14 @@ function firstNote(nodes: CampaignTreeNode[]): string {
     }
   }
   walk(nodes)
+  const inStartHere = (path: string): boolean =>
+    canonicalFolder(path.replaceAll('\\', '/').split('/')[0] ?? '') === 'start here'
+  const startOverview = files.find(
+    (p) => inStartHere(p) && /overview/i.test(p.split('/').pop() ?? '')
+  )
+  if (startOverview) return startOverview
+  const startHere = files.find((p) => inStartHere(p))
+  if (startHere) return startHere
   const overview = files.find((p) => /overview/i.test(p.split('/').pop() ?? ''))
   if (overview) return overview
   const night = files.find((p) => /night sheet/i.test(p))

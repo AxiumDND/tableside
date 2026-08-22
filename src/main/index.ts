@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, net, protocol, screen, shell } from 'electron'
 import { existsSync, readdirSync } from 'node:fs'
-import { copyFile, cp, mkdir, readdir, readFile, stat, unlink, writeFile } from 'node:fs/promises'
+import { copyFile, cp, mkdir, readdir, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises'
 import { join, normalize, relative, basename, dirname, extname } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import type {
@@ -589,13 +589,26 @@ async function ensureCampaignLayout(root: string): Promise<void> {
   }
 }
 
+async function migrateRootOverviewToStartHere(root: string): Promise<void> {
+  const destDir = (await existingCanonicalDir(root, 'start here')) ?? join(root, 'Start Here')
+  const dest = join(destDir, 'Overview.md')
+  if (existsSync(dest)) return
+  const source = join(root, 'Overview.md')
+  if (!existsSync(source)) return
+  await ensureDir(destDir)
+  await rename(source, dest)
+}
+
 async function seedNewCampaignFiles(root: string): Promise<void> {
   const title = basename(root)
-  const overview = join(root, 'Overview.md')
+  await migrateRootOverviewToStartHere(root)
+  const startHere = (await existingCanonicalDir(root, 'start here')) ?? join(root, 'Start Here')
+  const overview = join(startHere, 'Overview.md')
   if (!existsSync(overview)) {
+    await ensureDir(startHere)
     await writeFile(
       overview,
-      `# ${title}\n\nOpen **Sessions** for tonight's notes. Towns and shops go in **Places/**; shopkeepers stay in **NPCs/**. Put portraits in each folder's **Art** subfolder.\n`,
+      `# ${title}\n\nOpen **Start Here** first, then **Sessions** for tonight's notes. Towns and shops go in **Places/**; shopkeepers stay in **NPCs/**. Put portraits in each folder's **Art** subfolder.\n`,
       'utf8'
     )
   }
@@ -717,6 +730,7 @@ async function refreshStockCreatureTemplates(root: string): Promise<void> {
 async function prepareCampaignFolder(root: string): Promise<void> {
   const hadCore = await campaignHasCoreFolders(root)
   await ensureCampaignLayout(root)
+  await migrateRootOverviewToStartHere(root)
   if (!hadCore) await seedNewCampaignFiles(root)
   else {
     await refreshStockNightSheetTemplate(root)
