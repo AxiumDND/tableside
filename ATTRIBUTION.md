@@ -8,4 +8,8 @@ Structured JSON used for search is fetched from the [Open5e API](https://api.ope
 
 The Windows installer ships the SRD snapshot, original UI code, original stock art, SRD-only creature portraits, and the **Greystead** one-shot (original adventure text and art). It does **not** ship the Player’s Handbook, Dungeon Master’s Guide, Monster Manual, or any other Wizards adventure. Optional book text and extra local portraits stay on your machine and are gitignored.
 
-Tableside is an independent project and is not affiliated with Wizards of the Coast.
+Pathfinder 2e Lookup in Tableside is original table text. Condition and action names are used as mechanics identifiers. It is not Paizo product text and is not scraped from Archives of Nethys.
+
+Vampire 5th Edition Lookup is original table procedure (Health, Willpower, Hunger). There is no open V5 SRD. Tableside does not ship clan writeups, discipline text, or published stat blocks.
+
+Tableside is an independent project and is not affiliated with Wizards of the Coast, Paizo Inc., or Paradox Interactive.

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Combatant, CombatantKind, CombatState } from '../../../shared/types'
-import { advanceCombatTurn, combatantCondition, initiativeBonus, sortCombatants } from '../lib/combat'
+import { conditionLabel } from '../../../shared/systemPack'
+import { advanceCombatTurn, combatantCondition, combatProfileFor, initiativeBonus, sortCombatants } from '../lib/combat'
 import { formatMod, rollD20 } from '../lib/dice'
 import { statBlockToParsed } from '../lib/statblock'
 import { useDiceLog } from './DiceTray'
@@ -15,6 +16,7 @@ export default function CombatTracker({
   combat,
   bestiary = [],
   partyCount = 0,
+  system,
   onAddParty,
   onAddBestiary,
   onChange,
@@ -23,12 +25,14 @@ export default function CombatTracker({
   combat: CombatState
   bestiary?: { path: string; name: string }[]
   partyCount?: number
+  system?: string | null
   onAddParty?: () => void
   onAddBestiary?: (path: string) => void
   onChange: (next: CombatState) => void
   onClose?: () => void
 }) {
-  const [draft, setDraft] = useState({ name: '', initiative: '', hp: '', ac: '' })
+  const profile = combatProfileFor(system)
+  const [draft, setDraft] = useState({ name: '', initiative: '', hp: '', ac: '', willpower: '', hunger: '' })
   const [beastQuery, setBeastQuery] = useState('')
   const [lastRoll, setLastRoll] = useState('')
   const [viewedId, setViewedId] = useState<string | null>(null)
@@ -74,6 +78,7 @@ export default function CombatTracker({
   function addManual(): void {
     if (!draft.name.trim()) return
     const hp = Number(draft.hp || 10)
+    const willpower = profile.showWillpower ? Number(draft.willpower || 4) : undefined
     const next: Combatant = {
       id: uid(),
       name: draft.name.trim(),
@@ -81,10 +86,13 @@ export default function CombatTracker({
       initiative: Number(draft.initiative || 0),
       hp,
       maxHp: hp,
-      ac: Number(draft.ac || 10)
+      ac: profile.showAc ? Number(draft.ac || 10) : 0,
+      willpower,
+      maxWillpower: willpower,
+      hunger: profile.showHunger ? Number(draft.hunger || 1) : undefined
     }
     update({ combatants: [...combat.combatants, next] })
-    setDraft({ name: '', initiative: '', hp: '', ac: '' })
+    setDraft({ name: '', initiative: '', hp: '', ac: '', willpower: '', hunger: '' })
   }
 
   function startCombat(): void {
@@ -249,7 +257,8 @@ export default function CombatTracker({
             const inspecting = viewed?.id === c.id
             const ratio = c.maxHp > 0 ? c.hp / c.maxHp : 0
             const bonus = initiativeBonus(c)
-            const condition = combatantCondition(c)
+            const condition = combatantCondition(c, profile)
+            const tag = conditionLabel(condition)
             return (
               <li
                 key={c.id}
@@ -287,29 +296,75 @@ export default function CombatTracker({
                     onClick={() => setViewedId(c.id)}
                     className={`min-w-0 flex-1 truncate text-left font-medium ${
                       inspecting ? 'text-amber' : condition ? 'text-blood' : ''
-                    } ${condition === 'dead' || condition === 'unconscious' ? 'line-through' : ''}`}
+                    } ${condition === 'dead' || condition === 'unconscious' || condition === 'dying' ? 'line-through' : ''}`}
                     title="Show stats and rolls — does not change whose turn it is"
                   >
                     {c.name}
                     <span className="ml-2 text-[10px] uppercase text-muted">{c.kind}</span>
                     {onTurn ? <span className="ml-2 text-[10px] uppercase text-amber">Turn</span> : null}
-                    {condition === 'dead' ? (
-                      <span className="ml-2 text-[10px] uppercase text-blood">Dead</span>
-                    ) : null}
-                    {condition === 'unconscious' ? (
-                      <span className="ml-2 text-[10px] uppercase text-blood">Unconscious</span>
+                    {tag ? (
+                      <span className="ml-2 text-[10px] uppercase text-blood">{tag}</span>
                     ) : null}
                   </button>
-                  <span className="text-xs text-muted">AC {c.ac}</span>
+                  {profile.showAc ? <span className="text-xs text-muted">{profile.acLabel} {c.ac}</span> : null}
                   <button type="button" onClick={() => patchCombatant(c.id, { hp: Math.max(0, c.hp - 1) })}>
                     −
                   </button>
-                  <span className={`w-12 text-center text-sm ${ratio <= 0.3 ? 'text-blood' : ''}`}>
+                  <span className={`w-12 text-center text-sm ${ratio <= 0.3 ? 'text-blood' : ''}`} title={profile.hpLabel}>
                     {c.hp}/{c.maxHp}
                   </span>
                   <button type="button" onClick={() => patchCombatant(c.id, { hp: Math.min(c.maxHp, c.hp + 1) })}>
                     +
                   </button>
+                  {profile.showWillpower ? (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          patchCombatant(c.id, {
+                            willpower: Math.max(0, (c.willpower ?? 0) - 1)
+                          })
+                        }
+                      >
+                        −
+                      </button>
+                      <span className="w-10 text-center text-[11px] text-muted" title="Willpower">
+                        {c.willpower ?? 0}/{c.maxWillpower ?? c.willpower ?? 0}
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          patchCombatant(c.id, {
+                            willpower: Math.min(c.maxWillpower ?? 9, (c.willpower ?? 0) + 1)
+                          })
+                        }
+                      >
+                        +
+                      </button>
+                    </>
+                  ) : null}
+                  {profile.showHunger ? (
+                    <span className="flex items-center gap-0.5 text-xs text-muted">
+                      H
+                      <button
+                        type="button"
+                        onClick={() =>
+                          patchCombatant(c.id, { hunger: Math.max(0, (c.hunger ?? 0) - 1) })
+                        }
+                      >
+                        −
+                      </button>
+                      <span className="w-4 text-center">{Math.min(5, Math.max(0, c.hunger ?? 0))}</span>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          patchCombatant(c.id, { hunger: Math.min(5, (c.hunger ?? 0) + 1) })
+                        }
+                      >
+                        +
+                      </button>
+                    </span>
+                  ) : null}
                   <button
                     type="button"
                     className="text-muted hover:text-blood"
@@ -325,7 +380,7 @@ export default function CombatTracker({
         </ul>
 
         {ordered.length === 0 ? (
-          <p className="px-3 py-3 text-sm text-muted">Add the party, then pick creatures from the Bestiary.</p>
+          <p className="px-3 py-3 text-sm text-muted">{profile.emptyHint}</p>
         ) : null}
 
         <div className="border-t border-line px-3 py-2">
@@ -382,26 +437,45 @@ export default function CombatTracker({
             placeholder="Name"
             value={draft.name}
             onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-            className="col-span-4 rounded border border-line bg-panel-2 px-2 py-1"
+            className={`${profile.showHunger ? 'col-span-2' : 'col-span-4'} rounded border border-line bg-panel-2 px-2 py-1`}
           />
           <input
             placeholder="Init"
             value={draft.initiative}
             onChange={(e) => setDraft({ ...draft, initiative: e.target.value })}
             className="col-span-2 rounded border border-line bg-panel-2 px-2 py-1"
+            title={profile.initHint}
           />
           <input
-            placeholder="HP"
+            placeholder={profile.hpLabel}
             value={draft.hp}
             onChange={(e) => setDraft({ ...draft, hp: e.target.value })}
             className="col-span-2 rounded border border-line bg-panel-2 px-2 py-1"
           />
-          <input
-            placeholder="AC"
-            value={draft.ac}
-            onChange={(e) => setDraft({ ...draft, ac: e.target.value })}
-            className="col-span-2 rounded border border-line bg-panel-2 px-2 py-1"
-          />
+          {profile.showAc ? (
+            <input
+              placeholder={profile.acLabel}
+              value={draft.ac}
+              onChange={(e) => setDraft({ ...draft, ac: e.target.value })}
+              className="col-span-2 rounded border border-line bg-panel-2 px-2 py-1"
+            />
+          ) : null}
+          {profile.showWillpower ? (
+            <input
+              placeholder="WP"
+              value={draft.willpower}
+              onChange={(e) => setDraft({ ...draft, willpower: e.target.value })}
+              className="col-span-2 rounded border border-line bg-panel-2 px-2 py-1"
+            />
+          ) : null}
+          {profile.showHunger ? (
+            <input
+              placeholder="Hunger"
+              value={draft.hunger}
+              onChange={(e) => setDraft({ ...draft, hunger: e.target.value })}
+              className="col-span-2 rounded border border-line bg-panel-2 px-2 py-1"
+            />
+          ) : null}
           <button type="submit" className="col-span-2 rounded bg-amber/90 font-semibold text-ink">
             Add
           </button>

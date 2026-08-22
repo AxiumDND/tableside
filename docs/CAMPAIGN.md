@@ -11,10 +11,10 @@ Also read:
 
 ## Folder layout
 
-**New campaign** creates this layout (plus `Start Here/Overview.md` and Templates). **Open campaign** reads any folder live and creates missing standard folders. A root `Overview.md` moves into **Start Here** if that folder does not already have one. Folder names match case-insensitively (`Party` / `party`, `NPCs` / `npcs`).
+**New campaign** picks a system pack, then creates this layout (plus `Start Here/Overview.md` and that pack’s Templates). **Open campaign** reads any folder live and creates missing standard folders. A root `Overview.md` moves into **Start Here** if that folder does not already have one. Folder names match case-insensitively (`Party` / `party`, `NPCs` / `npcs`). A folder with no `"system"` field is treated as D&D 5e. Do not change `system` mid-campaign — the templates and tracker will not match.
 
 ```
-campaign.json     campaign name (hidden in the file tree)
+campaign.json     campaign name and system pack (`dnd5e` | `pf2e` | `v5`; hidden in the file tree)
 combat.json       live initiative (hidden)
 
 Start Here/       hub notes — opens first if present

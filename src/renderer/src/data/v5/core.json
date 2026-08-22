@@ -1,0 +1,117 @@
+{
+  "attribution": "Original Tableside table procedures. Not published Vampire: The Masquerade text. There is no open V5 SRD.",
+  "records": [
+    {
+      "id": "v5-hunger-track",
+      "name": "Hunger",
+      "kind": "condition",
+      "topic": "hunger",
+      "summary": "0–5 on the tracker",
+      "desc": "Hunger is a 0–5 clock on the combat row and the sheet. Higher Hunger means the character is closer to losing the scene’s composure when they hunt, feed, or take violent action. You set the table cue; this app does not roll Hunger dice for you."
+    },
+    {
+      "id": "v5-rousing-hunger",
+      "name": "Rousing Hunger",
+      "kind": "condition",
+      "topic": "hunger",
+      "summary": "When the clock ticks up",
+      "desc": "When a scene would push Hunger up, tick the tracker and say what the character feels in one sentence. If Hunger is already 5, the next push is a loss of control you narrate — frenzy, collapse, or a hard choice — rather than a sixth pip."
+    },
+    {
+      "id": "v5-hunger-frenzy",
+      "name": "Frenzy at the table",
+      "kind": "condition",
+      "topic": "hunger",
+      "summary": "Loss of control",
+      "desc": "If you call frenzy, the character pursues the obvious violent or hungry goal until a beat ends it (stake, sunlight, a coterie hold, or you judging the fit is over). Official frenzy tests live in your book; this is only a tracker cue."
+    },
+    {
+      "id": "v5-health-boxes",
+      "name": "Health",
+      "kind": "rule",
+      "topic": "health",
+      "summary": "Superficial and aggravated",
+      "desc": "Health on the tracker is the number of boxes still open. Mark superficial harm first. Aggravated harm is the kind that does not shrug off with a night’s rest — fire, sunlight, or a wound you decide is lasting. At 0 Health the character is down; PCs read as Unconscious on the overlay."
+    },
+    {
+      "id": "v5-aggravated",
+      "name": "Aggravated harm",
+      "kind": "rule",
+      "topic": "health",
+      "summary": "Lasting Health damage",
+      "desc": "When you mark aggravated, it occupies a Health box until you call a scene that heals it (days, a haven, a power you own in your notes). Superficial can be cleared faster. Do not paste book healing charts here — write your table’s recovery beat on the sheet."
+    },
+    {
+      "id": "v5-willpower",
+      "name": "Willpower",
+      "kind": "rule",
+      "topic": "willpower",
+      "summary": "Composure and push",
+      "desc": "Willpower is a spend-and-recover pool on the tracker. Spend a point to reroll, to hold a social line, or to resist a compulsion you have named. Superficial Willpower comes back after a rest beat; aggravated Willpower stays until a longer recovery you define."
+    },
+    {
+      "id": "v5-willpower-empty",
+      "name": "Empty Willpower",
+      "kind": "rule",
+      "topic": "willpower",
+      "summary": "When the pool is gone",
+      "desc": "At 0 Willpower the character cannot spend to push. They still act, but you should make social pressure and Hunger spikes bite harder until they recover at least one point."
+    },
+    {
+      "id": "v5-core-chronicle",
+      "name": "The chronicle",
+      "kind": "rule",
+      "topic": "core",
+      "summary": "Core",
+      "desc": "A Tableside V5 campaign is a folder of notes. Sessions, havens, and people are Markdown. The app tracks Health, Willpower, and Hunger; it does not enforce official tests, clans, or disciplines."
+    },
+    {
+      "id": "v5-core-coterie",
+      "name": "Coterie",
+      "kind": "rule",
+      "topic": "core",
+      "summary": "Core",
+      "desc": "The player characters. Put sheets in Party/. Shared havens and domain notes go in Places/. What they owe each other lives on the game night sheet."
+    },
+    {
+      "id": "v5-core-the-street",
+      "name": "The street",
+      "kind": "rule",
+      "topic": "core",
+      "summary": "Core",
+      "desc": "Mortal pressure: police, press, neighbours, daylight. Use Places/ and NPCs/ rather than a separate rules chapter. If the coterie is sloppy, tick Hunger or Willpower as the cost."
+    },
+    {
+      "id": "v5-predator",
+      "name": "Predator",
+      "kind": "rule",
+      "topic": "predation",
+      "summary": "How they hunt",
+      "desc": "Predator is a blank field on the player sheet. Write the hunt style you actually use at your table. This pack does not list official predator types."
+    },
+    {
+      "id": "v5-clan-field",
+      "name": "Clan",
+      "kind": "rule",
+      "topic": "predation",
+      "summary": "Blank on purpose",
+      "desc": "Clan is a player-filled field. Tableside does not ship clan writeups. If you own the books, copy only what you need into your campaign notes."
+    },
+    {
+      "id": "v5-the-hunt",
+      "name": "The hunt",
+      "kind": "rule",
+      "topic": "predation",
+      "summary": "Feeding scenes",
+      "desc": "A hunt is a scene, not an automatic clock. Say where, who is at risk, and whether Hunger drops on a clean feed. A messy feed might drop Hunger and create a complication you put on an NPC or Place note."
+    },
+    {
+      "id": "v5-haven",
+      "name": "Haven",
+      "kind": "rule",
+      "topic": "core",
+      "summary": "Where they rest",
+      "desc": "A haven is a Place note. Daylight, locks, and who has a key are the useful facts. Recovery of Health and Willpower often happens here between sessions — you decide how much."
+    }
+  ]
+}

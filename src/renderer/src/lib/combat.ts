@@ -1,5 +1,10 @@
 import type { Combatant, CombatState, PlayerInitiativeEntry } from '../../../shared/types'
+import { conditionLabel, getSystemPack, type CombatProfile, type OverlayTag } from '../../../shared/systemPack'
 import { abilityMod, rollD20 } from './dice'
+
+export function combatProfileFor(system?: string | null): CombatProfile {
+  return getSystemPack(system).combat
+}
 
 export function initiativeBonus(c: Combatant): number {
   if (typeof c.statBlock?.initiativeBonus === 'number') return c.statBlock.initiativeBonus
@@ -14,25 +19,64 @@ export function sortCombatants(list: Combatant[]): Combatant[] {
   )
 }
 
-export function isBloodied(c: Combatant): boolean {
+export function isHalfHp(c: Combatant): boolean {
   return c.hp > 0 && (c.kind === 'npc' || c.kind === 'monster') && c.maxHp > 0 && c.hp < c.maxHp / 2
 }
 
-export function combatantCondition(c: Combatant): PlayerInitiativeEntry['condition'] {
-  if (c.hp <= 0) return c.kind === 'pc' ? 'unconscious' : 'dead'
-  if (isBloodied(c)) return 'bloodied'
+export function isBloodied(c: Combatant, profile?: CombatProfile): boolean {
+  const used = profile ?? combatProfileFor('dnd5e')
+  return used.halfHpTag === 'bloodied' && isHalfHp(c)
+}
+
+export function combatantCondition(
+  c: Combatant,
+  profile?: CombatProfile
+): PlayerInitiativeEntry['condition'] {
+  const used = profile ?? combatProfileFor('dnd5e')
+  if (c.hp <= 0) return c.kind === 'pc' ? used.zeroHpPc : used.zeroHpNpc
+  if (used.halfHpTag && isHalfHp(c)) return used.halfHpTag
   return null
 }
 
-export function combatToPlayerInitiative(combat: CombatState): PlayerInitiativeEntry[] {
+function overlayTagsFor(c: Combatant, profile: CombatProfile): OverlayTag[] {
+  const tags: OverlayTag[] = []
+  const condition = combatantCondition(c, profile)
+  const label = conditionLabel(condition)
+  if (label) tags.push({ label, tone: 'blood' })
+  if (profile.showWillpower) {
+    const current = c.willpower ?? c.maxWillpower ?? 0
+    const max = c.maxWillpower ?? current
+    tags.push({ label: `WP ${current}/${max}`, tone: current <= 0 ? 'blood' : 'muted' })
+  }
+  if (profile.showHunger) {
+    const hunger = Math.min(5, Math.max(0, c.hunger ?? 0))
+    tags.push({ label: `Hunger ${hunger}`, tone: hunger >= 4 ? 'blood' : 'muted' })
+  }
+  if (profile.hpLabel !== 'HP' && !condition) {
+    tags.push({ label: `${profile.hpLabel} ${c.hp}/${c.maxHp}`, tone: c.hp <= 0 ? 'blood' : 'muted' })
+  } else if (profile.hpLabel !== 'HP' && condition) {
+    tags.unshift({ label: `${profile.hpLabel} ${c.hp}/${c.maxHp}`, tone: c.hp <= 0 ? 'blood' : 'muted' })
+  }
+  return tags
+}
+
+export function combatToPlayerInitiative(
+  combat: CombatState,
+  profile?: CombatProfile
+): PlayerInitiativeEntry[] {
+  const used = profile ?? combatProfileFor('dnd5e')
   const entries = sortCombatants(combat.combatants).map((c) => {
-    const condition = combatantCondition(c)
+    const condition = combatantCondition(c, used)
     return {
       id: c.id,
       name: c.name,
       active: Boolean(combat.round > 0 && combat.activeId === c.id),
       bloodied: condition === 'bloodied',
-      condition
+      condition,
+      hunger: used.showHunger ? (c.hunger ?? 0) : null,
+      willpower: used.showWillpower ? (c.willpower ?? null) : null,
+      maxWillpower: used.showWillpower ? (c.maxWillpower ?? null) : null,
+      overlayTags: overlayTagsFor(c, used)
     }
   })
   const turn = entries.findIndex((entry) => entry.active)

@@ -3,40 +3,18 @@ import {
   monsterToStatBlock,
   searchSrd,
   setExtraRecords,
-  SRD_ATTRIBUTION,
-  SRD_SOURCE_LABEL,
   srdCounts,
   type SrdKind,
   type SrdRecord
 } from '../lib/srd'
+import { activateSystemLookup, packLookupRecords } from '../lib/systemLookup'
 import { extraSourcesFromRecords, parseWotcFiles } from '../lib/wotcParse'
 import { libraryFolderFor } from '../lib/lookupNotes'
 import { srdItemUrl, srdPortraitUrl, srdSchoolUrl } from '../lib/images'
 import { LIBRARY_FOLDER_NAMES } from '../../../shared/campaignLayout'
+import { getSystemPack } from '../../../shared/systemPack'
 import { statBlockToParsed } from '../lib/statblock'
 import RollableStatBlock from './RollableStatBlock'
-
-const FILTERS: { id: SrdKind | 'all' | string; label: string }[] = [
-  { id: 'all', label: 'All' },
-  { id: 'source:srd', label: SRD_SOURCE_LABEL },
-  { id: 'rule', label: 'Rules' },
-  { id: 'condition', label: 'Conditions' },
-  { id: 'spell', label: 'Spells' },
-  { id: 'monster', label: 'Monsters' },
-  { id: 'weapon', label: 'Weapons' },
-  { id: 'armor', label: 'Armor' },
-  { id: 'gear', label: 'Gear' },
-  { id: 'trade', label: 'Trade Goods' },
-  { id: 'temple', label: 'Temple Goods' },
-  { id: 'armorer', label: 'Armorer Goods' },
-  { id: 'arms', label: 'Weapon Goods' },
-  { id: 'stables', label: 'Stable Goods' },
-  { id: 'store', label: 'Store Goods' },
-  { id: 'apothecary', label: 'Apothecary' },
-  { id: 'forge', label: 'Forge' },
-  { id: 'market', label: 'Market Goods' },
-  { id: 'magic', label: 'Magic Items' }
-]
 
 const NAMED_LEAD = /^([A-Z][\w'’ /-]{0,48}\.)(\s+)/
 
@@ -89,7 +67,7 @@ function KindBadge({ record }: { record: SrdRecord }) {
 
 function SourceNote({ record }: { record: SrdRecord }) {
   if (!record.sourceLabel) return null
-  if (!record.source || record.source === 'srd') {
+  if (!record.source || record.source === 'srd' || record.source === 'pf2e' || record.source === 'v5' || record.source === 'axium') {
     return <p className="text-[10px] text-muted">{record.sourceLabel}</p>
   }
   return <p className="text-[10px] text-muted">From your {record.sourceLabel} file</p>
@@ -272,7 +250,12 @@ function Detail({
     record.kind === 'weapon' ||
     record.kind === 'gear' ||
     record.kind === 'book' ||
-    (record.kind === 'rule' && record.source && record.source !== 'srd')
+    (record.kind === 'rule' &&
+      record.source &&
+      record.source !== 'srd' &&
+      record.source !== 'pf2e' &&
+      record.source !== 'v5' &&
+      record.source !== 'axium')
   ) {
     return (
       <div className="space-y-2 text-sm">
@@ -363,13 +346,16 @@ export default function RulesSearch({
   onAddMonster,
   onSaveToCampaign,
   canSaveToCampaign,
+  system,
   onClose
 }: {
   onAddMonster?: (record: SrdRecord) => void
   onSaveToCampaign?: (record: SrdRecord) => Promise<'added' | 'exists' | void> | 'added' | 'exists' | void
   canSaveToCampaign?: boolean
+  system?: string | null
   onClose?: () => void
 }) {
+  const pack = getSystemPack(system)
   const [query, setQuery] = useState('')
   const [kind, setKind] = useState<SrdKind | 'all' | string>('all')
   const [selected, setSelected] = useState<SrdRecord | null>(null)
@@ -386,25 +372,33 @@ export default function RulesSearch({
   }, [selected?.id])
 
   useEffect(() => {
+    activateSystemLookup(system)
+    setKind('all')
+    setSelected(null)
+    if (!pack.wotcLookup) {
+      setExtraSources([])
+      return
+    }
     void window.tabledm.loadWotcLibrary().then((library) => {
       const records = parseWotcFiles(library.files)
       setExtraRecords(records)
       setExtraSources(extraSourcesFromRecords(records))
       setWotcFolder(library.folder)
     })
-  }, [])
+  }, [system, pack.wotcLookup])
 
   const results = useMemo(() => searchSrd(query, kind), [query, kind, extraSources])
   const filters = useMemo(
     () => [
-      ...FILTERS,
+      ...pack.lookupFilters,
       ...extraSources.map((source) => ({
         id: `source:${source.id}`,
         label: source.label
       }))
     ],
-    [extraSources]
+    [pack.lookupFilters, extraSources]
   )
+  const packCount = packLookupRecords(system).length
 
   return (
     <section className="flex min-h-0 flex-1 flex-col border-l border-line bg-panel">
@@ -413,10 +407,13 @@ export default function RulesSearch({
           <h2 className="font-display text-lg text-amber">Lookup</h2>
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-muted">
-              {srdCounts.spells} {SRD_SOURCE_LABEL} spells
-              {extraSources.length > 0
-                ? ` · ${extraSources.map((source) => `${source.count} ${source.label}`).join(' · ')}`
-                : ` · ${srdCounts.monsters} monsters`}
+              {pack.id === 'dnd5e'
+                ? `${srdCounts.spells} ${pack.lookupSourceLabel} spells${
+                    extraSources.length > 0
+                      ? ` · ${extraSources.map((source) => `${source.count} ${source.label}`).join(' · ')}`
+                      : ` · ${srdCounts.monsters} monsters`
+                  }`
+                : `${pack.lookupSourceLabel} · ${packCount} entries`}
             </span>
             {onClose ? (
               <button type="button" onClick={onClose} className="text-xs text-muted hover:text-amber">
@@ -511,31 +508,35 @@ export default function RulesSearch({
       </div>
 
       <div className="border-t border-line px-3 py-2 text-[10px] leading-snug text-muted">
-        {extraSources.length === 0 ? (
-          <p className="mb-1">
-            Add your own book text in the WOTC folder to unlock extra lookup.{' '}
-            <button
-              type="button"
-              className="text-amber hover:underline"
-              onClick={() => void window.tabledm.openWotcFolder()}
-              title={wotcFolder || 'Open the WOTC folder'}
-            >
-              Open WOTC folder
-            </button>
-          </p>
+        {pack.wotcLookup ? (
+          extraSources.length === 0 ? (
+            <p className="mb-1">
+              Add your own book text in the WOTC folder to unlock extra lookup.{' '}
+              <button
+                type="button"
+                className="text-amber hover:underline"
+                onClick={() => void window.tabledm.openWotcFolder()}
+                title={wotcFolder || 'Open the WOTC folder'}
+              >
+                Open WOTC folder
+              </button>
+            </p>
+          ) : (
+            <p className="mb-1">
+              Extra lookup from your WOTC files.{' '}
+              <button
+                type="button"
+                className="text-amber hover:underline"
+                onClick={() => void window.tabledm.openWotcFolder()}
+              >
+                Open folder
+              </button>
+            </p>
+          )
         ) : (
-          <p className="mb-1">
-            Extra lookup from your WOTC files.{' '}
-            <button
-              type="button"
-              className="text-amber hover:underline"
-              onClick={() => void window.tabledm.openWotcFolder()}
-            >
-              Open folder
-            </button>
-          </p>
+          <p className="mb-1">{pack.officialDisclaimer}</p>
         )}
-        <p>{SRD_ATTRIBUTION}</p>
+        <p>{pack.attribution}</p>
       </div>
     </section>
   )

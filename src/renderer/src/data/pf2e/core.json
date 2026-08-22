@@ -1,0 +1,352 @@
+{
+  "attribution": "Original Tableside table text. Condition and action names are mechanics identifiers. Not Paizo product text.",
+  "records": [
+    {
+      "id": "pf2e-blinded",
+      "name": "Blinded",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "You cannot use sight. Treat unseen foes as hidden unless another sense pinpoints them. Visual cues at the table fail for this character."
+    },
+    {
+      "id": "pf2e-clumsy",
+      "name": "Clumsy",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "A penalty to Dexterity-based checks and DCs, including AC and Reflex, equal to the condition value. Write the number on the tracker."
+    },
+    {
+      "id": "pf2e-concealed",
+      "name": "Concealed",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "Attackers must pass a flat check (usually 5) to affect you. Smoke, foliage, and poor light are typical sources."
+    },
+    {
+      "id": "pf2e-confused",
+      "name": "Confused",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "The character cannot choose targets cleanly. On their turn they attack or hinder a random nearby creature, including allies, until the condition ends."
+    },
+    {
+      "id": "pf2e-dazzled",
+      "name": "Dazzled",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "Sight is washed out. Treat unseen targets as concealed against this character."
+    },
+    {
+      "id": "pf2e-deafened",
+      "name": "Deafened",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "Hearing fails. Spoken cues and auditory effects miss them unless another sense covers it. Initiative and Perception that rely on hearing take the hit."
+    },
+    {
+      "id": "pf2e-drained",
+      "name": "Drained",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "A lasting Constitution hit. Reduce Fortitude and HP based on the value; it usually lingers past the fight until treated."
+    },
+    {
+      "id": "pf2e-dying",
+      "name": "Dying",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "At 0 HP a PC is dying, not automatically dead. Track the dying value; recovery or death depends on recovery checks at the start of their turn."
+    },
+    {
+      "id": "pf2e-enfeebled",
+      "name": "Enfeebled",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "A penalty to Strength-based checks, attack rolls, and damage equal to the value."
+    },
+    {
+      "id": "pf2e-fascinated",
+      "name": "Fascinated",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "Attention is locked on one source. They take a penalty to Perception and skill checks, and they will not willingly attack that source until the fascination breaks."
+    },
+    {
+      "id": "pf2e-fatigued",
+      "name": "Fatigued",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "Tired. AC and saving throws take a penalty. Rest or the scene’s recovery cue removes it."
+    },
+    {
+      "id": "pf2e-frightened",
+      "name": "Frightened",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "A numbered penalty on checks and DCs. The value usually drops by 1 at the end of each of their turns."
+    },
+    {
+      "id": "pf2e-grabbed",
+      "name": "Grabbed",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "Held by a creature or snare. They are off-guard and immobilized until they Escape or the grab ends."
+    },
+    {
+      "id": "pf2e-hidden",
+      "name": "Hidden",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "Others know you are there but cannot pinpoint the square. Seeking or a clear reveal ends it."
+    },
+    {
+      "id": "pf2e-immobilized",
+      "name": "Immobilized",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "They cannot use move actions to leave their space. Forced movement and teleport effects still work if the scene allows them."
+    },
+    {
+      "id": "pf2e-invisible",
+      "name": "Invisible",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "Unseen. Attackers usually treat you as hidden. Noise, scent, or a failed Sneak can still give you away."
+    },
+    {
+      "id": "pf2e-off-guard",
+      "name": "Off-Guard",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "A −2 circumstance penalty to AC. Typical sources: flanking, grabbed, climbing, or being unaware of the attacker."
+    },
+    {
+      "id": "pf2e-paralyzed",
+      "name": "Paralyzed",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "They cannot act. They are off-guard. The scene’s duration or a save ends it."
+    },
+    {
+      "id": "pf2e-petrified",
+      "name": "Petrified",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "Turned to stone and out of the fight until the effect is broken. Treat as an object for damage unless you decide otherwise."
+    },
+    {
+      "id": "pf2e-prone",
+      "name": "Prone",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "On the ground. Off-guard to melee, a bonus to AC against ranged, and standing takes a move action."
+    },
+    {
+      "id": "pf2e-sickened",
+      "name": "Sickened",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "A numbered penalty on checks and DCs. Retching or the source ending usually lowers the value."
+    },
+    {
+      "id": "pf2e-slowed",
+      "name": "Slowed",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "Reduce the number of actions they can use on their turn by the slowed value."
+    },
+    {
+      "id": "pf2e-stunned",
+      "name": "Stunned",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "They lose actions equal to the stunned value, or they cannot act for the listed duration. Track the number on the row."
+    },
+    {
+      "id": "pf2e-stupefied",
+      "name": "Stupefied",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "A penalty to Intelligence-, Wisdom-, and Charisma-based checks and DCs equal to the value, including spell DCs if you use them."
+    },
+    {
+      "id": "pf2e-unconscious",
+      "name": "Unconscious",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "Out cold. They drop what they hold, fall prone, and cannot act. Waking them is a scene action or a recovery cue."
+    },
+    {
+      "id": "pf2e-wounded",
+      "name": "Wounded",
+      "kind": "condition",
+      "summary": "Condition",
+      "desc": "A lingering mark after dying or a hard hit. If they drop to 0 HP again, add wounded to the dying value. Treat or rest to clear it."
+    },
+    {
+      "id": "pf2e-action-stride",
+      "name": "Stride",
+      "kind": "rule",
+      "summary": "Action",
+      "desc": "Spend one action to move up to your Speed. Typical first action on a turn when you need distance."
+    },
+    {
+      "id": "pf2e-action-strike",
+      "name": "Strike",
+      "kind": "rule",
+      "summary": "Action",
+      "desc": "Spend one action to attack with a weapon or unarmed attack. Multiple Strikes in a turn usually take a mapping penalty you already use at the table."
+    },
+    {
+      "id": "pf2e-action-step",
+      "name": "Step",
+      "kind": "rule",
+      "summary": "Action",
+      "desc": "Spend one action to move 5 feet without triggering typical reactions that watch for leaving a reach."
+    },
+    {
+      "id": "pf2e-action-leap",
+      "name": "Leap",
+      "kind": "rule",
+      "summary": "Action",
+      "desc": "Spend one action to jump horizontally (or vertically if the scene allows). Use it for gaps and low obstacles."
+    },
+    {
+      "id": "pf2e-action-take-cover",
+      "name": "Take Cover",
+      "kind": "rule",
+      "summary": "Action",
+      "desc": "Spend one action while next to cover to improve the cover bonus against incoming attacks."
+    },
+    {
+      "id": "pf2e-action-seek",
+      "name": "Seek",
+      "kind": "rule",
+      "summary": "Action",
+      "desc": "Spend one action to search with Perception — hidden creatures, concealed squares, or a clue in a zone you name."
+    },
+    {
+      "id": "pf2e-action-raise-shield",
+      "name": "Raise a Shield",
+      "kind": "rule",
+      "summary": "Action",
+      "desc": "Spend one action to raise a held shield. You gain its bonus to AC until the start of your next turn, and you can Shield Block if the sheet has it."
+    },
+    {
+      "id": "pf2e-action-escape",
+      "name": "Escape",
+      "kind": "rule",
+      "summary": "Action",
+      "desc": "Spend one action to break grabbed, restrained, or a similar hold. Roll the skill on the sheet (Athletics, Acrobatics, or unarmed attack) against the holder’s DC."
+    },
+    {
+      "id": "pf2e-ridge-wolf",
+      "name": "Ridge Wolf",
+      "kind": "monster",
+      "summary": "Medium beast · Level 1 · AC 16 · HP 20",
+      "desc": "Lean hill-country wolf with a grey ruff. Hunts in pairs along ridgelines. Original Tableside creature — not a Paizo stat block.",
+      "data": {
+        "name": "Ridge Wolf",
+        "size": "Medium",
+        "type": "beast",
+        "alignment": "unaligned",
+        "ac": 16,
+        "hp": 20,
+        "speed": "35 ft.",
+        "initiativeBonus": 7,
+        "scores": { "strength": 14, "dexterity": 16, "constitution": 12, "intelligence": 2, "wisdom": 12, "charisma": 8 },
+        "senses": "Perception +7, scent 30 feet",
+        "actions": [{ "name": "Jaws", "desc": "+8 to hit. Damage 1d8+3 piercing, and the target is off-guard until the start of the wolf’s next turn on a hit." }]
+      }
+    },
+    {
+      "id": "pf2e-town-guard",
+      "name": "Town Guard",
+      "kind": "monster",
+      "summary": "Medium humanoid · Level 1 · AC 16 · HP 18",
+      "desc": "Watch officer in a boiled-leather jack. Holds a spear and a whistle. Original Tableside creature.",
+      "data": {
+        "name": "Town Guard",
+        "size": "Medium",
+        "type": "humanoid",
+        "alignment": "lawful neutral",
+        "ac": 16,
+        "hp": 18,
+        "speed": "25 ft.",
+        "initiativeBonus": 6,
+        "scores": { "strength": 14, "dexterity": 12, "constitution": 12, "intelligence": 10, "wisdom": 12, "charisma": 10 },
+        "senses": "Perception +6",
+        "languages": "Common",
+        "actions": [{ "name": "Spear", "desc": "+7 to hit. Damage 1d8+3 piercing." }]
+      }
+    },
+    {
+      "id": "pf2e-torch-sprite",
+      "name": "Torch Sprite",
+      "kind": "monster",
+      "summary": "Tiny fey · Level −1 · AC 15 · HP 8",
+      "desc": "Palm-sized ember with wings of soot. Nests in lanterns. Original Tableside creature.",
+      "data": {
+        "name": "Torch Sprite",
+        "size": "Tiny",
+        "type": "fey",
+        "alignment": "chaotic neutral",
+        "ac": 15,
+        "hp": 8,
+        "speed": "fly 30 ft.",
+        "initiativeBonus": 8,
+        "scores": { "strength": 6, "dexterity": 16, "constitution": 10, "intelligence": 8, "wisdom": 12, "charisma": 14 },
+        "senses": "Perception +5",
+        "actions": [{ "name": "Cinder pinch", "desc": "+7 to hit. Damage 1d4 fire." }]
+      }
+    },
+    {
+      "id": "pf2e-cairn-beetle",
+      "name": "Cairn Beetle",
+      "kind": "monster",
+      "summary": "Small beast · Level 0 · AC 17 · HP 16",
+      "desc": "Stone-backed scavenger that stacks pebbles over its brood. Original Tableside creature.",
+      "data": {
+        "name": "Cairn Beetle",
+        "size": "Small",
+        "type": "beast",
+        "alignment": "unaligned",
+        "ac": 17,
+        "hp": 16,
+        "speed": "20 ft., burrow 10 ft.",
+        "initiativeBonus": 4,
+        "scores": { "strength": 12, "dexterity": 10, "constitution": 14, "intelligence": 1, "wisdom": 10, "charisma": 4 },
+        "senses": "Perception +4, tremorsense 10 feet",
+        "actions": [{ "name": "Mandibles", "desc": "+6 to hit. Damage 1d6+2 piercing." }]
+      }
+    },
+    {
+      "id": "pf2e-travelers-kit",
+      "name": "Traveler's Kit",
+      "kind": "gear",
+      "summary": "Gear · Bulk 1",
+      "desc": "Bedroll, tin cup, flint, and a day’s dry rations in a worn satchel. Original Tableside item."
+    },
+    {
+      "id": "pf2e-steel-shield",
+      "name": "Steel Shield",
+      "kind": "gear",
+      "summary": "Shield · Bulk 1",
+      "desc": "A round steel shield. Raise it for a +2 circumstance bonus to AC. Original Tableside item — not a printed Paizo shield entry."
+    },
+    {
+      "id": "pf2e-hunting-spear",
+      "name": "Hunting Spear",
+      "kind": "gear",
+      "summary": "Weapon · d8 piercing",
+      "desc": "A farmer’s spear with a leaf-shaped head. One-hand or two-hand at the table. Original Tableside item."
+    },
+    {
+      "id": "pf2e-healing-tonic",
+      "name": "Healing Tonic",
+      "kind": "gear",
+      "summary": "Consumable",
+      "desc": "Bitter herbal draught. Drink to recover a modest amount of HP once; the exact dice are your table’s call. Original Tableside item."
+    }
+  ]
+}

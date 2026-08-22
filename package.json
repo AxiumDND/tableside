@@ -1,7 +1,7 @@
 {
   "name": "tableside",
-  "version": "1.1.23",
-  "description": "Tableside — in-person dual-monitor DM tool for 5e-compatible table games",
+  "version": "1.2.1",
+  "description": "Tableside — in-person dual-monitor DM tool (D&D 5e, Pathfinder 2e, Vampire 5th)",
   "main": "./out/main/index.js",
   "author": "James",
   "license": "MIT",
@@ -23,6 +23,7 @@
     "fetch-srd": "node scripts/fetch-srd.mjs"
   },
   "dependencies": {
+    "electron-updater": "^6.8.9",
     "minisearch": "^7.2.0",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
@@ -84,6 +85,11 @@
         "to": "icon.png"
       }
     ],
+    "publish": {
+      "provider": "github",
+      "owner": "AxiumDND",
+      "repo": "tableside"
+    },
     "win": {
       "icon": "resources/icon.ico",
       "executableName": "Tableside",

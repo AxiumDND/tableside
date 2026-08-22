@@ -66,6 +66,9 @@ export interface Combatant {
   hp: number
   maxHp: number
   ac: number
+  willpower?: number
+  maxWillpower?: number
+  hunger?: number
   notes?: string
   statBlock?: StatBlock
   sourceId?: string
@@ -100,6 +103,7 @@ export interface CampaignTreeNode {
 export interface CampaignInfo {
   folder: string
   name: string
+  system: 'dnd5e' | 'pf2e' | 'v5'
   media: MediaItem[]
   sessions: SessionFile[]
   party: Character[]
@@ -116,7 +120,12 @@ export interface DisplayInfo {
   dm?: boolean
 }
 
-export type CombatantCondition = 'bloodied' | 'unconscious' | 'dead'
+export type CombatantCondition = 'bloodied' | 'unconscious' | 'dead' | 'dying' | 'wounded'
+
+export interface PlayerOverlayTag {
+  label: string
+  tone?: 'blood' | 'muted'
+}
 
 export interface PlayerInitiativeEntry {
   id: string
@@ -124,6 +133,10 @@ export interface PlayerInitiativeEntry {
   active: boolean
   bloodied?: boolean
   condition?: CombatantCondition | null
+  hunger?: number | null
+  willpower?: number | null
+  maxWillpower?: number | null
+  overlayTags?: PlayerOverlayTag[]
 }
 
 export interface PlayerMapToken {
@@ -170,6 +183,7 @@ export interface AppSettings {
   rightPanel?: 'combat' | 'lookup' | 'help' | null
   showPlayerPreview?: boolean
   recentCampaigns?: RecentCampaign[]
+  dismissedUpdateVersion?: string
 }
 
 /** Optional image when creating a map or sheet note. */

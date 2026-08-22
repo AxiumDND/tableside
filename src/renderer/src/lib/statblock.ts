@@ -1,5 +1,6 @@
 import { abilityMod } from './dice'
 import { pathHasFolder } from '../../../shared/campaignLayout'
+import { STATBLOCK_LAYOUT_RE } from '../../../shared/systemPack'
 
 export interface NamedBit {
   name: string
@@ -31,6 +32,9 @@ export interface ParsedStatblock {
   bonusActions: NamedBit[]
   reactions: NamedBit[]
   legendary: NamedBit[]
+  willpower?: number
+  maxWillpower?: number
+  hunger?: number
 }
 
 const ABILITIES = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const
@@ -181,7 +185,15 @@ export function parseStatblockYaml(raw: string): ParsedStatblock {
     else if (key === 'senses') block.senses = text
     else if (key === 'languages') block.languages = text
     else if (key === 'cr') block.cr = text
-    else if (key === 'initiative') block.initiative = Number(text.replace(/^\+/, ''))
+    else if (key === 'initiative' || key === 'perception') {
+      block.initiative = Number(text.replace(/^\+/, ''))
+    } else if (key === 'willpower') {
+      const nums = text.match(/\d+/g)?.map(Number) ?? []
+      block.willpower = nums[0]
+      block.maxWillpower = nums[1] ?? nums[0]
+    } else if (key === 'hunger') {
+      block.hunger = Number(text.replace(/[^\d]/g, '')) || 0
+    }
     i += 1
   }
 
@@ -197,9 +209,13 @@ export function extractStatblock(markdown: string): { block: ParsedStatblock; re
       rest: markdown.replace(fenced[0], '').trim()
     }
   }
-  const unfenced = /(?:^|\n)layout:\s*Basic 5e Layout\r?\n([\s\S]*?)(?=\n#[a-z]|\n*$)/i.exec(markdown)
+  const unfenced = new RegExp(
+    `(?:^|\\n)${STATBLOCK_LAYOUT_RE.source}\\r?\\n([\\s\\S]*?)(?=\\n#[a-z]|\\n*$)`,
+    'i'
+  ).exec(markdown)
   if (unfenced) {
-    const raw = `layout: Basic 5e Layout\n${unfenced[1]}`
+    const layout = /Basic (?:5e|PF2e|V5) Layout/i.exec(unfenced[0])?.[0] ?? 'Basic 5e Layout'
+    const raw = `layout: ${layout}\n${unfenced[1]}`
     return {
       block: parseStatblockYaml(raw),
       rest: (markdown.slice(0, unfenced.index) + markdown.slice((unfenced.index ?? 0) + unfenced[0].length)).trim()
@@ -219,7 +235,7 @@ export function isNpcSheet(markdown: string, path: string): boolean {
   }
   return (
     /```statblock/i.test(markdown) ||
-    /layout:\s*Basic 5e Layout/i.test(markdown) ||
+    STATBLOCK_LAYOUT_RE.test(markdown) ||
     pathHasFolder(path, 'npcs') ||
     pathHasFolder(path, 'party') ||
     /\[!infobox\]/i.test(markdown)
@@ -318,7 +334,10 @@ function yamlNamedList(key: string, items: NamedBit[]): string {
     .join('\n')}`
 }
 
-export function parsedToBestiaryMarkdown(block: ParsedStatblock): string {
+export function parsedToBestiaryMarkdown(
+  block: ParsedStatblock,
+  layout = 'Basic 5e Layout'
+): string {
   const name = block.name || 'Monster'
   const size = block.size || 'Medium'
   const type = (block.type || 'creature').replace(/^\w/, (c) => c.toLowerCase())
@@ -328,7 +347,7 @@ export function parsedToBestiaryMarkdown(block: ParsedStatblock): string {
   while (stats.length < 6) stats.push(10)
 
   const yaml: string[] = [
-    'layout: Basic 5e Layout',
+    `layout: ${layout}`,
     `name: ${yamlScalar(name)}`,
     `size: ${yamlScalar(size)}`,
     `type: ${yamlScalar(type)}`,
@@ -461,6 +480,14 @@ export function statBlockToParsed(
   }
 }
 
+function parsePair(value: string | undefined): { current: number; max: number } | null {
+  if (!value) return null
+  const nums = value.match(/\d+/g)?.map(Number) ?? []
+  if (nums.length >= 2) return { current: nums[0], max: nums[1] }
+  if (nums.length === 1) return { current: nums[0], max: nums[0] }
+  return null
+}
+
 export function fallbackStatblock(path: string, markdown: string): ParsedStatblock {
   const facts = extractFacts(markdown)
   const heading = /^#\s+\*?(.+?)\*?\s*$/m.exec(markdown)
@@ -468,11 +495,16 @@ export function fallbackStatblock(path: string, markdown: string): ParsedStatblo
     heading?.[1]?.replace(/\*/g, '').trim() ||
     (path.split('/').pop() ?? path).replace(/\.[^.]+$/, '').replace(/^PC\s+[—–-]\s+/i, '')
   const ac = facts.find((f) => /^ac$/i.test(f.label))?.value
-  const hp = facts.find((f) => /^hp$/i.test(f.label))?.value
+  const hp =
+    parsePair(facts.find((f) => /^hp$/i.test(f.label))?.value) ??
+    parsePair(facts.find((f) => /^health$/i.test(f.label))?.value)
+  const will = parsePair(facts.find((f) => /^willpower$/i.test(f.label))?.value)
+  const hunger = parsePair(facts.find((f) => /^hunger$/i.test(f.label))?.value)
+  const perception = facts.find((f) => /^perception$/i.test(f.label))?.value
   return {
     name,
     ac: ac?.match(/\d+/)?.[0] ?? '10',
-    hp: Number(hp?.match(/\d+/)?.[0] ?? 10),
+    hp: hp?.current ?? 10,
     stats: [10, 10, 10, 10, 10, 10],
     saves: {},
     skills: {},
@@ -480,7 +512,11 @@ export function fallbackStatblock(path: string, markdown: string): ParsedStatblo
     actions: [],
     bonusActions: [],
     reactions: [],
-    legendary: []
+    legendary: [],
+    initiative: perception ? Number(perception.replace(/^\+/, '')) : undefined,
+    willpower: will?.current,
+    maxWillpower: will?.max,
+    hunger: hunger?.current
   }
 }
 

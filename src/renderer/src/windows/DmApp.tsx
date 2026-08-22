@@ -10,6 +10,7 @@ import type {
   RecentCampaign
 } from '../../../shared/types'
 import { emptyCombat, emptyPlayerState } from '../../../shared/types'
+import { getSystemPack, type SystemId } from '../../../shared/systemPack'
 import CampaignFiles, {
   campaignFileUrl,
   fileKind,
@@ -21,7 +22,8 @@ import HelpPanel from '../components/HelpPanel'
 import PlayerPreview from '../components/PlayerPreview'
 import RulesSearch from '../components/RulesSearch'
 import SessionNotes, { type EncounterAddItem } from '../components/SessionNotes'
-import { combatToPlayerInitiative, advanceCombatTurn, rollInitiativeFor } from '../lib/combat'
+import SystemPicker from '../components/SystemPicker'
+import { combatToPlayerInitiative, combatProfileFor, advanceCombatTurn, rollInitiativeFor } from '../lib/combat'
 import { flattenImages, imageTitle, isImagePath, isPdfPath } from '../lib/images'
 import {
   allPartyNotes,
@@ -35,8 +37,10 @@ import { libraryFolderFor, recordToCampaignMarkdown, gearSubfolderFor } from '..
 import { monsterToStatBlock, type SrdRecord } from '../lib/srd'
 import { extractStatblock, fallbackStatblock, parsedToStatBlock, type ParsedStatblock } from '../lib/statblock'
 import { APP_NAME, APP_VERSION } from '../../../shared/version'
-import { adjacentCampaignFile, canonicalFolder } from '../../../shared/campaignLayout'
+import type { AppUpdateNotice } from '../../../shared/appUpdate'
 import appIcon from '../assets/icon.png'
+import UpdateBanner from '../components/UpdateBanner'
+import { adjacentCampaignFile, canonicalFolder } from '../../../shared/campaignLayout'
 
 const SIDE_PANEL_WIDTH = 'w-[400px]'
 
@@ -87,6 +91,8 @@ export default function DmApp() {
   const [playerDisplayId, setPlayerDisplayId] = useState<number | ''>('')
   const [showPlayerPreview, setShowPlayerPreview] = useState(true)
   const [recentCampaigns, setRecentCampaigns] = useState<RecentCampaign[]>([])
+  const [pickingSystem, setPickingSystem] = useState(false)
+  const [updateNotice, setUpdateNotice] = useState<AppUpdateNotice | null>(null)
   const playerSrcRef = useRef(player.imageSrc)
   const mapLiveRef = useRef<{ src: string; title: string; view: PlayerMapView } | null>(null)
   const playerLiveRef = useRef(false)
@@ -140,6 +146,7 @@ export default function DmApp() {
   useEffect(() => {
     void refresh()
     const stopPlayer = window.tabledm.onPlayerState(setPlayer)
+    const stopUpdate = window.tabledm.onAppUpdate(setUpdateNotice)
     const stopDisplays = window.tabledm.onDisplaysChanged((screens) => {
       setDisplays(screens)
       setPlayerDisplayId((current) =>
@@ -148,6 +155,7 @@ export default function DmApp() {
     })
     return () => {
       stopPlayer()
+      stopUpdate()
       stopDisplays()
     }
   }, [refresh])
@@ -175,8 +183,13 @@ export default function DmApp() {
     setRecentCampaigns((await window.tabledm.getSettings()).recentCampaigns ?? [])
   }
 
-  async function newCampaign(): Promise<void> {
-    const info = await window.tabledm.newCampaign()
+  async function newCampaign(system?: SystemId): Promise<void> {
+    if (!system) {
+      setPickingSystem(true)
+      return
+    }
+    setPickingSystem(false)
+    const info = await window.tabledm.newCampaign(system)
     applyCampaign(info)
     setPlayer(await window.tabledm.getPlayerState())
     setRecentCampaigns((await window.tabledm.getSettings()).recentCampaigns ?? [])
@@ -304,7 +317,8 @@ export default function DmApp() {
           traits: [],
           actions: [],
           bonusActions: [],
-          reactions: []
+          reactions: [],
+          legendary: []
         },
         kind: 'pc',
         sourceId: pc.id,
@@ -317,6 +331,9 @@ export default function DmApp() {
   function addMonster(record: SrdRecord): void {
     const block = monsterToStatBlock(record.data)
     const hp = Number(block.hp ?? 10)
+    const willpower =
+      typeof record.data.willpower === 'number' ? record.data.willpower : undefined
+    const hunger = typeof record.data.hunger === 'number' ? record.data.hunger : undefined
     void addEncounterItems([], {
       id: crypto.randomUUID(),
       name: block.name,
@@ -325,6 +342,9 @@ export default function DmApp() {
       hp,
       maxHp: hp,
       ac: Number(block.ac ?? 10),
+      willpower,
+      maxWillpower: willpower,
+      hunger,
       statBlock: block,
       sourceId: record.id
     })
@@ -409,6 +429,9 @@ export default function DmApp() {
         hp: statBlock.hp ?? 10,
         maxHp: statBlock.hp ?? 10,
         ac: statBlock.ac ?? 10,
+        willpower: item.block.willpower,
+        maxWillpower: item.block.maxWillpower ?? item.block.willpower,
+        hunger: item.block.hunger,
         sourceId: item.sourceId,
         statBlock
       })
@@ -441,7 +464,7 @@ export default function DmApp() {
 
   useEffect(() => {
     const live = campaign?.combat
-    const entries = live ? combatToPlayerInitiative(live) : []
+    const entries = live ? combatToPlayerInitiative(live, combatProfileFor(campaign?.system)) : []
     const round = live?.round ?? 0
     if (skipRestoredCombatShow.current) {
       if (campaign) skipRestoredCombatShow.current = false
@@ -531,13 +554,15 @@ export default function DmApp() {
               <div className="text-[11px] font-semibold tracking-wide text-amber-dim">v{APP_VERSION}</div>
             </div>
           </div>
-          <div className="text-[11px] text-muted">5e compatible · second-monitor player view</div>
+          <div className="text-[11px] text-muted">
+            {campaign ? `${getSystemPack(campaign.system).shortLabel} · second-monitor player view` : 'Table tool · second-monitor player view'}
+          </div>
         </div>
         <div className="ml-4 min-w-0 flex-1">
           <div className="truncate text-sm">{campaign?.name ?? 'No campaign open'}</div>
           <div className="truncate text-[11px] text-muted">{campaign?.folder ?? 'Choose a folder to begin'}</div>
         </div>
-        <button type="button" onClick={newCampaign} className="rounded border border-line px-3 py-1 text-sm hover:border-amber">
+        <button type="button" onClick={() => void newCampaign()} className="rounded border border-line px-3 py-1 text-sm hover:border-amber">
           New campaign
         </button>
         <button type="button" onClick={openFolder} className="rounded border border-line px-3 py-1 text-sm hover:border-amber">
@@ -574,6 +599,16 @@ export default function DmApp() {
           Help
         </button>
       </header>
+      <UpdateBanner
+        notice={updateNotice}
+        onUpdate={() => void window.tabledm.startUpdate()}
+        onDismiss={() => {
+          if (updateNotice && 'version' in updateNotice && updateNotice.version) {
+            void window.tabledm.dismissUpdate(updateNotice.version)
+          }
+          setUpdateNotice(null)
+        }}
+      />
 
       <div className="flex min-h-0 flex-1">
         <div className="flex w-64 shrink-0 flex-col border-r border-line">
@@ -652,10 +687,12 @@ export default function DmApp() {
           onOpenSample={() => void openSample()}
           recentCampaigns={recentCampaigns}
           onOpenRecent={(folder) => void openRecent(folder)}
+          shopsEnabled={getSystemPack(campaign?.system).shopsEnabled}
         />
         {rightPanel === 'combat' ? (
           <CombatTracker
             combat={combat}
+            system={campaign?.system}
             bestiary={
               campaign
                 ? bestiaryNotes(flattenNotes(campaign.tree)).map((note) => ({
@@ -674,6 +711,7 @@ export default function DmApp() {
         {rightPanel === 'lookup' ? (
           <div className={`flex min-h-0 ${SIDE_PANEL_WIDTH} shrink-0 flex-col`}>
             <RulesSearch
+              system={campaign?.system}
               onAddMonster={addMonster}
               onSaveToCampaign={saveLookupToCampaign}
               canSaveToCampaign={Boolean(campaign)}
@@ -681,8 +719,18 @@ export default function DmApp() {
             />
           </div>
         ) : null}
-        {rightPanel === 'help' ? <HelpPanel onClose={() => changeRightPanel(null)} /> : null}
+        {rightPanel === 'help' ? (
+          <HelpPanel
+            onClose={() => changeRightPanel(null)}
+            updateNotice={updateNotice}
+            onCheckUpdate={() => void window.tabledm.checkForUpdate(true)}
+            onStartUpdate={() => void window.tabledm.startUpdate()}
+          />
+        ) : null}
       </div>
+      {pickingSystem ? (
+        <SystemPicker onPick={(id) => void newCampaign(id)} onCancel={() => setPickingSystem(false)} />
+      ) : null}
     </div>
     </DiceLogProvider>
   )

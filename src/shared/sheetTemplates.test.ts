@@ -1,5 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { FALLBACK_TEMPLATES, fillTemplate, gameNightSheetFileStem, partyLinkList, wikiLinkForSheet } from './sheetTemplates'
+import { templatesFor } from './systemTemplates'
+import { parseSystemId } from './systemPack'
 
 describe('party links', () => {
   it('aliases PC — filenames to the character name', () => {
@@ -108,5 +110,36 @@ describe('place, shop, and faction templates', () => {
     expect(faction).toContain('# The Pale Well')
     expect(faction).toContain('| **Leader** | [[NPC Name]] |')
     expect(faction).toContain('| **HQ** | [[Place Name]] |')
+  })
+})
+
+describe('system packs', () => {
+  it('defaults unknown campaign system ids to dnd5e', () => {
+    expect(parseSystemId(undefined)).toBe('dnd5e')
+    expect(parseSystemId('')).toBe('dnd5e')
+    expect(parseSystemId('pf2e')).toBe('pf2e')
+  })
+
+  it('keeps 5e templates as the default fallback', () => {
+    expect(templatesFor('dnd5e').player).toBe(FALLBACK_TEMPLATES.player)
+    expect(templatesFor('dnd5e').player).toContain('layout: Basic 5e Layout')
+  })
+
+  it('seeds Pathfinder sheets with Ancestry and Perception', () => {
+    const player = fillTemplate(templatesFor('pf2e').player, 'player', 'Mira Vess')
+    expect(player).toContain('layout: Basic PF2e Layout')
+    expect(player).toContain('| **Ancestry** |')
+    expect(player).toContain('| **Perception** |')
+    expect(player).not.toContain('Basic 5e Layout')
+  })
+
+  it('seeds Vampire sheets with Health, Willpower, Hunger, and a blank Clan field', () => {
+    const player = fillTemplate(templatesFor('v5').player, 'player', 'Ash Vale')
+    expect(player).toContain('layout: Basic V5 Layout')
+    expect(player).toContain('| **Health** |')
+    expect(player).toContain('| **Willpower** |')
+    expect(player).toContain('| **Hunger** |')
+    expect(player).toContain('| **Clan** |')
+    expect(player).toContain('*(fill your own)*')
   })
 })

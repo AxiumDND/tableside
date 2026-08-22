@@ -11,6 +11,7 @@ import type {
 import type { CampaignLibraryFolder } from '../shared/campaignLayout'
 import type { SheetTemplateKind } from '../shared/sheetTemplates'
 import type { WotcLibrary } from '../shared/wotc'
+import type { AppUpdateNotice } from '../shared/appUpdate'
 
 const api = {
   getDisplays: (): Promise<DisplayInfo[]> => ipcRenderer.invoke('app:displays'),
@@ -51,7 +52,7 @@ const api = {
   pickCampaignFolder: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:pick-folder'),
   openCampaignPath: (folder: string): Promise<CampaignInfo | null> =>
     ipcRenderer.invoke('campaign:open-path', folder),
-  newCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:new'),
+  newCampaign: (system?: string): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:new', system),
   openSampleCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:open-sample'),
   getCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:get'),
   readFile: (relativePath: string): Promise<string> =>
@@ -96,7 +97,16 @@ const api = {
   ): Promise<{ campaign: CampaignInfo; path: string; existed: boolean } | null> =>
     ipcRenderer.invoke('campaign:save-to-library', folder, name, contents, subfolder ?? null),
   loadWotcLibrary: (): Promise<WotcLibrary> => ipcRenderer.invoke('wotc:load'),
-  openWotcFolder: (): Promise<string> => ipcRenderer.invoke('wotc:open-folder')
+  openWotcFolder: (): Promise<string> => ipcRenderer.invoke('wotc:open-folder'),
+  checkForUpdate: (fromHelp?: boolean): Promise<void> =>
+    ipcRenderer.invoke('app:check-update', fromHelp ?? false),
+  startUpdate: (): Promise<void> => ipcRenderer.invoke('app:start-update'),
+  dismissUpdate: (version: string): Promise<void> => ipcRenderer.invoke('app:dismiss-update', version),
+  onAppUpdate: (callback: (notice: AppUpdateNotice) => void) => {
+    const listener = (_event: unknown, notice: AppUpdateNotice) => callback(notice)
+    ipcRenderer.on('app:update', listener)
+    return () => ipcRenderer.removeListener('app:update', listener)
+  }
 }
 
 export type TableDmApi = typeof api

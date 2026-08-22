@@ -15,9 +15,9 @@ Two Electron windows open: the DM console, and a fullscreen **player** window (p
 
 ## Start a session
 
-1. **Sample** — copies Greystead (the level-1 one-shot) into user data and opens it (safe to edit). First launch with no campaign folder does the same.
-2. **Open campaign** — pick any campaign folder on disk.
-3. **New campaign** — pick an empty folder; Tableside scaffolds the standard layout and Templates.
+1. **Sample** — copies Greystead (the 5e level-1 one-shot) into user data and opens it (safe to edit). First launch with no campaign folder does the same.
+2. **Open campaign** — pick any campaign folder on disk. Folders without `"system"` in `campaign.json` run as D&D 5e.
+3. **New campaign** — pick a system (D&D 5e, Pathfinder 2e, or Vampire 5th), then an empty folder; Tableside scaffolds the standard layout and that pack’s Templates. Changing system later is not supported.
 
 With more than one display, use **Player display…** to put the player window on the TV/monitor facing the table.
 
@@ -61,7 +61,7 @@ Open with **Combat** in the header.
 | --- | --- |
 | **Add all players** | Loads every `Party/` sheet (skips names already in the list) |
 | Bestiary filter + click | Adds that creature from `Bestiary/` |
-| Manual row | Name / Init / HP / AC for ad-hoc combatants |
+| Manual row | Name / Init / HP, plus AC (5e/PF2e) or Willpower and Hunger (Vampire 5th) |
 | d20 on a row | Rolls initiative for that combatant (PCs: type their table roll into Init) |
 | **Start** / next-round controls | Begins round 1 and advances whose turn it is |
 | Eye / view | Opens that combatant’s rollable statblock without changing the turn |
@@ -73,18 +73,19 @@ State saves to `combat.json` in the campaign folder.
 ### What players see on the overlay
 
 - Names in initiative order, current turn highlighted
-- **Bloodied** on enemies/NPCs under half HP
-- **Unconscious** on PCs at 0 HP; **dead** on monsters/NPCs at 0 HP
-- No HP numbers, AC, or secrets
+- D&D 5e: **Bloodied** on enemies/NPCs under half HP; **Unconscious** on PCs at 0 HP; **dead** on monsters/NPCs at 0 HP
+- Pathfinder 2e: **Wounded** under half HP; **Dying** on PCs at 0 HP
+- Vampire 5th: **Health**, **Willpower**, and **Hunger** (0–5)
+- No extra secrets (full HP pools stay on the DM tracker)
 
 ## Lookup panel
 
-Offline MiniSearch over the bundled SRD 5.2.1 snapshot (conditions, spells, monsters, weapons, rules).
+Offline MiniSearch over the **open campaign’s system pack**. D&D 5e uses the bundled SRD 5.2.1 snapshot (conditions, spells, monsters, weapons, rules, Axium goods). Pathfinder 2e uses a small original core. Vampire 5th uses original table procedures only.
 
 - Filter chips narrow the category.
-- Monster results can **Add to combat**. Lookup shows the bundled D&D-fantasy default portrait when one exists. Spells show the emblem for their school of magic. Weapons and gear show still-life item art the same way.
-- With a campaign open, **Add to Bestiary / Spells / Gear** writes a campaign markdown note (skipped if a same-named note already exists). Adding a monster also copies its default portrait into `Bestiary/Art/` if the campaign does not already have one.
-- Optional WOTC files add chips like PHB 2024 / PHB Gear / DMG Items / Ravenloft / MM2024 — [WOTC/README.md](../WOTC/README.md). Use **Open WOTC folder** in Lookup to jump to the writable location.
+- Monster results can **Add to combat**. On 5e, Lookup shows the bundled D&D-fantasy default portrait when one exists. Spells show the emblem for their school of magic. Weapons and gear show still-life item art the same way.
+- With a campaign open, **Add to Bestiary / Spells / Gear** writes a campaign markdown note (skipped if a same-named note already exists). Adding a 5e monster also copies its default portrait into `Bestiary/Art/` if the campaign does not already have one.
+- Optional WOTC files add chips like PHB 2024 / PHB Gear / DMG Items / Ravenloft / MM2024 on **5e campaigns only** — [WOTC/README.md](../WOTC/README.md). Use **Open WOTC folder** in Lookup to jump to the writable location.
 
 Step-by-step save flow: [RECIPES.md](RECIPES.md#lookup--campaign-note).
 
@@ -114,3 +115,4 @@ Bottom of the left column: quick d4–d20 buttons plus a custom expression field
 - Combat state remains in `combat.json` until you clear it.
 - Note edits write straight to the campaign folder (Obsidian vaults stay in sync on disk).
 - **Sample** copies Greystead once into user data. Delete `%APPDATA%\Tableside\samples\greystead` and click Sample again to refresh from the bundle. Keep lasting edits in your own campaign folder.
+- **Updates** — if you are online, a newer GitHub release can show a dismissible bar. Help → Updates to check by hand. Offline, nothing is shown.

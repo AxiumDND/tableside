@@ -94,22 +94,37 @@ export default function PlayerView({
                 className={`player-init-item${entry.active ? ' is-turn' : ''}${
                   entry.condition === 'dead'
                     ? ' is-dead'
-                    : entry.condition === 'unconscious'
+                    : entry.condition === 'unconscious' || entry.condition === 'dying'
                       ? ' is-unconscious'
-                      : entry.condition === 'bloodied' || entry.bloodied
+                      : entry.condition === 'bloodied' || entry.condition === 'wounded' || entry.bloodied
                         ? ' is-bloodied'
                         : ''
                 }`}
               >
                 <span className="player-init-name">{entry.name}</span>
                 {entry.active ? <span className="player-init-tag">Turn</span> : null}
-                {entry.condition === 'dead' ? <span className="player-init-tag is-blood">Dead</span> : null}
-                {entry.condition === 'unconscious' ? (
-                  <span className="player-init-tag is-blood">Unconscious</span>
-                ) : null}
-                {entry.condition === 'bloodied' || (entry.bloodied && !entry.condition) ? (
-                  <span className="player-init-tag is-blood">Bloodied</span>
-                ) : null}
+                {entry.overlayTags && entry.overlayTags.length > 0
+                  ? entry.overlayTags.map((tag) => (
+                      <span
+                        key={tag.label}
+                        className={`player-init-tag${tag.tone === 'blood' ? ' is-blood' : ''}`}
+                      >
+                        {tag.label}
+                      </span>
+                    ))
+                  : (
+                    <>
+                      {entry.condition === 'dead' ? <span className="player-init-tag is-blood">Dead</span> : null}
+                      {entry.condition === 'unconscious' ? (
+                        <span className="player-init-tag is-blood">Unconscious</span>
+                      ) : null}
+                      {entry.condition === 'dying' ? <span className="player-init-tag is-blood">Dying</span> : null}
+                      {entry.condition === 'wounded' ? <span className="player-init-tag is-blood">Wounded</span> : null}
+                      {entry.condition === 'bloodied' || (entry.bloodied && !entry.condition) ? (
+                        <span className="player-init-tag is-blood">Bloodied</span>
+                      ) : null}
+                    </>
+                  )}
               </li>
             ))}
           </ol>

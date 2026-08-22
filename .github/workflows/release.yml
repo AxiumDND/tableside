@@ -19,8 +19,8 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      # electron-builder auto-publishes on git tags; --publish never lets this
-      # job build the installer, then action-gh-release uploads it with GITHUB_TOKEN.
+      # electron-builder --publish never: this job builds the installer and latest.yml,
+      # then action-gh-release uploads the .exe, .yml, and .blockmap (needed for in-app updates).
       - run: npm run dist
       - name: Upload installer artifacts
         uses: actions/upload-artifact@v4
@@ -36,6 +36,8 @@ jobs:
         with:
           files: |
             dist/*.exe
+            dist/*.yml
+            dist/*.blockmap
           generate_release_notes: true
           draft: false
         env:

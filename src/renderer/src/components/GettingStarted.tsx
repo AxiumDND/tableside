@@ -35,7 +35,7 @@ export default function GettingStarted({
         <p className="mt-2 text-sm leading-relaxed text-parchment/85">
           {hasCampaign
             ? 'Start Here has the overview. Then open a session, game night sheet, or map from the file tree. Right-click a folder to add players, NPCs, places, or shops from Templates.'
-            : 'Local dual-monitor tool for in-person 5e-compatible games. Your laptop is the DM console; the second screen shows maps and art — no account, no cloud. First launch opens Greystead, a level-1 one-shot; Sample loads the same folder.'}
+            : 'Local dual-monitor tool for in-person games. Pick a system when you create a campaign (D&D 5e, Pathfinder 2e, or Vampire 5th). Your laptop is the DM console; the second screen shows maps and art — no account, no cloud. First launch opens Greystead, a D&D 5e level-1 one-shot; Sample loads the same folder.'}
         </p>
       </div>
 
@@ -104,8 +104,9 @@ export default function GettingStarted({
           <span className="text-amber">Alt+T</span>.
         </Step>
         <Step title="3. Look up rules">
-          <span className="text-amber">Lookup</span> searches the bundled SRD. Drop optional PHB/DMG text in the
-          WOTC folder for extra chips — open that folder from Lookup when you need it.
+          <span className="text-amber">Lookup</span> searches the pack for this campaign. D&D 5e uses the bundled
+          SRD; optional PHB/DMG text in the WOTC folder adds extra chips. Pathfinder 2e and Vampire 5th use a small
+          original core — add your own notes for book text.
         </Step>
       </div>
 

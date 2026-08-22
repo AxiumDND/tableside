@@ -70,7 +70,7 @@ function notesBody(markdown: string): string {
     .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
     .replace(/```statblock[\s\S]*?```/gi, '')
     .replace(/^##?\s+Stat block[\s\S]*?(?=^## |\n#\w|\z)/im, '')
-    .replace(/layout:\s*Basic 5e Layout[\s\S]*?(?=\n#\w|\z)/i, '')
+    .replace(/layout:\s*Basic (?:5e|PF2e|V5) Layout[\s\S]*?(?=\n#\w|\z)/i, '')
     .replace(/^##?\s+Midjourney prompt[\s\S]*?(?=^## |\z)/im, '')
     .replace(/^#[a-z0-9_-]+(?:\s+#[a-z0-9_-]+)*\s*$/gim, '')
     .replace(/^(\*[^*\n][\s\S]*?\*)\s*$/m, '')

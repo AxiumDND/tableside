@@ -17,6 +17,7 @@ import type {
   SessionFile
 } from '../shared/types'
 import { emptyCombat, emptyPlayerState, emptySettings } from '../shared/types'
+import { setupAppUpdater, scheduleLaunchUpdateCheck } from './appUpdater'
 import { mapArtRelativeFolder, setMapFenceImage } from '../shared/mapCreate'
 import { APP_NAME, APP_VERSION } from '../shared/version'
 import {
@@ -38,7 +39,6 @@ import {
   type CampaignLibraryFolder
 } from '../shared/campaignLayout'
 import {
-  FALLBACK_TEMPLATES,
   TEMPLATE_FILE_NAMES,
   displayTitle,
   fillTemplate,
@@ -47,6 +47,8 @@ import {
   sanitizeFileName,
   type SheetTemplateKind
 } from '../shared/sheetTemplates'
+import { templatesFor } from '../shared/systemTemplates'
+import { getSystemPack, overviewMarkdown, parseSystemId, type SystemId } from '../shared/systemPack'
 import { setSheetPortraitEmbed, sheetAcceptsPortrait } from '../shared/sheetPortrait'
 import { matchStockArt } from '../shared/stockArt'
 import {
@@ -611,23 +613,30 @@ async function migrateRootOverviewToStartHere(root: string): Promise<void> {
   await rename(source, dest)
 }
 
-async function seedNewCampaignFiles(root: string): Promise<void> {
+async function readCampaignSystem(root: string): Promise<SystemId> {
+  const json = await readJson<{ system?: string }>(join(root, 'campaign.json'), {})
+  return parseSystemId(json.system)
+}
+
+async function packTemplates(root: string): Promise<ReturnType<typeof templatesFor>> {
+  return templatesFor(await readCampaignSystem(root))
+}
+
+async function seedNewCampaignFiles(root: string, system: SystemId = 'dnd5e'): Promise<void> {
   const title = basename(root)
   await migrateRootOverviewToStartHere(root)
   const startHere = (await existingCanonicalDir(root, 'start here')) ?? join(root, 'Start Here')
   const overview = join(startHere, 'Overview.md')
   if (!existsSync(overview)) {
     await ensureDir(startHere)
-    await writeFile(
-      overview,
-      `# ${title}\n\nOpen **Start Here** first, then **Sessions** for tonight's notes. Towns and shops go in **Places/**; shopkeepers stay in **NPCs/**. Put portraits in each folder's **Art** subfolder.\n`,
-      'utf8'
-    )
+    await writeFile(overview, overviewMarkdown(system, title), 'utf8')
   }
   const campaignPath = join(root, 'campaign.json')
-  if (!existsSync(campaignPath)) {
-    await writeJson(campaignPath, { name: title })
-  }
+  const prior = existsSync(campaignPath)
+    ? await readJson<{ name?: string; system?: string }>(campaignPath, {})
+    : {}
+  await writeJson(campaignPath, { ...prior, name: prior.name ?? title, system })
+  const stock = templatesFor(system)
   const templatesDir = (await existingCanonicalDir(root, 'templates')) ?? join(root, 'Templates')
   await ensureDir(templatesDir)
   const seeds: { file: string; kind: Exclude<SheetTemplateKind, 'blank'> }[] = [
@@ -645,7 +654,7 @@ async function seedNewCampaignFiles(root: string): Promise<void> {
   const existing = new Set((await readdir(templatesDir)).map((name) => name.toLowerCase()))
   for (const seed of seeds) {
     if (TEMPLATE_FILE_NAMES[seed.kind].some((name) => existing.has(name))) continue
-    await writeFile(join(templatesDir, seed.file), FALLBACK_TEMPLATES[seed.kind], 'utf8')
+    await writeFile(join(templatesDir, seed.file), stock[seed.kind], 'utf8')
   }
   await refreshStockNightSheetTemplate(root)
 }
@@ -674,7 +683,7 @@ async function refreshStockNightSheetTemplate(root: string): Promise<void> {
   const preferred = matches.find((name) => name.toLowerCase() === 'game night sheet.md')
   const currentPath = preferred ? join(templatesDir, preferred) : matches[0] ? join(templatesDir, matches[0]) : null
   if (!currentPath) {
-    await writeFile(dest, FALLBACK_TEMPLATES.nightsheet, 'utf8')
+    await writeFile(dest, (await packTemplates(root)).nightsheet, 'utf8')
     return
   }
   const current = await readFile(currentPath, 'utf8')
@@ -687,7 +696,7 @@ async function refreshStockNightSheetTemplate(root: string): Promise<void> {
       current.includes('{{party}}') ||
       current.includes('Numbers and cues for behind the screen') ||
       current.includes('Combat 1 — name the encounter')
-    if (stock) await writeFile(dest, FALLBACK_TEMPLATES.nightsheet, 'utf8')
+    if (stock) await writeFile(dest, (await packTemplates(root)).nightsheet, 'utf8')
   } else if (currentPath !== dest) {
     await writeFile(dest, current, 'utf8')
   }
@@ -728,12 +737,12 @@ async function refreshStockCreatureTemplates(root: string): Promise<void> {
         ? join(templatesDir, matches[0])
         : null
     if (!currentPath) {
-      await writeFile(dest, FALLBACK_TEMPLATES[job.kind], 'utf8')
+      await writeFile(dest, (await packTemplates(root))[job.kind], 'utf8')
       continue
     }
     const current = await readFile(currentPath, 'utf8')
     if (current.includes(job.stock)) {
-      await writeFile(dest, FALLBACK_TEMPLATES[job.kind], 'utf8')
+      await writeFile(dest, (await packTemplates(root))[job.kind], 'utf8')
       if (currentPath !== dest) await unlink(currentPath)
     }
   }
@@ -762,11 +771,12 @@ async function listSessions(dir: string): Promise<SessionFile[]> {
 
 async function loadCampaign(folder: string): Promise<CampaignInfo> {
   const fallbackName = basename(folder)
-  const campaign = await readJson<{ name?: string }>(join(folder, 'campaign.json'), {})
+  const campaign = await readJson<{ name?: string; system?: string }>(join(folder, 'campaign.json'), {})
   const name =
     campaign.name && campaign.name !== 'Untitled campaign' ? campaign.name : fallbackName
-  if (campaign.name !== name) {
-    await writeJson(join(folder, 'campaign.json'), { ...campaign, name })
+  const system = parseSystemId(campaign.system)
+  if (campaign.name !== name || campaign.system !== system) {
+    await writeJson(join(folder, 'campaign.json'), { ...campaign, name, system })
   }
   const loaded = await readJson<CombatState>(join(folder, 'combat.json'), emptyCombat())
   const combat: CombatState = { ...emptyCombat(), ...loaded, round: loaded.round ?? 0 }
@@ -777,6 +787,7 @@ async function loadCampaign(folder: string): Promise<CampaignInfo> {
   return {
     folder,
     name,
+    system,
     media,
     sessions: await listSessions(await findChildDir(folder, isSessionsFolderName, 'Sessions')),
     party: await listJsonCharacters(await findChildDir(folder, isPartyFolderName, 'Party')),
@@ -838,7 +849,7 @@ async function setNotePortrait(
   const imageFile = await copyImageToArtFolder(folder, stem, image)
   if (!imageFile) return null
   let markdown = setSheetPortraitEmbed(await readFile(dest, 'utf8'), imageFile)
-  if (image.kind === 'stock' && looksLikeShopNote(markdown)) {
+  if (image.kind === 'stock' && looksLikeShopNote(markdown) && getSystemPack(await readCampaignSystem(campaignFolder)).shopsEnabled) {
     const catalog = resolveShopCatalog(image.id)
     markdown = setShopTypeFields(markdown, catalog, false)
   }
@@ -886,7 +897,7 @@ async function findTemplateSource(root: string, kind: Exclude<SheetTemplateKind,
     }
     return null
   }
-  return (await walk(root, 0)) ?? FALLBACK_TEMPLATES[kind]
+  return (await walk(root, 0)) ?? (await packTemplates(root))[kind]
 }
 
 function noteFileName(folder: string, name: string, template: SheetTemplateKind): string {
@@ -1002,14 +1013,19 @@ async function createCampaignNote(
     const imageFile = await copyImageToArtFolder(folder, displayTitle(basename(fileName, '.md')), artChoice)
     if (imageFile) body = setSheetPortraitEmbed(body, imageFile)
   }
-  if (template === 'shop') {
+  const pack = getSystemPack(await readCampaignSystem(campaignFolder))
+  if (template === 'shop' && pack.shopsEnabled) {
     const typeId =
       artChoice?.kind === 'stock' ? artChoice.id : (matchStockArt(title, 'shop')?.id ?? 'General Store')
     body = applyShopInventory(body, generateShopInventory(typeId))
   }
   await writeFile(dest, body, 'utf8')
-  if (template === 'monster') await copySrdArtToFolder(title.replace(/^pc\s*[—–-]\s*/i, ''), destDir, 'portrait')
-  if (template === 'gear') await copySrdArtToFolder(title.replace(/^pc\s*[—–-]\s*/i, ''), destDir, 'item')
+  if (pack.id === 'dnd5e' && template === 'monster') {
+    await copySrdArtToFolder(title.replace(/^pc\s*[—–-]\s*/i, ''), destDir, 'portrait')
+  }
+  if (pack.id === 'dnd5e' && template === 'gear') {
+    await copySrdArtToFolder(title.replace(/^pc\s*[—–-]\s*/i, ''), destDir, 'item')
+  }
   const relativePath = toPosix(relative(campaignFolder, dest))
   return { campaign: await loadCampaign(campaignFolder), path: relativePath }
 }
@@ -1186,14 +1202,15 @@ function registerIpc(): void {
     return setCampaignFolder(folder)
   })
 
-  ipcMain.handle('campaign:new', async () => {
+  ipcMain.handle('campaign:new', async (_e, systemId?: string) => {
+    const system = parseSystemId(systemId)
     const result = await dialog.showOpenDialog(dmWindow ?? undefined, {
       title: 'New campaign folder',
       properties: ['openDirectory', 'createDirectory']
     })
     if (result.canceled || !result.filePaths[0]) return null
     await ensureCampaignLayout(result.filePaths[0])
-    await seedNewCampaignFiles(result.filePaths[0])
+    await seedNewCampaignFiles(result.filePaths[0], system)
     return setCampaignFolder(result.filePaths[0])
   })
 
@@ -1323,6 +1340,16 @@ app.whenReady().then(async () => {
   registerIpc()
 
   settings = await readSettings()
+  setupAppUpdater({
+    getWindow: () => dmWindow,
+    readDismissed: () => settings.dismissedUpdateVersion,
+    writeDismissed: (version) => {
+      void patchSettings({ dismissedUpdateVersion: version })
+    },
+    beforeQuitAndInstall: () => {
+      allowQuit = true
+    }
+  })
   const existing =
     settings.campaignFolder && existsSync(settings.campaignFolder) ? settings.campaignFolder : null
   if (existing) {
@@ -1348,6 +1375,7 @@ app.whenReady().then(async () => {
   createDmWindow()
   createPlayerWindow()
   watchDisplays()
+  scheduleLaunchUpdateCheck()
 
   app.on('activate', () => {
     if (BrowserWindow.getAllWindows().length === 0) {

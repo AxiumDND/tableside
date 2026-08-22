@@ -177,13 +177,14 @@ const search = new MiniSearch<SrdRecord>({
   }
 })
 
+let coreRecords: SrdRecord[] = srdRecords
 let extraRecords: SrdRecord[] = []
 const byId = new Map<string, SrdRecord>()
 
 function rebuildIndex(): void {
   search.removeAll()
   byId.clear()
-  for (const record of [...srdRecords, ...extraRecords]) {
+  for (const record of [...coreRecords, ...extraRecords]) {
     byId.set(record.id, record)
   }
   search.addAll([...byId.values()])
@@ -192,7 +193,7 @@ function rebuildIndex(): void {
 rebuildIndex()
 
 function allRecords(): SrdRecord[] {
-  return [...srdRecords, ...extraRecords]
+  return [...coreRecords, ...extraRecords]
 }
 
 function nameKey(record: SrdRecord): string {
@@ -254,6 +255,7 @@ function isMagicItemRecord(record: SrdRecord): boolean {
 function matchesFilter(record: SrdRecord, kind?: SrdKind | 'all' | string): boolean {
   if (!kind || kind === 'all') return true
   if (kind.startsWith('source:')) return record.source === kind.slice('source:'.length)
+  if (kind.startsWith('topic:')) return String(record.data.topic ?? '') === kind.slice('topic:'.length)
   if (kind === 'armor') return isArmorRecord(record)
   if (kind === 'magic') return isMagicItemRecord(record)
   if (kind === 'trade') return record.source === AXIUM_SOURCE && record.data.category === 'Trade Goods'
@@ -266,6 +268,11 @@ function matchesFilter(record: SrdRecord, kind?: SrdKind | 'all' | string): bool
   if (kind === 'forge') return record.source === AXIUM_SOURCE && record.data.category === 'Forge Goods'
   if (kind === 'market') return record.source === AXIUM_SOURCE && record.data.category === 'Market Goods'
   return record.kind === kind
+}
+
+export function setCoreRecords(records: SrdRecord[] | null): void {
+  coreRecords = records ?? srdRecords
+  rebuildIndex()
 }
 
 export function setExtraRecords(records: SrdRecord[]): void {
@@ -331,8 +338,8 @@ export function monsterToStatBlock(data: Record<string, unknown>): StatBlock {
   }
 }
 
-export function srdMonsterToBestiaryMarkdown(data: Record<string, unknown>): string {
-  return parsedToBestiaryMarkdown(statBlockToParsed(monsterToStatBlock(data)))
+export function srdMonsterToBestiaryMarkdown(data: Record<string, unknown>, layout = 'Basic 5e Layout'): string {
+  return parsedToBestiaryMarkdown(statBlockToParsed(monsterToStatBlock(data)), layout)
 }
 
 export const srdCounts = {

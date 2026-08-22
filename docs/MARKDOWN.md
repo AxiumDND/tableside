@@ -169,8 +169,8 @@ legendary:
 Notes:
 
 - `stats` is STR, DEX, CON, INT, WIS, CHA in that order.
-- `layout: Basic 5e Layout` is conventional (Obsidian / Fantasy Statblocks style); the parser mainly needs the keys above.
-- An unfenced block that starts with `layout: Basic 5e Layout` is also accepted.
+- `layout: Basic 5e Layout` is conventional for D&D 5e (Obsidian / Fantasy Statblocks style). Pathfinder 2e sheets use `Basic PF2e Layout`; Vampire 5th uses `Basic V5 Layout`. The parser mainly needs the keys above.
+- An unfenced block that starts with one of those layout lines is also accepted.
 - If there is no fence, sheets under Party / NPCs / Bestiary can still get a **fallback** block from the title and any AC/HP lines — always prefer a real `statblock` for combat.
 
 ### Fields used in combat UI

@@ -93,7 +93,7 @@ Format and placement of personal PHB/DMG text files: [WOTC/README.md](../WOTC/RE
 
 [`.github/workflows/build.yml`](../.github/workflows/build.yml) runs `npm ci`, `npm test`, and `npm run build` on `windows-latest` for pushes and pull requests to `main`.
 
-[`.github/workflows/release.yml`](../.github/workflows/release.yml) builds the Windows NSIS installer and publishes a GitHub Release when you push a `v*` tag (for example `git tag v1.1.0 && git push origin v1.1.0`).
+[`.github/workflows/release.yml`](../.github/workflows/release.yml) builds the Windows NSIS installer and publishes a GitHub Release when you push a `v*` tag (for example `git tag v1.2.0 && git push origin v1.2.0`). The release must include `latest.yml` (and the `.exe`) so installed copies can check for updates.
 
 ## Packaging notes
 
@@ -104,6 +104,7 @@ Format and placement of personal PHB/DMG text files: [WOTC/README.md](../WOTC/RE
 | Concern | Start here |
 | --- | --- |
 | Window creation, IPC, campaign folder I/O | `src/main/index.ts` |
+| GitHub update check | `src/main/appUpdater.ts` |
 | Preload bridge (`window.tabledm`) | `src/preload/index.ts` |
 | DM UI shell | `src/renderer/src/windows/DmApp.tsx` |
 | Player fullscreen view | `src/renderer/src/windows/PlayerApp.tsx` |

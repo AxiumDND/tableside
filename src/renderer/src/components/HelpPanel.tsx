@@ -1,6 +1,8 @@
 import { useState, type ReactNode } from 'react'
+import type { AppUpdateNotice } from '../../../shared/appUpdate'
+import { APP_VERSION } from '../../../shared/version'
 
-type HelpSection = 'start' | 'screens' | 'files' | 'combat' | 'lookup' | 'keys'
+type HelpSection = 'start' | 'screens' | 'files' | 'combat' | 'lookup' | 'keys' | 'updates'
 
 function Section({
   id,
@@ -65,7 +67,17 @@ function Ul({ items }: { items: ReactNode[] }) {
   )
 }
 
-export default function HelpPanel({ onClose }: { onClose?: () => void }) {
+export default function HelpPanel({
+  onClose,
+  updateNotice,
+  onCheckUpdate,
+  onStartUpdate
+}: {
+  onClose?: () => void
+  updateNotice?: AppUpdateNotice | null
+  onCheckUpdate?: () => void
+  onStartUpdate?: () => void
+}) {
   const [open, setOpen] = useState<HelpSection | null>('start')
 
   function toggle(id: HelpSection): void {
@@ -91,10 +103,12 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
           <Ol
             items={[
               <>
-                <Action>Open campaign</Action> picks any folder. <Action>New campaign</Action> scaffolds Party, NPCs,
-                Places, Factions, Maps, and the rest in an empty folder, with the hub note in{' '}
-                <Code>Start Here</Code>. First launch with no folder opens the Greystead one-shot;{' '}
-                <Action>Sample</Action> loads that same copy. Open <Code>Start Here</Code> first.
+                <Action>Open campaign</Action> picks any folder. <Action>New campaign</Action> asks which system to
+                use (D&D 5e, Pathfinder 2e, or Vampire 5th), then scaffolds Party, NPCs, Places, Factions, Maps,
+                and the rest in an empty folder, with the hub note in <Code>Start Here</Code>. First launch with no
+                folder opens the Greystead one-shot (5e); <Action>Sample</Action> loads that same copy. Open{' '}
+                <Code>Start Here</Code> first. Changing system on an existing folder is not supported — start a new
+                campaign instead.
               </>,
               <>
                 Two windows open: this DM console, and a fullscreen black <strong>player</strong> window. Click the{' '}
@@ -116,6 +130,50 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
             This is not a VTT. There is no account and no internet at the table. Notes are ordinary Markdown on disk
             (Obsidian-friendly).
           </p>
+        </Section>
+
+        <Section id="updates" title="Updates" open={open} onToggle={toggle}>
+          <p>
+            Installed copies can check GitHub for a newer Tableside. Nothing downloads until you press{' '}
+            <Action>Update</Action>. Offline (at the table) the check is skipped and the app stays quiet.
+          </p>
+          <p className="text-[12px] text-muted">You are on {APP_VERSION}. Windows may still ask SmartScreen on the new installer — More info, then Run anyway.</p>
+          {onCheckUpdate ? (
+            <button
+              type="button"
+              onClick={onCheckUpdate}
+              className="mt-2 rounded border border-line px-3 py-1.5 text-sm hover:border-amber"
+            >
+              Check for updates
+            </button>
+          ) : null}
+          {updateNotice?.kind === 'available' ? (
+            <p className="mt-2 text-sm">
+              Tableside {updateNotice.version} is available.{' '}
+              {onStartUpdate ? (
+                <button type="button" className="text-amber hover:underline" onClick={onStartUpdate}>
+                  Update
+                </button>
+              ) : null}
+            </p>
+          ) : null}
+          {updateNotice?.kind === 'current' ? (
+            <p className="mt-2 text-sm text-muted">You already have the latest release.</p>
+          ) : null}
+          {updateNotice?.kind === 'offline' ? (
+            <p className="mt-2 text-sm text-muted">Could not reach GitHub. Try again when you are online.</p>
+          ) : null}
+          {updateNotice?.kind === 'dev' ? (
+            <p className="mt-2 text-sm text-muted">
+              Update checks run in the installed app, not in <Code>npm run dev</Code>.
+            </p>
+          ) : null}
+          {updateNotice?.kind === 'downloading' ? (
+            <p className="mt-2 text-sm">Downloading {updateNotice.version}… {Math.round(updateNotice.percent)}%</p>
+          ) : null}
+          {updateNotice?.kind === 'failed' ? (
+            <p className="mt-2 text-sm text-muted">Download failed. Try again when you are online.</p>
+          ) : null}
         </Section>
 
         <Section id="screens" title="Layout & player screen" open={open} onToggle={toggle}>
@@ -261,8 +319,9 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
                 automatically. Names already in Combat are skipped.
               </>,
               <>
-                Or skip the game night sheet: <Action>Add all players</Action>, click the Bestiary list, or type a manual
-                Name / Init / HP / AC row.
+                Or skip the game night sheet: <Action>Add all players</Action>, click the Bestiary list, or type a
+                manual Name / Init / HP row. D&D 5e and Pathfinder 2e also take AC. Vampire 5th takes Health,
+                Willpower, and Hunger instead.
               </>,
               <>
                 PCs: type their table roll into Init. NPCs: use <Action>Roll NPCs</Action> or the d20 on a row.{' '}
@@ -283,9 +342,16 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
           <Ul
             items={[
               <>Names in order; current turn highlighted.</>,
-              <>Bloodied on enemies/NPCs under half HP.</>,
-              <>Unconscious on PCs at 0 HP; dead on monsters/NPCs at 0 HP.</>,
-              <>No HP numbers, AC, or other secrets.</>
+              <>
+                D&D 5e: Bloodied on enemies/NPCs under half HP. Unconscious on PCs at 0 HP; dead on monsters/NPCs
+                at 0 HP.
+              </>,
+              <>
+                Pathfinder 2e: Wounded on enemies/NPCs under half HP. Dying on PCs at 0 HP; dead on monsters/NPCs at 0
+                HP.
+              </>,
+              <>Vampire 5th: Health, Willpower, and Hunger (0–5) on the overlay. No AC or Bloodied.</>,
+              <>No HP numbers, AC, or other secrets on 5e/PF2e overlays beyond those tags.</>
             ]}
           />
           <p className="text-[12px] text-muted">
@@ -297,8 +363,11 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
 
         <Section id="lookup" title="Lookup" open={open} onToggle={toggle}>
           <p>
-            Offline search of the bundled SRD 5.2.1 (conditions, spells, monsters, weapons, rules). Optional book dumps
-            add extra chips.
+            Offline search of the <strong>open campaign’s system pack</strong>. D&D 5e uses the bundled SRD 5.2.1
+            (conditions, spells, monsters, weapons, rules, Axium shop goods). Pathfinder 2e ships a small original
+            core (conditions, actions, a handful of creatures) — not Archives of Nethys. Vampire 5th ships original
+            table procedures only (Hunger, Health, Willpower) — no clan or discipline book text. Optional PHB/DMG dumps
+            add extra chips on 5e campaigns only.
           </p>
           <Ol
             items={[

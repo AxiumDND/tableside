@@ -101,7 +101,8 @@ export default function SessionNotes({
   onOpenSample,
   recentCampaigns,
   onOpenRecent,
-  onCampaignChange
+  onCampaignChange,
+  shopsEnabled = true
 }: {
   path: string
   kind: FileKind
@@ -126,6 +127,7 @@ export default function SessionNotes({
   recentCampaigns?: import('../../../shared/types').RecentCampaign[]
   onOpenRecent?: (folder: string) => void
   onCampaignChange?: (campaign: CampaignInfo) => void
+  shopsEnabled?: boolean
 }) {
   const [markdown, setMarkdown] = useState('')
   const [original, setOriginal] = useState('')
@@ -577,7 +579,7 @@ export default function SessionNotes({
                 </>
               ) : (
                 <>
-                  {pathHasFolder(path, 'places') && looksLikeShopNote(markdown) ? (
+                  {shopsEnabled && pathHasFolder(path, 'places') && looksLikeShopNote(markdown) ? (
                     <button
                       type="button"
                       disabled={disabled}
@@ -744,8 +746,8 @@ export default function SessionNotes({
               originalRef.current = result.markdown
               onCampaignChange?.(result.campaign)
             }}
-            onRerollStock={rerollShopStock}
-            onChangeStock={changeShopStock}
+            onRerollStock={shopsEnabled ? rerollShopStock : undefined}
+            onChangeStock={shopsEnabled ? changeShopStock : undefined}
             onChangeStanding={changeShopStanding}
             renderNotes={(body) =>
               renderDocument(

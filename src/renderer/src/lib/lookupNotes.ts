@@ -1,4 +1,5 @@
 import type { CampaignLibraryFolder } from '../../../shared/campaignLayout'
+import { layoutIdForSource } from '../../../shared/systemPack'
 import type { SrdRecord } from './srd'
 import { srdMonsterToBestiaryMarkdown } from './srd'
 
@@ -143,7 +144,7 @@ export function gearSubfolderFor(record: SrdRecord): string | undefined {
 }
 
 export function recordToCampaignMarkdown(record: SrdRecord): string {
-  if (record.kind === 'monster') return srdMonsterToBestiaryMarkdown(record.data)
+  if (record.kind === 'monster') return srdMonsterToBestiaryMarkdown(record.data, layoutIdForSource(record.source))
   if (record.kind === 'spell') return spellMarkdown(record)
   return itemMarkdown(record)
 }

@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   advanceCombatTurn,
   combatantCondition,
+  combatProfileFor,
+  combatToPlayerInitiative,
   isBloodied,
   rollInitiativeFor,
   sortCombatants
@@ -39,6 +41,48 @@ describe('combat helpers', () => {
         ac: 16
       })
     ).toBe('unconscious')
+  })
+
+  it('uses Dying and Wounded on the Pathfinder profile', () => {
+    const pf2e = combatProfileFor('pf2e')
+    expect(combatantCondition(foe({ id: '1', name: 'Wolf', hp: 9, maxHp: 20 }), pf2e)).toBe('wounded')
+    expect(
+      combatantCondition(
+        {
+          id: '2',
+          name: 'Mira',
+          kind: 'pc',
+          initiative: 12,
+          hp: 0,
+          maxHp: 30,
+          ac: 16
+        },
+        pf2e
+      )
+    ).toBe('dying')
+  })
+
+  it('omits Bloodied on the Vampire profile and tags Hunger', () => {
+    const v5 = combatProfileFor('v5')
+    const kindred: Combatant = {
+      id: 'v',
+      name: 'Ash',
+      kind: 'pc',
+      initiative: 8,
+      hp: 4,
+      maxHp: 7,
+      ac: 0,
+      willpower: 2,
+      maxWillpower: 5,
+      hunger: 3
+    }
+    expect(isBloodied(kindred, v5)).toBe(false)
+    expect(combatantCondition(kindred, v5)).toBe(null)
+    const tags = combatToPlayerInitiative(
+      { combatants: [kindred], activeId: null, round: 0, showOrderToPlayers: true },
+      v5
+    )[0].overlayTags?.map((tag) => tag.label)
+    expect(tags).toEqual(expect.arrayContaining(['Health 4/7', 'WP 2/5', 'Hunger 3']))
   })
 
   it('advances turns and rounds', () => {
