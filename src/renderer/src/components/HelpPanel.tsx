@@ -370,12 +370,17 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
           />
           <p className="text-[12px] text-muted">
             After the session, combat stays in <Code>combat.json</Code> until you clear it. Keep lasting work in your
-            own campaign folder; Sample can refresh from the bundled Greystead copy.
+            own campaign folder. <Action>Sample</Action> copies Greystead once into user data; delete that folder and
+            click Sample again to refresh from the bundle.
           </p>
         </Section>
       </div>
       <footer className="border-t border-line px-3 py-2 text-[11px] leading-relaxed text-muted">
-        Built by one GM. If it helped at your table, you can{' '}
+        Built by one GM.{' '}
+        <a href="mailto:tableside.gm@gmail.com" className="text-amber underline hover:text-amber-dim">
+          tableside.gm@gmail.com
+        </a>
+        . If it helped at your table, you can{' '}
         <a
           href="https://ko-fi.com/tablesidegm"
           target="_blank"

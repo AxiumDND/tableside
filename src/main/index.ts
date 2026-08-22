@@ -157,8 +157,20 @@ function loadSrdImageCache(cache: Map<string, string> | null, dir: string): Map<
   return next
 }
 
+function mergeImageDir(into: Map<string, string>, dir: string): void {
+  if (!existsSync(dir)) return
+  for (const [key, path] of loadSrdImageCache(null, dir)) {
+    if (!into.has(key)) into.set(key, path)
+  }
+}
+
 function loadSrdPortraitCache(): Map<string, string> {
-  if (!srdPortraitCache) srdPortraitCache = loadSrdImageCache(srdPortraitCache, srdPortraitsDir())
+  if (srdPortraitCache) return srdPortraitCache
+  const next = new Map<string, string>()
+  mergeImageDir(next, srdPortraitsDir())
+  mergeImageDir(next, join(__dirname, '../../resources/local-portraits'))
+  mergeImageDir(next, join(app.getPath('userData'), 'portraits'))
+  srdPortraitCache = next
   return srdPortraitCache
 }
 

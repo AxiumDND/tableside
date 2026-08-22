@@ -24,40 +24,11 @@ describe('bundled SRD portraits', () => {
     expect(missing, `missing portraits: ${missing.join(', ')}`).toEqual([])
   })
 
-  it('ships portraits for the local Ravenloft bestiary when present', async () => {
-    const { existsSync, readFileSync } = await import('node:fs')
-    const path = join(process.cwd(), 'WOTC', 'Ravenloft Horrors Bestiary.md')
-    if (!existsSync(path)) return
+  it('does not ship non-SRD book portraits in the public bundle', () => {
     const dir = join(process.cwd(), 'resources', 'srd-portraits')
-    const have = new Set(
-      readdirSync(dir)
-        .filter((name) => /\.(png|webp|jpe?g)$/i.test(name))
-        .map(foldPortraitStem)
-    )
-    const names = [...readFileSync(path, 'utf8').matchAll(/^## (.+)$/gm)].map((match) => match[1].trim())
-    const missing = names.filter((name) => !have.has(foldPortraitStem(name)))
-    expect(missing, `missing Ravenloft portraits: ${missing.join(', ')}`).toEqual([])
-  })
-
-  it('ships portraits for local Monster Manual files when present', async () => {
-    const { existsSync, readdirSync: readDir, readFileSync } = await import('node:fs')
-    const dir = join(process.cwd(), 'WOTC')
-    if (!existsSync(dir)) return
-    const files = readDir(dir).filter((name) => /^Monster Manual .+\.md$/i.test(name))
-    if (!files.length) return
-    const portraits = join(process.cwd(), 'resources', 'srd-portraits')
-    const have = new Set(
-      readdirSync(portraits)
-        .filter((name) => /\.(png|webp|jpe?g)$/i.test(name))
-        .map(foldPortraitStem)
-    )
-    const missing: string[] = []
-    for (const file of files) {
-      const names = [...readFileSync(join(dir, file), 'utf8').matchAll(/^## (.+)$/gm)].map((match) =>
-        match[1].trim()
-      )
-      missing.push(...names.filter((name) => !have.has(foldPortraitStem(name))))
-    }
-    expect(missing, `missing Monster Manual portraits: ${missing.join(', ')}`).toEqual([])
+    const files = readdirSync(dir).filter((name) => /\.(png|webp|jpe?g)$/i.test(name))
+    const srd = new Set(monsters.map((monster) => foldPortraitStem(monster.name)))
+    const extra = files.filter((name) => !srd.has(foldPortraitStem(name)))
+    expect(extra, `non-SRD portraits: ${extra.join(', ')}`).toEqual([])
   })
 })

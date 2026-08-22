@@ -15,5 +15,6 @@ examples/test/
 examples/test 2/
 /WOTC/*
 !/WOTC/README.md
+resources/local-portraits/
 /WOTC Files/
 /WOTC FIles/

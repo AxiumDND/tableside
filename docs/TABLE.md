@@ -113,4 +113,4 @@ Bottom of the left column: quick d4–d20 buttons plus a custom expression field
 
 - Combat state remains in `combat.json` until you clear it.
 - Note edits write straight to the campaign folder (Obsidian vaults stay in sync on disk).
-- Sample campaigns live under user data — re-clicking **Sample** can refresh from the bundled copy depending on how that folder is managed; keep lasting edits in your own campaign folder.
+- **Sample** copies Greystead once into user data. Delete `%APPDATA%\Tableside\samples\greystead` and click Sample again to refresh from the bundle. Keep lasting edits in your own campaign folder.
