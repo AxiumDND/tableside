@@ -183,7 +183,7 @@ If there is no `Combatants:` line, Tableside still picks up wikilinks (and some 
 
 On the game night sheet, use **Add to initiative** / **Add encounter** to load those sheets into Combat. **Add all players** pulls every PC sheet.
 
-Suggested split: long prose in `Session N.md`, numbers and combatant lines in `Session N — Game Night Sheet.md`, cross-linked with wikilinks.
+Suggested split: long prose in `Session N.md`, numbers and combatant lines in `Session N — Game Night Sheet.md`, cross-linked with wikilinks. A one-shot can put the whole night on one page — Greystead’s `Session 1.md` is that.
 
 Full recipe (prep + troubleshooting): [RECIPES.md](RECIPES.md#night-sheet--initiative).
 
@@ -199,7 +199,7 @@ HP edits stay on the DM console; the overlay never shows numbers. Step-by-step U
 
 ## At the table (short)
 
-1. Open or create a campaign (or click **Sample** for Bad Blood).
+1. Open or create a campaign (or click **Sample** for Greystead).
 2. Open tonight’s session or game night sheet from the file tree.
 3. Click a map or portrait → **Show to players**.
 4. When a fight starts, add the encounter (or combatants) → roll / enter initiative → advance turns.
@@ -211,5 +211,4 @@ Full UI walkthrough: [TABLE.md](TABLE.md).
 
 | Folder | What it demonstrates |
 | --- | --- |
-| [examples/bad-blood](../examples/bad-blood) | Full three-shot with game night sheets, art, and combatants |
-| [examples/sample-campaign](../examples/sample-campaign) | Minimal one-night starter |
+| [examples/greystead](../examples/greystead) | Level-1 one-shot — first launch, **Sample**, and the only campaign shipped in the installer |

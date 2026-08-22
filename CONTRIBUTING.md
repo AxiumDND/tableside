@@ -28,4 +28,4 @@ Thanks for helping with Tableside.
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Contributor / architecture notes |
 | [WOTC/README.md](WOTC/README.md) | Optional book-text Lookup files |
 
-Built-in sheet bodies live in `src/shared/sheetTemplates.ts` and are mirrored under `examples/bad-blood/Templates/` for the sample campaign.
+Built-in sheet bodies live in `src/shared/sheetTemplates.ts` and are mirrored under `examples/greystead/Templates/` for the sample campaign.

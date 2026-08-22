@@ -32,7 +32,7 @@ Rules of thumb:
 
 Skip headings that say `no combat`.
 
-Prefer a short **game night sheet** for numbers and combatant lines, and keep long prose in `Session N.md` with `[[Session N — Game Night Sheet]]` links either way. **New game night sheet…** starts from the Lazy DM 10-step template and links existing Party files.
+A short **game night sheet** is enough for numbers and combatant lines; longer campaigns can keep prose in `Session N.md`. The Greystead sample puts the whole night on one page so you can run without flipping. **New game night sheet…** starts from the Lazy DM 10-step template and links existing Party files.
 
 ### At the table
 
@@ -50,7 +50,7 @@ Prefer a short **game night sheet** for numbers and combatant lines, and keep lo
 - Heading does not look like combat (add `Combat` or ⚔️).
 - No `statblock` — add one, or open the sheet and confirm AC/HP parse.
 
-Example in the Sample campaign: `examples/bad-blood/Sessions/Session 3 — Night Sheet.md`.
+Example in the Sample campaign: `examples/greystead/Sessions/Session 1.md`.
 
 ## Lookup → campaign note
 

@@ -8,7 +8,11 @@ Thumbs.db
 .vscode
 .env
 .campaign-local
+*.tsbuildinfo
 examples/**/combat.json
+examples/bad-blood/
+examples/test/
+examples/test 2/
 /WOTC/*
 !/WOTC/README.md
 /WOTC Files/
