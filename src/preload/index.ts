@@ -1,5 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import type {
+  AppFolders,
   AppSettings,
   CampaignInfo,
   CombatState,
@@ -98,6 +99,9 @@ const api = {
     ipcRenderer.invoke('campaign:save-to-library', folder, name, contents, subfolder ?? null),
   loadWotcLibrary: (): Promise<WotcLibrary> => ipcRenderer.invoke('wotc:load'),
   openWotcFolder: (): Promise<string> => ipcRenderer.invoke('wotc:open-folder'),
+  getAppFolders: (): Promise<AppFolders> => ipcRenderer.invoke('app:folders'),
+  openAppFolder: (kind: 'app' | 'userData' | 'books'): Promise<string> =>
+    ipcRenderer.invoke('app:open-folder', kind),
   checkForUpdate: (fromHelp?: boolean): Promise<void> =>
     ipcRenderer.invoke('app:check-update', fromHelp ?? false),
   startUpdate: (): Promise<void> => ipcRenderer.invoke('app:start-update'),

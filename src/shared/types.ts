@@ -174,6 +174,12 @@ export interface RecentCampaign {
   name: string
 }
 
+export interface AppFolders {
+  appFolder: string
+  userDataFolder: string
+  booksFolder: string
+}
+
 export interface AppSettings {
   campaignFolder?: string
   playerDisplayId?: number

@@ -58,7 +58,7 @@ import {
   resolveShopCatalog,
   setShopTypeFields
 } from '../shared/shopStock'
-import { loadWotcLibrary, openWotcFolder } from './wotcLibrary'
+import { ensureWotcHome, loadWotcLibrary, openWotcFolder } from './wotcLibrary'
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -211,6 +211,27 @@ function findStockArtFile(name: string): string | null {
   return loadStockArtCache().get(foldPortraitStem(name)) ?? null
 }
 
+function appInstallFolder(): string {
+  return app.isPackaged ? dirname(app.getPath('exe')) : app.getAppPath()
+}
+
+async function appFolders(): Promise<{ appFolder: string; userDataFolder: string; booksFolder: string }> {
+  return {
+    appFolder: appInstallFolder(),
+    userDataFolder: app.getPath('userData'),
+    booksFolder: await ensureWotcHome()
+  }
+}
+
+async function openAppFolder(kind: string): Promise<string> {
+  const folders = await appFolders()
+  const folder =
+    kind === 'userData' ? folders.userDataFolder : kind === 'app' ? folders.appFolder : kind === 'books' ? folders.booksFolder : null
+  if (!folder) return ''
+  await shell.openPath(folder)
+  return folder
+}
+
 function settingsPath(): string {
   return join(app.getPath('userData'), 'settings.json')
 }
@@ -250,10 +271,11 @@ async function migrateLegacyUserData(): Promise<void> {
   if (existsSync(legacySettings)) {
     await copyFile(legacySettings, join(current, 'settings.json'))
   }
-  for (const name of ['WOTC', 'samples']) {
-    const from = join(legacy, name)
-    if (existsSync(from)) await cp(from, join(current, name), { recursive: true })
+  if (existsSync(legacyWotc)) {
+    await cp(legacyWotc, join(current, 'Additional Books'), { recursive: true })
   }
+  const legacySamples = join(legacy, 'samples')
+  if (existsSync(legacySamples)) await cp(legacySamples, join(current, 'samples'), { recursive: true })
 }
 
 function sampleSourcePath(): string {
@@ -1183,6 +1205,10 @@ function registerIpc(): void {
 
   ipcMain.handle('app:save-settings', (_e, partial: AppSettings) => patchSettings(partial ?? {}))
 
+  ipcMain.handle('app:folders', () => appFolders())
+
+  ipcMain.handle('app:open-folder', (_e, kind: string) => openAppFolder(kind))
+
   ipcMain.on('app:confirm-close', () => {
     allowQuit = true
     dmWindow?.close()
@@ -1294,6 +1320,7 @@ function registerIpc(): void {
 app.whenReady().then(async () => {
   app.setAppUserModelId('com.tabledm.app')
   await migrateLegacyUserData()
+  await ensureWotcHome()
 
   protocol.handle('tabledm', async (request) => {
     try {

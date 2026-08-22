@@ -12,7 +12,9 @@ export const SKIP_DIR_NAMES = new Set([
   'WOTC',
   'wotc',
   'WOTC Files',
-  'WOTC FIles'
+  'WOTC FIles',
+  'Additional Books',
+  'additional books'
 ])
 
 export const HIDDEN_FILE_NAMES = new Set(['campaign.json', 'combat.json', 'readme.md'])

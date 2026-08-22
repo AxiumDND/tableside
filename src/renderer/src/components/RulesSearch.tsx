@@ -511,19 +511,19 @@ export default function RulesSearch({
         {pack.wotcLookup ? (
           extraSources.length === 0 ? (
             <p className="mb-1">
-              Add your own book text in the WOTC folder to unlock extra lookup.{' '}
+              Add your own book text in Additional books to unlock extra lookup.{' '}
               <button
                 type="button"
                 className="text-amber hover:underline"
                 onClick={() => void window.tabledm.openWotcFolder()}
-                title={wotcFolder || 'Open the WOTC folder'}
+                title={wotcFolder || 'Open Additional books'}
               >
-                Open WOTC folder
+                Open Additional books
               </button>
             </p>
           ) : (
             <p className="mb-1">
-              Extra lookup from your WOTC files.{' '}
+              Extra lookup from your additional books.{' '}
               <button
                 type="button"
                 className="text-amber hover:underline"

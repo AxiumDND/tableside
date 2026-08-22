@@ -8,11 +8,11 @@ export interface WotcLibrary {
   files: WotcFile[]
 }
 
-export const WOTC_README = `WOTC lookup files
-=================
+export const WOTC_README = `Additional books
+================
 
 Drop your own book text here. Tableside does not ship Player's Handbook,
-Dungeon Master's Guide, or other Wizards books.
+Dungeon Master's Guide, or other publisher books.
 
 When this folder has files Lookup can read, extra filter chips appear
 (PHB 2024, PHB Gear, DMG Items, Ravenloft) and search includes that text.
@@ -30,9 +30,9 @@ Use .md or .txt. The filename tells Lookup what it is:
   Monster Manual A/B/... share one MM2024 chip
 
 Also scanned (same filename rules):
-- This folder (%APPDATA%\\Tableside\\WOTC)
-- Older builds: %APPDATA%\\table-dm\\WOTC
-- A WOTC folder next to Tableside.exe
+- This folder (%APPDATA%\\Tableside\\Additional Books)
+- Older builds: %APPDATA%\\Tableside\\WOTC or %APPDATA%\\table-dm\\WOTC
+- An Additional Books or WOTC folder next to Tableside.exe
 - The project WOTC/ folder when running from source
 
 Restart Lookup (close and open the panel, or restart the app) after adding files.
@@ -214,7 +214,7 @@ Rules:
 
 CHECKLIST
 ---------
-1. Save as .md in this folder (or next to the app in a WOTC folder).
+1. Save as .md in this folder (or next to the app in Additional Books).
 2. Put Spell, Equipment, Magic Item, or Bestiary / Ravenloft in the filename.
 3. One ## heading per entry.
 4. Field names match the examples above, including the colon.

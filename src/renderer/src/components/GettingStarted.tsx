@@ -105,7 +105,7 @@ export default function GettingStarted({
         </Step>
         <Step title="3. Look up rules">
           <span className="text-amber">Lookup</span> searches the pack for this campaign. D&D 5e uses the bundled
-          SRD; optional PHB/DMG text in the WOTC folder adds extra chips. Pathfinder 2e and Vampire 5th use a small
+          SRD; optional PHB/DMG text in Additional books adds extra chips. Pathfinder 2e and Vampire 5th use a small
           original core — add your own notes for book text.
         </Step>
       </div>

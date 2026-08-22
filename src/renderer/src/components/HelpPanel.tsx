@@ -1,5 +1,6 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import type { AppUpdateNotice } from '../../../shared/appUpdate'
+import type { AppFolders } from '../../../shared/types'
 import { APP_VERSION } from '../../../shared/version'
 
 type HelpSection = 'start' | 'screens' | 'files' | 'combat' | 'lookup' | 'keys' | 'updates'
@@ -47,6 +48,32 @@ function Sub({ children }: { children: ReactNode }) {
   return <p className="text-[11px] font-semibold uppercase tracking-wider text-amber-dim">{children}</p>
 }
 
+function FolderOpen({
+  label,
+  path,
+  onOpen
+}: {
+  label: string
+  path: string
+  onOpen: () => void
+}) {
+  return (
+    <div className="space-y-1.5">
+      <p>{label}</p>
+      <p className="break-all">
+        <Code>{path}</Code>
+      </p>
+      <button
+        type="button"
+        onClick={onOpen}
+        className="rounded border border-line px-3 py-1.5 text-sm hover:border-amber"
+      >
+        Open in File Explorer
+      </button>
+    </div>
+  )
+}
+
 function Ol({ items }: { items: ReactNode[] }) {
   return (
     <ol className="list-decimal space-y-1.5 pl-4">
@@ -79,10 +106,15 @@ export default function HelpPanel({
   onStartUpdate?: () => void
 }) {
   const [open, setOpen] = useState<HelpSection | null>('start')
+  const [folders, setFolders] = useState<AppFolders | null>(null)
 
   function toggle(id: HelpSection): void {
     setOpen((prev) => (prev === id ? null : id))
   }
+
+  useEffect(() => {
+    void window.tabledm.getAppFolders().then(setFolders)
+  }, [])
 
   return (
     <aside className="flex min-h-0 w-[400px] shrink-0 flex-col border-l border-line bg-ink">
@@ -208,6 +240,30 @@ export default function HelpPanel({
         </Section>
 
         <Section id="files" title="Files, notes & maps" open={open} onToggle={toggle}>
+          <Sub>On this PC</Sub>
+          <p>
+            The installer default is <Code>%LOCALAPPDATA%\Programs\Tableside</Code> unless you picked another folder.
+            Campaign notes stay in the folder you opened — not inside the app.
+          </p>
+          {folders ? (
+            <>
+              <FolderOpen
+                label="This copy of Tableside:"
+                path={folders.appFolder}
+                onOpen={() => void window.tabledm.openAppFolder('app')}
+              />
+              <FolderOpen
+                label="Settings and Greystead sample:"
+                path={folders.userDataFolder}
+                onOpen={() => void window.tabledm.openAppFolder('userData')}
+              />
+              <FolderOpen
+                label="Additional books:"
+                path={folders.booksFolder}
+                onOpen={() => void window.tabledm.openAppFolder('books')}
+              />
+            </>
+          ) : null}
           <Sub>File tree</Sub>
           <Ul
             items={[
@@ -397,9 +453,9 @@ export default function HelpPanel({
               <>Already in … — a same-named note exists; open and edit it.</>,
               <>Conditions and pure rules entries are search-only (no Add button).</>,
               <>
-                Optional PHB / DMG / Monster Manual / Ravenloft dumps live in the WOTC folder (chips such as PHB 2024,
-                MM2024). Use <Action>Open WOTC folder</Action> from Lookup. Installed app:{' '}
-                <Code>%APPDATA%\Tableside\WOTC</Code>.
+                Optional PHB / DMG / Monster Manual / Ravenloft dumps live in Additional books (chips such as PHB 2024,
+                MM2024). Use <Action>Open Additional books</Action> from Lookup. Installed app:{' '}
+                <Code>%APPDATA%\Tableside\Additional Books</Code>.
               </>
             ]}
           />
