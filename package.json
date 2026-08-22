@@ -1,6 +1,6 @@
 {
   "name": "table-dm",
-  "version": "1.1.18",
+  "version": "1.1.19",
   "description": "Tableside — in-person dual-monitor DM tool for 5e-compatible table games",
   "main": "./out/main/index.js",
   "author": "James",

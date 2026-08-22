@@ -34,6 +34,9 @@ describe('stock place and faction art', () => {
       'Market',
       'Temple'
     ])
+    expect(stockArtForTemplate('place').map((item) => item.id)).toEqual(
+      expect.arrayContaining(['Mountain', 'Swamp', 'Desert', 'Mine', 'Tower', 'Underdark', 'Academy'])
+    )
     expect(stockArtForTemplate('shop').some((item) => item.id === 'Dungeon')).toBe(false)
     expect(stockArtForTemplate('faction').some((item) => item.id === 'Thieves Guild')).toBe(true)
     expect(stockArtForTemplate('player')).toEqual([])
@@ -46,6 +49,8 @@ describe('stock place and faction art', () => {
     expect(matchStockArt('Stables', 'shop')?.id).toBe('Stables')
     expect(matchStockArt("Thieves' Guild", 'faction')?.id).toBe('Thieves Guild')
     expect(matchStockArt('Dungeon')?.id).toBe('Dungeon')
+    expect(matchStockArt('Peak', 'place')?.id).toBe('Mountain')
+    expect(matchStockArt('Cemetery', 'place')?.id).toBe('Graveyard')
     expect(matchStockArt('Blue Water Inn', 'place')).toBeNull()
   })
 

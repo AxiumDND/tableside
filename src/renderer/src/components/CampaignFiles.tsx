@@ -641,7 +641,7 @@ export default function CampaignFiles({
                             ? 'Place type'
                             : 'Default art'}
                     </p>
-                    <div className="mt-1 grid max-h-56 grid-cols-4 gap-1.5 overflow-y-auto pr-0.5">
+                    <div className="mt-1 grid max-h-72 grid-cols-4 gap-1.5 overflow-y-auto pr-0.5">
                       {stockArt.map((item) => {
                         const selected = mapImage?.kind === 'stock' && mapImage.id === item.id
                         return (
