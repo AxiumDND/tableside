@@ -49,12 +49,10 @@ src/
       windows/    DmApp / PlayerApp entry points
   shared/         Types, campaign layout, sheet templates (main + renderer)
 examples/
-  bad-blood/      Sample campaign shipped with the installer
-  sample-campaign/ Minimal demo folder
+  greystead/      Only sample — first launch, Sample button, and installer extraResource
 scripts/
   fetch-srd.mjs   Open5e → src/renderer/src/data/srd
   convert-srd-portraits.mjs / convert-srd-items.mjs / convert-srd-schools.mjs
-  tidy-bad-blood.mjs  One-off helper for reshaping the Bad Blood example
 WOTC/             Optional local book text for Lookup (not shipped)
 docs/             Authoring and contributor docs
 ```
@@ -73,7 +71,7 @@ Campaigns are plain folders on disk. The app:
 - Watches / reloads markdown and images from the open folder
 - Hides `campaign.json` and `combat.json` in the tree
 - Skips `.obsidian`, `.git`, `WOTC`, and similar noise directories
-- Copies **Sample** (Bad Blood) into user data so edits do not write back to the repo / install bundle
+- Copies **Sample** (Greystead) into user data so edits do not write back to the repo / install bundle. First launch with no usable `campaignFolder` opens that copy.
 
 See [CAMPAIGN.md](CAMPAIGN.md) for the folder contract authors rely on.
 
@@ -99,7 +97,7 @@ Format and placement of personal PHB/DMG text files: [WOTC/README.md](../WOTC/RE
 
 ## Packaging notes
 
-`electron-builder` ships `examples/bad-blood` as an extra resource, plus `srd-portraits`, `srd-items`, `srd-schools`, and `stock-art`. Product name is **Tableside** (`com.tabledm.app`). `npm run dist` writes `dist/Tableside-Setup-<version>.exe` (per-user NSIS: Start Menu + desktop shortcuts, custom icon). Window and installer icons live in `resources/icon.ico` (regenerate with `node scripts/make-app-icon.mjs`). First launch copies `%APPDATA%\table-dm` settings/WOTC/samples into `%APPDATA%\Tableside` if needed.
+`electron-builder` ships `examples/greystead` as the only campaign extra resource, plus `srd-portraits`, `srd-items`, `srd-schools`, and `stock-art`. Product name is **Tableside** (`com.tabledm.app`). `npm run dist` writes `dist/Tableside-Setup-<version>.exe` (per-user NSIS: Start Menu + desktop shortcuts, custom icon). Window and installer icons live in `resources/icon.ico` (regenerate with `node scripts/make-app-icon.mjs`). First launch copies `%APPDATA%\table-dm` settings/WOTC/samples into `%APPDATA%\Tableside` if needed.
 
 ## Where behavior lives
 
@@ -121,8 +119,7 @@ Author-facing contracts: [CAMPAIGN.md](CAMPAIGN.md), [MARKDOWN.md](MARKDOWN.md),
 ## Scripts notes
 
 - `scripts/fetch-srd.mjs` — network required; writes JSON under `src/renderer/src/data/srd/`. Commit the refreshed JSON if the SRD snapshot should update for everyone.
-- `scripts/tidy-bad-blood.mjs` — one-off migration helper for reshaping the Bad Blood example; not part of normal builds.
 
 ## Docs maintenance
 
-When you change parsing or UI that authors rely on (combatant lines, callouts, templates, Lookup chips), update the matching doc in the same PR. Prefer examples copied from real Bad Blood / template patterns over abstract prose.
+When you change parsing or UI that authors rely on (combatant lines, callouts, templates, Lookup chips), update the matching doc in the same PR. Prefer examples copied from Greystead over abstract prose.

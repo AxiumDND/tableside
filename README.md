@@ -4,7 +4,21 @@ A local Windows app for running **in-person** 5e-compatible games. Your laptop i
 
 This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table.
 
-Compatible with fifth edition. Rules lookup uses the **System Reference Document 5.2** (2024 rules), already bundled. Current release: **1.1.19**.
+Compatible with fifth edition. Rules lookup uses the **System Reference Document 5.2** (2024 rules), already bundled. Current release: **1.1.21**.
+
+## Install (Windows)
+
+**[Download the latest installer](https://github.com/AxiumDND/tableside/releases/latest)** — look for `Tableside-Setup-1.1.21.exe`. No account, no admin.
+
+1. Run the installer. It is a per-user install: Start Menu + desktop shortcuts. You can pick the folder.
+2. Open **Tableside** from the Start Menu.
+3. First launch opens **Greystead — The Pale Well**, a level-1 one-shot. **Sample** loads that same folder.
+
+If Windows SmartScreen says “Windows protected your PC”: **More info → Run anyway**. The installer is not code-signed.
+
+Uninstall from Windows Settings. Campaign folders on disk and `%APPDATA%\Tableside` stay put.
+
+Older builds used `%APPDATA%\table-dm`. First launch copies settings and optional WOTC files from there if they exist.
 
 ## Who made this
 
@@ -23,15 +37,7 @@ I'm one person — a DM first, and only a basic coder. Tableside would not exist
 - Add a monster, spell, or gear item from Lookup into the campaign Bestiary, Spells, or Gear folder
 - In-app **Help**, recent campaigns, file-tree filter, and table hotkeys (`Alt+S` / `Alt+T` / `Alt+X`)
 
-## Quick start
-
-```bash
-npm install
-npm run build
-npm start
-```
-
-For day-to-day development with hot reload:
+## Run from source
 
 ```bash
 npm install
@@ -40,27 +46,20 @@ npm run dev
 
 Two windows open. If you have a second monitor, the player window goes there fullscreen.
 
-Click **Sample** to load **Bad Blood**, the included Barovia three-shot. Tableside copies it into your user data folder so combat and notes do not write back into the git repo.
-
-### Install on a PC (Windows)
-
-1. Run `npm run dist` (or download `Tableside-Setup-1.1.19.exe` from a GitHub Release).
-2. Double-click the installer. It is a per-user install: Start Menu + desktop shortcuts, no admin required. You can pick the folder.
-3. Open **Tableside** from the Start Menu. First launch copies settings and WOTC files from an older `%APPDATA%\table-dm` folder if you already had one.
-
-Windows may show SmartScreen (“Windows protected your PC”) because the installer is not code-signed. **More info → Run anyway**.
-
-Uninstall from Windows Settings; campaign folders on disk and `%APPDATA%\Tableside` are left in place.
-
-### Build the installer
+```bash
+npm run build
+npm start
+```
 
 ```bash
 npm run dist
 ```
 
-Writes `dist/Tableside-Setup-1.1.19.exe`. To attach that file to a GitHub Release, tag and push: `git tag v1.1.19 && git push origin v1.1.19`.
+Writes `dist/Tableside-Setup-1.1.21.exe`. Pushing a `v1.1.21` tag builds that file and attaches it to the [GitHub Release](https://github.com/AxiumDND/tableside/releases/latest).
 
 `npm run fetch-srd` is only needed if you want to refresh the bundled SRD snapshot from the [Open5e API](https://api.open5e.com/) (`srd-2024`).
+
+The bundled sample is **[examples/greystead](examples/greystead)**. Tableside copies it into your user data so combat and notes do not write back into the git repo or the install folder.
 
 ## Docs
 
@@ -98,15 +97,12 @@ Archive/          recaps and old drafts
 
 Full authoring guide: **[docs/CAMPAIGN.md](docs/CAMPAIGN.md)**. At-the-table UI: **[docs/TABLE.md](docs/TABLE.md)**. Step recipes: **[docs/RECIPES.md](docs/RECIPES.md)** (also in the app **Help** panel). Markdown/`statblock` reference: **[docs/MARKDOWN.md](docs/MARKDOWN.md)**.
 
-Book text for Lookup is **not** part of a campaign. Put Player’s Handbook and Dungeon Master’s Guide exports in the app `WOTC/` folder (or `%APPDATA%\Tableside\WOTC`). When those files are present, Lookup grows extra filters and searches that text. The SRD stays available either way. Filenames must contain `Spell`, `Equipment`, or `Magic Item` — details in [WOTC/README.md](WOTC/README.md).
-
-### Examples
-
-- [examples/bad-blood](examples/bad-blood) — full three-shot (also the in-app **Sample**)
-- [examples/sample-campaign](examples/sample-campaign) — minimal one-night folder
+Book text for Lookup is **not** part of a campaign and is **not** shipped. Put Player’s Handbook and Dungeon Master’s Guide exports in the app `WOTC/` folder (or `%APPDATA%\Tableside\WOTC`). When those files are present, Lookup grows extra filters and searches that text. The SRD stays available either way. Filenames must contain `Spell`, `Equipment`, or `Magic Item` — details in [WOTC/README.md](WOTC/README.md).
 
 ## Attribution
 
 This work includes material from the System Reference Document 5.2 (“SRD 5.2”) by Wizards of the Coast LLC, available at https://www.dndbeyond.com/srd. The SRD 5.2 is licensed under the Creative Commons Attribution 4.0 International License, available at https://creativecommons.org/licenses/by/4.0/legalcode.
 
 Structured data is republished via the Open5e API. See [ATTRIBUTION.md](ATTRIBUTION.md).
+
+Tableside is an independent project and is not affiliated with Wizards of the Coast.

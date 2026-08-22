@@ -92,8 +92,8 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
             items={[
               <>
                 <Action>Open campaign</Action> picks any folder. <Action>New campaign</Action> scaffolds Party, NPCs,
-                Places, Factions, Maps, and the rest in an empty folder. The empty notes pane can still load the Bad
-                Blood sample.
+                Places, Factions, Maps, and the rest in an empty folder. First launch with no folder opens the
+                Greystead one-shot; <Action>Sample</Action> loads that same copy.
               </>,
               <>
                 Two windows open: this DM console, and a fullscreen black <strong>player</strong> window. Click the{' '}
@@ -369,7 +369,7 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
           />
           <p className="text-[12px] text-muted">
             After the session, combat stays in <Code>combat.json</Code> until you clear it. Keep lasting work in your
-            own campaign folder; Sample can refresh from the bundled Bad Blood copy.
+            own campaign folder; Sample can refresh from the bundled Greystead copy.
           </p>
         </Section>
       </div>

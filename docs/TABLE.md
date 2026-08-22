@@ -15,7 +15,7 @@ Two Electron windows open: the DM console, and a fullscreen **player** window (p
 
 ## Start a session
 
-1. **Sample** — copies Bad Blood into user data and opens it (safe to edit).
+1. **Sample** — copies Greystead (the level-1 one-shot) into user data and opens it (safe to edit). First launch with no campaign folder does the same.
 2. **Open campaign** — pick any campaign folder on disk.
 3. **New campaign** — pick an empty folder; Tableside scaffolds the standard layout and Templates.
 

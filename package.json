@@ -1,17 +1,17 @@
 {
-  "name": "table-dm",
-  "version": "1.1.19",
+  "name": "tableside",
+  "version": "1.1.21",
   "description": "Tableside — in-person dual-monitor DM tool for 5e-compatible table games",
   "main": "./out/main/index.js",
   "author": "James",
   "license": "MIT",
-  "homepage": "https://github.com/AxiumDND/table-dm",
+  "homepage": "https://github.com/AxiumDND/tableside/releases/latest",
   "repository": {
     "type": "git",
-    "url": "https://github.com/AxiumDND/table-dm.git"
+    "url": "https://github.com/AxiumDND/tableside.git"
   },
   "bugs": {
-    "url": "https://github.com/AxiumDND/table-dm/issues"
+    "url": "https://github.com/AxiumDND/tableside/issues"
   },
   "scripts": {
     "dev": "node ./node_modules/electron-vite/bin/electron-vite.js dev",
@@ -56,8 +56,8 @@
     ],
     "extraResources": [
       {
-        "from": "examples/bad-blood",
-        "to": "examples/bad-blood"
+        "from": "examples/greystead",
+        "to": "examples/greystead"
       },
       {
         "from": "resources/srd-portraits",

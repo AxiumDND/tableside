@@ -244,12 +244,12 @@ async function migrateLegacyUserData(): Promise<void> {
 
 function sampleSourcePath(): string {
   return app.isPackaged
-    ? join(process.resourcesPath, 'examples', 'bad-blood')
-    : join(__dirname, '../../examples/bad-blood')
+    ? join(process.resourcesPath, 'examples', 'greystead')
+    : join(__dirname, '../../examples/greystead')
 }
 
 function sampleWorkingPath(): string {
-  return join(app.getPath('userData'), 'samples', 'bad-blood')
+  return join(app.getPath('userData'), 'samples', 'greystead')
 }
 
 async function ensureSampleWorkingCopy(): Promise<string> {
@@ -1297,13 +1297,20 @@ app.whenReady().then(async () => {
   registerIpc()
 
   settings = await readSettings()
-  if (settings.campaignFolder && existsSync(settings.campaignFolder)) {
-    campaignFolder = samePath(settings.campaignFolder, sampleSourcePath())
+  const existing =
+    settings.campaignFolder && existsSync(settings.campaignFolder) ? settings.campaignFolder : null
+  if (existing) {
+    campaignFolder = samePath(existing, sampleSourcePath())
       ? await ensureSampleWorkingCopy()
-      : settings.campaignFolder
+      : existing
     if (campaignFolder !== settings.campaignFolder) {
       await patchSettings({ campaignFolder })
     }
+  } else {
+    campaignFolder = await ensureSampleWorkingCopy()
+    await patchSettings({ campaignFolder })
+  }
+  if (campaignFolder) {
     await prepareCampaignFolder(campaignFolder)
     const info = await loadCampaign(campaignFolder)
     playerState = {
