@@ -13,8 +13,8 @@ Reference for note syntax Tableside understands. For folder layout and game nigh
 ## Wikilinks
 
 ```markdown
-[[Father Donovich]]
-[[Father Donovich|the priest]]
+[[Brother Pell]]
+[[Brother Pell|the priest]]
 [[Session 3#The Offer]]
 ```
 
@@ -26,8 +26,8 @@ Reference for note syntax Tableside understands. For folder layout and game nigh
 ## Image embeds
 
 ```markdown
-![[Village of Barovia.png]]
-![[Scene - The Taproom.png]]
+![[Greystead.webp]]
+![[The Grey Mare.webp]]
 ```
 
 Resolution order (simplified): same folder, that folder’s `Art/`, campaign-wide match by filename. Put portraits next to the sheet in `Art/` and name them like the character when you can.
@@ -61,7 +61,7 @@ A `#` or `##` heading counts as combat if it matches `/combat|encounter|⚔/i` a
 Preferred combatant line:
 
 ```markdown
-**Combatants:** [[Lyssa von Zarovich]] · [[Vampire Spawn]] ×2 · party
+**Combatants:** [[Vesper]] · [[Cultist]] ×3 · party
 ```
 
 Also accepted: `Combatants:` without bold; separators `·` `|` `,` `;`; counts `×2` / `x2`.

@@ -160,32 +160,32 @@ Rules:
 Name the file something with **Bestiary**, **Ravenloft**, or **Monster Manual** in it. One `##` heading per creature. Keep the stat fields together, then lore, then `### Traits` / `### Actions` (and Bonus Actions, Reactions, Legendary Actions if it has them). Multiple Monster Manual files (A, B, and so on) share one **MM2024** Lookup chip.
 
 ```markdown
-# Ravenloft Horrors Bestiary
+# Campaign Bestiary
 
-## Boneless
-Medium Undead, Chaotic Evil
-AC: 12
-Initiative: +2 (12)
-HP: 22 (4d8 + 4)
-Speed: 30 ft.
-STR: 15 (+2)
-DEX: 14 (+2)
-CON: 12 (+1)
-INT: 1 (-5)
+## Ash Husk
+Medium Undead, Neutral Evil
+AC: 11
+Initiative: +1 (11)
+HP: 18 (4d8)
+Speed: 25 ft.
+STR: 12 (+1)
+DEX: 12 (+1)
+CON: 11 (+0)
+INT: 4 (-3)
 WIS: 10 (+0)
-CHA: 1 (-5)
-Skills: Stealth +4
-CR: 1 (XP 200; PB +2)
+CHA: 5 (-3)
+Skills: Stealth +3
+CR: 1/4 (XP 50; PB +2)
 
-Flayed skins that smother the living.
+Crumbling remains that still walk.
 
 ### Traits
 
-Compression. The boneless can move through a space as narrow as 1 inch.
+Hollow Step. The husk ignores difficult terrain made of rubble.
 
 ### Actions
 
-Smother. Melee Attack Roll: +4, reach 5 ft. Hit: 7 (2d4 + 2) Bludgeoning damage.
+Grasp. Melee Attack Roll: +3, reach 5 ft. Hit: 5 (1d6+2) Necrotic damage.
 ```
 
 A messy D&D Beyond paste as `.txt` can be tidied with `node scripts/tidy-wotc-bestiary.mjs --remove-src` (pass the source path if it is not the Ravenloft dump).

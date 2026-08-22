@@ -90,22 +90,22 @@ describe('game night sheet template', () => {
 
 describe('place, shop, and faction templates', () => {
   it('fills place, shop, and faction names and keeps cross-links', () => {
-    const place = fillTemplate(FALLBACK_TEMPLATES.place, 'place', 'Village of Barovia')
-    expect(place).toContain('# Village of Barovia')
-    expect(place).toContain('![[Village of Barovia.png]]')
+    const place = fillTemplate(FALLBACK_TEMPLATES.place, 'place', 'Greystead')
+    expect(place).toContain('# Greystead')
+    expect(place).toContain('![[Greystead.png]]')
     expect(place).toContain('[[NPC Name]]')
     expect(place).toContain('[[Shop Name]]')
     expect(place).not.toContain('Place Name')
 
-    const shop = fillTemplate(FALLBACK_TEMPLATES.shop, 'shop', 'Blue Water Inn')
-    expect(shop).toContain('# Blue Water Inn')
+    const shop = fillTemplate(FALLBACK_TEMPLATES.shop, 'shop', 'The Grey Mare')
+    expect(shop).toContain('# The Grey Mare')
     expect(shop).toContain('| **Proprietor** | [[NPC Name]] |')
     expect(shop).toContain('| **Place** | [[Place Name]] |')
     expect(shop).toContain('| **Standing** | Neutral |')
     expect(shop).toContain('## Stock')
 
-    const faction = fillTemplate(FALLBACK_TEMPLATES.faction, 'faction', 'Keepers of the Feather')
-    expect(faction).toContain('# Keepers of the Feather')
+    const faction = fillTemplate(FALLBACK_TEMPLATES.faction, 'faction', 'The Pale Well')
+    expect(faction).toContain('# The Pale Well')
     expect(faction).toContain('| **Leader** | [[NPC Name]] |')
     expect(faction).toContain('| **HQ** | [[Place Name]] |')
   })

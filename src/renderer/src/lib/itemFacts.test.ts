@@ -24,6 +24,6 @@ describe('placeholder sheet fields', () => {
     expect(isPlaceholderSheetValue('Settlement')).toBe(false)
     expect(isPlaceholderTagline('What this place is in one line')).toBe(true)
     expect(isPlaceholderTagline('A valley town under a closed sky')).toBe(false)
-    expect(cleanWikiText('[[Urwin Martikov|Urwin]]')).toBe('Urwin')
+    expect(cleanWikiText('[[Marta Fenn|Marta]]')).toBe('Marta')
   })
 })

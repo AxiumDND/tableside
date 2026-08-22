@@ -51,7 +51,7 @@ describe('stock place and faction art', () => {
     expect(matchStockArt('Dungeon')?.id).toBe('Dungeon')
     expect(matchStockArt('Peak', 'place')?.id).toBe('Mountain')
     expect(matchStockArt('Cemetery', 'place')?.id).toBe('Graveyard')
-    expect(matchStockArt('Blue Water Inn', 'place')).toBeNull()
+    expect(matchStockArt('The Grey Mare Inn Extra', 'place')).toBeNull()
   })
 
   it('builds a tabledm URL', () => {

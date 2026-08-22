@@ -235,7 +235,7 @@ export default function HelpPanel({ onClose }: { onClose?: () => void }) {
                 sheet.
               </>,
               <>
-                Add a line like <Code>**Combatants:** [[Harbinger]] · [[Vampire Spawn]] ×2 · party</Code>
+                Add a line like <Code>**Combatants:** [[Vesper]] · [[Cultist]] ×3 · party</Code>
               </>
             ]}
           />

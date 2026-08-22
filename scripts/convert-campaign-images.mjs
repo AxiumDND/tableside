@@ -23,7 +23,7 @@ const root = arg
   ? isAbsolute(arg)
     ? arg
     : join(process.cwd(), arg)
-  : join(process.cwd(), 'examples', 'bad-blood')
+  : join(process.cwd(), 'examples', 'greystead')
 const IMAGE_RE = /\.(png|jpe?g)$/i
 
 async function walk(dir, acc = []) {

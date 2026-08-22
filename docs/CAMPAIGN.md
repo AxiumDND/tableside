@@ -96,7 +96,7 @@ Portrait files should match the character or creature name when possible. Click 
 
 **Map notes** (a fenced `map` block) open as a full map with DM-only pins, circular tokens from Party / NPCs / Bestiary, zoom/pan, and drawable fog. Right-click **Maps/** → **New map…** to pick existing art or load a file into `Maps/Art/` named like the note. **Show to players** sends the image, the current crop, fog, and tokens — no pins. See [MARKDOWN.md](MARKDOWN.md).
 
-**Places** are gazetteer notes, not battlemaps. Right-click **Places/** → **New place…** for a town, site, wilderness, or dungeon, or **New shop…** for an inn, stall, forge, or temple. The create dialog includes bundled default art (town, dungeon, mountain, swamp, inn, thieves’ guild, and similar) — pick one, or name the note `Dungeon` / `Mountain` / `Thieves' Guild` to attach the matching picture. The shopkeeper stays an NPC (`[[Hale]]` in NPCs, `[[The Weary Mare]]` in Places, linked both ways). **Factions/** → **New faction…** for a guild, church, house, or cult. A settlement note is an index of people and sites — do not dump a whole city onto one page. Stay flat unless a town has many sites (`Places/Vallaki.md` plus `Places/Vallaki/Blue Water Inn.md`).
+**Places** are gazetteer notes, not battlemaps. Right-click **Places/** → **New place…** for a town, site, wilderness, or dungeon, or **New shop…** for an inn, stall, forge, or temple. The create dialog includes bundled default art (town, dungeon, mountain, swamp, inn, thieves’ guild, and similar) — pick one, or name the note `Dungeon` / `Mountain` / `Thieves' Guild` to attach the matching picture. The shopkeeper stays an NPC (`[[Hale]]` in NPCs, `[[The Weary Mare]]` in Places, linked both ways). **Factions/** → **New faction…** for a guild, church, house, or cult. A settlement note is an index of people and sites — do not dump a whole city onto one page. Stay flat unless a town has many sites (`Places/Greystead.md` plus `Places/Greystead/The Grey Mare.md`).
 
 Supported image types: `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`, `.bmp`. Full rules: [MARKDOWN.md](MARKDOWN.md).
 
@@ -172,7 +172,7 @@ A **game night sheet** is a session note with combat sections that feed the init
 ```markdown
 ## ⚔️ Combat 1 — the door
 
-**Combatants:** [[The Harbinger of the Rune-Blade]] · [[Vampire Spawn]] ×2 · party
+**Combatants:** [[Vesper]] · [[Cultist]] ×3 · party
 ```
 
 - `party` adds every PC under `Party/`.

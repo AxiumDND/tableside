@@ -52,7 +52,7 @@ describe('shop stock', () => {
   it('resolves art ids, aliases, and placeholder types', () => {
     expect(resolveShopCatalog('Stables').id).toBe('Stables')
     expect(resolveShopCatalog('Armor').id).toBe('Armorer')
-    expect(resolveShopCatalog('Tavern / armorer / stables', 'Blue Water Inn').id).toBe('General Store')
+    expect(resolveShopCatalog('Tavern / armorer / stables', 'The Grey Mare').id).toBe('General Store')
     expect(resolveShopCatalog('Tavern / armorer / stables', 'Stables').id).toBe('Stables')
     expect(resolveShopCatalog('', 'Mystery stall').id).toBe('General Store')
   })

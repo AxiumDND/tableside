@@ -17,7 +17,7 @@ Prep combatants in Markdown once; load them at the table in one click.
 ```markdown
 ## ⚔️ Combat 1 — the door
 
-**Combatants:** [[The Harbinger of the Rune-Blade]] · [[Vampire Spawn]] ×2 · party
+**Combatants:** [[Vesper]] · [[Cultist]] ×3 · party
 ```
 
 Rules of thumb:
