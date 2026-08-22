@@ -1,2 +1,3 @@
-/** Display version. Keep identical to package.json. */
-export const APP_VERSION = '1.0.5'
+/** Display name and version. Version must match package.json. */
+export const APP_NAME = 'Tableside'
+export const APP_VERSION = '1.1.21'

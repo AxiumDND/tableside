@@ -1,5 +1,5 @@
 import type { Combatant, CombatState, PlayerInitiativeEntry } from '../../../shared/types'
-import { abilityMod } from './dice'
+import { abilityMod, rollD20 } from './dice'
 
 export function initiativeBonus(c: Combatant): number {
   if (typeof c.statBlock?.initiativeBonus === 'number') return c.statBlock.initiativeBonus
@@ -38,4 +38,43 @@ export function combatToPlayerInitiative(combat: CombatState): PlayerInitiativeE
   const turn = entries.findIndex((entry) => entry.active)
   if (turn <= 0) return entries
   return [...entries.slice(turn), ...entries.slice(0, turn)]
+}
+
+/** Start combat or advance to the next combatant (and round when wrapping). */
+export function advanceCombatTurn(combat: CombatState): CombatState {
+  const ordered = sortCombatants(combat.combatants)
+  if (ordered.length === 0) return combat
+  const round = combat.round ?? 0
+  const started = round > 0
+  const turnId =
+    started && combat.activeId && ordered.some((c) => c.id === combat.activeId) ? combat.activeId : null
+  if (!started || !turnId) {
+    return { ...combat, activeId: ordered[0].id, round: Math.max(1, round || 1) }
+  }
+  const idx = ordered.findIndex((c) => c.id === turnId)
+  const nextIdx = (idx + 1) % ordered.length
+  return {
+    ...combat,
+    activeId: ordered[nextIdx].id,
+    round: nextIdx === 0 ? round + 1 : round
+  }
+}
+
+/**
+ * Roll initiative for matching combatants.
+ * `unrolled-npcs` = non-PCs still at initiative 0 (typical after Add to initiative).
+ */
+export function rollInitiativeFor(
+  combatants: Combatant[],
+  which: Combatant['kind'][] | 'all' | 'unrolled-npcs',
+  roll: (bonus: number) => number = (bonus) => rollD20(bonus, 'Init').total
+): Combatant[] {
+  return combatants.map((c) => {
+    if (which === 'unrolled-npcs') {
+      if (c.kind === 'pc' || c.initiative !== 0) return c
+    } else if (which !== 'all' && !which.includes(c.kind)) {
+      return c
+    }
+    return { ...c, initiative: roll(initiativeBonus(c)) }
+  })
 }

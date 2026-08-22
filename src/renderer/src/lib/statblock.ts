@@ -209,6 +209,14 @@ export function extractStatblock(markdown: string): { block: ParsedStatblock; re
 }
 
 export function isNpcSheet(markdown: string, path: string): boolean {
+  if (
+    pathHasFolder(path, 'gear') ||
+    pathHasFolder(path, 'spells') ||
+    pathHasFolder(path, 'places') ||
+    pathHasFolder(path, 'factions')
+  ) {
+    return false
+  }
   return (
     /```statblock/i.test(markdown) ||
     /layout:\s*Basic 5e Layout/i.test(markdown) ||
@@ -355,27 +363,26 @@ export function parsedToBestiaryMarkdown(block: ParsedStatblock): string {
 
   return `# ${name}
 
-*SRD 5.2 monster. Add notes for this table.*
-
-${typeLine}
-
-| | |
-|---|---|
-| **CR** | ${cr} |
-| **Role** |  |
-| **Source** | SRD 5.2 |
-
-## Notes
-
-Add where it appears and how to run it.
-
-## Combat
-
-**Combatants:** [[${name}]] · party
+> [!infobox]+
+> ![[${name}.webp]]
+>
+> | | |
+> |---|---|
+> | **CR** | ${cr} |
+> | **Role** |  |
+> | **Source** | SRD 5.2 |
 
 \`\`\`statblock
 ${yaml.filter(Boolean).join('\n')}
 \`\`\`
+
+*SRD 5.2 monster. Add notes for this table.*
+
+${typeLine}
+
+## Notes
+
+Add where it appears and how to run it.
 `
 }
 

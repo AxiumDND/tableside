@@ -26,6 +26,8 @@ function candidateFolders(): string[] {
       if (existsSync(folder)) found.push(folder)
     }
   }
+  const legacy = join(app.getPath('appData'), 'table-dm', 'WOTC')
+  if (existsSync(legacy)) found.push(legacy)
   return found
 }
 

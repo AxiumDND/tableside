@@ -1,5 +1,6 @@
 import { defaultUrlTransform } from 'react-markdown'
 import type { CampaignTreeNode } from '../../../shared/types'
+import { pathHasFolder } from '../../../shared/campaignLayout'
 
 export const IMAGE_EXT = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.bmp'])
 
@@ -17,6 +18,35 @@ export interface CampaignImage {
 
 export function campaignFileUrl(relativePath: string): string {
   return `tabledm://file/?path=${encodeURIComponent(relativePath).replace(/'/g, '%27')}`
+}
+
+export function srdPortraitUrl(name: string): string {
+  const stem = name.replace(/\.[^.]+$/, '').trim()
+  return `tabledm://srd-portrait/?name=${encodeURIComponent(stem)}`
+}
+
+export function srdItemUrl(name: string): string {
+  const stem = name.replace(/\.[^.]+$/, '').trim()
+  return `tabledm://srd-item/?name=${encodeURIComponent(stem)}`
+}
+
+export function srdSchoolUrl(school: string): string {
+  const stem = school.replace(/\.[^.]+$/, '').trim()
+  return `tabledm://srd-school/?name=${encodeURIComponent(stem)}`
+}
+
+export function portraitSrcForNote(
+  notePath: string,
+  images: CampaignImage[],
+  title?: string
+): string | null {
+  const campaign = portraitForNote(notePath, images) ?? (title ? portraitForNote(`${title}.md`, images) : null)
+  if (campaign) return campaignFileUrl(campaign)
+  const file = notePath.replaceAll('\\', '/').split('/').pop() ?? notePath
+  const stem = file.replace(/\.[^.]+$/, '')
+  if (pathHasFolder(notePath, 'bestiary')) return srdPortraitUrl(title || stem)
+  if (pathHasFolder(notePath, 'gear')) return srdItemUrl(title || stem)
+  return null
 }
 
 export function isImagePath(path: string): boolean {
@@ -83,7 +113,7 @@ function stripSize(ref: string): string {
 }
 
 function foldName(value: string): string {
-  return value.toLowerCase().replace(/[—–−]/g, '-').replace(/\s+/g, ' ').trim()
+  return value.toLowerCase().replace(/[’‘`]/g, "'").replace(/[—–−]/g, '-').replace(/\s+/g, ' ').trim()
 }
 
 export function resolveImageRef(ref: string, notePath: string, images: CampaignImage[]): string | null {
@@ -119,8 +149,16 @@ export function resolveImageRef(ref: string, notePath: string, images: CampaignI
 }
 
 export function portraitForNote(notePath: string, images: CampaignImage[]): string | null {
-  const stem = (notePath.split('/').pop() ?? notePath).replace(/\.[^.]+$/, '')
-  return resolveImageRef(stem, notePath, images)
+  const note = normalize(notePath)
+  const file = note.split('/').pop() ?? note
+  const stem = file.replace(/\.[^.]+$/, '')
+  const withoutPc = stem.replace(/^pc\s*[—–-]\s*/i, '').trim()
+  const stems = withoutPc && withoutPc !== stem ? [stem, withoutPc] : [stem]
+  for (const candidate of stems) {
+    const found = resolveImageRef(candidate, note, images)
+    if (found) return found
+  }
+  return null
 }
 
 function wikiToMarkdown(raw: string, notePath: string, images: CampaignImage[]): string {

@@ -1,5 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
-import type { PlayerState } from '../../../shared/types'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import type { PlayerMapView, PlayerState } from '../../../shared/types'
+import { decodeFog } from '../lib/mapFog'
+import MapStage from './MapStage'
+import MapTokenMark from './MapTokenMark'
 
 const FADE_MS = 5000
 
@@ -7,6 +10,7 @@ interface Layer {
   id: number
   src: string
   fromBlack?: boolean
+  mapView?: PlayerMapView | null
 }
 
 export default function PlayerView({
@@ -33,11 +37,21 @@ export default function PlayerView({
 
     setClearing(false)
     setLayers((prev) => {
-      if (prev.at(-1)?.src === incoming) return prev
-      const layer: Layer = { id: nextId.current++, src: incoming, fromBlack: prev.length === 0 }
+      const last = prev.at(-1)
+      if (last?.src === incoming) {
+        return prev.map((layer, index) =>
+          index === prev.length - 1 ? { ...layer, mapView: state.mapView ?? null } : layer
+        )
+      }
+      const layer: Layer = {
+        id: nextId.current++,
+        src: incoming,
+        fromBlack: prev.length === 0,
+        mapView: state.mapView ?? null
+      }
       return [...prev.slice(-1), layer]
     })
-  }, [incoming])
+  }, [incoming, state.mapView])
 
   useEffect(() => {
     if (layers.length <= 1) return
@@ -60,7 +74,11 @@ export default function PlayerView({
             key={layer.id}
             className={`player-layer${fadeIn ? ' player-fade-in' : ''}${fadeOut ? ' player-fade-out' : ''}`}
           >
-            <img src={layer.src} alt="" />
+            {layer.mapView ? (
+              <PlayerMapLayer src={layer.src} mapView={layer.mapView} />
+            ) : (
+              <img src={layer.src} alt="" />
+            )}
           </div>
         )
       })}
@@ -98,5 +116,29 @@ export default function PlayerView({
         </div>
       ) : null}
     </div>
+  )
+}
+
+function PlayerMapLayer({ src, mapView }: { src: string; mapView: PlayerMapView }) {
+  const camera = {
+    zoom: mapView.zoom,
+    centerX: mapView.centerX,
+    centerY: mapView.centerY
+  }
+  const fogCells = useMemo(
+    () => (mapView.fog ? decodeFog(mapView.fog, mapView.fogSize) : null),
+    [mapView.fog, mapView.fogSize]
+  )
+  return (
+    <MapStage
+      src={src}
+      camera={camera}
+      fogCells={fogCells}
+      fogOpacity={1}
+      fogOnTop
+      underlay={(mapView.tokens ?? []).map((token) => (
+        <MapTokenMark key={token.id} token={token} />
+      ))}
+    />
   )
 }

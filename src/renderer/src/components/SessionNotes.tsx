@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import type { Character } from '../../../shared/types'
+import { pathHasFolder } from '../../../shared/campaignLayout'
+import type { CampaignInfo, Character, CreateNoteMapImage, PlayerMapView } from '../../../shared/types'
 import {
   imageTitle,
   markdownUrlTransform,
@@ -21,17 +22,32 @@ import {
   splitCombatCardContent,
   splitCalloutBlocks,
   isCombatHeading,
+  missingCombatantTokens,
   type CampaignNote,
   type NightEncounter
 } from '../lib/notes'
 import { extractStatblock, fallbackStatblock, isNpcSheet, type ParsedStatblock } from '../lib/statblock'
+import { isMapNote, mapImagePath } from '../lib/mapNote'
 import CalloutCard from './CalloutCard'
 import CombatCard from './CombatCard'
+import GettingStarted from './GettingStarted'
 import GmOnly from './GmOnly'
+import MapView from './MapView'
 import ReadAloud from './ReadAloud'
+import ItemSheet from './ItemSheet'
 import NpcSheet from './NpcSheet'
 import { CharacterCard } from './StatBlock'
 import type { FileKind } from './CampaignFiles'
+import type { ShopStockOffer } from '../../../shared/shopCatalogs'
+import {
+  applyShopInventory,
+  applyShopStock,
+  generateShopInventory,
+  looksLikeShopNote,
+  shopTypeFromMarkdown
+} from '../../../shared/shopStock'
+import { applyShopStanding, type ShopStanding } from '../../../shared/shopStanding'
+import { matchStockArt } from '../../../shared/stockArt'
 
 interface Heading {
   id: string
@@ -72,11 +88,20 @@ export default function SessionNotes({
   disabled,
   onSelectImage,
   onShowToPlayers,
+  onMapLiveView,
   onOpenNote,
   onBack,
   backLabel,
+  onNext,
+  nextLabel,
   onAddNpcToCombat,
-  onAddEncounter
+  onAddEncounter,
+  onNewCampaign,
+  onOpenCampaign,
+  onOpenSample,
+  recentCampaigns,
+  onOpenRecent,
+  onCampaignChange
 }: {
   path: string
   kind: FileKind
@@ -87,11 +112,20 @@ export default function SessionNotes({
   disabled?: boolean
   onSelectImage?: (path: string) => void
   onShowToPlayers?: () => void
+  onMapLiveView?: (imagePath: string, view: PlayerMapView) => void
   onOpenNote?: (path: string) => void
   onBack?: () => void
   backLabel?: string
+  onNext?: () => void
+  nextLabel?: string
   onAddNpcToCombat?: (block: ParsedStatblock, notePath: string) => void
   onAddEncounter?: (items: EncounterAddItem[]) => void
+  onNewCampaign?: () => void
+  onOpenCampaign?: () => void
+  onOpenSample?: () => void
+  recentCampaigns?: import('../../../shared/types').RecentCampaign[]
+  onOpenRecent?: (folder: string) => void
+  onCampaignChange?: (campaign: CampaignInfo) => void
 }) {
   const [markdown, setMarkdown] = useState('')
   const [original, setOriginal] = useState('')
@@ -122,6 +156,20 @@ export default function SessionNotes({
     return null
   }, [kind, markdown, path])
   const npcMode = Boolean(parsedNpc && kind === 'note' && !editing && isNpcSheet(markdown, path))
+  const itemMode =
+    kind === 'note' &&
+    Boolean(path) &&
+    !editing &&
+    (pathHasFolder(path, 'gear') ||
+      pathHasFolder(path, 'spells') ||
+      pathHasFolder(path, 'places') ||
+      pathHasFolder(path, 'factions'))
+  const sheetChrome = npcMode || itemMode
+  const mapMode = kind === 'note' && !editing && isMapNote(markdown)
+  const mapImage = useMemo(
+    () => (kind === 'note' && isMapNote(markdown) ? mapImagePath(markdown, path, images) : null),
+    [kind, markdown, path, images]
+  )
   const headings = useMemo(() => headingsFrom(markdown), [markdown])
   const encounters = useMemo(
     () => (kind === 'note' && !editing ? parseNightEncounters(markdown, path, noteIndex) : []),
@@ -246,6 +294,33 @@ export default function SessionNotes({
     setEditing(false)
   }
 
+  async function persistShopMarkdown(next: string): Promise<void> {
+    if (!path) return
+    await window.tabledm.saveFile(path, next)
+    setMarkdown(next)
+    setOriginal(next)
+    markdownRef.current = next
+    originalRef.current = next
+  }
+
+  async function rerollShopStock(): Promise<void> {
+    if (!path) return
+    const stem = (path.split('/').pop() ?? '').replace(/\.md$/i, '')
+    const type =
+      shopTypeFromMarkdown(markdownRef.current) ||
+      matchStockArt(stem, 'shop')?.id ||
+      'General Store'
+    await persistShopMarkdown(applyShopInventory(markdownRef.current, generateShopInventory(type)))
+  }
+
+  async function changeShopStock(stock: ShopStockOffer[]): Promise<void> {
+    await persistShopMarkdown(applyShopStock(markdownRef.current, stock))
+  }
+
+  async function changeShopStanding(standing: ShopStanding): Promise<void> {
+    await persistShopMarkdown(applyShopStanding(markdownRef.current, standing))
+  }
+
   function jump(id: string): void {
     document.getElementById(id)?.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }
@@ -277,7 +352,24 @@ export default function SessionNotes({
     }
   }
 
-  const canShow = Boolean(onShowToPlayers && (kind === 'image' || selectedImage))
+  useEffect(() => {
+    if (mapImage) onSelectImage?.(mapImage)
+  }, [mapImage, onSelectImage])
+
+  async function saveMapMarkdown(next: string): Promise<void> {
+    setMarkdown(next)
+    markdownRef.current = next
+    try {
+      await window.tabledm.saveFile(path, next)
+      originalRef.current = next
+      setOriginal(next)
+      setSaveError('')
+    } catch {
+      setSaveError('Could not save this file.')
+    }
+  }
+
+  const canShow = Boolean(onShowToPlayers && (kind === 'image' || selectedImage || mapImage))
 
   const markdownComponents = {
     h1: ({ children }: { children?: ReactNode }) => {
@@ -355,6 +447,7 @@ export default function SessionNotes({
         )
       }
       if (part.kind === 'gmonly') {
+        if (/^what this page does$/i.test(part.title ?? '')) return null
         return (
           <GmOnly key={key} title={part.title}>
             <Markdown remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform} components={markdownComponents}>
@@ -405,6 +498,7 @@ export default function SessionNotes({
           <CombatCard
             adding={Boolean(encounter && addingId === encounter.id)}
             onAdd={encounter && onAddEncounter ? () => void addEncounter(encounter) : undefined}
+            missing={missingCombatantTokens(section.markdown, path, noteIndex)}
           >
             {renderMarkdown(card, `${key}-card`)}
           </CombatCard>
@@ -429,13 +523,29 @@ export default function SessionNotes({
                 ← Back
               </button>
             ) : null}
-            <h2 className="min-w-0 truncate font-display text-lg text-amber">
-              {path ? imageTitle(path).replace(/^PC\s+[—–-]\s+/i, '') : 'Notes'}
-              {dirty ? <span className="ml-2 text-xs font-sans text-amber-dim">unsaved</span> : null}
-            </h2>
+            {onNext ? (
+              <button
+                type="button"
+                title={nextLabel ? `Next: ${nextLabel}` : 'Next'}
+                onClick={onNext}
+                className="shrink-0 rounded border border-line px-2 py-1 text-xs hover:border-amber"
+              >
+                Next →
+              </button>
+            ) : null}
+            {sheetChrome ? (
+              path ? (
+                <span className="min-w-0 truncate text-[11px] text-muted">{path.split(/[\\/]/)[0]}</span>
+              ) : null
+            ) : (
+              <h2 className="min-w-0 truncate font-display text-lg text-amber">
+                {path ? imageTitle(path).replace(/^PC\s+[—–-]\s+/i, '') : 'Notes'}
+                {dirty ? <span className="ml-2 text-xs font-sans text-amber-dim">unsaved</span> : null}
+              </h2>
+            )}
           </div>
           <div className="flex items-center gap-2">
-            {kind === 'note' && path && headings.length > 0 && !editing && !npcMode ? (
+            {kind === 'note' && path && headings.length > 0 && !editing && !sheetChrome && !mapMode ? (
               <button
                 type="button"
                 onClick={() => setShowLinks((open) => !open)}
@@ -466,14 +576,26 @@ export default function SessionNotes({
                   </button>
                 </>
               ) : (
-                <button
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => setEditing(true)}
-                  className="rounded border border-line px-2.5 py-1 text-xs hover:border-amber"
-                >
-                  Edit
-                </button>
+                <>
+                  {pathHasFolder(path, 'places') && looksLikeShopNote(markdown) ? (
+                    <button
+                      type="button"
+                      disabled={disabled}
+                      onClick={() => void rerollShopStock()}
+                      className="rounded border border-line px-2.5 py-1 text-xs hover:border-amber"
+                    >
+                      Reroll stock
+                    </button>
+                  ) : null}
+                  <button
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => setEditing(true)}
+                    className="rounded border border-line px-2.5 py-1 text-xs hover:border-amber"
+                  >
+                    Edit
+                  </button>
+                </>
               )
             ) : null}
             {canShow ? (
@@ -487,10 +609,10 @@ export default function SessionNotes({
             ) : null}
           </div>
         </div>
-        {path ? <div className="truncate text-[11px] text-muted">{path}</div> : null}
+        {path && !sheetChrome ? <div className="truncate text-[11px] text-muted">{path}</div> : null}
       </header>
 
-      {kind === 'note' && headings.length > 0 && !editing && !npcMode && showLinks ? (
+      {kind === 'note' && headings.length > 0 && !editing && !sheetChrome && !mapMode && showLinks ? (
         <nav className="max-h-28 overflow-auto border-b border-line px-3 py-2 text-xs">
           {headings.map((h) => (
             <button
@@ -530,10 +652,39 @@ export default function SessionNotes({
             className="min-h-0 flex-1 resize-none rounded border border-line bg-ink p-3 font-mono text-[13px] leading-relaxed text-parchment outline-none focus:border-amber"
           />
         </div>
+      ) : mapMode ? (
+        <MapView
+          key={path}
+          markdown={markdown}
+          path={path}
+          images={images}
+          notes={noteIndex}
+          onChange={(next) => void saveMapMarkdown(next)}
+          onLiveView={onMapLiveView}
+          renderRoom={(text) => (
+            <div className="markdown-body">
+              {renderMarkdown(
+                linkWikiNotes(
+                  prepareNoteMarkdown(text, path, images, { injectPortrait: false }),
+                  path,
+                  noteIndex
+                ),
+                'map-room'
+              )}
+            </div>
+          )}
+        />
       ) : (
       <div className="min-h-0 flex-1 overflow-auto p-3">
         {!path ? (
-          <p className="text-sm text-muted">Open a campaign, then pick a file from the left.</p>
+          <GettingStarted
+            hasCampaign={!disabled}
+            onNewCampaign={onNewCampaign}
+            onOpenCampaign={onOpenCampaign}
+            onOpenSample={onOpenSample}
+            recentCampaigns={recentCampaigns}
+            onOpenRecent={onOpenRecent}
+          />
         ) : kind === 'image' && imageUrl ? (
           <div className="flex h-full flex-col items-center justify-center gap-3">
             <img src={imageUrl} alt={imageTitle(path)} className="max-h-[70vh] max-w-full object-contain" />
@@ -561,7 +712,41 @@ export default function SessionNotes({
             block={parsedNpc.block}
             onSelectImage={onSelectImage}
             onAddToCombat={onAddNpcToCombat ? () => onAddNpcToCombat(parsedNpc.block, path) : undefined}
-            onEdit={() => setEditing(true)}
+            onSetPortrait={async (image: CreateNoteMapImage) => {
+              const result = await window.tabledm.setNotePortrait(path, image)
+              if (!result) return
+              setMarkdown(result.markdown)
+              setOriginal(result.markdown)
+              markdownRef.current = result.markdown
+              originalRef.current = result.markdown
+              onCampaignChange?.(result.campaign)
+            }}
+            renderNotes={(body) =>
+              renderDocument(
+                linkWikiNotes(prepareNoteMarkdown(body, path, images, { injectPortrait: false }), path, noteIndex),
+                'sheet'
+              )
+            }
+          />
+        ) : itemMode ? (
+          <ItemSheet
+            path={path}
+            markdown={markdown}
+            images={images}
+            selectedImage={selectedImage}
+            onSelectImage={onSelectImage}
+            onSetPortrait={async (image: CreateNoteMapImage) => {
+              const result = await window.tabledm.setNotePortrait(path, image)
+              if (!result) return
+              setMarkdown(result.markdown)
+              setOriginal(result.markdown)
+              markdownRef.current = result.markdown
+              originalRef.current = result.markdown
+              onCampaignChange?.(result.campaign)
+            }}
+            onRerollStock={rerollShopStock}
+            onChangeStock={changeShopStock}
+            onChangeStanding={changeShopStanding}
             renderNotes={(body) =>
               renderDocument(
                 linkWikiNotes(prepareNoteMarkdown(body, path, images, { injectPortrait: false }), path, noteIndex),

@@ -88,11 +88,13 @@ function saveFor(block: ParsedStatblock, index: number): number {
 export default function RollableStatBlock({
   block,
   onAddToCombat,
-  hideToolbar
+  hideToolbar,
+  portrait
 }: {
   block: ParsedStatblock
   onAddToCombat?: () => void
   hideToolbar?: boolean
+  portrait?: ReactNode
 }) {
   const [last, setLast] = useState<DiceResult | null>(null)
   const dice = useDiceLog()
@@ -106,57 +108,62 @@ export default function RollableStatBlock({
 
   return (
     <section className="rounded border border-line bg-ink p-3">
-      <div className="flex items-start justify-between gap-2">
-        <div>
-          <div className="font-display text-xl text-amber">{block.name}</div>
-          <div className="text-xs italic text-muted">
-            {[block.size, block.type, block.alignment].filter(Boolean).join(', ')}
-            {block.cr != null ? ` · CR ${block.cr}` : ''}
+      <div className={portrait ? 'flex items-start gap-3' : undefined}>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <div>
+              <div className="font-display text-xl text-amber">{block.name}</div>
+              <div className="text-xs italic text-muted">
+                {[block.size, block.type, block.alignment].filter(Boolean).join(', ')}
+                {block.cr != null ? ` · CR ${block.cr}` : ''}
+              </div>
+            </div>
+            {!hideToolbar && onAddToCombat ? (
+              <button
+                type="button"
+                onClick={onAddToCombat}
+                className="shrink-0 rounded bg-amber px-2 py-1 text-xs font-semibold text-ink"
+              >
+                Add to combat
+              </button>
+            ) : null}
+          </div>
+
+          {last ? (
+            <div className="mt-2 rounded bg-amber/15 px-2 py-1 text-sm">
+              <span className="text-muted">{last.expr}</span>{' '}
+              <span className="font-semibold text-amber">{last.total}</span>{' '}
+              <span className="text-xs text-muted">{last.detail}</span>
+            </div>
+          ) : (
+            <p className="mt-2 text-[11px] text-muted">Click Init, a score, a save, or an attack to roll.</p>
+          )}
+
+          <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-0.5 text-[13px]">
+            <p>
+              <span className="text-muted">AC</span> {block.ac ?? 10}
+            </p>
+            <p>
+              <button
+                type="button"
+                onClick={() => noteRoll(rollD20(init, 'Initiative'))}
+                className="hover:text-amber"
+              >
+                <span className="text-muted">Initiative</span> {formatMod(init)} ({10 + init})
+              </button>
+            </p>
+            <p className="col-span-2">
+              <span className="text-muted">HP</span> {block.hp ?? 10}
+              {block.hitDice ? ` (${block.hitDice})` : ''}
+            </p>
+            {block.speed ? (
+              <p className="col-span-2">
+                <span className="text-muted">Speed</span> {block.speed}
+              </p>
+            ) : null}
           </div>
         </div>
-        {!hideToolbar && onAddToCombat ? (
-          <button
-            type="button"
-            onClick={onAddToCombat}
-            className="shrink-0 rounded bg-amber px-2 py-1 text-xs font-semibold text-ink"
-          >
-            Add to combat
-          </button>
-        ) : null}
-      </div>
-
-      {last ? (
-        <div className="mt-2 rounded bg-amber/15 px-2 py-1 text-sm">
-          <span className="text-muted">{last.expr}</span>{' '}
-          <span className="font-semibold text-amber">{last.total}</span>{' '}
-          <span className="text-xs text-muted">{last.detail}</span>
-        </div>
-      ) : (
-        <p className="mt-2 text-[11px] text-muted">Click Init, a score, a save, or an attack to roll.</p>
-      )}
-
-      <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-0.5 text-[13px]">
-        <p>
-          <span className="text-muted">AC</span> {block.ac ?? 10}
-        </p>
-        <p>
-          <button
-            type="button"
-            onClick={() => noteRoll(rollD20(init, 'Initiative'))}
-            className="hover:text-amber"
-          >
-            <span className="text-muted">Initiative</span> {formatMod(init)} ({10 + init})
-          </button>
-        </p>
-        <p className="col-span-2">
-          <span className="text-muted">HP</span> {block.hp ?? 10}
-          {block.hitDice ? ` (${block.hitDice})` : ''}
-        </p>
-        {block.speed ? (
-          <p className="col-span-2">
-            <span className="text-muted">Speed</span> {block.speed}
-          </p>
-        ) : null}
+        {portrait ? <div className="w-40 shrink-0">{portrait}</div> : null}
       </div>
 
       <div className="mt-3 grid grid-cols-6 gap-1 text-center">

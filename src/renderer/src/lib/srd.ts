@@ -4,8 +4,10 @@ import monsters from '../data/srd/monsters.json'
 import conditions from '../data/srd/conditions.json'
 import conditionsFallback from '../data/srd/conditions-fallback.json'
 import weapons from '../data/srd/weapons.json'
+import items from '../data/srd/items.json'
 import rules from '../data/srd/rules.json'
 import type { StatBlock } from '../../../shared/types'
+import { AXIUM_SOURCE, AXIUM_GOODS, axiumCategory, axiumSourceLabel } from '../../../shared/tradeGoods'
 import { parsedToBestiaryMarkdown, statBlockToParsed } from './statblock'
 
 export type SrdKind = 'spell' | 'monster' | 'condition' | 'weapon' | 'rule' | 'book' | 'gear'
@@ -37,6 +39,43 @@ function monsterSummary(m: Record<string, unknown>): string {
   return [m.size, m.type, m.cr != null ? `CR ${m.cr}` : null, m.ac != null ? `AC ${m.ac}` : null, m.hp != null ? `HP ${m.hp}` : null]
     .filter(Boolean)
     .join(' · ')
+}
+
+function stringifyField(value: unknown): string {
+  if (value == null) return ''
+  if (Array.isArray(value)) return value.map(stringifyField).filter(Boolean).join(', ')
+  if (typeof value === 'object') {
+    const rec = value as Record<string, unknown>
+    const nested = rec.property
+    if (nested && typeof nested === 'object') return stringifyField((nested as Record<string, unknown>).name)
+    return stringifyField(rec.name ?? rec.desc ?? '')
+  }
+  const text = String(value).trim()
+  if (!text || text.includes('[object Object]')) return ''
+  return text
+}
+
+function uniqueNamedRecords<T extends { id: string; name: string }>(records: T[]): T[] {
+  const byName = new Map<string, T>()
+  for (const record of records) {
+    const key = foldName(record.name)
+    const existing = byName.get(key)
+    if (!existing) {
+      byName.set(key, record)
+      continue
+    }
+    const preferNew = record.id.includes('srd-2024') && !existing.id.includes('srd-2024')
+    if (preferNew) byName.set(key, record)
+  }
+  return [...byName.values()]
+}
+
+function foldName(name: string): string {
+  return name.toLowerCase().replace(/[’‘`]/g, "'").replace(/\s+/g, ' ').trim()
+}
+
+function itemSummary(item: Record<string, unknown>): string {
+  return [item.category, item.damage, item.cost ? `${item.cost} gp` : null].filter(Boolean).join(' · ')
 }
 
 export const SRD_SOURCE = 'srd'
@@ -77,16 +116,45 @@ export const srdRecords: SrdRecord[] = [
       data: c
     })
   ),
-  ...asList<Record<string, unknown>>(weapons).map((w) =>
-    withSrdSource({
+  ...uniqueNamedRecords(asList<Record<string, unknown> & { id: string; name: string }>(weapons)).map((w) => {
+    const properties = stringifyField(w.properties)
+    const damage = stringifyField(w.damage)
+    return withSrdSource({
       id: String(w.id),
       name: String(w.name),
       kind: 'weapon' as const,
-      searchText: [w.name, w.category, w.properties, w.desc].filter(Boolean).join(' '),
-      summary: [w.damage, w.properties].filter(Boolean).join(' · '),
-      data: w
+      searchText: [w.name, w.category, properties, w.desc].filter(Boolean).join(' '),
+      summary: [damage, properties].filter(Boolean).join(' · '),
+      data: { ...w, properties, damage }
+    })
+  }),
+  ...asList<Record<string, unknown>>(items).map((item) =>
+    withSrdSource({
+      id: String(item.id),
+      name: String(item.name),
+      kind: 'gear' as const,
+      searchText: [item.name, item.category, item.desc].filter(Boolean).join(' '),
+      summary: itemSummary(item),
+      data: item
     })
   ),
+  ...AXIUM_GOODS.map((item) => ({
+    id: item.id,
+    name: item.name,
+    kind: 'gear' as const,
+    searchText: [item.name, item.group, axiumCategory(item.group), 'axium', item.desc].join(' '),
+    summary: `${item.group} · ${item.price}`,
+    data: {
+      name: item.name,
+      category: axiumCategory(item.group),
+      Type: item.group,
+      Cost: item.price,
+      Weight: item.weight,
+      desc: item.desc
+    },
+    source: AXIUM_SOURCE,
+    sourceLabel: axiumSourceLabel(item.group)
+  })),
   ...asList<Record<string, unknown>>(rules).map((r) =>
     withSrdSource({
       id: String(r.id),
@@ -128,7 +196,7 @@ function allRecords(): SrdRecord[] {
 }
 
 function nameKey(record: SrdRecord): string {
-  return `${record.kind}:${record.name.toLowerCase()}`
+  return `${record.kind}:${foldName(record.name)}`
 }
 
 function isSrd(record: SrdRecord): boolean {
@@ -146,7 +214,9 @@ function groupSameName(records: SrdRecord[]): SrdRecord[] {
       order.push(key)
       continue
     }
-    if (!group.some((existing) => existing.id === record.id)) group.push(record)
+    if (!group.some((existing) => existing.id === record.id || (existing.source ?? 'srd') === (record.source ?? 'srd'))) {
+      group.push(record)
+    }
   }
   const out: SrdRecord[] = []
   for (const key of order) {
@@ -162,9 +232,39 @@ function groupSameName(records: SrdRecord[]): SrdRecord[] {
   return out
 }
 
+const MAGIC_ITEM_CATEGORY = /^(Wondrous Item|Potion|Ring|Rod|Staff|Wand|Scroll)\b/i
+
+function recordCategory(record: SrdRecord): string {
+  return String(record.data.category ?? '').trim()
+}
+
+function isArmorRecord(record: SrdRecord): boolean {
+  if (record.kind !== 'gear') return false
+  return /armor|armour/i.test(recordCategory(record)) || Boolean(record.data['Armor Class'])
+}
+
+function isMagicItemRecord(record: SrdRecord): boolean {
+  if (record.kind !== 'gear') return false
+  if (MAGIC_ITEM_CATEGORY.test(recordCategory(record))) return true
+  if (String(record.data.Rarity ?? record.data.rarity ?? '').trim()) return true
+  if (String(record.data.Attunement ?? record.data.attunement ?? '').trim()) return true
+  return /dmg items/i.test(record.sourceLabel ?? '')
+}
+
 function matchesFilter(record: SrdRecord, kind?: SrdKind | 'all' | string): boolean {
   if (!kind || kind === 'all') return true
   if (kind.startsWith('source:')) return record.source === kind.slice('source:'.length)
+  if (kind === 'armor') return isArmorRecord(record)
+  if (kind === 'magic') return isMagicItemRecord(record)
+  if (kind === 'trade') return record.source === AXIUM_SOURCE && record.data.category === 'Trade Goods'
+  if (kind === 'temple') return record.source === AXIUM_SOURCE && record.data.category === 'Temple Goods'
+  if (kind === 'armorer') return record.source === AXIUM_SOURCE && record.data.category === 'Armorer Goods'
+  if (kind === 'arms') return record.source === AXIUM_SOURCE && record.data.category === 'Weapon Goods'
+  if (kind === 'stables') return record.source === AXIUM_SOURCE && record.data.category === 'Stable Goods'
+  if (kind === 'store') return record.source === AXIUM_SOURCE && record.data.category === 'Store Goods'
+  if (kind === 'apothecary') return record.source === AXIUM_SOURCE && record.data.category === 'Apothecary Goods'
+  if (kind === 'forge') return record.source === AXIUM_SOURCE && record.data.category === 'Forge Goods'
+  if (kind === 'market') return record.source === AXIUM_SOURCE && record.data.category === 'Market Goods'
   return record.kind === kind
 }
 
@@ -181,10 +281,14 @@ export function searchSrd(query: string, kind?: SrdKind | 'all' | string): SrdRe
   const q = query.trim()
   if (!q) {
     const pool = allRecords()
-    const seed = kind && kind !== 'all'
-      ? pool.filter((r) => matchesFilter(r, kind))
-      : pool.filter((r) => r.kind === 'condition' || r.kind === 'rule')
-    return groupSameName(seed).slice(0, 12)
+    if (!kind || kind === 'all') {
+      const seed = pool.filter((r) => r.kind === 'condition' || r.kind === 'rule')
+      return groupSameName(seed).slice(0, 12)
+    }
+    const seed = pool
+      .filter((r) => matchesFilter(r, kind))
+      .sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }))
+    return groupSameName(seed)
   }
   const hits = search.search(q)
   const records = hits.map((h) => byId.get(String(h.id))).filter((r): r is SrdRecord => Boolean(r))
@@ -236,6 +340,7 @@ export const srdCounts = {
   monsters: asList(monsters).length,
   conditions: resolvedConditions.length,
   weapons: asList(weapons).length,
+  items: asList(items).length,
   rules: asList(rules).length
 }
 

@@ -1,3 +1,5 @@
+import { APP_NAME } from './version'
+
 export type CombatantKind = 'pc' | 'npc' | 'monster'
 
 export interface AbilityScores {
@@ -111,6 +113,7 @@ export interface DisplayInfo {
   label: string
   bounds: { x: number; y: number; width: number; height: number }
   primary: boolean
+  dm?: boolean
 }
 
 export type CombatantCondition = 'bloodied' | 'unconscious' | 'dead'
@@ -123,6 +126,26 @@ export interface PlayerInitiativeEntry {
   condition?: CombatantCondition | null
 }
 
+export interface PlayerMapToken {
+  id: string
+  x: number
+  y: number
+  size: number
+  label: string
+  kind: 'pc' | 'npc' | 'monster'
+  imageSrc: string | null
+}
+
+/** Crop + fog sent with a map so the player window follows the DM view. */
+export interface PlayerMapView {
+  zoom: number
+  centerX: number
+  centerY: number
+  fog: string
+  fogSize: number
+  tokens?: PlayerMapToken[]
+}
+
 export interface PlayerState {
   imageSrc: string | null
   imageTitle: string
@@ -130,6 +153,12 @@ export interface PlayerState {
   initiative: PlayerInitiativeEntry[]
   showInitiative: boolean
   initiativeRound?: number
+  mapView?: PlayerMapView | null
+}
+
+export interface RecentCampaign {
+  folder: string
+  name: string
 }
 
 export interface AppSettings {
@@ -138,9 +167,16 @@ export interface AppSettings {
   dmBounds?: { x: number; y: number; width: number; height: number }
   lastOpenPath?: string
   lastOpenKind?: string
-  rightPanel?: 'combat' | 'lookup' | null
+  rightPanel?: 'combat' | 'lookup' | 'help' | null
   showPlayerPreview?: boolean
+  recentCampaigns?: RecentCampaign[]
 }
+
+/** Optional image when creating a map or sheet note. */
+export type CreateNoteMapImage =
+  | { kind: 'existing'; path: string }
+  | { kind: 'import'; filePath: string }
+  | { kind: 'stock'; id: string }
 
 export const emptyCombat = (): CombatState => ({
   combatants: [],
@@ -152,10 +188,11 @@ export const emptyCombat = (): CombatState => ({
 export const emptyPlayerState = (): PlayerState => ({
   imageSrc: null,
   imageTitle: '',
-  campaignTitle: 'Table DM',
+  campaignTitle: APP_NAME,
   initiative: [],
   showInitiative: false,
-  initiativeRound: 0
+  initiativeRound: 0,
+  mapView: null
 })
 
 export const emptySettings = (): AppSettings => ({})

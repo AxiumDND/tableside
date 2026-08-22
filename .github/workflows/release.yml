@@ -1,0 +1,42 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      # electron-builder auto-publishes on git tags; --publish never lets this
+      # job build the installer, then action-gh-release uploads it with GITHUB_TOKEN.
+      - run: npm run dist
+      - name: Upload installer artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tableside-windows
+          path: |
+            dist/*.exe
+            dist/*.yml
+            dist/*.yaml
+          if-no-files-found: error
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            dist/*.exe
+          generate_release_notes: true
+          draft: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -14,10 +14,12 @@ function CrossedSwords() {
 export default function CombatCard({
   adding,
   onAdd,
+  missing = [],
   children
 }: {
   adding?: boolean
   onAdd?: () => void
+  missing?: string[]
   children: ReactNode
 }) {
   return (
@@ -34,7 +36,7 @@ export default function CombatCard({
           <div className="absolute -top-3 right-3 bg-panel pl-2">
             <button
               type="button"
-              title="Load these sheets plus every PC in PCs/party. Anyone already listed is skipped."
+              title="Load these sheets plus every PC in PCs/party. Anyone already listed is skipped. NPCs/monsters at init 0 are rolled."
               onClick={onAdd}
               className="rounded bg-amber px-2 py-1 text-[11px] font-semibold text-ink"
             >
@@ -43,6 +45,12 @@ export default function CombatCard({
           </div>
         ) : null}
         <div className="combat-card-body markdown-body text-base">{children}</div>
+        {missing.length > 0 ? (
+          <p className="mt-2 rounded border border-blood/40 bg-blood/10 px-2 py-1.5 text-[12px] text-blood">
+            Missing sheets: {missing.map((name) => `[[${name}]]`).join(' · ')} — create them under Party / NPCs /
+            Bestiary or fix the wikilink names.
+          </p>
+        ) : null}
       </div>
     </section>
   )

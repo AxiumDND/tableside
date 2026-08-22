@@ -1,15 +1,19 @@
-import { useEffect, type ReactNode } from 'react'
+import { useEffect, useState, type ReactNode } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import type { CreateNoteMapImage } from '../../../shared/types'
+import { pathHasFolder } from '../../../shared/campaignLayout'
 import {
   campaignFileUrl,
   markdownUrlTransform,
   portraitForNote,
   resolveImageRef,
+  srdPortraitUrl,
   type CampaignImage
 } from '../lib/images'
 import { extractFacts, extractHook, extractTagline, type ParsedStatblock } from '../lib/statblock'
 import RollableStatBlock from './RollableStatBlock'
+import SheetArtFrame from './SheetArtFrame'
 
 function looksLikeEmbed(text: string): boolean {
   return /!\[\[|\]\]|\.(png|jpe?g|webp|gif|svg)\b/i.test(text)
@@ -29,9 +33,15 @@ function titleFrom(path: string, markdown: string): string {
 
 function firstImage(markdown: string, path: string, images: CampaignImage[]): string | null {
   const wiki = /!\[\[([^\]\n]+)\]\]/.exec(markdown)
-  if (wiki) return resolveImageRef(wiki[1], path, images)
+  if (wiki) {
+    const found = resolveImageRef(wiki[1], path, images)
+    if (found) return found
+  }
   const md = /!\[[^\]]*\]\(([^)]+)\)/.exec(markdown)
-  if (md) return resolveImageRef(md[1], path, images)
+  if (md) {
+    const found = resolveImageRef(md[1], path, images)
+    if (found) return found
+  }
   return portraitForNote(path, images) ?? portraitForNote(titleFrom(path, markdown) + '.md', images)
 }
 
@@ -86,7 +96,7 @@ export default function NpcSheet({
   block,
   onSelectImage,
   onAddToCombat,
-  onEdit,
+  onSetPortrait,
   renderNotes
 }: {
   path: string
@@ -96,7 +106,7 @@ export default function NpcSheet({
   block: ParsedStatblock
   onSelectImage?: (path: string) => void
   onAddToCombat?: () => void
-  onEdit?: () => void
+  onSetPortrait?: (image: CreateNoteMapImage) => Promise<void>
   renderNotes?: (markdown: string) => ReactNode
 }) {
   const title = titleFrom(path, markdown)
@@ -104,50 +114,48 @@ export default function NpcSheet({
   const hook = extractHook(markdown)
   const facts = extractFacts(markdown).slice(0, 8)
   const imagePath = firstImage(markdown, path, images)
+  const srdSrc = !imagePath && pathHasFolder(path, 'bestiary') ? srdPortraitUrl(title) : null
+  const imageSrc = imagePath ? campaignFileUrl(imagePath) : srdSrc
+  const selectValue = imagePath ?? srdSrc
   const notes = notesBody(markdown)
+  const [srdFailed, setSrdFailed] = useState(false)
+  const hasArt = Boolean(imageSrc && !(srdSrc && srdFailed))
 
   useEffect(() => {
-    if (imagePath && onSelectImage) onSelectImage(imagePath)
-  }, [imagePath])
+    setSrdFailed(false)
+  }, [srdSrc])
+
+  useEffect(() => {
+    if (selectValue && onSelectImage) onSelectImage(selectValue)
+  }, [selectValue])
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-5 pb-6">
-      <div className="grid items-start gap-4 sm:grid-cols-[180px_1fr]">
-        {imagePath ? (
-          <button
-            type="button"
-            onClick={() => onSelectImage?.(imagePath)}
-            className={`overflow-hidden rounded border ${
-              selectedImage === imagePath ? 'border-amber' : 'border-line hover:border-amber-dim'
-            }`}
-          >
-            <img src={campaignFileUrl(imagePath)} alt={title} className="aspect-[2/3] w-full object-cover" />
-            <span className="block bg-ink px-2 py-1 text-[11px] text-muted">
-              {selectedImage === imagePath ? 'Selected — Show to players' : 'Click portrait to select'}
-            </span>
-          </button>
-        ) : (
-          <div className="flex aspect-[2/3] items-center justify-center rounded border border-dashed border-line text-xs text-muted">
-            No portrait
-          </div>
-        )}
-        <div>
-          <div className="flex items-start justify-between gap-2">
-            <h1 className="font-display text-3xl text-amber">{title}</h1>
-            {onEdit ? (
-              <button
-                type="button"
-                onClick={onEdit}
-                className="shrink-0 rounded border border-line px-2 py-1 text-xs hover:border-amber"
-              >
-                Edit markdown
-              </button>
-            ) : null}
-          </div>
-          {tagline ? <p className="mt-1 text-sm italic text-muted">{tagline}</p> : null}
-          {hook ? <p className="mt-3 text-base leading-relaxed text-parchment/95">{hook}</p> : null}
+      <RollableStatBlock
+        block={block}
+        onAddToCombat={onAddToCombat}
+        portrait={
+          <SheetArtFrame
+            title={title}
+            imageSrc={hasArt ? imageSrc : null}
+            selectValue={selectValue}
+            selectedImage={selectedImage}
+            images={images}
+            onSelectImage={onSelectImage}
+            onSetPortrait={onSetPortrait}
+            onSrdError={() => {
+              if (srdSrc) setSrdFailed(true)
+            }}
+          />
+        }
+      />
+
+      {tagline || hook || facts.length > 0 || notes ? (
+        <section className="space-y-4">
+          {tagline ? <p className="text-sm italic text-muted">{tagline}</p> : null}
+          {hook ? <p className="text-base leading-relaxed text-parchment/95">{hook}</p> : null}
           {facts.length > 0 ? (
-            <dl className="mt-4 grid grid-cols-[7.5rem_1fr] gap-x-3 gap-y-1.5 text-sm">
+            <dl className="grid grid-cols-[7.5rem_1fr] gap-x-3 gap-y-1.5 text-sm">
               {facts.map((fact) => (
                 <div key={fact.label} className="contents">
                   <dt className="text-muted">{fact.label}</dt>
@@ -156,25 +164,19 @@ export default function NpcSheet({
               ))}
             </dl>
           ) : null}
-        </div>
-      </div>
-
-      {notes ? (
-        <section className={renderNotes ? 'text-[15px]' : 'markdown-body text-[15px]'}>
-          {renderNotes ? renderNotes(notes) : (
-            <Markdown remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform}>
-              {notes}
-            </Markdown>
-          )}
+          {notes ? (
+            <div className={renderNotes ? 'text-[15px]' : 'markdown-body text-[15px]'}>
+              {renderNotes ? (
+                renderNotes(notes)
+              ) : (
+                <Markdown remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform}>
+                  {notes}
+                </Markdown>
+              )}
+            </div>
+          ) : null}
         </section>
       ) : null}
-
-      <section>
-        <h2 className="font-display text-lg text-amber">Stat block</h2>
-        <div className="mt-2">
-          <RollableStatBlock block={block} onAddToCombat={onAddToCombat} />
-        </div>
-      </section>
     </div>
   )
 }
