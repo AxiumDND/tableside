@@ -66,7 +66,7 @@ for (const [from, to] of Object.entries(FILES)) {
   }
   await sharp(src)
     .rotate()
-    .resize({ width: 960, height: 720, fit: 'inside', withoutEnlargement: true })
+    .resize({ width: 1280, height: 720, fit: 'cover', position: 'centre' })
     .webp({ quality: 78, effort: 4 })
     .toFile(join(dest, to))
   console.log('converted', to)

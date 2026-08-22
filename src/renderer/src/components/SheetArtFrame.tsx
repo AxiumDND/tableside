@@ -95,7 +95,7 @@ export default function SheetArtFrame({
           src={imageSrc ?? portraitBlank}
           alt={hasArt ? title : ''}
           className={`w-full object-cover ${
-            aspect === 'square' ? 'aspect-square' : aspect === 'wide' ? 'aspect-[4/3]' : 'aspect-[3/4]'
+            aspect === 'square' ? 'aspect-square' : aspect === 'wide' ? 'aspect-video' : 'aspect-[3/4]'
           }`}
           onError={() => {
             if (imageSrc) onSrdError()
