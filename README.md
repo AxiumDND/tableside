@@ -6,6 +6,10 @@ This is not a virtual tabletop. There is no account, no cloud, and no internet r
 
 Compatible with fifth edition. Rules lookup uses the **System Reference Document 5.2** (2024 rules), already bundled. Current release: **1.1.19**.
 
+## Who made this
+
+I'm one person — a DM first, and only a basic coder. Tableside would not exist without AI as a pair programmer. I decide what the app should do at the table, and I review what goes into the repo. This is a hobby tool for in-person games, not a studio product. If you want something built by a full team, this isn't that. If you want something a single GM made so the laptop and the player TV just work, this is it.
+
 ## Features
 
 - Dual-window layout: DM console + fullscreen player display
