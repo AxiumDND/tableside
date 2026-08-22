@@ -1,4 +1,4 @@
-import { app, ipcMain, type BrowserWindow } from 'electron'
+import { app, dialog, ipcMain, type BrowserWindow } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import type { AppUpdateNotice } from '../shared/appUpdate'
 import { APP_VERSION } from '../shared/version'
@@ -9,6 +9,7 @@ let writeDismissed: (version: string) => void = () => undefined
 let beforeQuitAndInstall: () => void = () => undefined
 let pendingVersion = ''
 let helpCheck = false
+let promptingInstall = false
 
 function send(notice: AppUpdateNotice): void {
   getWindow()?.webContents.send('app:update', notice)
@@ -38,7 +39,11 @@ export function setupAppUpdater(options: {
     const fromHelp = helpCheck
     helpCheck = false
     if (!fromHelp && pendingVersion && readDismissed() === pendingVersion) return
-    send({ kind: 'available', version: pendingVersion })
+    if (fromHelp) {
+      send({ kind: 'available', version: pendingVersion })
+      return
+    }
+    void promptLaunchInstall(pendingVersion)
   })
 
   autoUpdater.on('update-not-available', () => {
@@ -92,7 +97,39 @@ export function checkForAppUpdate(fromHelp = false): void {
 
 export function scheduleLaunchUpdateCheck(): void {
   if (!isPackaged()) return
-  setTimeout(() => checkForAppUpdate(false), 8000)
+  const run = () => checkForAppUpdate(false)
+  const win = getWindow()
+  if (win && !win.isVisible()) {
+    win.once('show', () => setTimeout(run, 800))
+    return
+  }
+  setTimeout(run, 800)
+}
+
+async function promptLaunchInstall(version: string): Promise<void> {
+  if (!version || promptingInstall) return
+  promptingInstall = true
+  send({ kind: 'available', version })
+  try {
+    const win = getWindow()
+    const result = await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
+      type: 'question',
+      title: 'Tableside update',
+      message: `Tableside ${version} is available.`,
+      detail: 'Install now? Tableside will download the update and restart.',
+      buttons: ['Install', 'Not now'],
+      defaultId: 0,
+      cancelId: 1,
+      noLink: true
+    })
+    if (result.response === 0) {
+      startAppUpdate()
+      return
+    }
+    writeDismissed(version)
+  } finally {
+    promptingInstall = false
+  }
 }
 
 function startAppUpdate(): void {

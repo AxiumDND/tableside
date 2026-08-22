@@ -4,19 +4,19 @@ A local Windows app for running **in-person** tabletop games. Your laptop is the
 
 This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table.
 
-**New campaign** asks which system pack to use: **D&D 5e** (bundled SRD 5.2.1), **Pathfinder 2e** (small original core), or **Vampire 5th Edition** (Health / Willpower / Hunger tracker and original table procedures). Existing folders without a `system` field keep working as D&D 5e. Sample is still the 5e Greystead one-shot. Current release: **1.2.3**.
+**New campaign** asks which system pack to use: **D&D 5e** (bundled SRD 5.2.1), **Pathfinder 2e** (small original core), or **Vampire 5th Edition** (Health / Willpower / Hunger tracker and original table procedures). Existing folders without a `system` field keep working as D&D 5e. Sample is still the 5e Greystead one-shot. Current release: **1.2.4**.
 
 Tableside is a table app. It is not an official Wizards, Paizo, or Paradox product.
 
 ## Install (Windows)
 
-**[Download the latest installer](https://github.com/AxiumDND/tableside/releases/latest)** — look for `Tableside-Setup-1.2.3.exe`. No account, no admin.
+**[Download the latest installer](https://github.com/AxiumDND/tableside/releases/latest)** — look for `Tableside-Setup-1.2.4.exe`. No account, no admin.
 
 1. Run the installer. It is a per-user install: Start Menu + desktop shortcuts. You can pick the folder.
 2. Open **Tableside** from the Start Menu.
 3. First launch opens **Greystead — The Pale Well**, a level-1 one-shot. **Sample** loads that same folder.
 
-Installed copies check GitHub when you are online. If a newer version exists, a dismissible bar says **Tableside x.y.z is available — Update**. Nothing downloads until you click that. Help also has **Check for updates**. Offline, the app stays quiet.
+Installed copies check GitHub at launch. If a newer version exists, Tableside asks to install it. Nothing downloads until you press Install. Help also has **Check for updates**. Offline, the app stays quiet.
 
 ### Windows SmartScreen
 
@@ -50,7 +50,7 @@ Questions or thanks: [tableside.gm@gmail.com](mailto:tableside.gm@gmail.com). If
 - Optional extra 5e lookup from your own WOTC text files in `WOTC/` (spells, equipment, magic items)
 - Add a monster, spell, or gear item from Lookup into the campaign Bestiary, Spells, or Gear folder
 - In-app **Help**, recent campaigns, file-tree filter, and table hotkeys (`Alt+S` / `Alt+T` / `Alt+X`)
-- Installed copies can check GitHub for a newer release (a dismissible notice; nothing downloads until you press **Update**)
+- Installed copies check GitHub at launch and ask to install if a newer release exists
 
 ## Run from source
 
@@ -70,7 +70,7 @@ npm start
 npm run dist
 ```
 
-Writes `dist/Tableside-Setup-1.2.3.exe`. Pushing a `v1.2.3` tag builds that file and attaches it to the [GitHub Release](https://github.com/AxiumDND/tableside/releases/latest).
+Writes `dist/Tableside-Setup-1.2.4.exe`. Pushing a `v1.2.4` tag builds that file and attaches it to the [GitHub Release](https://github.com/AxiumDND/tableside/releases/latest).
 
 `npm run fetch-srd` is only needed if you want to refresh the bundled SRD snapshot from the [Open5e API](https://api.open5e.com/) (`srd-2024`).
 

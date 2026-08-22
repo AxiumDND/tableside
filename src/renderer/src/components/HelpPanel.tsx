@@ -166,8 +166,9 @@ export default function HelpPanel({
 
         <Section id="updates" title="Updates" open={open} onToggle={toggle}>
           <p>
-            Installed copies can check GitHub for a newer Tableside. Nothing downloads until you press{' '}
-            <Action>Update</Action>. Offline (at the table) the check is skipped and the app stays quiet.
+            Installed copies check GitHub at launch. If a newer Tableside exists, the app asks to install it.
+            Nothing downloads until you press <Action>Install</Action>. Offline (at the table) the check is skipped
+            and the app stays quiet.
           </p>
           <p className="text-[12px] text-muted">You are on {APP_VERSION}. Windows may still ask SmartScreen on the new installer — More info, then Run anyway.</p>
           {onCheckUpdate ? (

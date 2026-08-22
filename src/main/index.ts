@@ -1,7 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, net, protocol, screen, shell } from 'electron'
 import { existsSync, readdirSync } from 'node:fs'
-import { copyFile, cp, mkdir, readdir, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises'
-import { join, normalize, relative, basename, dirname, extname } from 'node:path'
+import { copyFile, cp, mkdir, readdir, readFile, rename, rm, stat, unlink, writeFile } from 'node:fs/promises'
+import { join, normalize, relative, basename, dirname, extname, isAbsolute } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import type {
   AppSettings,
@@ -274,8 +274,6 @@ async function migrateLegacyUserData(): Promise<void> {
   if (existsSync(legacyWotc)) {
     await cp(legacyWotc, join(current, 'Additional Books'), { recursive: true })
   }
-  const legacySamples = join(legacy, 'samples')
-  if (existsSync(legacySamples)) await cp(legacySamples, join(current, 'samples'), { recursive: true })
 }
 
 function sampleSourcePath(): string {
@@ -286,6 +284,24 @@ function sampleSourcePath(): string {
 
 function sampleWorkingPath(): string {
   return join(app.getPath('userData'), 'samples', 'greystead')
+}
+
+function isDroppedAppSample(folder: string): boolean {
+  const samples = join(app.getPath('userData'), 'samples')
+  const rel = relative(samples, folder)
+  if (!rel || rel.startsWith('..') || isAbsolute(rel)) return false
+  const top = rel.split(/[\\/]/)[0] ?? ''
+  return top.toLowerCase().replace(/[\s_]+/g, '-') === 'bad-blood'
+}
+
+async function removeDroppedAppSamples(): Promise<void> {
+  const root = join(app.getPath('userData'), 'samples')
+  if (!existsSync(root)) return
+  for (const name of await readdir(root)) {
+    const folder = join(root, name)
+    if (!isDroppedAppSample(folder)) continue
+    await rm(folder, { recursive: true, force: true })
+  }
 }
 
 async function ensureSampleWorkingCopy(): Promise<string> {
@@ -1320,6 +1336,7 @@ function registerIpc(): void {
 app.whenReady().then(async () => {
   app.setAppUserModelId('com.tabledm.app')
   await migrateLegacyUserData()
+  await removeDroppedAppSamples()
   await ensureWotcHome()
 
   protocol.handle('tabledm', async (request) => {
@@ -1367,6 +1384,10 @@ app.whenReady().then(async () => {
   registerIpc()
 
   settings = await readSettings()
+  const recents = (settings.recentCampaigns ?? []).filter((item) => !isDroppedAppSample(item.folder))
+  if (recents.length !== (settings.recentCampaigns ?? []).length) {
+    await patchSettings({ recentCampaigns: recents })
+  }
   setupAppUpdater({
     getWindow: () => dmWindow,
     readDismissed: () => settings.dismissedUpdateVersion,
