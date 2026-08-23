@@ -4,7 +4,7 @@ import { THEME_BLURBS, THEME_IDS, THEME_LABELS, type ThemeId } from '../../../sh
 import type { AppFolders } from '../../../shared/types'
 import { APP_VERSION } from '../../../shared/version'
 
-type HelpSection = 'settings' | 'start' | 'screens' | 'files' | 'combat' | 'lookup' | 'keys' | 'updates'
+type HelpSection = 'settings' | 'start' | 'screens' | 'files' | 'music' | 'combat' | 'lookup' | 'keys' | 'updates'
 
 function Section({
   id,
@@ -232,8 +232,10 @@ export default function HelpPanel({
               </>,
               <>
                 Click a map or portrait in a note so it is selected, then <Action>Show to players</Action> (or{' '}
-                <Code>Alt+S</Code>). It fades in over about five seconds. <Action>Clear</Action> on the{' '}
-                <Action>Players see</Action> preview (or <Code>Alt+X</Code>) blanks the player screen.
+                <Code>Alt+S</Code>). It fades in over about five seconds. In a Sci-fi campaign,{' '}
+                <Action>Play</Action> on an Opening crawl card sends that text to the player screen.{' '}
+                <Action>Clear</Action> on the <Action>Players see</Action> preview (or <Code>Alt+X</Code>) blanks the
+                player screen.
               </>,
               <>
                 Open <Action>Combat</Action> or <Action>Lookup</Action> from the header when you need them. Dice live
@@ -297,14 +299,14 @@ export default function HelpPanel({
           <Ul
             items={[
               <>
-                Header: campaign name, New / Open, Lookup, Combat, <strong>Help & settings</strong>. Campaign look
+                Header: campaign name, New / Open, Lookup, Combat, Music, <strong>Help & settings</strong>. Campaign look
                 lives under Settings (also on <Code>Start Here</Code>). DM-only — the player TV stays black.
               </>,
               <>
                 Left: <strong>Players see</strong> preview, file tree, dice tray. Hide the preview if you need height.
               </>,
               <>Center: the open note, image, or PDF.</>,
-              <>Right: Combat, Lookup, or this panel — one at a time.</>
+              <>Right: Combat, Music, Lookup, or this panel — one at a time.</>
             ]}
           />
           <Sub>Show maps and art</Sub>
@@ -323,6 +325,44 @@ export default function HelpPanel({
           <p className="text-[12px] text-muted">
             PDFs open here for you only — they are not sent to the player screen. Export or screenshot maps you want
             them to see, or keep images under <Code>Maps/Art/</Code>.
+          </p>
+          <Sub>Opening crawl (Sci-fi)</Sub>
+          <p>
+            Put <Code>{'> [!crawl] Title'}</Code> (or <Code>opening</Code>) in any note, then write the prologue under
+            it.             Edit the title, far-off line, emblem, and crawl on the card. Optional <Code>preface:</Code> in the note
+            also works (<Code>none</Code> skips it). <Code>![[your-mark.png]]</Code> replaces the generic emblem. <Action>Play</Action> is
+            on when the campaign look is Sci-fi. The player screen and the <Action>Players see</Action> preview show a
+            starfield, then the far-off line, the emblem, then a silent perspective title crawl — write your own words.
+            Tableside does not include licensed crawl text, logos, or music. <Action>Clear</Action> stops it.
+          </p>
+        </Section>
+
+        <Section id="music" title="Music & sound" open={open} onToggle={toggle}>
+          <p>
+            <Action>Music</Action> is a table mixer: one music playlist, one looping ambience bed, and a soundboard of
+            one-shots. Each strip has its own volume. Pick an <strong>Output</strong> (laptop speakers, HDMI TV, headset)
+            — the mix uses that device whether the player view is open or closed. Music and ambience fade in and out
+            over five seconds. <Action>Stop all</Action> fades both.
+          </p>
+          <Sub>Folders</Sub>
+          <Ul
+            items={[
+              <>
+                <Code>Audio/Music/Combat</Code>, <Code>Creepy</Code>, <Code>General</Code> — mood playlists. Extra
+                folders become extra moods. Pick a mood, then <Action>Start</Action>.
+              </>,
+              <>
+                <Code>Audio/Ambience</Code> — looping beds (crowd, rain). One at a time.
+              </>,
+              <>
+                <Code>Audio/Sfx</Code> — clickable one-shots. Subfolders become headings.
+              </>
+            ]}
+          />
+          <p className="text-[12px] text-muted">
+            Drop files you own into those three folders, or use <Action>Add audio…</Action> on each strip. Files sitting
+            in <Code>Audio/</Code> itself are ignored. Tableside does not include music.{' '}
+            <Action>Clear</Action> on the player picture does not stop the mix — use <Action>Stop all</Action>.
           </p>
         </Section>
 
@@ -389,7 +429,7 @@ export default function HelpPanel({
                 <Action>New faction…</Action> on <Code>Factions/</Code>. Shopkeepers stay in <Code>NPCs/</Code>.
               </>,
               <>
-                <Code>campaign.json</Code>, <Code>combat.json</Code>, and <Code>README.md</Code> stay hidden from the
+                <Code>campaign.json</Code>, <Code>combat.json</Code>, <Code>audio.json</Code>, and <Code>README.md</Code> stay hidden from the
                 tree.
               </>
             ]}
@@ -402,7 +442,8 @@ export default function HelpPanel({
                 Tab inserts two spaces.
               </>,
               <>
-                <Code>[[Note Name]]</Code> opens another note. Images in the note stay clickable for Show to players.
+                <Code>[[Note Name]]</Code> opens another note. Images in the note stay clickable for Show to players.{' '}
+                <Code>{'> [!crawl]'}</Code> is an Opening crawl card.
               </>,
               <>
                 Party / NPC / Bestiary sheets with a <Code>statblock</Code> fence open in sheet view: portrait and

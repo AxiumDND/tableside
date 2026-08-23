@@ -165,6 +165,14 @@ export interface PlayerMapView {
   tokens?: PlayerMapToken[]
 }
 
+export interface PlayerCrawl {
+  title?: string
+  body: string
+  startedAt: number
+  logoSrc?: string | null
+  preface?: string | null
+}
+
 export interface PlayerState {
   imageSrc: string | null
   imageTitle: string
@@ -173,6 +181,7 @@ export interface PlayerState {
   showInitiative: boolean
   initiativeRound?: number
   mapView?: PlayerMapView | null
+  crawl?: PlayerCrawl | null
 }
 
 export interface RecentCampaign {
@@ -192,7 +201,7 @@ export interface AppSettings {
   dmBounds?: { x: number; y: number; width: number; height: number }
   lastOpenPath?: string
   lastOpenKind?: string
-  rightPanel?: 'combat' | 'lookup' | 'help' | null
+  rightPanel?: 'combat' | 'lookup' | 'help' | 'music' | null
   showPlayerPreview?: boolean
   theme?: string
   recentCampaigns?: RecentCampaign[]
@@ -219,7 +228,8 @@ export const emptyPlayerState = (): PlayerState => ({
   initiative: [],
   showInitiative: false,
   initiativeRound: 0,
-  mapView: null
+  mapView: null,
+  crawl: null
 })
 
 export const emptySettings = (): AppSettings => ({})

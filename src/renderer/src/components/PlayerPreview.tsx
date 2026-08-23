@@ -90,14 +90,16 @@ export default function PlayerPreview({
       <header className="flex items-center justify-between gap-2 px-2 py-1.5">
         <button type="button" onClick={() => void togglePicker()} className="min-w-0 text-left hover:text-amber">
           <div className="text-[10px] uppercase tracking-wider text-muted">Players see</div>
-          <div className="truncate text-xs">{state.imageTitle || 'Nothing showing'}</div>
+          <div className="truncate text-xs">
+            {state.crawl ? state.crawl.title || 'Opening crawl' : state.imageTitle || 'Nothing showing'}
+          </div>
         </button>
         <div className="flex shrink-0 items-center gap-1">
           {hidden ? null : (
             <button
               type="button"
               onClick={onClear}
-              disabled={!state.imageSrc}
+              disabled={!state.imageSrc && !state.crawl}
               className="rounded border border-line px-2 py-0.5 text-[11px] hover:border-amber disabled:text-muted"
             >
               Clear

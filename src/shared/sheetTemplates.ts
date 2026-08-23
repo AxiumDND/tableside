@@ -1,3 +1,6 @@
+import { NIGHTSHEET_CRAWL_SAMPLE } from './openingCrawl'
+import { parseThemeId } from './theme'
+
 export type SheetTemplateKind =
   | 'blank'
   | 'player'
@@ -239,6 +242,7 @@ What it does, or any house-rule notes.
 const NIGHTSHEET = `<!--
   Game night sheet template — Lazy DM 10-step prep. Right-click Sessions/ → New game night sheet…
   {{party}} is replaced with wikilinks to every Party/ sheet.
+  {{crawl}} is replaced on Sci-fi campaigns with an Opening crawl sample (Play on the player screen).
   Combat headings (⚔️ / Combat / Encounter) + Combatants lines feed Add to initiative.
   party = all PCs. [[Name]] opens a sheet. ![[Art.webp]] then Show to players.
   Long prose belongs in a separate session note. See docs/RECIPES.md.
@@ -249,6 +253,8 @@ const NIGHTSHEET = `<!--
 
 > [!abstract] Tonight at a glance
 > Strong start → scenes → **the fight** → fallout.
+
+{{crawl}}
 
 ## 1. The characters
 
@@ -521,6 +527,7 @@ export function gameNightSheetFileStem(name: string): string {
 
 export type FillTemplateExtras = {
   partyStems?: string[]
+  theme?: string | null
 }
 
 export function wikiLinkForSheet(stem: string): string {
@@ -553,8 +560,21 @@ export function fillTemplate(
     } else if (stems.length > 0 && !stems.some((stem) => body.includes(`[[${stem}`))) {
       body = body.replace(/^(# .+\r?\n)/, `$1\n## The characters\n\n${partyLinkList(stems)}\n\n`)
     }
+    body = applyNightsheetCrawl(body, extras?.theme)
   }
   return body
+}
+
+function applyNightsheetCrawl(body: string, theme?: string | null): string {
+  const crawl = parseThemeId(theme) === 'scifi' ? NIGHTSHEET_CRAWL_SAMPLE : ''
+  if (body.includes('{{crawl}}')) {
+    return body.replaceAll('{{crawl}}\r\n', crawl ? `${crawl}\r\n` : '').replaceAll('{{crawl}}', crawl).replace(/\n{3,}/g, '\n\n')
+  }
+  if (!crawl || /^\s*>\s*\[!(?:crawl|opening)\]/m.test(body)) return body
+  if (/^> \[!abstract\][\s\S]*?\n\n/m.test(body)) {
+    return body.replace(/^(> \[!abstract\][\s\S]*?\n\n)/m, `$1${crawl}\n\n`)
+  }
+  return body.replace(/^(# .+\r?\n)/, `$1\n${crawl}\n`)
 }
 
 export function rewriteDuplicatedMarkdown(source: string, fromStem: string, toStem: string): string {

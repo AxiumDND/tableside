@@ -2,6 +2,13 @@ import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { isHoloPortraitPath, isStartHerePath, pathHasFolder } from '../../../shared/campaignLayout'
+import {
+  crawlLogoRef,
+  crawlPlainText,
+  crawlPreface,
+  replaceNthCrawlCallout,
+  type CrawlCalloutFields
+} from '../../../shared/openingCrawl'
 import { holoPortraitsEnabled, type ThemeId } from '../../../shared/theme'
 import type { CampaignInfo, Character, CreateNoteMapImage, PlayerMapView } from '../../../shared/types'
 import {
@@ -30,6 +37,7 @@ import {
 import { extractStatblock, fallbackStatblock, isNpcSheet, type ParsedStatblock } from '../lib/statblock'
 import { isMapNote, mapImagePath } from '../lib/mapNote'
 import CalloutCard from './CalloutCard'
+import CrawlCard from './CrawlCard'
 import CombatCard from './CombatCard'
 import GettingStarted from './GettingStarted'
 import StartHereTheme from './StartHereTheme'
@@ -90,6 +98,7 @@ export default function SessionNotes({
   disabled,
   onSelectImage,
   onShowToPlayers,
+  onPlayCrawl,
   onMapLiveView,
   onOpenNote,
   onBack,
@@ -121,6 +130,12 @@ export default function SessionNotes({
   disabled?: boolean
   onSelectImage?: (path: string) => void
   onShowToPlayers?: () => void
+  onPlayCrawl?: (
+    title: string | undefined,
+    body: string,
+    logoSrc?: string | null,
+    preface?: string | null
+  ) => void
   onMapLiveView?: (imagePath: string, view: PlayerMapView) => void
   onOpenNote?: (path: string) => void
   onBack?: () => void
@@ -214,7 +229,7 @@ export default function SessionNotes({
     setSaveError('')
     setShowLinks(false)
     setCharacter(null)
-    if (!path || kind === 'image' || kind === 'pdf' || kind === 'other') {
+    if (!path || kind === 'image' || kind === 'pdf' || kind === 'audio' || kind === 'other') {
       setMarkdown('')
       setOriginal('')
       return
@@ -308,6 +323,29 @@ export default function SessionNotes({
       return
     }
     setEditing(false)
+  }
+
+  async function persistCrawl(index: number, fields: CrawlCalloutFields): Promise<void> {
+    if (!path) return
+    const next = replaceNthCrawlCallout(markdownRef.current, index, fields)
+    if (next === markdownRef.current) return
+    await persistShopMarkdown(next)
+  }
+
+  async function playCrawlCard(index: number, fields: CrawlCalloutFields): Promise<void> {
+    await persistCrawl(index, fields)
+    const logo = fields.logoRef ? resolveMarkdownImageSrc(fields.logoRef, path, images).url : null
+    onPlayCrawl?.(fields.title || undefined, fields.body, logo || null, fields.preface)
+  }
+
+  async function loadCrawlLogo(): Promise<string | null> {
+    if (!path) return null
+    const picked = await window.tabledm.pickImageFile()
+    if (!picked) return null
+    const result = await window.tabledm.copyArtToNote(path, { kind: 'import', filePath: picked.filePath }, picked.fileName)
+    if (!result) return null
+    onCampaignChange?.(result.campaign)
+    return result.fileName
   }
 
   async function persistShopMarkdown(next: string): Promise<void> {
@@ -450,7 +488,9 @@ export default function SessionNotes({
     }
   }
 
-  function renderMarkdown(text: string, keyPrefix: string) {
+  function renderMarkdown(text: string, keyPrefix: string, crawlOffset = 0) {
+    const rawCrawls = splitCalloutBlocks(markdown).filter((block) => block.kind === 'crawl')
+    let crawlLocal = 0
     return splitCalloutBlocks(text).map((part, i) => {
       const key = `${keyPrefix}-${i}`
       if (part.kind === 'readaloud') {
@@ -460,6 +500,29 @@ export default function SessionNotes({
               {part.markdown || ''}
             </Markdown>
           </ReadAloud>
+        )
+      }
+      if (part.kind === 'crawl') {
+        const crawlIndex = crawlOffset + crawlLocal
+        crawlLocal += 1
+        const raw = rawCrawls[crawlIndex] ?? part
+        const logoRef = crawlLogoRef(raw.markdown)
+        const logoUrl = logoRef ? resolveMarkdownImageSrc(logoRef, path, images).url : null
+        return (
+          <CrawlCard
+            key={key}
+            title={raw.title}
+            preface={crawlPreface(raw.markdown)}
+            body={crawlPlainText(raw.markdown)}
+            logoRef={logoRef}
+            logoUrl={logoUrl}
+            images={images}
+            canPlay={theme === 'scifi'}
+            disabled={disabled}
+            onChange={(fields) => void persistCrawl(crawlIndex, fields)}
+            onPlay={onPlayCrawl ? (fields) => void playCrawlCard(crawlIndex, fields) : undefined}
+            onLoadLogo={() => loadCrawlLogo()}
+          />
         )
       }
       if (part.kind === 'gmonly') {
@@ -497,18 +560,23 @@ export default function SessionNotes({
     if (docSections.length === 0) {
       return <div className="markdown-body">{renderMarkdown(text || '_This file is empty._', keyPrefix)}</div>
     }
+    let crawlsBefore = 0
     return docSections.map((section, index) => {
       const encounter = encounters.find((item) => item.id === section.id)
       const boxed = Boolean(encounter) || isCombatHeading(section.heading)
       const key = `${keyPrefix}-${section.id || index}`
+      const sectionCrawls = splitCalloutBlocks(section.markdown).filter((block) => block.kind === 'crawl').length
+      const offset = crawlsBefore
+      crawlsBefore += sectionCrawls
       if (!boxed) {
         return (
           <div key={key} className="markdown-body">
-            {renderMarkdown(section.markdown || '_This file is empty._', key)}
+            {renderMarkdown(section.markdown || '_This file is empty._', key, offset)}
           </div>
         )
       }
       const { card, rest } = splitCombatCardContent(section.markdown)
+      const cardCrawls = splitCalloutBlocks(card).filter((block) => block.kind === 'crawl').length
       return (
         <div key={key}>
           <CombatCard
@@ -516,9 +584,11 @@ export default function SessionNotes({
             onAdd={encounter && onAddEncounter ? () => void addEncounter(encounter) : undefined}
             missing={missingCombatantTokens(section.markdown, path, noteIndex)}
           >
-            {renderMarkdown(card, `${key}-card`)}
+            {renderMarkdown(card, `${key}-card`, offset)}
           </CombatCard>
-          {rest.trim() ? <div className="markdown-body">{renderMarkdown(rest, `${key}-rest`)}</div> : null}
+          {rest.trim() ? (
+            <div className="markdown-body">{renderMarkdown(rest, `${key}-rest`, offset + cardCrawls)}</div>
+          ) : null}
         </div>
       )
     })
@@ -716,6 +786,12 @@ export default function SessionNotes({
             src={`${imageUrl}#navpanes=0&pagemode=none`}
             className="h-full min-h-[70vh] w-full rounded border border-line bg-ink"
           />
+        ) : kind === 'audio' && imageUrl ? (
+          <div className="flex h-full flex-col items-center justify-center gap-3">
+            <p className="text-sm text-parchment">{imageTitle(path)}</p>
+            <audio controls src={imageUrl} className="w-full max-w-md" />
+            <p className="text-xs text-muted">Preview only — play table audio from the Music panel.</p>
+          </div>
         ) : kind === 'other' ? (
           <p className="text-sm text-muted">No preview for this file type.</p>
         ) : kind === 'character' && character ? (

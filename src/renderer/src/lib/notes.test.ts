@@ -4,6 +4,7 @@ import {
   missingCombatantTokens,
   npcNotes,
   parseNightEncounters,
+  splitCalloutBlocks,
   type CampaignNote
 } from './notes'
 import { isNpcSheet, parseStatblockYaml } from './statblock'
@@ -50,6 +51,27 @@ describe('night sheet parsing', () => {
 `
     expect(parseNightEncounters(md, 'Sessions/Night.md', notes)).toHaveLength(0)
     expect(missingCombatantTokens(md, 'Sessions/Night.md', notes)).toEqual([])
+  })
+})
+
+describe('opening crawl callouts', () => {
+  it('parses crawl and opening aliases', () => {
+    const crawl = splitCalloutBlocks(`> [!crawl] The Siege of Kestrel
+> It is a time of unrest.
+>
+> The outer colonies have gone silent.
+`).find((part) => part.kind === 'crawl')
+    expect(crawl).toMatchObject({
+      kind: 'crawl',
+      type: 'crawl',
+      title: 'The Siege of Kestrel',
+      markdown: 'It is a time of unrest.\n\nThe outer colonies have gone silent.'
+    })
+
+    const opening = splitCalloutBlocks('> [!opening]\n> A courier ship leaves the docks.\n')
+    expect(opening[0]?.kind).toBe('crawl')
+    expect(opening[0]?.type).toBe('opening')
+    expect(opening[0]?.markdown).toBe('A courier ship leaves the docks.')
   })
 })
 

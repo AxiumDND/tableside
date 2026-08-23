@@ -17,6 +17,7 @@ Also read:
 ```
 campaign.json     campaign name, system pack (`dnd5e` | `pf2e` | `v5`), and DM theme (hidden in the file tree)
 combat.json       live initiative (hidden)
+audio.json        mixer volumes and last playlists (hidden)
 
 Start Here/       hub notes — opens first if present
   Overview.md     campaign hook and links
@@ -49,6 +50,10 @@ Maps/
   *.md            map notes (fenced map block + DM-only pins + tokens)
 Handouts/         letters and props
   Art/            letter images
+Audio/
+  Music/          mood playlists (Combat, Creepy, General — add more folders as needed)
+  Ambience/       looping beds (Crowd, Rain, or loose files)
+  Sfx/            soundboard one-shots (subfolders become headings)
 Reference/        tracker, calendars, cheat sheets
 Archive/          recaps, transcripts, old drafts
 ```
@@ -67,6 +72,7 @@ Archive/          recaps, transcripts, old drafts
 | `Locations`, `World`, `Setting` | Places |
 | `Faction` | Factions |
 | `Start`, `Getting Started` | Start Here |
+| `Sounds`, `Sound` | Audio |
 | `Z Archive` | Archive |
 
 Skipped directories (not shown / not scanned as notes): `.obsidian`, `.git`, `node_modules`, `WOTC`, `out`, `dist`, and similar. A leftover `Templates/` folder is hidden from the file tree; right-click **New …** still uses those files if they exist, otherwise the system pack sheets.
@@ -108,6 +114,14 @@ Supported image types: `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`, `.bmp`.
 > [!readaloud]
 > What you say out loud when the party enters.
 
+> [!crawl] The Siege of Kestrel
+> preface: In an age before memory, beyond the rim of charted stars.
+> ![[Title Mark.png]]
+> It is a time of unrest. Relay stations along the outer belt have gone dark.
+>
+> The outer colonies have gone silent. A courier ship
+> carries the last warning toward the home docks.
+
 > [!gmonly]
 > Secrets, motives, and numbers the players should not see.
 
@@ -129,6 +143,7 @@ Supported image types: `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`, `.bmp`.
 | Type | Aliases | Role |
 | --- | --- | --- |
 | `readaloud` | `flavor` | Player-facing text to speak |
+| `crawl` | `opening` | Opening crawl. Play (Sci-fi look only) shows a starfield, a far-off line (`preface:`), a generic emblem (or the first `![[image]]`), then a silent perspective prologue. Write your own words. |
 | `gmonly` | `secret` | Collapsed GM-only block |
 | `infobox` | — | Sheet header / portrait card |
 | `tip`, `warning`, `note`, `info`, `danger`, `success`, `example`, `abstract` | — | Highlighted callout cards |
@@ -166,7 +181,7 @@ You can also **Add to campaign** from Lookup (monster → Bestiary, spell → Sp
 
 ## Game night sheets and combat
 
-A **game night sheet** is a session note with combat sections that feed the initiative tracker. Right-click **Sessions** → **New game night sheet…** for a Lazy DM 10-step page (characters, strong start, scenes, secrets, locations, NPCs, monsters, treasure, last time, endings). Existing `Party/` sheets are linked in automatically. New files are named `Session N — Game Night Sheet.md`.
+A **game night sheet** is a session note with combat sections that feed the initiative tracker. Right-click **Sessions** → **New game night sheet…** for a Lazy DM 10-step page (characters, strong start, scenes, secrets, locations, NPCs, monsters, treasure, last time, endings). Existing `Party/` sheets are linked in automatically. New files are named `Session N — Game Night Sheet.md`. Sci-fi campaigns also get an Opening crawl sample — rewrite it, then **Play**.
 
 1. Use a heading that includes `Combat`, `Encounter`, or ⚔️ (skip headings that say `no combat`).
 2. List combatants with wikilinks to Party / NPCs / Bestiary sheets:

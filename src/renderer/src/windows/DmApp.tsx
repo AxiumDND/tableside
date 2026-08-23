@@ -9,6 +9,7 @@ import type {
   PlayerState,
   RecentCampaign
 } from '../../../shared/types'
+import { emptyMixerState, mixerIsActive } from '../../../shared/audio'
 import { emptyCombat, emptyPlayerState } from '../../../shared/types'
 import {
   applyThemeToDocument,
@@ -24,7 +25,9 @@ import CampaignFiles, {
   fileKind,
   type FileKind
 } from '../components/CampaignFiles'
+import AudioEngine from '../components/AudioEngine'
 import CombatTracker from '../components/CombatTracker'
+import MusicPanel from '../components/MusicPanel'
 import DiceTray, { DiceLogProvider } from '../components/DiceTray'
 import HelpPanel from '../components/HelpPanel'
 import PlayerPreview from '../components/PlayerPreview'
@@ -92,8 +95,9 @@ function firstNote(nodes: CampaignTreeNode[]): string {
 export default function DmApp() {
   const [campaign, setCampaign] = useState<CampaignInfo | null>(null)
   const [player, setPlayer] = useState<PlayerState>(emptyPlayerState())
+  const [mixer, setMixer] = useState(emptyMixerState())
   const [displays, setDisplays] = useState<DisplayInfo[]>([])
-  const [rightPanel, setRightPanel] = useState<'combat' | 'lookup' | 'help' | null>(null)
+  const [rightPanel, setRightPanel] = useState<'combat' | 'lookup' | 'help' | 'music' | null>(null)
   const [openPath, setOpenPath] = useState('')
   const [openKind, setOpenKind] = useState<FileKind>('note')
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
@@ -114,15 +118,17 @@ export default function DmApp() {
   playerSrcRef.current = player.imageSrc
 
   const refresh = useCallback(async () => {
-    const [info, state, screens, prefs, windowOpen] = await Promise.all([
+    const [info, state, mix, screens, prefs, windowOpen] = await Promise.all([
       window.tabledm.getCampaign(),
       window.tabledm.getPlayerState(),
+      window.tabledm.getMixer(),
       window.tabledm.getDisplays(),
       window.tabledm.getSettings(),
       window.tabledm.getPlayerWindowOpen?.() ?? Promise.resolve(false)
     ])
     setCampaign(info)
     setPlayer(state)
+    setMixer(mix)
     setDisplays(screens)
     setPlayerWindowOpen(Boolean(windowOpen))
     const saved = prefs.playerDisplayId
@@ -140,6 +146,7 @@ export default function DmApp() {
       prefs.rightPanel === 'combat' ||
       prefs.rightPanel === 'lookup' ||
       prefs.rightPanel === 'help' ||
+      prefs.rightPanel === 'music' ||
       prefs.rightPanel === null
     ) {
       setRightPanel(prefs.rightPanel ?? null)
@@ -173,6 +180,7 @@ export default function DmApp() {
   useEffect(() => {
     void refresh()
     const stopPlayer = window.tabledm.onPlayerState(setPlayer)
+    const stopMixer = window.tabledm.onMixerState(setMixer)
     const stopPlayerWindow = window.tabledm.onPlayerWindow?.(setPlayerWindowOpen)
     const stopUpdate = window.tabledm.onAppUpdate(setUpdateNotice)
     const stopDisplays = window.tabledm.onDisplaysChanged((screens) => {
@@ -183,6 +191,7 @@ export default function DmApp() {
     })
     return () => {
       stopPlayer()
+      stopMixer()
       stopPlayerWindow?.()
       stopUpdate()
       stopDisplays()
@@ -216,6 +225,7 @@ export default function DmApp() {
     const info = await window.tabledm.pickCampaignFolder()
     applyCampaign(info)
     setPlayer(await window.tabledm.getPlayerState())
+    setMixer(await window.tabledm.getMixer())
     setRecentCampaigns((await window.tabledm.getSettings()).recentCampaigns ?? [])
   }
 
@@ -232,6 +242,7 @@ export default function DmApp() {
     const info = await window.tabledm.newCampaign(system, themeId, options)
     applyCampaign(info, themeId)
     setPlayer(await window.tabledm.getPlayerState())
+    setMixer(await window.tabledm.getMixer())
     setRecentCampaigns((await window.tabledm.getSettings()).recentCampaigns ?? [])
   }
 
@@ -258,6 +269,7 @@ export default function DmApp() {
     const info = await window.tabledm.openSampleCampaign()
     applyCampaign(info)
     setPlayer(await window.tabledm.getPlayerState())
+    setMixer(await window.tabledm.getMixer())
     setRecentCampaigns((await window.tabledm.getSettings()).recentCampaigns ?? [])
   }
 
@@ -265,6 +277,7 @@ export default function DmApp() {
     const info = await window.tabledm.openCampaignPath(folder)
     applyCampaign(info)
     setPlayer(await window.tabledm.getPlayerState())
+    setMixer(await window.tabledm.getMixer())
     const prefs = await window.tabledm.getSettings()
     setRecentCampaigns(prefs.recentCampaigns ?? [])
   }
@@ -334,6 +347,16 @@ export default function DmApp() {
     mapLiveRef.current = { src, title, view }
     if (!playerLiveRef.current || playerSrcRef.current !== src) return
     void window.tabledm.showImage(src, title, view).then(setPlayer)
+  }
+
+  async function playCrawl(
+    title: string | undefined,
+    body: string,
+    logoSrc?: string | null,
+    preface?: string | null
+  ): Promise<void> {
+    playerLiveRef.current = false
+    setPlayer(await window.tabledm.showCrawl({ title, body, logoSrc, preface }))
   }
 
   async function clearPlayer(): Promise<void> {
@@ -603,6 +626,7 @@ export default function DmApp() {
 
   return (
     <DiceLogProvider>
+    <AudioEngine state={mixer} />
     <div className="flex h-full flex-col bg-ink text-parchment">
       <header className="flex items-center gap-3 border-b border-line bg-panel px-4 py-2">
         <div>
@@ -647,6 +671,19 @@ export default function DmApp() {
         >
           Combat
           {combat.combatants.length > 0 ? ` (${combat.combatants.length})` : ''}
+        </button>
+        <button
+          type="button"
+          onClick={() => {
+            changeRightPanel((open) => (open === 'music' ? null : 'music'))
+            void window.tabledm.getMixer().then(setMixer)
+          }}
+          className={`rounded px-3 py-1 text-sm ${
+            rightPanel === 'music' ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
+          }`}
+        >
+          Music
+          {mixerIsActive(mixer) ? ' ·' : ''}
         </button>
         <button
           type="button"
@@ -732,13 +769,18 @@ export default function DmApp() {
         <SessionNotes
           path={openPath}
           kind={openKind}
-          imageUrl={openKind === 'image' || openKind === 'pdf' ? campaignFileUrl(openPath) : undefined}
+          imageUrl={
+            openKind === 'image' || openKind === 'pdf' || openKind === 'audio'
+              ? campaignFileUrl(openPath)
+              : undefined
+          }
           images={campaign ? flattenImages(campaign.tree) : []}
           notes={campaign ? flattenNotes(campaign.tree) : []}
           selectedImage={selectedImage}
           disabled={!campaign}
           onSelectImage={setSelectedImage}
           onShowToPlayers={() => void showSelectedToPlayers()}
+          onPlayCrawl={(title, body, logoSrc, preface) => void playCrawl(title, body, logoSrc, preface)}
           onMapLiveView={handleMapLiveView}
           onOpenNote={openNote}
           onBack={history.length > 0 ? goBack : undefined}
@@ -765,6 +807,13 @@ export default function DmApp() {
           onHoloPortraitsChange={campaign ? (enabled) => void changeHoloPortraits(enabled) : undefined}
           onDigitalRainChange={campaign ? (enabled) => void changeDigitalRain(enabled) : undefined}
         />
+        {rightPanel === 'music' ? (
+          <MusicPanel
+            state={mixer}
+            disabled={!campaign}
+            onClose={() => changeRightPanel(null)}
+          />
+        ) : null}
         {rightPanel === 'combat' ? (
           <CombatTracker
             combat={combat}

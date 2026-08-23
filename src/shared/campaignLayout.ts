@@ -33,7 +33,7 @@ export function shouldHideFromFileTree(name: string): boolean {
   return shouldSkipCampaignDir(name) || isTemplatesFolderName(name)
 }
 
-export const HIDDEN_FILE_NAMES = new Set(['campaign.json', 'combat.json', 'readme.md'])
+export const HIDDEN_FILE_NAMES = new Set(['campaign.json', 'combat.json', 'audio.json', 'readme.md'])
 
 export const FOLDER_ORDER = [
   'start here',
@@ -47,6 +47,7 @@ export const FOLDER_ORDER = [
   'gear',
   'maps',
   'handouts',
+  'audio',
   'reference',
   'archive'
 ] as const
@@ -65,6 +66,7 @@ export const STANDARD_LAYOUT: { canonical: string; name: string; extras: string[
   { canonical: 'gear', name: 'Gear', extras: [...GEAR_SECTIONS] },
   { canonical: 'maps', name: 'Maps', extras: ['Art', 'Print'] },
   { canonical: 'handouts', name: 'Handouts', extras: ['Art'] },
+  { canonical: 'audio', name: 'Audio', extras: ['Music', 'Ambience', 'Sfx'] },
   { canonical: 'reference', name: 'Reference', extras: [] },
   { canonical: 'archive', name: 'Archive', extras: [] }
 ]
@@ -107,7 +109,10 @@ const FOLDER_ALIASES: Record<string, string> = {
   world: 'places',
   setting: 'places',
   factions: 'factions',
-  faction: 'factions'
+  faction: 'factions',
+  audio: 'audio',
+  sounds: 'audio',
+  sound: 'audio'
 }
 
 export function canonicalFolder(name: string): string {
@@ -171,6 +176,10 @@ export function isPlacesFolderName(name: string): boolean {
 
 export function isFactionsFolderName(name: string): boolean {
   return canonicalFolder(name) === 'factions'
+}
+
+export function isAudioFolderName(name: string): boolean {
+  return canonicalFolder(name) === 'audio'
 }
 
 export function isArtFolderName(name: string): boolean {

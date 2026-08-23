@@ -9,6 +9,7 @@ Reference for note syntax Tableside understands. For folder layout and game nigh
 | `.md`, `.markdown`, `.txt` | Notes (rendered markdown) |
 | `.png` `.jpg` `.jpeg` `.webp` `.gif` `.svg` `.bmp` | Images (preview + Show to players) |
 | `.pdf` | DM-only preview in an iframe |
+| `.mp3` `.ogg` `.wav` `.m4a` `.flac` `.webm` `.aac` | Campaign audio (`Audio/`). Preview in the note pane; play at the table from **Music** |
 
 ## Wikilinks
 
@@ -47,6 +48,7 @@ Obsidian callout form:
 | TYPE | Aliases | Rendering |
 | --- | --- | --- |
 | `readaloud` | `flavor` | Read-aloud card |
+| `crawl` | `opening` | Opening crawl card. Edit title, far-off line, emblem, and crawl on the card (writes back to the note). **Play** (Sci-fi look only) shows a starfield, an original far-off line (`preface:`; `none` skips it), a generic title emblem (or the first `![[image]]`), then a silent perspective prologue. Write your own words — Tableside does not include licensed crawl text, logos, or music. |
 | `gmonly` | `secret` | Collapsible GM-only |
 | `infobox` | — | Sheet header (often with portrait + facts table); not split like other callouts |
 | `tip` `warning` `note` `info` `danger` `success` `example` `abstract` | — | Styled callout cards |

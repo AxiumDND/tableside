@@ -472,6 +472,7 @@ body,
   width: 100%;
   overflow: hidden;
   background: #000;
+  container-type: size;
 }
 
 .player-layer {
@@ -619,6 +620,149 @@ body,
 
 .player-stage-compact .player-init-tag {
   font-size: 0.4rem;
+}
+
+/* Perspective prologue on the player TV. Original user text; generic condensed sans. */
+.opening-crawl {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: #000;
+  color: #e5c04a;
+}
+
+.opening-crawl.is-done {
+  animation: player-fade-out 3s ease forwards;
+}
+
+.opening-crawl-stars {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+.opening-crawl-preface {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0 18%;
+  color: #f4f4f4;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.48rem, 2cqw, 0.95rem);
+  font-style: normal;
+  line-height: 1.45;
+  text-align: center;
+  white-space: pre-line;
+  animation: opening-crawl-preface var(--crawl-preface-ms, 8s) ease forwards;
+}
+
+@keyframes opening-crawl-preface {
+  0% {
+    opacity: 0;
+  }
+  18% {
+    opacity: 1;
+  }
+  72% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+.opening-crawl-logo {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: opening-crawl-logo var(--crawl-logo-ms, 2.5s) ease forwards;
+}
+
+.opening-crawl-logo img {
+  width: min(78cqw, 92%);
+  max-height: 46cqh;
+  object-fit: contain;
+}
+
+@keyframes opening-crawl-logo {
+  0% {
+    opacity: 0;
+    transform: scale(1.18);
+  }
+  14% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  68% {
+    opacity: 1;
+    transform: scale(0.94);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.42);
+  }
+}
+
+.opening-crawl-perspective {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  perspective: 72cqw;
+  perspective-origin: 50% 100%;
+  mask-image: linear-gradient(to bottom, transparent 0%, #000 20%, #000 100%);
+}
+
+.opening-crawl-track {
+  position: absolute;
+  left: 12%;
+  right: 12%;
+  top: 0;
+  bottom: 0;
+  transform-origin: 50% 100%;
+  transform: rotateX(50deg);
+}
+
+.opening-crawl-text {
+  font-family: 'Arial Narrow', 'Liberation Sans Narrow', 'Helvetica Neue', sans-serif;
+  font-stretch: condensed;
+  font-size: 5.2cqw;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  text-transform: none;
+  letter-spacing: 0.02em;
+  animation: opening-crawl-scroll var(--crawl-ms, 45s) linear forwards;
+}
+
+.opening-crawl-text p {
+  margin: 0 0 0.85em;
+}
+
+.opening-crawl-title {
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  margin-bottom: 1.15em;
+  font-size: 1.15em;
+}
+
+@keyframes opening-crawl-scroll {
+  from {
+    transform: translateY(28%);
+  }
+  to {
+    transform: translateY(-160%);
+  }
 }
 
 .read-aloud-dot {

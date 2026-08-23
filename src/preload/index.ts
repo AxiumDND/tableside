@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
+import type { MixerPrefs, MixerState } from '../shared/audio'
 import type {
   AppFolders,
   AppSettings,
@@ -45,6 +46,12 @@ const api = {
   },
   showImage: (src: string, title: string, mapView?: PlayerMapView | null): Promise<PlayerState> =>
     ipcRenderer.invoke('player:show-image', { src, title, mapView: mapView ?? null }),
+  showCrawl: (payload: {
+    title?: string
+    body: string
+    logoSrc?: string | null
+    preface?: string | null
+  }): Promise<PlayerState> => ipcRenderer.invoke('player:show-crawl', payload),
   clearPlayer: (): Promise<PlayerState> => ipcRenderer.invoke('player:clear'),
   setPlayerInitiative: (payload: {
     entries: PlayerState['initiative']
@@ -52,6 +59,28 @@ const api = {
     round?: number
   }): Promise<PlayerState> => ipcRenderer.invoke('player:set-initiative', payload),
   getPlayerState: (): Promise<PlayerState> => ipcRenderer.invoke('player:get-state'),
+  getMixer: (): Promise<MixerState> => ipcRenderer.invoke('mixer:get'),
+  mixerPlayMusic: (playlistId: string): Promise<MixerState> =>
+    ipcRenderer.invoke('mixer:play-music', playlistId),
+  mixerPauseMusic: (): Promise<MixerState> => ipcRenderer.invoke('mixer:pause-music'),
+  mixerSkipMusic: (): Promise<MixerState> => ipcRenderer.invoke('mixer:skip-music'),
+  mixerStopMusic: (): Promise<MixerState> => ipcRenderer.invoke('mixer:stop-music'),
+  mixerPlayAmbience: (playlistId: string): Promise<MixerState> =>
+    ipcRenderer.invoke('mixer:play-ambience', playlistId),
+  mixerStopAmbience: (): Promise<MixerState> => ipcRenderer.invoke('mixer:stop-ambience'),
+  mixerOneshot: (path: string): Promise<MixerState> => ipcRenderer.invoke('mixer:oneshot', path),
+  mixerStopAll: (): Promise<MixerState> => ipcRenderer.invoke('mixer:stop-all'),
+  mixerSetPrefs: (prefs: Partial<MixerPrefs>): Promise<MixerState> =>
+    ipcRenderer.invoke('mixer:set-prefs', prefs),
+  mixerTrackEnded: (layer: 'music' | 'ambience'): Promise<MixerState> =>
+    ipcRenderer.invoke('mixer:ended', layer),
+  mixerError: (message: string | null): Promise<MixerState> =>
+    ipcRenderer.invoke('mixer:error', message),
+  onMixerState: (callback: (state: MixerState) => void) => {
+    const listener = (_event: unknown, state: MixerState) => callback(state)
+    ipcRenderer.on('mixer:state', listener)
+    return () => ipcRenderer.removeListener('mixer:state', listener)
+  },
   onPlayerState: (callback: (state: PlayerState) => void) => {
     const listener = (_event: unknown, state: PlayerState) => callback(state)
     ipcRenderer.on('player:state', listener)
@@ -93,6 +122,12 @@ const api = {
     image: CreateNoteMapImage
   ): Promise<{ campaign: CampaignInfo; path: string; markdown: string } | null> =>
     ipcRenderer.invoke('campaign:set-portrait', relativePath, image),
+  copyArtToNote: (
+    relativePath: string,
+    image: CreateNoteMapImage,
+    name?: string
+  ): Promise<{ campaign: CampaignInfo; fileName: string } | null> =>
+    ipcRenderer.invoke('campaign:copy-art', relativePath, image, name),
   duplicateFile: (
     relativePath: string,
     name?: string

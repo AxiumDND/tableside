@@ -265,6 +265,7 @@ export type CalloutKind =
   | 'prose'
   | 'readaloud'
   | 'gmonly'
+  | 'crawl'
   | 'tip'
   | 'warning'
   | 'example'
@@ -286,6 +287,7 @@ function calloutKind(type: string): CalloutKind {
   const folded = type.toLowerCase()
   if (/^read[-_]?aloud$/.test(folded) || folded === 'flavor') return 'readaloud'
   if (/^gm[-_]?only$/.test(folded) || folded === 'secret') return 'gmonly'
+  if (folded === 'crawl' || folded === 'opening') return 'crawl'
   if (
     folded === 'tip' ||
     folded === 'warning' ||

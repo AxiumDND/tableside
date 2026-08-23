@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, net, protocol, screen, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, net, protocol, screen, session, shell } from 'electron'
 import { existsSync, readdirSync } from 'node:fs'
 import { copyFile, cp, mkdir, readdir, readFile, rename, rm, stat, unlink, writeFile } from 'node:fs/promises'
 import { join, normalize, relative, basename, dirname, extname, isAbsolute } from 'node:path'
@@ -17,6 +17,17 @@ import type {
   SessionFile
 } from '../shared/types'
 import { emptyCombat, emptyPlayerState, emptySettings } from '../shared/types'
+import {
+  AUDIO_EXT,
+  applyMixerCommand,
+  buildAudioLibrary,
+  emptyMixerState,
+  mixerPrefsToFile,
+  parseMixerPrefs,
+  type MixerCommand,
+  type MixerPrefs,
+  type MixerState
+} from '../shared/audio'
 import { setupAppUpdater, scheduleLaunchUpdateCheck } from './appUpdater'
 import { mapArtRelativeFolder, setMapFenceImage } from '../shared/mapCreate'
 import {
@@ -81,6 +92,7 @@ protocol.registerSchemesAsPrivileged([
 ])
 
 app.setName(APP_NAME)
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 if (process.platform === 'win32') {
   app.setAppUserModelId('com.tabledm.app')
 }
@@ -94,6 +106,7 @@ let playerWindowWarmup = true
 const programmaticPlayerCloses = new WeakSet<BrowserWindow>()
 let campaignFolder: string | null = null
 let playerState: PlayerState = emptyPlayerState()
+let mixer: MixerState = emptyMixerState()
 let settings: AppSettings = emptySettings()
 let allowQuit = false
 let boundsTimer: ReturnType<typeof setTimeout> | null = null
@@ -117,7 +130,14 @@ const FILE_MIME: Record<string, string> = {
   '.webp': 'image/webp',
   '.gif': 'image/gif',
   '.svg': 'image/svg+xml',
-  '.bmp': 'image/bmp'
+  '.bmp': 'image/bmp',
+  '.mp3': 'audio/mpeg',
+  '.ogg': 'audio/ogg',
+  '.wav': 'audio/wav',
+  '.m4a': 'audio/mp4',
+  '.flac': 'audio/flac',
+  '.webm': 'audio/webm',
+  '.aac': 'audio/aac'
 }
 
 let srdPortraitCache: Map<string, string> | null = null
@@ -367,7 +387,8 @@ function createDmWindow(): void {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
       contextIsolation: true,
-      plugins: true
+      plugins: true,
+      autoplayPolicy: 'no-user-gesture-required'
     }
   })
   if (process.platform === 'win32') {
@@ -520,7 +541,8 @@ function createPlayerWindow(display = targetPlayerDisplay()): void {
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
-      contextIsolation: true
+      contextIsolation: true,
+      autoplayPolicy: 'no-user-gesture-required'
     }
   })
 
@@ -584,6 +606,61 @@ function syncPlayerWindow(): void {
 function sendPlayerState(): void {
   playerWindow?.webContents.send('player:state', playerState)
   dmWindow?.webContents.send('player:state', playerState)
+}
+
+function sendMixerState(): void {
+  playerWindow?.webContents.send('mixer:state', mixer)
+  dmWindow?.webContents.send('mixer:state', mixer)
+}
+
+async function listAudioFiles(root: string): Promise<string[]> {
+  const audioRoot = await existingCanonicalDir(root, 'audio')
+  if (!audioRoot) return []
+  const out: string[] = []
+  async function walk(dir: string): Promise<void> {
+    const entries = await readdir(dir, { withFileTypes: true })
+    for (const entry of entries) {
+      if (entry.name.startsWith('.')) continue
+      const full = join(dir, entry.name)
+      if (entry.isDirectory()) await walk(full)
+      else if (AUDIO_EXT.has(extname(entry.name).toLowerCase())) {
+        out.push(toPosix(relative(root, full)))
+      }
+    }
+  }
+  await walk(audioRoot)
+  return out
+}
+
+async function persistMixerPrefs(): Promise<void> {
+  if (!campaignFolder) return
+  await writeJson(join(campaignFolder, 'audio.json'), mixerPrefsToFile(mixer.prefs))
+}
+
+async function refreshMixerLibrary(): Promise<void> {
+  if (!campaignFolder) {
+    mixer = emptyMixerState()
+    return
+  }
+  mixer = applyMixerCommand(mixer, { type: 'set-library', library: buildAudioLibrary(await listAudioFiles(campaignFolder)) })
+}
+
+async function loadMixerForCampaign(folder: string): Promise<void> {
+  const prefs = parseMixerPrefs(await readJson(join(folder, 'audio.json'), {}))
+  mixer = {
+    ...emptyMixerState(),
+    prefs,
+    library: buildAudioLibrary(await listAudioFiles(folder))
+  }
+}
+
+async function runMixer(command: MixerCommand): Promise<MixerState> {
+  mixer = applyMixerCommand(mixer, command)
+  if (command.type === 'set-prefs' || command.type === 'play-music' || command.type === 'play-ambience') {
+    void persistMixerPrefs()
+  }
+  sendMixerState()
+  return mixer
 }
 
 function listDisplays(): DisplayInfo[] {
@@ -769,6 +846,11 @@ async function ensureCampaignLayout(root: string): Promise<void> {
       await ensureDir(join(dir, extra))
       if (item.canonical === 'gear') await ensureDir(join(dir, extra, 'Art'))
     }
+    if (item.canonical === 'audio') {
+      for (const mood of ['Combat', 'Creepy', 'General']) {
+        await ensureDir(join(dir, 'Music', mood))
+      }
+    }
   }
 }
 
@@ -857,6 +939,7 @@ async function refreshStockNightSheetTemplate(root: string): Promise<void> {
   const current = await readFile(currentPath, 'utf8')
   const alreadyCurrent =
     current.includes('{{party}}') &&
+    current.includes('{{crawl}}') &&
     current.includes('# Session Name — Game Night Sheet') &&
     !current.includes('What this page does')
   if (!alreadyCurrent) {
@@ -1163,7 +1246,12 @@ async function createCampaignNote(
   if (template !== 'blank') {
     if (template === 'nightsheet') await refreshStockNightSheetTemplate(campaignFolder)
     const extras =
-      template === 'nightsheet' ? { partyStems: await listPartyNoteStems(campaignFolder) } : undefined
+      template === 'nightsheet'
+        ? {
+            partyStems: await listPartyNoteStems(campaignFolder),
+            theme: (await readJson<{ theme?: string }>(join(campaignFolder, 'campaign.json'), {})).theme
+          }
+        : undefined
     body = fillTemplate(await findTemplateSource(campaignFolder, template), template, title, extras)
   }
   if (template === 'map' && mapImage) {
@@ -1242,7 +1330,28 @@ async function addCampaignFiles(
           { name: 'All files', extensions: ['*'] }
         ]
       : [
-          { name: 'Notes and art', extensions: ['md', 'markdown', 'txt', 'png', 'jpg', 'jpeg', 'webp', 'gif', 'pdf'] },
+          {
+            name: 'Notes, art, and audio',
+            extensions: [
+              'md',
+              'markdown',
+              'txt',
+              'png',
+              'jpg',
+              'jpeg',
+              'webp',
+              'gif',
+              'pdf',
+              'mp3',
+              'ogg',
+              'wav',
+              'm4a',
+              'flac',
+              'webm',
+              'aac'
+            ]
+          },
+          { name: 'Audio', extensions: ['mp3', 'ogg', 'wav', 'm4a', 'flac', 'webm', 'aac'] },
           { name: 'All files', extensions: ['*'] }
         ]
   })
@@ -1256,6 +1365,8 @@ async function addCampaignFiles(
     await copyFile(source, dest)
     paths.push(toPosix(relative(campaignFolder, dest)))
   }
+  await refreshMixerLibrary()
+  sendMixerState()
   return { campaign: await loadCampaign(campaignFolder), paths }
 }
 
@@ -1270,6 +1381,8 @@ async function deleteCampaignFile(
   const info = await stat(dest)
   if (!info.isFile()) return null
   await unlink(dest)
+  await refreshMixerLibrary()
+  sendMixerState()
   return { campaign: await loadCampaign(campaignFolder), path: toPosix(relative(campaignFolder, dest)) }
 }
 
@@ -1284,7 +1397,9 @@ async function setCampaignFolder(folder: string | null): Promise<CampaignInfo | 
   await patchSettings({ campaignFolder: folder ?? undefined })
   if (!folder) {
     playerState = { ...emptyPlayerState() }
+    mixer = emptyMixerState()
     sendPlayerState()
+    sendMixerState()
     return null
   }
   await prepareCampaignFolder(folder)
@@ -1293,7 +1408,9 @@ async function setCampaignFolder(folder: string | null): Promise<CampaignInfo | 
     ...emptyPlayerState(),
     campaignTitle: info.name
   }
+  await loadMixerForCampaign(folder)
   sendPlayerState()
+  sendMixerState()
   await rememberRecentCampaign(folder, info.name)
   return info
 }
@@ -1308,7 +1425,8 @@ function registerIpc(): void {
         ...playerState,
         imageSrc: payload.src,
         imageTitle: payload.title,
-        mapView: payload.mapView ?? null
+        mapView: payload.mapView ?? null,
+        crawl: null
       }
       sendPlayerState()
       showPlayerWindow(undefined, !playerWindowScaleOk)
@@ -1316,8 +1434,33 @@ function registerIpc(): void {
     }
   )
 
+  ipcMain.handle(
+    'player:show-crawl',
+    (_e, payload: { title?: string; body?: string; logoSrc?: string | null; preface?: string | null }) => {
+    const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
+    const body = typeof payload?.body === 'string' ? payload.body : ''
+    const logoSrc = typeof payload?.logoSrc === 'string' && payload.logoSrc.trim() ? payload.logoSrc.trim() : null
+    const preface = payload?.preface === null ? null : typeof payload?.preface === 'string' ? payload.preface : undefined
+    playerState = {
+      ...playerState,
+      imageSrc: null,
+      imageTitle: title || 'Opening crawl',
+      mapView: null,
+      crawl: {
+        title: title || undefined,
+        body,
+        logoSrc,
+        preface,
+        startedAt: Date.now()
+      }
+    }
+    sendPlayerState()
+    showPlayerWindow(undefined, !playerWindowScaleOk)
+    return playerState
+  })
+
   ipcMain.handle('player:clear', () => {
-    playerState = { ...playerState, imageSrc: null, imageTitle: '', mapView: null }
+    playerState = { ...playerState, imageSrc: null, imageTitle: '', mapView: null, crawl: null }
     sendPlayerState()
     return playerState
   })
@@ -1340,6 +1483,33 @@ function registerIpc(): void {
   )
 
   ipcMain.handle('player:get-state', () => playerState)
+
+  ipcMain.handle('mixer:get', async () => {
+    if (campaignFolder) await refreshMixerLibrary()
+    sendMixerState()
+    return mixer
+  })
+  ipcMain.handle('mixer:play-music', (_e, playlistId: string) =>
+    runMixer({ type: 'play-music', playlistId: String(playlistId ?? '') })
+  )
+  ipcMain.handle('mixer:pause-music', () => runMixer({ type: 'pause-music' }))
+  ipcMain.handle('mixer:skip-music', () => runMixer({ type: 'skip-music' }))
+  ipcMain.handle('mixer:stop-music', () => runMixer({ type: 'stop-music' }))
+  ipcMain.handle('mixer:play-ambience', (_e, playlistId: string) =>
+    runMixer({ type: 'play-ambience', playlistId: String(playlistId ?? '') })
+  )
+  ipcMain.handle('mixer:stop-ambience', () => runMixer({ type: 'stop-ambience' }))
+  ipcMain.handle('mixer:oneshot', (_e, path: string) => runMixer({ type: 'oneshot', path: String(path ?? '') }))
+  ipcMain.handle('mixer:stop-all', () => runMixer({ type: 'stop-all' }))
+  ipcMain.handle('mixer:set-prefs', (_e, prefs: Partial<MixerPrefs>) =>
+    runMixer({ type: 'set-prefs', prefs: prefs ?? {} })
+  )
+  ipcMain.handle('mixer:ended', (_e, layer: 'music' | 'ambience') =>
+    runMixer({ type: 'ended', layer: layer === 'ambience' ? 'ambience' : 'music' })
+  )
+  ipcMain.handle('mixer:error', (_e, message: string | null) =>
+    runMixer({ type: 'error', message: typeof message === 'string' && message ? message : null })
+  )
 
   ipcMain.handle('player:window-open', () => playerWindowVisible())
 
@@ -1495,6 +1665,26 @@ function registerIpc(): void {
     setNotePortrait(relativePath, image)
   )
 
+  ipcMain.handle(
+    'campaign:copy-art',
+    async (_e, relativePath: string, image: CreateNoteMapImage, name?: string) => {
+      if (!campaignFolder) return null
+      const dest = safeJoin(campaignFolder, relativePath)
+      if (!existsSync(dest)) return null
+      const folder = toPosix(relative(campaignFolder, dirname(dest)))
+      const fallback =
+        image.kind === 'existing'
+          ? basename(image.path)
+          : image.kind === 'import'
+            ? basename(image.filePath)
+            : image.id
+      const title = sanitizeFileName((name || fallback).replace(/\.[^.]+$/, ''))
+      const fileName = await copyImageToArtFolder(folder, title, image)
+      if (!fileName) return null
+      return { campaign: await loadCampaign(campaignFolder), fileName }
+    }
+  )
+
   ipcMain.handle('campaign:duplicate-file', async (_e, relativePath: string, name?: string) =>
     duplicateCampaignFile(relativePath, name)
   )
@@ -1513,6 +1703,10 @@ function registerIpc(): void {
 
 app.whenReady().then(async () => {
   app.setAppUserModelId('com.tabledm.app')
+  session.defaultSession.setPermissionRequestHandler((_contents, _permission, callback) => {
+    callback(true)
+  })
+  session.defaultSession.setPermissionCheckHandler(() => true)
   await migrateLegacyUserData()
   await removeDroppedAppSamples()
   await ensureWotcHome()
@@ -1596,6 +1790,7 @@ app.whenReady().then(async () => {
       ...emptyPlayerState(),
       campaignTitle: info.name
     }
+    await loadMixerForCampaign(campaignFolder)
   }
 
   createDmWindow()

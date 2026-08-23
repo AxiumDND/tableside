@@ -57,6 +57,8 @@ describe('gear folders', () => {
     expect(folderOrderIndex('Start Here')).toBeLessThan(folderOrderIndex('Sessions'))
     expect(folderOrderIndex('Getting Started')).toBe(folderOrderIndex('Start Here'))
     expect(folderOrderIndex('Gear')).toBeLessThan(folderOrderIndex('Maps'))
+    expect(folderOrderIndex('Audio')).toBeLessThan(folderOrderIndex('Reference'))
+    expect(folderMatchesCanonical('Sounds', 'audio')).toBe(true)
     expect(folderOrderIndex('Weapons')).toBe(99)
   })
 })

@@ -26,7 +26,7 @@ Tableside is a **local folder of Markdown**. No account. The DM laptop is the co
 
 `theme` is the DM console look: `classic` | `light` | `scifi` | `vampire` | `cyberpunk` | `matrix`. Missing field = Classic fantasy. Add a new look later by registering it in `src/shared/theme.ts` and tokens in `index.css`.
 
-`combat.json` is live initiative. Leave it alone or omit it.
+`combat.json` is live initiative. Leave it alone or omit it. `audio.json` is mixer volumes — omit it.
 
 ## Folder tree
 
@@ -45,6 +45,7 @@ Spells/              campaign spell copies (+ Art/)
 Gear/Weapons|Armor|Equipment|Trade Goods|Magic Items/   (+ Art/ each)
 Maps/                map notes; Art/ images; Print/ PDFs
 Handouts/            letters, props (+ Art/)
+Audio/Music|Ambience|Sfx/   user audio only; do not add copyrighted tracks
 Reference/           rules, trackers
 Archive/             transcripts, old drafts, YouTube text
 ```
@@ -89,7 +90,7 @@ stats: [16, 12, 14, 10, 12, 10]
 ```
 
 - `layout` is `Basic 5e Layout` / `Basic PF2e Layout` / `Basic V5 Layout`. Combat needs `name`, `ac`, `hp`. `stats` is STR DEX CON INT WIS CHA.
-- Callouts: `infobox` (sheet chrome), `readaloud` / `flavor`, `gmonly` / `secret`. Trailing `+` is fine.
+- Callouts: `infobox` (sheet chrome), `readaloud` / `flavor`, `crawl` / `opening` (Sci-fi Play: starfield, `preface:`, emblem, crawl; original user text only), `gmonly` / `secret`. Trailing `+` is fine.
 - Images: `![[file.webp]]`. Notes: `[[Stem]]` or `[[Stem|alias]]`.
 - Hide empty template rows. Do not leave `*placeholder*` text.
 

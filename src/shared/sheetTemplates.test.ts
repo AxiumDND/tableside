@@ -74,6 +74,35 @@ describe('game night sheet template', () => {
     expect(body).toContain('## 5. Locations')
     expect(body).toContain('[[Place Name]]')
     expect(body).toContain('## 10. Likely endings')
+    expect(body).not.toContain('{{crawl}}')
+    expect(body).not.toContain('[!crawl]')
+  })
+
+  it('adds an Opening crawl sample only on Sci-fi campaigns', () => {
+    const scifi = fillTemplate(FALLBACK_TEMPLATES.nightsheet, 'nightsheet', 'Session 4', {
+      theme: 'scifi'
+    })
+    expect(scifi).toContain('[!crawl] The Siege of Kestrel')
+    expect(scifi).toContain('It is a time of unrest.')
+    expect(scifi).toContain('Kestrel’s orbital ring')
+    expect(scifi).not.toContain('{{crawl}}')
+
+    const classic = fillTemplate(FALLBACK_TEMPLATES.nightsheet, 'nightsheet', 'Session 4', {
+      theme: 'classic'
+    })
+    expect(classic).not.toContain('[!crawl]')
+    expect(classic).not.toContain('{{crawl}}')
+  })
+
+  it('injects a crawl into an old Sci-fi night sheet that has no {{crawl}} marker', () => {
+    const body = fillTemplate(
+      '# Session Name — Night Sheet\n\n> [!abstract] Tonight\n> Start.\n\n## 1. The characters\n',
+      'nightsheet',
+      'Session 4',
+      { theme: 'scifi' }
+    )
+    expect(body).toContain('[!crawl] The Siege of Kestrel')
+    expect(body.indexOf('[!crawl]')).toBeLessThan(body.indexOf('## 1. The characters'))
   })
 
   it('injects Party links into an old night sheet that has no {{party}} marker', () => {

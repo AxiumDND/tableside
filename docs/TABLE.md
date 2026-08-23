@@ -6,10 +6,10 @@ How the DM console and player window work during a session.
 
 | Area | Role |
 | --- | --- |
-| Header | Campaign name, Combat / Lookup / Help & settings, New / Open / Sample, player display picker, Clear |
+| Header | Campaign name, Combat / Music / Lookup / Help & settings, New / Open / Sample, player display picker, Clear |
 | Left column | Mini **Players see** preview, campaign file tree, dice tray |
-| Center | Open note, image, or PDF |
-| Right (optional) | Combat tracker, Lookup, or Help & settings |
+| Center | Open note, image, PDF, or audio preview |
+| Right (optional) | Combat tracker, Music mixer, Lookup, or Help & settings |
 
 Two Electron windows open: the DM console, and a fullscreen **player** window on a second monitor. **Close** on the Players see preview shuts the player window so you can use the TV for something else. Pick a monitor or **Show to players** to open it again. **Theme** is a campaign setting (Classic fantasy, Light, Sci-fi, Vampire, Cyberpunk, Digital rain): New campaign asks for it, Open applies `campaign.json`, and you can change it from **Help & settings** or **Start Here**. Sci-fi can turn on **Hologram portraits** for party, NPC, beast, and gear art. Digital rain can turn on **Falling code** in the file list and notes. The player TV stays black.
 
@@ -32,6 +32,25 @@ The left **Players see** panel mirrors the player window. Use **Hide** there if 
 
 PDFs open in the center pane for you; they are not sent to the player display as images. Export or screenshot maps you want to show, or use image files under `Maps/Art/`.
 
+## Opening crawl (Sci-fi)
+
+In a Sci-fi campaign, a `> [!crawl]` (or `> [!opening]`) block in any note shows an **Opening crawl** card. **Play** opens a starfield on the player screen and the Players see preview: two seconds of stars, an original far-off line (about eight seconds), a generic title emblem (or the first `![[image]]` in the block), then a silent perspective title crawl. Edit title, far-off line, emblem, and crawl text on the card — they write back into the note. `preface: none` skips the far-off line. The callout title is the heading; the body is the scrolling text. **Clear** or `Alt+X` stops it. Other campaign looks still show the card so the note stays readable; Play stays disabled until the look is Sci-fi. Write your own words — Tableside does not include licensed crawl text or music.
+
+## Music & sound
+
+**Music** (header) opens a mixer that is separate from the player picture. **Clear** blanks the TV image; it does not stop audio. Use **Stop all** on the mixer.
+
+| Strip | Source | Playback |
+| --- | --- | --- |
+| Music | `Audio/Music/<mood>/` (Combat, Creepy, General, or any extra folder) | Pick a mood, then Start / Skip / Stop. Shuffle. Crossfades when the track or mood changes. |
+| Ambience | `Audio/Ambience/` (folders or loose files) | Pick a bed, then Start / Stop. One looping bed |
+| Soundboard | `Audio/Sfx/` (subfolders are headings) | Click a one-shot; several can overlap |
+| Master | — | Whole mix + mute |
+
+Each strip has its own volume. **Now playing** shows the current music track and ambience bed. Music and ambience fade in and out over five seconds; **Stop all** fades both. **Output** picks the Windows audio device (laptop, HDMI TV, headset). The mix uses that device whether the player view is open or closed. Drop your own `.mp3` / `.ogg` / `.wav` / `.m4a` files into `Audio/Music`, `Audio/Ambience`, or `Audio/Sfx` — files in `Audio/` itself are ignored. Tableside does not include music. Volumes, last playlists, and the output device save in hidden `audio.json`.
+
+Each strip has **Add audio…**. Right-click an Audio folder works the same. Opening a track in the tree is a DM preview only.
+
 ## File tree
 
 - Click a note, image, or PDF to open it. Folders start collapsed; the folder that holds the open file (and its parents) expand so you can see it. Click a folder again to collapse it and browse elsewhere — opening a different file expands its folder. `Art/` stays collapsed — portraits load from there onto the `.md` sheets.
@@ -40,7 +59,7 @@ PDFs open in the center pane for you; they are not sent to the player display as
 - Right-click a file to **Duplicate…**, **Add art here…** (into that folder’s `Art/`), add files beside it, or **Delete…** (asks first).
 - Creating **New player / NPC / monster / spell / gear / game night sheet / map / place / shop / faction** fills the built-in sheet for that type and the name you type. **New game night sheet…** is a Lazy DM 10-step page and links every existing `Party/` sheet. **New place…** / **New shop…** live on `Places/` and include bundled default art (town, dungeon, mountain, swamp, inn, and similar). **New faction…** is on `Factions/` (thieves’ guild, city watch, cult, and similar).
 - **New map…** lets you choose an existing campaign image or **Load image…**. Loaded files are copied into that folder’s `Art/` (usually `Maps/Art/`) and named to match the map.
-- `campaign.json`, `combat.json`, `README.md`, and `Templates/` stay hidden from the tree.
+- `campaign.json`, `combat.json`, `audio.json`, `README.md`, and `Templates/` stay hidden from the tree.
 
 Navigation: **← Back** in the note header, **Alt+←**, or mouse back button.
 
@@ -48,7 +67,7 @@ Navigation: **← Back** in the note header, **Alt+←**, or mouse back button.
 
 - **Edit** / **Save** — markdown editor (`Ctrl+S` saves, `Esc` cancels, Tab inserts two spaces).
 - **Links** — heading jump list for long session notes.
-- Wikilinks open other notes; images stay clickable for **Show to players**.
+- Wikilinks open other notes; images stay clickable for **Show to players**. A `> [!crawl]` block is an Opening crawl card — **Play** in Sci-fi sends it to the player screen.
 - Sheets with a `statblock` (Party / NPCs / Bestiary) open in sheet view with **Add to combat**.
 - Map notes (` ```map ` fence) show **Pan / Pin / Token / Fog** — extra controls open as a submenu under the selected tool. Pins stay DM-only. Tokens (Party / NPCs / Bestiary portraits) scale together; Large/Huge stay 2×/3× a Medium token. **Show to players** follows crop, fog, and tokens.
 - Night-sheet combat sections show **Add to initiative** when combatants resolve — see [CAMPAIGN.md](CAMPAIGN.md).

@@ -1,0 +1,135 @@
+import { describe, expect, it } from 'vitest'
+import {
+  applyMixerCommand,
+  buildAudioLibrary,
+  classifyAudioPath,
+  emptyMixerState,
+  pickNextTrack,
+  parseMixerPrefs
+} from './audio'
+
+const files = [
+  'Audio/Music/Combat/Clash.mp3',
+  'Audio/Music/Combat/Steel.ogg',
+  'Audio/Music/Creepy/Dread.mp3',
+  'Audio/Music/General/Town.mp3',
+  'Audio/Music/Travel/Road.wav',
+  'Audio/Ambience/Crowd/Tavern.mp3',
+  'Audio/Ambience/Rain.ogg',
+  'Audio/Sfx/Thunder.mp3',
+  'Audio/Sfx/Doors/Slam.wav',
+  'Party/Art/Kay.webp'
+]
+
+describe('audio library', () => {
+  it('classifies campaign audio folders only', () => {
+    expect(classifyAudioPath('Audio/Music/Combat/Clash.mp3')).toBe('music')
+    expect(classifyAudioPath('Audio/Ambience/Rain.ogg')).toBe('ambience')
+    expect(classifyAudioPath('Audio/Sfx/Doors/Slam.wav')).toBe('sfx')
+    expect(classifyAudioPath('Sounds/Combat/Clash.mp3')).toBe(null)
+    expect(classifyAudioPath('Party/Art/Kay.webp')).toBe(null)
+  })
+
+  it('builds mood playlists, ambience beds, and a soundboard', () => {
+    const library = buildAudioLibrary(files)
+    expect(library.music.map((item) => item.name)).toEqual(['Combat', 'Creepy', 'General', 'Travel'])
+    expect(library.music[0]?.tracks).toHaveLength(2)
+    expect(library.ambience.map((item) => item.name)).toEqual(['Crowd', 'Rain'])
+    expect(library.sfx.map((item) => item.name)).toEqual(['Doors', 'Sfx'])
+    expect(library.sfx.find((group) => group.name === 'Doors')?.tracks[0]?.name).toBe('Slam')
+    expect(library.skipped).toBe(0)
+  })
+
+  it('counts audio sitting outside Music, Ambience, or Sfx', () => {
+    const library = buildAudioLibrary([...files, 'Audio/loose.mp3', 'Audio/Other/Fanfare.wav'])
+    expect(library.skipped).toBe(2)
+    expect(library.music.some((item) => item.tracks.some((track) => track.name === 'loose'))).toBe(false)
+  })
+})
+
+describe('mixer commands', () => {
+  const library = buildAudioLibrary(files)
+
+  function ready() {
+    return applyMixerCommand(emptyMixerState(), { type: 'set-library', library })
+  }
+
+  it('starts a music mood without touching ambience', () => {
+    let state = ready()
+    state = applyMixerCommand(state, { type: 'play-ambience', playlistId: 'Audio/Ambience/Crowd' })
+    state = applyMixerCommand(state, { type: 'play-music', playlistId: 'Audio/Music/Combat' })
+    expect(state.playback.musicPlaying).toBe(true)
+    expect(state.playback.musicPlaylistId).toBe('Audio/Music/Combat')
+    expect(state.playback.ambiencePlaying).toBe(true)
+    expect(state.playback.ambiencePlaylistId).toBe('Audio/Ambience/Crowd')
+    expect(state.prefs.lastMusicId).toBe('Audio/Music/Combat')
+  })
+
+  it('does not pause when the same music mood is started again', () => {
+    let state = ready()
+    state = applyMixerCommand(state, { type: 'play-music', playlistId: 'Audio/Music/Creepy' })
+    const track = state.playback.musicTrack
+    state = applyMixerCommand(state, { type: 'play-music', playlistId: 'Audio/Music/Creepy' })
+    expect(state.playback.musicPlaying).toBe(true)
+    expect(state.playback.musicTrack).toBe(track)
+  })
+
+  it('keeps the selected mood when music stops', () => {
+    let state = ready()
+    state = applyMixerCommand(state, { type: 'play-music', playlistId: 'Audio/Music/Combat' })
+    state = applyMixerCommand(state, { type: 'stop-music' })
+    expect(state.playback.musicPlaying).toBe(false)
+    expect(state.playback.musicPlaylistId).toBe('Audio/Music/Combat')
+    expect(state.prefs.lastMusicId).toBe('Audio/Music/Combat')
+  })
+
+  it('stores a playback error and clears it on the next successful play', () => {
+    let state = ready()
+    state = applyMixerCommand(state, { type: 'error', message: 'Could not play that track.' })
+    expect(state.playback.error).toBe('Could not play that track.')
+    state = applyMixerCommand(state, { type: 'play-music', playlistId: 'Audio/Music/General' })
+    expect(state.playback.error).toBe(null)
+    expect(state.playback.musicPlaying).toBe(true)
+  })
+
+  it('advances sequential music and wraps', () => {
+    const tracks = library.music[0]?.tracks ?? []
+    expect(pickNextTrack(tracks, tracks[0]?.relativePath ?? null, false)).toBe(tracks[1]?.relativePath)
+    expect(pickNextTrack(tracks, tracks[1]?.relativePath ?? null, false)).toBe(tracks[0]?.relativePath)
+  })
+
+  it('stop all clears playback but keeps the library', () => {
+    let state = ready()
+    state = applyMixerCommand(state, { type: 'play-music', playlistId: 'Audio/Music/General' })
+    state = applyMixerCommand(state, { type: 'oneshot', path: 'Audio/Sfx/Thunder.mp3' })
+    state = applyMixerCommand(state, { type: 'stop-all' })
+    expect(state.playback.musicPlaying).toBe(false)
+    expect(state.playback.musicTrack).toBe(null)
+    expect(state.playback.oneshot).toBe(null)
+    expect(state.library.music.length).toBeGreaterThan(0)
+  })
+
+  it('clamps saved volumes', () => {
+    const prefs = parseMixerPrefs({ masterVolume: 4, musicVolume: -1, shuffle: false })
+    expect(prefs.masterVolume).toBe(1)
+    expect(prefs.musicVolume).toBe(0)
+    expect(prefs.shuffle).toBe(false)
+  })
+
+  it('plays and stops ambience without clearing the selected bed', () => {
+    let state = ready()
+    state = applyMixerCommand(state, { type: 'play-ambience', playlistId: 'Audio/Ambience/Crowd' })
+    expect(state.playback.ambiencePlaying).toBe(true)
+    state = applyMixerCommand(state, { type: 'play-ambience', playlistId: 'Audio/Ambience/Crowd' })
+    expect(state.playback.ambiencePlaying).toBe(true)
+    state = applyMixerCommand(state, { type: 'stop-ambience' })
+    expect(state.playback.ambiencePlaying).toBe(false)
+    expect(state.prefs.lastAmbienceId).toBe('Audio/Ambience/Crowd')
+    expect(state.playback.ambiencePlaylistId).toBe('Audio/Ambience/Crowd')
+  })
+
+  it('keeps a saved output device id', () => {
+    const prefs = parseMixerPrefs({ outputDeviceId: 'hdmi-tv' })
+    expect(prefs.outputDeviceId).toBe('hdmi-tv')
+  })
+})
