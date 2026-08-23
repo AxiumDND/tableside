@@ -19,7 +19,7 @@ Two Electron windows open: the DM console, and a fullscreen **player** window on
 2. **Open campaign** — pick any campaign folder on disk. Folders without `"system"` in `campaign.json` run as D&D 5e.
 3. **New campaign** — pick a system (D&D 5e, Pathfinder 2e, or Vampire 5th), then an empty folder; Tableside scaffolds the standard layout. Changing system later is not supported.
 
-With more than one display, click the **Players see** preview to put the player window on the TV/monitor facing the table. Close that window when you do not need it.
+With more than one display, click the **Players see** preview to put the player window on the TV/monitor facing the table. Close that window when you do not need it. The player window is built on that screen’s pixels (a 1080p TV next to a 4K laptop stays sharp after a restart or after you unplug the TV).
 
 ## Show maps and art
 

@@ -19,7 +19,7 @@ import type {
 import { emptyCombat, emptyPlayerState, emptySettings } from '../shared/types'
 import { setupAppUpdater, scheduleLaunchUpdateCheck } from './appUpdater'
 import { mapArtRelativeFolder, setMapFenceImage } from '../shared/mapCreate'
-import { shouldShowPlayerWindow } from '../shared/playerWindow'
+import { playerWindowNeedsRebuild, shouldShowPlayerWindow } from '../shared/playerWindow'
 import { APP_NAME, APP_VERSION } from '../shared/version'
 import {
   LIBRARY_FOLDER_NAMES,
@@ -83,6 +83,7 @@ if (process.platform === 'win32') {
 let dmWindow: BrowserWindow | null = null
 let playerWindow: BrowserWindow | null = null
 let playerWindowWanted = true
+const programmaticPlayerCloses = new WeakSet<BrowserWindow>()
 let campaignFolder: string | null = null
 let playerState: PlayerState = emptyPlayerState()
 let settings: AppSettings = emptySettings()
@@ -409,27 +410,14 @@ function targetPlayerDisplay(displayId?: number): Electron.Display {
   return displays.find((d) => d.id !== dmId) ?? screen.getPrimaryDisplay()
 }
 
-function fullscreenPlayerOnDisplay(display: Electron.Display): void {
+function currentPlayerDisplay(): Electron.Display | null {
+  if (!playerWindow || playerWindow.isDestroyed()) return null
+  return screen.getDisplayMatching(playerWindow.getBounds())
+}
+
+function applyPlayerOutputScale(): void {
   if (!playerWindow || playerWindow.isDestroyed()) return
-  const win = playerWindow
-  const bounds = display.bounds
-  const enter = (): void => {
-    if (win.isDestroyed()) return
-    win.setBounds(bounds)
-    win.setFullScreen(true)
-  }
-  if (!win.isFullScreen()) {
-    enter()
-    return
-  }
-  const here = screen.getDisplayMatching(win.getBounds())
-  if (here.id === display.id) return
-  const timer = setTimeout(enter, 200)
-  win.once('leave-full-screen', () => {
-    clearTimeout(timer)
-    enter()
-  })
-  win.setFullScreen(false)
+  playerWindow.webContents.setZoomFactor(1)
 }
 
 function playerWindowVisible(): boolean {
@@ -440,25 +428,21 @@ function broadcastPlayerWindow(): void {
   dmWindow?.webContents.send('player:window', playerWindowVisible())
 }
 
-function hidePlayerWindow(): void {
-  if (!playerWindow || playerWindow.isDestroyed()) {
-    broadcastPlayerWindow()
-    return
-  }
+function destroyPlayerWindow(): void {
   const win = playerWindow
-  const hide = (): void => {
-    if (win.isDestroyed()) return
-    win.hide()
-    win.setSkipTaskbar(true)
+  if (!win || win.isDestroyed()) {
+    playerWindow = null
     broadcastPlayerWindow()
-  }
-  if (win.isFullScreen()) {
-    win.once('leave-full-screen', hide)
-    win.setFullScreen(false)
-    setTimeout(hide, 250)
     return
   }
-  hide()
+  programmaticPlayerCloses.add(win)
+  playerWindow = null
+  win.destroy()
+  broadcastPlayerWindow()
+}
+
+function hidePlayerWindow(): void {
+  destroyPlayerWindow()
 }
 
 function closePlayerWindow(): void {
@@ -473,22 +457,26 @@ function showPlayerWindow(display?: Electron.Display): void {
     return
   }
   const target = display ?? targetPlayerDisplay()
-  if (!playerWindow || playerWindow.isDestroyed()) {
-    createPlayerWindow(target)
+  const current = currentPlayerDisplay()
+  if (
+    playerWindow &&
+    !playerWindow.isDestroyed() &&
+    playerWindow.isVisible() &&
+    !playerWindowNeedsRebuild(
+      current ? { id: current.id, scaleFactor: current.scaleFactor } : null,
+      { id: target.id, scaleFactor: target.scaleFactor }
+    )
+  ) {
+    broadcastPlayerWindow()
     return
   }
-  playerWindow.setSkipTaskbar(false)
-  playerWindow.show()
-  fullscreenPlayerOnDisplay(target)
-  broadcastPlayerWindow()
+  destroyPlayerWindow()
+  createPlayerWindow(target)
 }
 
 function createPlayerWindow(display = targetPlayerDisplay()): void {
   if (!hasSecondDisplay()) return
-  if (playerWindow && !playerWindow.isDestroyed()) {
-    showPlayerWindow(display)
-    return
-  }
+  if (playerWindow && !playerWindow.isDestroyed()) destroyPlayerWindow()
   const bounds = display.bounds
   const icon = appIconPath()
   playerWindow = new BrowserWindow({
@@ -511,19 +499,26 @@ function createPlayerWindow(display = targetPlayerDisplay()): void {
     }
   })
 
-  playerWindow.on('closed', () => {
-    playerWindow = null
-    playerWindowWanted = false
+  const created = playerWindow
+  created.on('closed', () => {
+    if (playerWindow === created) playerWindow = null
+    if (!programmaticPlayerCloses.has(created)) playerWindowWanted = false
+    broadcastPlayerWindow()
+  })
+  playerWindow.webContents.on('did-finish-load', () => {
+    applyPlayerOutputScale()
+    playerWindow?.webContents.send('player:state', playerState)
+  })
+  playerWindow.once('ready-to-show', () => {
+    if (!playerWindow || playerWindow.isDestroyed()) return
+    playerWindow.setBounds(bounds)
+    playerWindow.setSkipTaskbar(false)
+    playerWindow.show()
+    playerWindow.setFullScreen(true)
+    applyPlayerOutputScale()
     broadcastPlayerWindow()
   })
   playerWindow.loadURL(rendererUrl('player'))
-  playerWindow.webContents.on('did-finish-load', () => {
-    playerWindow?.webContents.send('player:state', playerState)
-  })
-  playerWindow.setSkipTaskbar(false)
-  playerWindow.show()
-  fullscreenPlayerOnDisplay(display)
-  broadcastPlayerWindow()
 }
 
 function syncPlayerWindow(): void {
@@ -541,9 +536,11 @@ function listDisplays(): DisplayInfo[] {
   const dmId = dmDisplayId()
   return screen.getAllDisplays().map((d, index) => {
     const name = d.label?.trim() || `Monitor ${index + 1}`
+    const width = Math.round(d.bounds.width * d.scaleFactor)
+    const height = Math.round(d.bounds.height * d.scaleFactor)
     return {
       id: d.id,
-      label: `${name} · ${d.bounds.width}×${d.bounds.height}`,
+      label: `${name} · ${width}×${height}`,
       bounds: d.bounds,
       primary: d.id === primaryId,
       dm: d.id === dmId
@@ -562,7 +559,14 @@ function watchDisplays(): void {
   }
   screen.on('display-added', replacePlayer)
   screen.on('display-removed', replacePlayer)
-  screen.on('display-metrics-changed', () => broadcastDisplays())
+  screen.on('display-metrics-changed', (_event, changed) => {
+    const current = currentPlayerDisplay()
+    if (current && changed.id === current.id && playerWindowWanted) {
+      destroyPlayerWindow()
+      syncPlayerWindow()
+    }
+    broadcastDisplays()
+  })
 }
 
 function safeJoin(root: string, ...parts: string[]): string {
