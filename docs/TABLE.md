@@ -42,7 +42,7 @@ In a Sci-fi campaign, a `> [!crawl]` (or `> [!opening]`) block in any note shows
 
 | Strip | Source | Playback |
 | --- | --- | --- |
-| Music | `Audio/Music/<mood>/` (Combat, Creepy, General, or any extra folder) | Pick a mood, then Start / Skip / Stop. In order or Shuffle stays in that mood. Crossfades when the track or mood changes. |
+| Music | `Audio/Music/<mood>/` (Combat, Creepy, General, or any extra folder) | Pick a mood, then Play / Pause / Skip / Stop. In order or Shuffle stays in that mood. Crossfades when the track or mood changes. |
 | Ambience | `Audio/Ambience/` (folders or loose files) | Pick a bed, then Start / Stop. One looping bed |
 | Soundboard | `Audio/Sfx/` (subfolders are headings) | Click a one-shot; several can overlap |
 | Master | — | Whole mix + mute |

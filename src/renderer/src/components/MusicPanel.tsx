@@ -22,7 +22,7 @@ function layerNowPlaying(
   kind: 'music' | 'ambience'
 ): string | null {
   if (kind === 'music') {
-    if (!playback.musicPlaying) return null
+    if (!playback.musicTrack) return null
     const label = musicTrackLabel(library, playback.musicTrack)
     if (label) return label.playlist ? `${label.playlist} — ${label.track}` : label.track
     return null
@@ -190,7 +190,11 @@ export default function MusicPanel({
         <div className="mt-2 space-y-1.5">
           <div className="rounded border border-line/70 bg-panel-2 px-2 py-1.5 text-[11px] text-parchment">
             <div className="text-[10px] uppercase tracking-wider text-muted">Now playing</div>
-            <div className="truncate">{musicNow ? `Music: ${musicNow}` : 'Music: —'}</div>
+            <div className="truncate">
+              {musicNow
+                ? `Music: ${musicNow}${playback.musicPlaying ? '' : ' (paused)'}`
+                : 'Music: —'}
+            </div>
             {musicNow ? <ClockLine clock={clock.music} /> : null}
             <div className={`truncate ${musicNow ? 'mt-1.5' : ''}`}>
               {ambienceNow ? `Ambience: ${ambienceNow}` : 'Ambience: —'}
@@ -315,7 +319,6 @@ export default function MusicPanel({
             >
               Shuffle
             </button>
-            <span className="ml-1 text-[10px] text-muted">this mood only</span>
           </div>
           <div className="mt-2 flex items-center gap-2">
             <button
@@ -324,7 +327,15 @@ export default function MusicPanel({
               onClick={() => void window.tabledm.mixerPlayMusic(musicPick)}
               className="rounded bg-amber px-2.5 py-1 text-[12px] font-semibold text-on-amber disabled:bg-line disabled:text-muted"
             >
-              Start
+              Play
+            </button>
+            <button
+              type="button"
+              disabled={disabled || !playback.musicPlaying}
+              onClick={() => void window.tabledm.mixerPauseMusic()}
+              className="rounded border border-line px-2.5 py-1 text-[12px] hover:border-amber disabled:text-muted"
+            >
+              Pause
             </button>
             <button
               type="button"
@@ -336,13 +347,12 @@ export default function MusicPanel({
             </button>
             <button
               type="button"
-              disabled={disabled || !playback.musicPlaying}
+              disabled={disabled || (!playback.musicPlaying && !playback.musicTrack)}
               onClick={() => void window.tabledm.mixerStopMusic()}
               className="rounded border border-line px-2.5 py-1 text-[12px] hover:border-amber disabled:text-muted"
             >
               Stop
             </button>
-            <span className="truncate text-[11px] text-muted">{musicNow ?? 'Nothing playing'}</span>
           </div>
           <div className="mt-2">
             <Slider
@@ -408,7 +418,6 @@ export default function MusicPanel({
               >
                 Stop
               </button>
-              <span className="truncate text-[11px] text-muted">{ambienceNow ?? 'Nothing playing'}</span>
             </div>
           </div>
           <div className="mt-2">

@@ -132,14 +132,21 @@ class LayerPlayer {
     const srcChanged = src !== this.src || generation !== this.generation
     this.src = src
     this.generation = generation
-    if (!src || !playing) {
+    if (!playing) {
       this.playing = false
       this.advanced = false
-      this.onClock(0, 0)
+      if (src) this.reportClock(this.front)
+      else this.onClock(0, 0)
       await fadeTo(this.front, 0, this.front.paused ? 0 : MIXER_FADE_MS, current)
       if (!current()) return
       this.front.pause()
       this.back.pause()
+      if (!src) {
+        this.front.currentTime = 0
+        this.front.removeAttribute('src')
+        this.front.load()
+        this.src = null
+      }
       return
     }
     if (!srcChanged && this.playing) {

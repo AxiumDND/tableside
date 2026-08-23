@@ -609,7 +609,6 @@ function sendPlayerState(): void {
 }
 
 function sendMixerState(): void {
-  playerWindow?.webContents.send('mixer:state', mixer)
   dmWindow?.webContents.send('mixer:state', mixer)
 }
 

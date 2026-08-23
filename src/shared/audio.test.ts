@@ -81,8 +81,27 @@ describe('mixer commands', () => {
     state = applyMixerCommand(state, { type: 'play-music', playlistId: 'Audio/Music/Combat' })
     state = applyMixerCommand(state, { type: 'stop-music' })
     expect(state.playback.musicPlaying).toBe(false)
+    expect(state.playback.musicTrack).toBe(null)
     expect(state.playback.musicPlaylistId).toBe('Audio/Music/Combat')
     expect(state.prefs.lastMusicId).toBe('Audio/Music/Combat')
+  })
+
+  it('pauses then resumes the same track, and stop starts fresh', () => {
+    let state = ready()
+    state = applyMixerCommand(state, { type: 'play-music', playlistId: 'Audio/Music/Creepy' })
+    const track = state.playback.musicTrack
+    const generation = state.playback.musicGeneration
+    state = applyMixerCommand(state, { type: 'pause-music' })
+    expect(state.playback.musicPlaying).toBe(false)
+    expect(state.playback.musicTrack).toBe(track)
+    state = applyMixerCommand(state, { type: 'play-music', playlistId: 'Audio/Music/Creepy' })
+    expect(state.playback.musicPlaying).toBe(true)
+    expect(state.playback.musicTrack).toBe(track)
+    expect(state.playback.musicGeneration).toBe(generation)
+    state = applyMixerCommand(state, { type: 'stop-music' })
+    state = applyMixerCommand(state, { type: 'play-music', playlistId: 'Audio/Music/Creepy' })
+    expect(state.playback.musicPlaying).toBe(true)
+    expect(state.playback.musicGeneration).toBeGreaterThan(generation)
   })
 
   it('stores a playback error and clears it on the next successful play', () => {

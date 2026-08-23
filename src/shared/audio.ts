@@ -46,7 +46,6 @@ export interface AudioLibrary {
 export interface MixerPrefs {
   masterVolume: number
   masterMuted: boolean
-  hearHere: boolean
   /** Chromium audio output id. Empty = system default. */
   outputDeviceId: string
   musicVolume: number
@@ -235,7 +234,6 @@ export function emptyMixerPrefs(): MixerPrefs {
   return {
     masterVolume: 0.85,
     masterMuted: false,
-    hearHere: false,
     outputDeviceId: '',
     musicVolume: 0.7,
     musicMuted: false,
@@ -290,7 +288,6 @@ export function parseMixerPrefs(raw: unknown): MixerPrefs {
   return {
     masterVolume: num('masterVolume', base.masterVolume),
     masterMuted: flag('masterMuted', base.masterMuted),
-    hearHere: flag('hearHere', base.hearHere),
     outputDeviceId: typeof src.outputDeviceId === 'string' ? src.outputDeviceId : base.outputDeviceId,
     musicVolume: num('musicVolume', base.musicVolume),
     musicMuted: flag('musicMuted', base.musicMuted),
@@ -456,13 +453,15 @@ export function applyMixerCommand(state: MixerState, command: MixerCommand): Mix
       return startMusic(state, command.playlistId)
     }
     case 'pause-music':
+      if (!state.playback.musicPlaying) return state
       return { ...state, playback: { ...state.playback, musicPlaying: false } }
     case 'stop-music':
       return {
         ...state,
         playback: {
           ...state.playback,
-          musicPlaying: false
+          musicPlaying: false,
+          musicTrack: null
         }
       }
     case 'error':
@@ -470,7 +469,7 @@ export function applyMixerCommand(state: MixerState, command: MixerCommand): Mix
     case 'skip-music': {
       const tracks = musicTracksFor(state.library, state.playback.musicPlaylistId)
       if (tracks.length === 0) {
-        return { ...state, playback: { ...state.playback, error: 'Pick a mood, then Start.' } }
+        return { ...state, playback: { ...state.playback, error: 'Pick a mood, then Play.' } }
       }
       const track = pickNextTrack(tracks, state.playback.musicTrack, state.prefs.shuffle)
       if (!track) {
@@ -591,5 +590,9 @@ export function mixerLayerGain(prefs: MixerPrefs, layer: 'music' | 'ambience' | 
 }
 
 export function mixerIsActive(state: MixerState): boolean {
-  return state.playback.musicPlaying || state.playback.ambiencePlaying
+  return (
+    state.playback.musicPlaying ||
+    state.playback.ambiencePlaying ||
+    Boolean(state.playback.musicTrack)
+  )
 }
