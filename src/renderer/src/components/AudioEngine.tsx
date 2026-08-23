@@ -2,7 +2,9 @@ import { useEffect, useRef } from 'react'
 import {
   MIXER_FADE_MS,
   audioFileUrl,
+  emptyMixerClock,
   mixerLayerGain,
+  type MixerClock,
   type MixerLayerId,
   type MixerState
 } from '../../../shared/audio'
@@ -66,7 +68,8 @@ class LayerPlayer {
   constructor(
     private loop: boolean,
     private onEnded: () => void,
-    private onError: (message: string) => void
+    private onError: (message: string) => void,
+    private onClock: (current: number, duration: number) => void
   ) {
     this.front = this.a
     this.back = this.b
@@ -74,11 +77,24 @@ class LayerPlayer {
       el.preload = 'auto'
       el.loop = loop
       el.addEventListener('timeupdate', () => this.handleTime(el))
+      el.addEventListener('loadedmetadata', () => this.reportClock(el))
       el.addEventListener('ended', () => this.handleEnded(el))
     }
   }
 
+  private reportClock(el: HTMLAudioElement): void {
+    if (el !== this.front || !this.playing) return
+    const duration = el.duration
+    const currentTime = el.currentTime
+    if (!Number.isFinite(duration) || duration <= 0 || !Number.isFinite(currentTime)) {
+      this.onClock(0, 0)
+      return
+    }
+    this.onClock(currentTime, duration)
+  }
+
   private handleTime(el: HTMLAudioElement): void {
+    this.reportClock(el)
     if (this.loop || !this.playing || this.advanced || el !== this.front) return
     const duration = el.duration
     const currentTime = el.currentTime
@@ -119,6 +135,7 @@ class LayerPlayer {
     if (!src || !playing) {
       this.playing = false
       this.advanced = false
+      this.onClock(0, 0)
       await fadeTo(this.front, 0, this.front.paused ? 0 : MIXER_FADE_MS, current)
       if (!current()) return
       this.front.pause()
@@ -169,6 +186,7 @@ class LayerPlayer {
   stop(): void {
     this.playing = false
     this.advanced = false
+    this.onClock(0, 0)
     this.front.pause()
     this.back.pause()
     this.front.volume = 0
@@ -188,23 +206,46 @@ function playOneshot(url: string, gain: number, deviceId: string): void {
     .catch(() => reportPlaybackError('Could not play that sound. Check the file and Output device.'))
 }
 
-export default function AudioEngine({ state }: { state: MixerState }) {
+export default function AudioEngine({
+  state,
+  onClock
+}: {
+  state: MixerState
+  onClock?: (clock: MixerClock) => void
+}) {
   const musicRef = useRef<LayerPlayer | null>(null)
   const ambienceRef = useRef<LayerPlayer | null>(null)
   const oneshotAt = useRef(0)
+  const clockRef = useRef<MixerClock>(emptyMixerClock())
+  const onClockRef = useRef(onClock)
+  onClockRef.current = onClock
 
   useEffect(() => {
+    const publish = (layer: MixerLayerId, current: number, duration: number): void => {
+      const next = {
+        ...clockRef.current,
+        [layer]: duration > 0 ? { current, duration } : null
+      }
+      clockRef.current = next
+      onClockRef.current?.(next)
+    }
     const ended = (layer: MixerLayerId): void => {
       void window.tabledm.mixerTrackEnded(layer)
     }
     const failed = (): void => {
       reportPlaybackError('Could not play that track. Check the file and Output device.')
     }
-    musicRef.current = new LayerPlayer(false, () => ended('music'), failed)
-    ambienceRef.current = new LayerPlayer(true, () => ended('ambience'), failed)
+    musicRef.current = new LayerPlayer(false, () => ended('music'), failed, (current, duration) =>
+      publish('music', current, duration)
+    )
+    ambienceRef.current = new LayerPlayer(true, () => ended('ambience'), failed, (current, duration) =>
+      publish('ambience', current, duration)
+    )
     return () => {
       musicRef.current?.stop()
       ambienceRef.current?.stop()
+      clockRef.current = emptyMixerClock()
+      onClockRef.current?.(emptyMixerClock())
     }
   }, [])
 

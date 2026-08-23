@@ -349,7 +349,8 @@ export default function HelpPanel({
             items={[
               <>
                 <Code>Audio/Music/Combat</Code>, <Code>Creepy</Code>, <Code>General</Code> — mood playlists. Extra
-                folders become extra moods. Pick a mood, then <Action>Start</Action>.
+                folders become extra moods. Pick a mood, then <Action>Start</Action>.{' '}
+                <Action>In order</Action> or <Action>Shuffle</Action> stays in that mood.
               </>,
               <>
                 <Code>Audio/Ambience</Code> — looping beds (crowd, rain). One at a time.

@@ -42,12 +42,12 @@ In a Sci-fi campaign, a `> [!crawl]` (or `> [!opening]`) block in any note shows
 
 | Strip | Source | Playback |
 | --- | --- | --- |
-| Music | `Audio/Music/<mood>/` (Combat, Creepy, General, or any extra folder) | Pick a mood, then Start / Skip / Stop. Shuffle. Crossfades when the track or mood changes. |
+| Music | `Audio/Music/<mood>/` (Combat, Creepy, General, or any extra folder) | Pick a mood, then Start / Skip / Stop. In order or Shuffle stays in that mood. Crossfades when the track or mood changes. |
 | Ambience | `Audio/Ambience/` (folders or loose files) | Pick a bed, then Start / Stop. One looping bed |
 | Soundboard | `Audio/Sfx/` (subfolders are headings) | Click a one-shot; several can overlap |
 | Master | — | Whole mix + mute |
 
-Each strip has its own volume. **Now playing** shows the current music track and ambience bed. Music and ambience fade in and out over five seconds; **Stop all** fades both. **Output** picks the Windows audio device (laptop, HDMI TV, headset). The mix uses that device whether the player view is open or closed. Drop your own `.mp3` / `.ogg` / `.wav` / `.m4a` files into `Audio/Music`, `Audio/Ambience`, or `Audio/Sfx` — files in `Audio/` itself are ignored. Tableside does not include music. Volumes, last playlists, and the output device save in hidden `audio.json`.
+Each strip has its own volume. **Now playing** shows the current music track and ambience bed, with elapsed time and length. Music and ambience fade in and out over five seconds; **Stop all** fades both. **Output** picks the Windows audio device (laptop, HDMI TV, headset). The mix uses that device whether the player view is open or closed. Drop your own `.mp3` / `.ogg` / `.wav` / `.m4a` files into `Audio/Music`, `Audio/Ambience`, or `Audio/Sfx` — files in `Audio/` itself are ignored. Tableside does not include music. Volumes, last playlists, and the output device save in hidden `audio.json`.
 
 Each strip has **Add audio…**. Right-click an Audio folder works the same. Opening a track in the tree is a DM preview only.
 

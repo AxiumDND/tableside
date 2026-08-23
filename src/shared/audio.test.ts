@@ -4,6 +4,8 @@ import {
   buildAudioLibrary,
   classifyAudioPath,
   emptyMixerState,
+  formatMixerTime,
+  musicTracksFor,
   pickNextTrack,
   parseMixerPrefs
 } from './audio'
@@ -96,6 +98,28 @@ describe('mixer commands', () => {
     const tracks = library.music[0]?.tracks ?? []
     expect(pickNextTrack(tracks, tracks[0]?.relativePath ?? null, false)).toBe(tracks[1]?.relativePath)
     expect(pickNextTrack(tracks, tracks[1]?.relativePath ?? null, false)).toBe(tracks[0]?.relativePath)
+  })
+
+  it('formats elapsed and duration clocks', () => {
+    expect(formatMixerTime(0)).toBe('0:00')
+    expect(formatMixerTime(83)).toBe('1:23')
+    expect(formatMixerTime(3723)).toBe('1:02:03')
+  })
+
+  it('keeps skip and shuffle inside the selected mood', () => {
+    let state = ready()
+    state = applyMixerCommand(state, { type: 'set-prefs', prefs: { shuffle: false } })
+    state = applyMixerCommand(state, { type: 'play-music', playlistId: 'Audio/Music/Combat' })
+    const first = state.playback.musicTrack
+    state = applyMixerCommand(state, { type: 'skip-music' })
+    const combat = musicTracksFor(state.library, 'Audio/Music/Combat').map((track) => track.relativePath)
+    expect(combat).toContain(first)
+    expect(combat).toContain(state.playback.musicTrack)
+    expect(state.playback.musicPlaylistId).toBe('Audio/Music/Combat')
+    state = applyMixerCommand(state, { type: 'set-prefs', prefs: { shuffle: true } })
+    state = applyMixerCommand(state, { type: 'skip-music' })
+    expect(combat).toContain(state.playback.musicTrack)
+    expect(state.playback.musicPlaylistId).toBe('Audio/Music/Combat')
   })
 
   it('stop all clears playback but keeps the library', () => {

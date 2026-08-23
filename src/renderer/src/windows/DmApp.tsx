@@ -9,7 +9,7 @@ import type {
   PlayerState,
   RecentCampaign
 } from '../../../shared/types'
-import { emptyMixerState, mixerIsActive } from '../../../shared/audio'
+import { emptyMixerClock, emptyMixerState, mixerIsActive } from '../../../shared/audio'
 import { emptyCombat, emptyPlayerState } from '../../../shared/types'
 import {
   applyThemeToDocument,
@@ -96,6 +96,7 @@ export default function DmApp() {
   const [campaign, setCampaign] = useState<CampaignInfo | null>(null)
   const [player, setPlayer] = useState<PlayerState>(emptyPlayerState())
   const [mixer, setMixer] = useState(emptyMixerState())
+  const [mixerClock, setMixerClock] = useState(() => emptyMixerClock())
   const [displays, setDisplays] = useState<DisplayInfo[]>([])
   const [rightPanel, setRightPanel] = useState<'combat' | 'lookup' | 'help' | 'music' | null>(null)
   const [openPath, setOpenPath] = useState('')
@@ -626,7 +627,7 @@ export default function DmApp() {
 
   return (
     <DiceLogProvider>
-    <AudioEngine state={mixer} />
+    <AudioEngine state={mixer} onClock={setMixerClock} />
     <div className="flex h-full flex-col bg-ink text-parchment">
       <header className="flex items-center gap-3 border-b border-line bg-panel px-4 py-2">
         <div>
@@ -810,6 +811,7 @@ export default function DmApp() {
         {rightPanel === 'music' ? (
           <MusicPanel
             state={mixer}
+            clock={mixerClock}
             disabled={!campaign}
             onClose={() => changeRightPanel(null)}
           />

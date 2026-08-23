@@ -79,6 +79,13 @@ export interface MixerState {
   playback: MixerPlayback
 }
 
+export type MixerLayerClock = { current: number; duration: number } | null
+
+export interface MixerClock {
+  music: MixerLayerClock
+  ambience: MixerLayerClock
+}
+
 export type MixerCommand =
   | { type: 'play-music'; playlistId: string }
   | { type: 'pause-music' }
@@ -307,6 +314,36 @@ function findPlaylist(library: AudioLibrary, kind: AudioKind, id: string | null)
   return list.find((item) => item.id === id) ?? null
 }
 
+export function emptyMixerClock(): MixerClock {
+  return { music: null, ambience: null }
+}
+
+export function formatMixerTime(seconds: number): string {
+  if (!Number.isFinite(seconds) || seconds < 0) return '0:00'
+  const total = Math.floor(seconds)
+  const hours = Math.floor(total / 3600)
+  const minutes = Math.floor((total % 3600) / 60)
+  const rest = total % 60
+  if (hours > 0) return `${hours}:${String(minutes).padStart(2, '0')}:${String(rest).padStart(2, '0')}`
+  return `${minutes}:${String(rest).padStart(2, '0')}`
+}
+
+export function musicTracksFor(library: AudioLibrary, playlistId: string | null): AudioTrack[] {
+  return findPlaylist(library, 'music', playlistId)?.tracks ?? []
+}
+
+export function musicTrackLabel(
+  library: AudioLibrary,
+  path: string | null
+): { playlist: string; track: string } | null {
+  if (!path) return null
+  for (const playlist of library.music) {
+    const track = playlist.tracks.find((item) => item.relativePath === path)
+    if (track) return { playlist: playlist.name, track: track.name }
+  }
+  return { playlist: '', track: audioTrackName(path) }
+}
+
 function findSfxTrack(library: AudioLibrary, path: string): AudioTrack | null {
   for (const group of library.sfx) {
     const track = group.tracks.find((item) => item.relativePath === path)
@@ -334,20 +371,21 @@ export function pickNextTrack(
 }
 
 function startMusic(state: MixerState, playlistId: string): MixerState {
-  const playlist = findPlaylist(state.library, 'music', playlistId)
-  if (!playlist || playlist.tracks.length === 0) {
+  const tracks = musicTracksFor(state.library, playlistId)
+  const emptyMessage = 'That mood has no tracks yet. Add audio…'
+  if (tracks.length === 0) {
     return {
       ...state,
       prefs: { ...state.prefs, lastMusicId: playlistId || state.prefs.lastMusicId },
-      playback: { ...state.playback, error: 'That mood has no tracks yet. Add audio…' }
+      playback: { ...state.playback, error: emptyMessage }
     }
   }
-  const track = pickNextTrack(playlist.tracks, null, state.prefs.shuffle)
+  const track = pickNextTrack(tracks, null, state.prefs.shuffle)
   if (!track) {
     return {
       ...state,
       prefs: { ...state.prefs, lastMusicId: playlistId },
-      playback: { ...state.playback, error: 'That mood has no tracks yet. Add audio…' }
+      playback: { ...state.playback, error: emptyMessage }
     }
   }
   return {
@@ -370,12 +408,15 @@ export function applyMixerCommand(state: MixerState, command: MixerCommand): Mix
       return { ...state, prefs: { ...state.prefs, ...parseMixerPrefs({ ...state.prefs, ...command.prefs }) } }
     case 'set-library': {
       const library = command.library
-      const music = findPlaylist(library, 'music', state.playback.musicPlaylistId)
+      const musicTracks = musicTracksFor(library, state.playback.musicPlaylistId)
+      const musicOk = musicTracks.length > 0
       const ambience = findPlaylist(library, 'ambience', state.playback.ambiencePlaylistId)
       const musicTrack =
-        music && state.playback.musicTrack && music.tracks.some((track) => track.relativePath === state.playback.musicTrack)
+        musicOk &&
+        state.playback.musicTrack &&
+        musicTracks.some((track) => track.relativePath === state.playback.musicTrack)
           ? state.playback.musicTrack
-          : (music?.tracks[0]?.relativePath ?? null)
+          : (musicTracks[0]?.relativePath ?? null)
       const ambienceTrack =
         ambience &&
         state.playback.ambienceTrack &&
@@ -387,9 +428,9 @@ export function applyMixerCommand(state: MixerState, command: MixerCommand): Mix
         library,
         playback: {
           ...state.playback,
-          musicPlaylistId: music ? state.playback.musicPlaylistId : null,
-          musicTrack: music ? musicTrack : null,
-          musicPlaying: Boolean(music && state.playback.musicPlaying && musicTrack),
+          musicPlaylistId: musicOk ? state.playback.musicPlaylistId : null,
+          musicTrack: musicOk ? musicTrack : null,
+          musicPlaying: Boolean(musicOk && state.playback.musicPlaying && musicTrack),
           ambiencePlaylistId: ambience ? state.playback.ambiencePlaylistId : null,
           ambienceTrack: ambience ? ambienceTrack : null,
           ambiencePlaying: Boolean(ambience && state.playback.ambiencePlaying && ambienceTrack)
@@ -427,11 +468,11 @@ export function applyMixerCommand(state: MixerState, command: MixerCommand): Mix
     case 'error':
       return { ...state, playback: { ...state.playback, error: command.message } }
     case 'skip-music': {
-      const playlist = findPlaylist(state.library, 'music', state.playback.musicPlaylistId)
-      if (!playlist) {
+      const tracks = musicTracksFor(state.library, state.playback.musicPlaylistId)
+      if (tracks.length === 0) {
         return { ...state, playback: { ...state.playback, error: 'Pick a mood, then Start.' } }
       }
-      const track = pickNextTrack(playlist.tracks, state.playback.musicTrack, state.prefs.shuffle)
+      const track = pickNextTrack(tracks, state.playback.musicTrack, state.prefs.shuffle)
       if (!track) {
         return { ...state, playback: { ...state.playback, error: 'That mood has no tracks yet. Add audio…' } }
       }
@@ -521,11 +562,11 @@ export function applyMixerCommand(state: MixerState, command: MixerCommand): Mix
           }
         }
       }
-      const playlist = findPlaylist(state.library, 'music', state.playback.musicPlaylistId)
-      if (!playlist || !state.playback.musicPlaying) {
+      const tracks = musicTracksFor(state.library, state.playback.musicPlaylistId)
+      if (tracks.length === 0 || !state.playback.musicPlaying) {
         return { ...state, playback: { ...state.playback, musicPlaying: false } }
       }
-      const track = pickNextTrack(playlist.tracks, state.playback.musicTrack, state.prefs.shuffle)
+      const track = pickNextTrack(tracks, state.playback.musicTrack, state.prefs.shuffle)
       if (!track) return { ...state, playback: { ...state.playback, musicPlaying: false } }
       return {
         ...state,

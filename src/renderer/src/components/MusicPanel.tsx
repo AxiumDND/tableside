@@ -1,5 +1,20 @@
 import { useCallback, useEffect, useState } from 'react'
-import { mixerIsActive, type AudioLibrary, type MixerPlayback, type MixerState } from '../../../shared/audio'
+import {
+  emptyMixerClock,
+  formatMixerTime,
+  mixerIsActive,
+  musicTrackLabel,
+  type AudioLibrary,
+  type MixerClock,
+  type MixerLayerClock,
+  type MixerPlayback,
+  type MixerState
+} from '../../../shared/audio'
+
+function knownPlaylistId(playlists: { id: string }[], id: string | null | undefined): string {
+  if (id && playlists.some((item) => item.id === id)) return id
+  return playlists[0]?.id ?? ''
+}
 
 function layerNowPlaying(
   library: AudioLibrary,
@@ -8,10 +23,9 @@ function layerNowPlaying(
 ): string | null {
   if (kind === 'music') {
     if (!playback.musicPlaying) return null
-    const playlist = library.music.find((item) => item.id === playback.musicPlaylistId)
-    const track = playlist?.tracks.find((item) => item.relativePath === playback.musicTrack)
-    if (playlist && track) return `${playlist.name} — ${track.name}`
-    return track?.name ?? playlist?.name ?? null
+    const label = musicTrackLabel(library, playback.musicTrack)
+    if (label) return label.playlist ? `${label.playlist} — ${label.track}` : label.track
+    return null
   }
   if (!playback.ambiencePlaying) return null
   const playlist = library.ambience.find((item) => item.id === playback.ambiencePlaylistId)
@@ -50,6 +64,21 @@ function useAudioOutputs(): { outputs: AudioOutput[]; refresh: () => void } {
     return () => media.removeEventListener('devicechange', refresh)
   }, [refresh])
   return { outputs, refresh }
+}
+
+function ClockLine({ clock }: { clock: MixerLayerClock }) {
+  if (!clock) return <span className="text-[10px] text-muted">0:00 / —</span>
+  const pct = clock.duration > 0 ? Math.min(100, Math.max(0, (clock.current / clock.duration) * 100)) : 0
+  return (
+    <div className="mt-0.5">
+      <div className="h-1 overflow-hidden rounded bg-line">
+        <div className="h-full bg-amber" style={{ width: `${pct}%` }} />
+      </div>
+      <div className="mt-0.5 text-[10px] tabular-nums text-muted">
+        {formatMixerTime(clock.current)} / {formatMixerTime(clock.duration)}
+      </div>
+    </div>
+  )
 }
 
 function Slider({
@@ -93,10 +122,12 @@ function Slider({
 
 export default function MusicPanel({
   state,
+  clock = emptyMixerClock(),
   disabled,
   onClose
 }: {
   state: MixerState
+  clock?: MixerClock
   disabled?: boolean
   onClose?: () => void
 }) {
@@ -105,14 +136,14 @@ export default function MusicPanel({
   const musicNow = layerNowPlaying(library, playback, 'music')
   const ambienceNow = layerNowPlaying(library, playback, 'ambience')
   const [musicPick, setMusicPick] = useState(
-    () => prefs.lastMusicId ?? playback.musicPlaylistId ?? library.music[0]?.id ?? ''
+    () => knownPlaylistId(library.music, prefs.lastMusicId ?? playback.musicPlaylistId)
   )
   const [ambiencePick, setAmbiencePick] = useState(
     () => prefs.lastAmbienceId ?? playback.ambiencePlaylistId ?? library.ambience[0]?.id ?? ''
   )
 
   useEffect(() => {
-    const next = prefs.lastMusicId ?? playback.musicPlaylistId ?? library.music[0]?.id ?? ''
+    const next = knownPlaylistId(library.music, prefs.lastMusicId ?? playback.musicPlaylistId)
     if (next) setMusicPick(next)
   }, [prefs.lastMusicId, playback.musicPlaylistId, library.music])
 
@@ -160,7 +191,11 @@ export default function MusicPanel({
           <div className="rounded border border-line/70 bg-panel-2 px-2 py-1.5 text-[11px] text-parchment">
             <div className="text-[10px] uppercase tracking-wider text-muted">Now playing</div>
             <div className="truncate">{musicNow ? `Music: ${musicNow}` : 'Music: —'}</div>
-            <div className="truncate">{ambienceNow ? `Ambience: ${ambienceNow}` : 'Ambience: —'}</div>
+            {musicNow ? <ClockLine clock={clock.music} /> : null}
+            <div className={`truncate ${musicNow ? 'mt-1.5' : ''}`}>
+              {ambienceNow ? `Ambience: ${ambienceNow}` : 'Ambience: —'}
+            </div>
+            {ambienceNow ? <ClockLine clock={clock.ambience} /> : null}
             {playback.error ? <div className="mt-1 text-amber">{playback.error}</div> : null}
           </div>
           {library.skipped > 0 ? (
@@ -212,25 +247,14 @@ export default function MusicPanel({
         <section>
           <div className="flex items-center justify-between">
             <h3 className="text-[10px] font-semibold uppercase tracking-[0.18em] text-muted">Music</h3>
-            <div className="flex items-center gap-2">
-              <label className="flex items-center gap-1 text-[11px] text-muted">
-                <input
-                  type="checkbox"
-                  checked={prefs.shuffle}
-                  disabled={disabled}
-                  onChange={(event) => setPrefs({ shuffle: event.target.checked })}
-                />
-                Shuffle
-              </label>
-              <button
-                type="button"
-                disabled={disabled}
-                onClick={() => addAudio(musicFolder)}
-                className="text-[11px] text-muted hover:text-amber disabled:opacity-50"
-              >
-                Add audio…
-              </button>
-            </div>
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => addAudio(musicFolder)}
+              className="text-[11px] text-muted hover:text-amber disabled:opacity-50"
+            >
+              Add audio…
+            </button>
           </div>
           {library.music.length === 0 ? (
             <p className="mt-2 text-[12px] text-muted">
@@ -266,6 +290,33 @@ export default function MusicPanel({
               })}
             </div>
           )}
+          <div className="mt-2 flex items-center gap-1">
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => setPrefs({ shuffle: false })}
+              className={`rounded px-2 py-0.5 text-[11px] ${
+                !prefs.shuffle
+                  ? 'bg-amber font-semibold text-on-amber'
+                  : 'border border-line text-muted hover:border-amber'
+              }`}
+            >
+              In order
+            </button>
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => setPrefs({ shuffle: true })}
+              className={`rounded px-2 py-0.5 text-[11px] ${
+                prefs.shuffle
+                  ? 'bg-amber font-semibold text-on-amber'
+                  : 'border border-line text-muted hover:border-amber'
+              }`}
+            >
+              Shuffle
+            </button>
+            <span className="ml-1 text-[10px] text-muted">this mood only</span>
+          </div>
           <div className="mt-2 flex items-center gap-2">
             <button
               type="button"
