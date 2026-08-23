@@ -38,18 +38,32 @@ I'm one person — a DM first, and only a basic coder. Tableside would not exist
 
 Questions or thanks: [tableside.gm@gmail.com](mailto:tableside.gm@gmail.com). If it helped at your table, you can [buy me a coffee](https://ko-fi.com/tablesidegm).
 
+## How to use
+
+**[docs/GUIDE.md](docs/GUIDE.md)** is the how-to: first launch, show a picture, run a map, start a fight, play music, play a sci-fi crawl, and look up rules.
+
+Short version:
+
+1. Install, then **Sample** (Greystead) or **Open** / **New** a campaign folder.
+2. Click **Players see** to put the player window on the table TV.
+3. Open a note, click a picture, **Show to players** (`Alt+S`). **Clear** (`Alt+X`) blanks the TV.
+4. **Combat** loads a game night sheet’s combatants. **Music** plays your files from `Audio/`. **Lookup** searches the system pack offline.
+
 ## Features
 
-- Dual-window layout: DM console + fullscreen player display
+- Dual-window layout: DM console + fullscreen player display (close the TV window when you do not need it)
 - Campaign folder of Markdown notes (Obsidian-friendly wikilinks and `![[images]]`)
+- Campaign looks: Classic, Light, Sci-fi, Vampire, Cyberpunk, Digital rain (saved on the campaign)
 - Click a map or portrait, then **Show to players** — 5 second fade-in on a black screen
-- Map notes (`Maps/` + a `map` fence) show the picture with DM-only pins; players still see the clean image
-- Optional initiative overlay on the player screen: order, whose turn, and pack tags (5e Bloodied / 0 HP; PF2e Dying / Wounded; V5 Health, Willpower, Hunger)
-- Game night sheets can pull NPC/PC/Bestiary statblocks into initiative (missing links warned; NPCs auto-roll)
+- Map notes: zoom/pan, DM-only pins, tokens, fog of war — the TV follows crop, fog, and tokens
+- Optional initiative overlay: order, whose turn, and pack tags (5e Bloodied / 0 HP; PF2e Dying / Wounded; V5 Health, Willpower, Hunger)
+- Game night sheets pull Party / NPC / Bestiary sheets into initiative
+- Music mixer: one mood playlist (Play / Pause / Skip / Stop, in order or shuffle), one ambience bed, soundboard — your files, your output device
+- Sci-fi opening crawl (`> [!crawl]`) — write your own words; Play sends a starfield crawl to the TV
 - Offline Lookup for the open campaign’s system pack (5e SRD; PF2e original core; V5 original procedures)
-- Optional extra 5e lookup from your own WOTC text files in `WOTC/` (spells, equipment, magic items)
-- Add a monster, spell, or gear item from Lookup into the campaign Bestiary, Spells, or Gear folder
-- In-app **Help & settings**, recent campaigns, file-tree filter, and table hotkeys (`Alt+S` / `Alt+T` / `Alt+X`)
+- Optional extra 5e lookup from your own WOTC text files in `WOTC/`
+- Add a monster, spell, or gear item from Lookup into the campaign folder
+- Places, shops, factions, dice tray, in-app **Help & settings**, file search (`Ctrl+F`), table hotkeys
 - Installed copies check GitHub at launch and ask to install if a newer release exists
 
 ## Run from source
@@ -80,9 +94,10 @@ The bundled sample is **[examples/greystead](examples/greystead)**. Tableside co
 
 | Doc | Audience |
 | --- | --- |
-| [docs/TABLE.md](docs/TABLE.md) | DMs — console layout, combat, Lookup, player display |
-| [docs/RECIPES.md](docs/RECIPES.md) | DMs — game night sheet → initiative, Lookup → campaign note |
-| [docs/CAMPAIGN.md](docs/CAMPAIGN.md) | DMs — folder layout, game night sheets, combatants, images |
+| [docs/GUIDE.md](docs/GUIDE.md) | DMs — how to use the current app at the table |
+| [docs/TABLE.md](docs/TABLE.md) | DMs — every console control |
+| [docs/RECIPES.md](docs/RECIPES.md) | DMs — short workflows (combat, Lookup, music, crawl, maps) |
+| [docs/CAMPAIGN.md](docs/CAMPAIGN.md) | DMs — folder layout, game night sheets, combatants, audio, images |
 | [docs/AI-CAMPAIGN.md](docs/AI-CAMPAIGN.md) | Agents — convert a vault into Tableside folders and sheets |
 | [docs/MARKDOWN.md](docs/MARKDOWN.md) | DMs — wikilinks, callouts, `statblock` fields |
 | [WOTC/README.md](WOTC/README.md) | Optional PHB / DMG lookup file formats |
@@ -106,11 +121,12 @@ Spells/           campaign spell copies
 Gear/             weapons, equipment, magic items
 Maps/             Art/ + Print/ (map notes with DM pins)
 Handouts/         letters and props (+ Art/)
+Audio/            Music / Ambience / Sfx (your files)
 Reference/        trackers and cheat sheets
 Archive/          recaps and old drafts
 ```
 
-Full authoring guide: **[docs/CAMPAIGN.md](docs/CAMPAIGN.md)**. At-the-table UI: **[docs/TABLE.md](docs/TABLE.md)**. Step recipes: **[docs/RECIPES.md](docs/RECIPES.md)** (also in the app **Help** panel). Markdown/`statblock` reference: **[docs/MARKDOWN.md](docs/MARKDOWN.md)**.
+How to use it: **[docs/GUIDE.md](docs/GUIDE.md)**. Full authoring: **[docs/CAMPAIGN.md](docs/CAMPAIGN.md)**. Console reference: **[docs/TABLE.md](docs/TABLE.md)**. Step recipes: **[docs/RECIPES.md](docs/RECIPES.md)** (also in the app **Help** panel). Markdown/`statblock` reference: **[docs/MARKDOWN.md](docs/MARKDOWN.md)**.
 
 Book text for Lookup is **not** part of a campaign and is **not** shipped. On a **D&D 5e** campaign, put Player’s Handbook and Dungeon Master’s Guide exports in the app `WOTC/` folder (or `%APPDATA%\Tableside\WOTC`). When those files are present, Lookup grows extra filters and searches that text. The SRD stays available either way. Filenames must contain `Spell`, `Equipment`, or `Magic Item` — details in [WOTC/README.md](WOTC/README.md). Pathfinder 2e and Vampire 5th campaigns do not load WOTC dumps.
 

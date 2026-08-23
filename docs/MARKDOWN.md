@@ -1,6 +1,6 @@
 # Markdown and statblocks
 
-Reference for note syntax Tableside understands. For folder layout and game night sheets, see [CAMPAIGN.md](CAMPAIGN.md). For the UI, see [TABLE.md](TABLE.md).
+Reference for note syntax Tableside understands. How to use the app: [GUIDE.md](GUIDE.md). Folder layout: [CAMPAIGN.md](CAMPAIGN.md). Console: [TABLE.md](TABLE.md).
 
 ## Supported files
 

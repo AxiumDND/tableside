@@ -1,6 +1,6 @@
 # Recipes
 
-Short table workflows. UI overview: [TABLE.md](TABLE.md). Authoring: [CAMPAIGN.md](CAMPAIGN.md), [MARKDOWN.md](MARKDOWN.md).
+Short table workflows. How-to: [GUIDE.md](GUIDE.md). UI overview: [TABLE.md](TABLE.md). Authoring: [CAMPAIGN.md](CAMPAIGN.md), [MARKDOWN.md](MARKDOWN.md).
 
 These recipes also appear in the in-app **Help & settings** panel (header), along with campaign look, layout, maps, combat overlay, Lookup chips, and shortcuts.
 
@@ -87,3 +87,48 @@ Saving needs an open campaign. Conditions and pure rules entries do not get an A
 ### Optional WOTC text
 
 Lookup stays SRD-only until you add personal book dumps. Format and filenames: [WOTC/README.md](../WOTC/README.md). Open the writable folder from Lookup when you need it.
+
+## Music mixer
+
+Play your own audio at the table. Tableside does not include tracks.
+
+### Prep
+
+1. Open the campaign. **New** / **Open** creates `Audio/Music/Combat`, `Creepy`, `General`, plus `Audio/Ambience` and `Audio/Sfx`.
+2. Drop files into a mood folder, or click **Music** → **Add audio…** on that strip.
+3. Extra folders under `Audio/Music/` become extra mood chips.
+4. Keep files out of `Audio/` itself — those are ignored.
+
+### At the table
+
+1. Open **Music**.
+2. Pick **Output** (laptop, HDMI TV, headset).
+3. Click a mood. Choose **In order** or **Shuffle**.
+4. **Play**. **Pause** holds the song. **Skip** stays in that mood. **Stop** ends it; Play starts the mood again.
+5. Pick an ambience bed → **Start** / **Stop**.
+6. Click soundboard buttons as needed.
+7. **Stop all** when the scene ends. **Clear** on the TV does not stop the mix.
+
+If nothing plays: unmute Master / Music, confirm Output, and check the file is under `Audio/Music/<mood>/`.
+
+## Opening crawl (Sci-fi)
+
+1. Set the campaign look to **Sci-fi**.
+2. Add a crawl block to any note (or use the sample on a new sci-fi game night sheet):
+
+```markdown
+> [!crawl] Episode title
+> preface: A far-off line of your own.
+> The scrolling prologue goes here.
+```
+
+3. Edit title, far-off line, emblem, and crawl on the card.
+4. **Play**. **Clear** or `Alt+X` stops it.
+
+`preface: none` skips the far-off line. `![[mark.png]]` in the block replaces the generic emblem. Write your own words — no licensed crawl text ships with the app. Play stays disabled on other looks.
+
+## Map with tokens and fog
+
+1. Right-click **Maps/** → **New map…** → pick or load an image.
+2. **Pan** to move. Scroll to zoom. **Pin** for DM-only notes. **Token** to place Party / NPC / Bestiary portraits. **Fog** to hide or reveal.
+3. **Show to players**. The TV follows crop, fog, and tokens. Pins stay on your screen.

@@ -4,8 +4,9 @@ How to structure a campaign folder so Tableside can find notes, art, and combata
 
 Also read:
 
+- [GUIDE.md](GUIDE.md) — how to use the app at the table
 - [TABLE.md](TABLE.md) — DM console, combat, Lookup, player display
-- [RECIPES.md](RECIPES.md) — game night sheet → initiative, Lookup → campaign note (also in-app **Help**)
+- [RECIPES.md](RECIPES.md) — game night sheet → initiative, Lookup → campaign note, music, crawl (also in-app **Help**)
 - [MARKDOWN.md](MARKDOWN.md) — wikilinks, callouts, `statblock` field reference
 - [AI-CAMPAIGN.md](AI-CAMPAIGN.md) — short spec for an AI converting a vault into this layout
 - [WOTC/README.md](../WOTC/README.md) — optional book text for Lookup
@@ -89,6 +90,21 @@ Right-click a folder in the file tree:
 - **Add files…** — import notes, PDFs, or other files into the folder you clicked
 
 Duplicate from a file’s context menu when you need a second vampire spawn sheet, etc.
+
+## Audio
+
+Tableside does not ship music. Put files you own in the campaign:
+
+| Put files here | Mixer strip |
+| --- | --- |
+| `Audio/Music/Combat/` | Combat mood |
+| `Audio/Music/Creepy/` | Creepy mood |
+| `Audio/Music/General/` | General mood |
+| `Audio/Music/<any folder>/` | Extra mood (folder name is the chip) |
+| `Audio/Ambience/` or `Audio/Ambience/Crowd/` | Looping beds |
+| `Audio/Sfx/` or `Audio/Sfx/Doors/` | Soundboard (subfolders are headings) |
+
+Use **Add audio…** on the Music panel, or right-click the folder. Formats: `.mp3` `.ogg` `.wav` `.m4a` `.flac` `.webm` `.aac`. Loose files in `Audio/` itself are ignored. How to play them: [GUIDE.md](GUIDE.md#5-play-music).
 
 ## Wikilinks and images
 
@@ -202,7 +218,7 @@ On the game night sheet, use **Add to initiative** / **Add encounter** to load t
 
 Suggested split: long prose in `Session N.md`, numbers and combatant lines in `Session N — Game Night Sheet.md`, cross-linked with wikilinks. A one-shot can put the whole night on one page — Greystead’s `Session 1.md` is that.
 
-Full recipe (prep + troubleshooting): [RECIPES.md](RECIPES.md#night-sheet--initiative).
+Full recipe (prep + troubleshooting): [RECIPES.md](RECIPES.md#game-night-sheet--initiative).
 
 ### Player initiative overlay
 
@@ -220,9 +236,10 @@ HP edits stay on the DM console; the overlay never shows numbers. Step-by-step U
 2. Open tonight’s session or game night sheet from the file tree.
 3. Click a map or portrait → **Show to players**.
 4. When a fight starts, add the encounter (or combatants) → roll / enter initiative → advance turns.
-5. Use **Lookup** for conditions, spells, monsters, and weapons (SRD bundled; optional WOTC files extend it).
+5. **Music** plays files from `Audio/Music`, `Audio/Ambience`, and `Audio/Sfx`.
+6. Use **Lookup** for conditions, spells, monsters, and weapons (SRD bundled; optional WOTC files extend it).
 
-Full UI walkthrough: [TABLE.md](TABLE.md).
+How-to: [GUIDE.md](GUIDE.md). Console reference: [TABLE.md](TABLE.md).
 
 ## Examples
 

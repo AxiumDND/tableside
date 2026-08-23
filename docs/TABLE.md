@@ -1,6 +1,6 @@
 # At the table
 
-How the DM console and player window work during a session.
+How the DM console and player window work during a session. **New to Tableside?** Start with [GUIDE.md](GUIDE.md) (first night, music, crawl, maps). This page is the control-by-control reference.
 
 ## Layout
 
