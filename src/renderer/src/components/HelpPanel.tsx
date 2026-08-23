@@ -269,7 +269,8 @@ export default function HelpPanel({
           <Ul
             items={[
               <>
-                Click a note, image, or PDF to open it. Folders start collapsed; the open file’s folder stays expanded.{' '}
+                Click a note, image, or PDF to open it. Folders start collapsed; the open file’s folder expands so you
+                can see it. Click the folder again to collapse it and look elsewhere.{' '}
                 <Code>Art/</Code> stays collapsed — portraits still load onto sheets.
               </>,
               <>

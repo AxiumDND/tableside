@@ -222,6 +222,22 @@ export function folderRevealsOpenFile(dirPath: string, dirName: string, openPath
   return folderContainsPath(dirPath, openPath)
 }
 
+/**
+ * Auto-expand folders that hold the open file, but a manual collapse wins
+ * until a different file is opened.
+ */
+export function folderIsOpenInTree(
+  dirPath: string,
+  dirName: string,
+  openPath: string | undefined,
+  userOpen: boolean,
+  collapsedForOpenPath: string | undefined
+): boolean {
+  const normalizedOpen = openPath ?? ''
+  if (collapsedForOpenPath !== undefined && collapsedForOpenPath === normalizedOpen) return false
+  return userOpen || folderRevealsOpenFile(dirPath, dirName, openPath)
+}
+
 export type CampaignLibraryFolder = 'bestiary' | 'spells' | 'gear'
 
 export const LIBRARY_FOLDER_NAMES: Record<CampaignLibraryFolder, string> = {

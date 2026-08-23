@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   folderMatchesCanonical,
   folderOrderIndex,
+  folderIsOpenInTree,
   folderRevealsOpenFile,
   folderUsesArt,
   gearSectionIndex,
@@ -52,6 +53,18 @@ describe('Art folders', () => {
     expect(folderRevealsOpenFile('Bestiary', 'Bestiary', 'Bestiary/Ghoul.md')).toBe(true)
     expect(folderRevealsOpenFile('Bestiary/Art', 'Art', 'Bestiary/Art/Ghoul.webp')).toBe(false)
     expect(folderRevealsOpenFile('Bestiary', 'Bestiary', 'Bestiary/Art/Ghoul.webp')).toBe(true)
+  })
+
+  it('lets a click collapse the open file’s folder until another file is opened', () => {
+    expect(folderIsOpenInTree('Bestiary', 'Bestiary', 'Bestiary/Ghoul.md', false, undefined)).toBe(true)
+    expect(folderIsOpenInTree('Bestiary', 'Bestiary', 'Bestiary/Ghoul.md', false, 'Bestiary/Ghoul.md')).toBe(
+      false
+    )
+    expect(folderIsOpenInTree('Bestiary', 'Bestiary', 'Bestiary/Zombie.md', false, 'Bestiary/Ghoul.md')).toBe(
+      true
+    )
+    expect(folderIsOpenInTree('NPCs', 'NPCs', 'Bestiary/Ghoul.md', false, undefined)).toBe(false)
+    expect(folderIsOpenInTree('NPCs', 'NPCs', 'Bestiary/Ghoul.md', true, undefined)).toBe(true)
   })
 
   it('resolves the Art sidecar for a notes folder', () => {
