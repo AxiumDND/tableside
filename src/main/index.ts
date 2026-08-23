@@ -22,7 +22,6 @@ import { mapArtRelativeFolder, setMapFenceImage } from '../shared/mapCreate'
 import { APP_NAME, APP_VERSION } from '../shared/version'
 import {
   LIBRARY_FOLDER_NAMES,
-  SKIP_DIR_NAMES,
   STANDARD_LAYOUT,
   artFolderRelativePath,
   canonicalFolder,
@@ -36,6 +35,8 @@ import {
   isPartyFolderName,
   isSessionsFolderName,
   pathHasFolder,
+  shouldHideFromFileTree,
+  shouldSkipCampaignDir,
   type CampaignLibraryFolder
 } from '../shared/campaignLayout'
 import {
@@ -630,7 +631,7 @@ async function listTree(root: string, dir: string, depth = 0): Promise<CampaignT
   const entries = await readdir(dir, { withFileTypes: true })
   const nodes: CampaignTreeNode[] = []
   for (const entry of entries) {
-    if (SKIP_DIR_NAMES.has(entry.name) || isHiddenCampaignFile(entry.name)) continue
+    if (shouldHideFromFileTree(entry.name)) continue
     const full = join(dir, entry.name)
     const relativePath = relative(root, full).replaceAll('\\', '/')
     if (entry.isDirectory()) {
@@ -721,26 +722,6 @@ async function seedNewCampaignFiles(root: string, system: SystemId = 'dnd5e'): P
     ? await readJson<{ name?: string; system?: string }>(campaignPath, {})
     : {}
   await writeJson(campaignPath, { ...prior, name: prior.name ?? title, system })
-  const stock = templatesFor(system)
-  const templatesDir = (await existingCanonicalDir(root, 'templates')) ?? join(root, 'Templates')
-  await ensureDir(templatesDir)
-  const seeds: { file: string; kind: Exclude<SheetTemplateKind, 'blank'> }[] = [
-    { file: 'Player.md', kind: 'player' },
-    { file: 'NPC.md', kind: 'npc' },
-    { file: 'Monster.md', kind: 'monster' },
-    { file: 'Spell.md', kind: 'spell' },
-    { file: 'Gear.md', kind: 'gear' },
-    { file: 'Game Night Sheet.md', kind: 'nightsheet' },
-    { file: 'Map.md', kind: 'map' },
-    { file: 'Place.md', kind: 'place' },
-    { file: 'Shop.md', kind: 'shop' },
-    { file: 'Faction.md', kind: 'faction' }
-  ]
-  const existing = new Set((await readdir(templatesDir)).map((name) => name.toLowerCase()))
-  for (const seed of seeds) {
-    if (TEMPLATE_FILE_NAMES[seed.kind].some((name) => existing.has(name))) continue
-    await writeFile(join(templatesDir, seed.file), stock[seed.kind], 'utf8')
-  }
   await refreshStockNightSheetTemplate(root)
 }
 
@@ -759,8 +740,8 @@ async function listPartyNoteStems(root: string): Promise<string[]> {
 }
 
 async function refreshStockNightSheetTemplate(root: string): Promise<void> {
-  const templatesDir = (await existingCanonicalDir(root, 'templates')) ?? join(root, 'Templates')
-  await ensureDir(templatesDir)
+  const templatesDir = await existingCanonicalDir(root, 'templates')
+  if (!templatesDir) return
   const entries = await readdir(templatesDir)
   const wanted = new Set(TEMPLATE_FILE_NAMES.nightsheet)
   const matches = entries.filter((name) => wanted.has(name.toLowerCase()))
@@ -798,8 +779,8 @@ async function refreshStockNightSheetTemplate(root: string): Promise<void> {
 }
 
 async function refreshStockCreatureTemplates(root: string): Promise<void> {
-  const templatesDir = (await existingCanonicalDir(root, 'templates')) ?? join(root, 'Templates')
-  await ensureDir(templatesDir)
+  const templatesDir = await existingCanonicalDir(root, 'templates')
+  if (!templatesDir) return
   const entries = await readdir(templatesDir)
   const jobs: { kind: 'player' | 'npc' | 'monster' | 'gear' | 'spell' | 'place' | 'shop' | 'faction'; dest: string; stock: string }[] = [
     { kind: 'player', dest: 'Player.md', stock: '# *Character Name*' },
@@ -972,7 +953,7 @@ async function findTemplateSource(root: string, kind: Exclude<SheetTemplateKind,
     for (const entry of entries) {
       const full = join(dir, entry.name)
       if (entry.isDirectory()) {
-        if (SKIP_DIR_NAMES.has(entry.name)) continue
+        if (shouldSkipCampaignDir(entry.name)) continue
         const found = await walk(full, depth + 1)
         if (found) return found
         continue

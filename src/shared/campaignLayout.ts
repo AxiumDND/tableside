@@ -17,6 +17,22 @@ export const SKIP_DIR_NAMES = new Set([
   'additional books'
 ])
 
+/** Hide local book dumps and scratch asset vaults from the campaign file tree. */
+export function shouldSkipCampaignDir(name: string): boolean {
+  if (SKIP_DIR_NAMES.has(name) || isHiddenCampaignFile(name)) return true
+  const folded = name.toLowerCase().trim()
+  return folded.startsWith('zz_') || folded.startsWith('zz ') || folded.startsWith('adventure book')
+}
+
+export function isTemplatesFolderName(name: string): boolean {
+  return foldFolderName(name) === 'templates'
+}
+
+/** File tree only — a leftover Templates/ folder is still used when creating notes. */
+export function shouldHideFromFileTree(name: string): boolean {
+  return shouldSkipCampaignDir(name) || isTemplatesFolderName(name)
+}
+
 export const HIDDEN_FILE_NAMES = new Set(['campaign.json', 'combat.json', 'readme.md'])
 
 export const FOLDER_ORDER = [
@@ -31,7 +47,6 @@ export const FOLDER_ORDER = [
   'gear',
   'maps',
   'handouts',
-  'templates',
   'reference',
   'archive'
 ] as const
@@ -50,7 +65,6 @@ export const STANDARD_LAYOUT: { canonical: string; name: string; extras: string[
   { canonical: 'gear', name: 'Gear', extras: [...GEAR_SECTIONS] },
   { canonical: 'maps', name: 'Maps', extras: ['Art', 'Print'] },
   { canonical: 'handouts', name: 'Handouts', extras: ['Art'] },
-  { canonical: 'templates', name: 'Templates', extras: [] },
   { canonical: 'reference', name: 'Reference', extras: [] },
   { canonical: 'archive', name: 'Archive', extras: [] }
 ]
@@ -72,6 +86,8 @@ const FOLDER_ALIASES: Record<string, string> = {
   'the party': 'party',
   pcs: 'party',
   pc: 'party',
+  'player characters': 'party',
+  'player character': 'party',
   npcs: 'npcs',
   npc: 'npcs',
   'session notes': 'sessions',
@@ -220,6 +236,22 @@ export function folderContainsPath(dirPath: string, filePath?: string): boolean 
 export function folderRevealsOpenFile(dirPath: string, dirName: string, openPath?: string): boolean {
   if (isArtFolderName(dirName)) return false
   return folderContainsPath(dirPath, openPath)
+}
+
+/**
+ * Auto-expand folders that hold the open file, but a manual collapse wins
+ * until a different file is opened.
+ */
+export function folderIsOpenInTree(
+  dirPath: string,
+  dirName: string,
+  openPath: string | undefined,
+  userOpen: boolean,
+  collapsedForOpenPath: string | undefined
+): boolean {
+  const normalizedOpen = openPath ?? ''
+  if (collapsedForOpenPath !== undefined && collapsedForOpenPath === normalizedOpen) return false
+  return userOpen || folderRevealsOpenFile(dirPath, dirName, openPath)
 }
 
 export type CampaignLibraryFolder = 'bestiary' | 'spells' | 'gear'

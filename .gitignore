@@ -13,8 +13,10 @@ examples/**/combat.json
 examples/bad-blood/
 examples/test/
 examples/test 2/
+examples/Pathfinder test/
 /WOTC/*
 !/WOTC/README.md
 resources/local-portraits/
 /WOTC Files/
 /WOTC FIles/
+/Dungeons of Drakkenheim/

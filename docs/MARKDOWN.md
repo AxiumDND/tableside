@@ -205,7 +205,7 @@ Facts in that table surface in the sheet chrome. Keep the combat numbers in sync
 
 ## Templates
 
-`Templates/` seeds used by right-click **New …**:
+Right-click **New …** fills a built-in sheet from the campaign’s system pack. A leftover `Templates/` folder is hidden from the file tree but still used when those files are present:
 
 | File (any of) | Creates |
 | --- | --- |
@@ -220,7 +220,7 @@ Facts in that table surface in the sheet chrome. Keep the combat numbers in sync
 | `Shop.md` / `Merchant.md` / `Inn.md` | Shop note (inn, stall, forge, temple) |
 | `Faction.md` | Faction note (guild, church, house, cult) |
 
-**New campaign** writes these from built-in fallbacks if missing. Leading HTML comments (`<!-- … -->`) are stripped when filling a new note from a template.
+Leading HTML comments (`<!-- … -->`) are stripped when filling a new note from a template.
 
 Placeholder text such as `Character Name` / `NPC Name` / `Monster Name` / `Place Name` / `Shop Name` / `Faction Name` is replaced with the name you enter. Game night sheets also replace `{{party}}` with wikilinks to every `Party/` sheet.
 

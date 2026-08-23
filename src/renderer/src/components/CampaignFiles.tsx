@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import type { CampaignInfo, CampaignTreeNode, CreateNoteMapImage } from '../../../shared/types'
 import {
   artFolderRelativePath,
-  folderRevealsOpenFile,
+  folderIsOpenInTree,
   folderUsesArt,
   isArtFolderName,
   isBestiaryFolderName,
@@ -104,16 +104,26 @@ function TreeNode({
   onMenu: (event: React.MouseEvent, node: CampaignTreeNode) => void
 }) {
   const [userOpen, setUserOpen] = useState(false)
+  const [collapsedFor, setCollapsedFor] = useState<string | undefined>(undefined)
   const isSelected = selected === node.relativePath
   const open =
-    node.type === 'dir' && (userOpen || folderRevealsOpenFile(node.relativePath, node.name, selected))
+    node.type === 'dir' &&
+    folderIsOpenInTree(node.relativePath, node.name, selected, userOpen, collapsedFor)
 
   if (node.type === 'dir') {
     return (
       <div>
         <button
           type="button"
-          onClick={() => setUserOpen((value) => !value)}
+          onClick={() => {
+            if (open) {
+              setCollapsedFor(selected ?? '')
+              setUserOpen(false)
+            } else {
+              setCollapsedFor(undefined)
+              setUserOpen(true)
+            }
+          }}
           onContextMenu={(event) => onMenu(event, node)}
           className="flex w-full items-center gap-1 rounded px-2 py-1 text-left text-[13px] text-parchment/90 hover:bg-panel-2"
           style={{ paddingLeft: 8 + depth * 12 }}
@@ -611,7 +621,7 @@ export default function CampaignFiles({
                   : prompt.kind === 'create' && sheetAcceptsPortrait(prompt.template)
                     ? 'Optional portrait — load a file or pick campaign art. It lands in this folder’s Art/ named like the sheet. You can also load art later from the sheet.'
                   : prompt.kind === 'create' && prompt.template !== 'blank'
-                    ? 'Uses the matching Templates file if you have one.'
+                    ? 'Uses the built-in sheet for this type.'
                     : prompt.kind === 'duplicate'
                       ? 'Creates a copy next to the original.'
                       : 'Creates an empty markdown note.'}

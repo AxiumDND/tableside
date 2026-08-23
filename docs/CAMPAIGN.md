@@ -7,11 +7,12 @@ Also read:
 - [TABLE.md](TABLE.md) — DM console, combat, Lookup, player display
 - [RECIPES.md](RECIPES.md) — game night sheet → initiative, Lookup → campaign note (also in-app **Help**)
 - [MARKDOWN.md](MARKDOWN.md) — wikilinks, callouts, `statblock` field reference
+- [AI-CAMPAIGN.md](AI-CAMPAIGN.md) — short spec for an AI converting a vault into this layout
 - [WOTC/README.md](../WOTC/README.md) — optional book text for Lookup
 
 ## Folder layout
 
-**New campaign** picks a system pack, then creates this layout (plus `Start Here/Overview.md` and that pack’s Templates). **Open campaign** reads any folder live and creates missing standard folders. A root `Overview.md` moves into **Start Here** if that folder does not already have one. Folder names match case-insensitively (`Party` / `party`, `NPCs` / `npcs`). A folder with no `"system"` field is treated as D&D 5e. Do not change `system` mid-campaign — the templates and tracker will not match.
+**New campaign** picks a system pack, then creates this layout (plus `Start Here/Overview.md`). **Open campaign** reads any folder live and creates missing standard folders. A root `Overview.md` moves into **Start Here** if that folder does not already have one. Folder names match case-insensitively (`Party` / `party`, `NPCs` / `npcs`). A folder with no `"system"` field is treated as D&D 5e. Do not change `system` mid-campaign — the templates and tracker will not match.
 
 ```
 campaign.json     campaign name and system pack (`dnd5e` | `pf2e` | `v5`; hidden in the file tree)
@@ -48,7 +49,6 @@ Maps/
   *.md            map notes (fenced map block + DM-only pins + tokens)
 Handouts/         letters and props
   Art/            letter images
-Templates/        blank Player, NPC, Monster, Spell, Gear, Game Night Sheet, Map, Place, Shop, and Faction sheets
 Reference/        tracker, calendars, cheat sheets
 Archive/          recaps, transcripts, old drafts
 ```
@@ -69,7 +69,7 @@ Archive/          recaps, transcripts, old drafts
 | `Start`, `Getting Started` | Start Here |
 | `Z Archive` | Archive |
 
-Skipped directories (not shown / not scanned as notes): `.obsidian`, `.git`, `node_modules`, `WOTC`, `out`, `dist`, and similar.
+Skipped directories (not shown / not scanned as notes): `.obsidian`, `.git`, `node_modules`, `WOTC`, `out`, `dist`, and similar. A leftover `Templates/` folder is hidden from the file tree; right-click **New …** still uses those files if they exist, otherwise the system pack sheets.
 
 Book text for Lookup is **not** part of a campaign. Put PHB / DMG exports in the app `WOTC/` folder.
 
@@ -77,7 +77,7 @@ Book text for Lookup is **not** part of a campaign. Put PHB / DMG exports in the
 
 Right-click a folder in the file tree:
 
-- **New player / NPC / monster / spell / gear / game night sheet / map / place / shop / faction** — copies the matching Templates file and substitutes the name
+- **New player / NPC / monster / spell / gear / game night sheet / map / place / shop / faction** — fills the built-in sheet for that type and substitutes the name
 - **New note** — empty markdown
 - **Add art…** — import images into that folder’s `Art/` (creates `Art/` if needed). Name files like the sheet so portraits attach
 - **Add files…** — import notes, PDFs, or other files into the folder you clicked
@@ -162,7 +162,7 @@ actions:
 
 Field list and fallbacks: [MARKDOWN.md](MARKDOWN.md#statblock-fence).
 
-Templates under `Templates/` are a good starting point. You can also **Add to campaign** from Lookup (monster → Bestiary, spell → Spells, weapon → Gear/Weapons, armor → Gear/Armor, gear → Gear/Equipment, magic item → Gear/Magic Items).
+You can also **Add to campaign** from Lookup (monster → Bestiary, spell → Spells, weapon → Gear/Weapons, armor → Gear/Armor, gear → Gear/Equipment, magic item → Gear/Magic Items).
 
 ## Game night sheets and combat
 

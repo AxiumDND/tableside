@@ -17,7 +17,7 @@ Two Electron windows open: the DM console, and a fullscreen **player** window (p
 
 1. **Sample** — copies Greystead (the 5e level-1 one-shot) into user data and opens it (safe to edit). First launch with no campaign folder does the same.
 2. **Open campaign** — pick any campaign folder on disk. Folders without `"system"` in `campaign.json` run as D&D 5e.
-3. **New campaign** — pick a system (D&D 5e, Pathfinder 2e, or Vampire 5th), then an empty folder; Tableside scaffolds the standard layout and that pack’s Templates. Changing system later is not supported.
+3. **New campaign** — pick a system (D&D 5e, Pathfinder 2e, or Vampire 5th), then an empty folder; Tableside scaffolds the standard layout. Changing system later is not supported.
 
 With more than one display, use **Player display…** to put the player window on the TV/monitor facing the table.
 
@@ -34,13 +34,13 @@ PDFs open in the center pane for you; they are not sent to the player display as
 
 ## File tree
 
-- Click a note, image, or PDF to open it. Folders start collapsed; the folder that holds the open file (and its parents) stay expanded. `Art/` stays collapsed — portraits load from there onto the `.md` sheets.
+- Click a note, image, or PDF to open it. Folders start collapsed; the folder that holds the open file (and its parents) expand so you can see it. Click a folder again to collapse it and browse elsewhere — opening a different file expands its folder. `Art/` stays collapsed — portraits load from there onto the `.md` sheets.
 - **Search** (hidden until you click it next to Files, or press `Ctrl+F` / `/`) finds notes, maps, and art by name. Results are a flat ranked list with folder paths — `Esc` clears, then hides the box.
-- **Right-click** a folder (or empty tree area) to create notes from Templates. **Add art…** on Party, NPCs, Bestiary, Places, Factions, Spells, Sessions, Maps, Handouts, a Gear subsection, or the `Art/` folder itself copies pictures into that folder’s `Art/` (creates it if needed). Name art like the sheet (`Ghoul.webp`) so portraits attach. **Add files…** still imports notes and PDFs into the folder you clicked. Gear has **Weapons**, **Armor**, **Equipment**, and **Magic Items** — right-click the subsection to add a note or art there.
+- **Right-click** a folder (or empty tree area) to create a player, NPC, monster, spell, gear, game night sheet, map, place, shop, or faction. **Add art…** on Party, NPCs, Bestiary, Places, Factions, Spells, Sessions, Maps, Handouts, a Gear subsection, or the `Art/` folder itself copies pictures into that folder’s `Art/` (creates it if needed). Name art like the sheet (`Ghoul.webp`) so portraits attach. **Add files…** still imports notes and PDFs into the folder you clicked. Gear has **Weapons**, **Armor**, **Equipment**, and **Magic Items** — right-click the subsection to add a note or art there.
 - Right-click a file to **Duplicate…**, **Add art here…** (into that folder’s `Art/`), add files beside it, or **Delete…** (asks first).
-- Creating **New player / NPC / monster / spell / gear / game night sheet / map / place / shop / faction** uses `Templates/Player.md` (etc.) when present, then fills in the name you type. **New game night sheet…** is a Lazy DM 10-step page and links every existing `Party/` sheet. **New place…** / **New shop…** live on `Places/` and include bundled default art (town, dungeon, mountain, swamp, inn, and similar). **New faction…** is on `Factions/` (thieves’ guild, city watch, cult, and similar).
+- Creating **New player / NPC / monster / spell / gear / game night sheet / map / place / shop / faction** fills the built-in sheet for that type and the name you type. **New game night sheet…** is a Lazy DM 10-step page and links every existing `Party/` sheet. **New place…** / **New shop…** live on `Places/` and include bundled default art (town, dungeon, mountain, swamp, inn, and similar). **New faction…** is on `Factions/` (thieves’ guild, city watch, cult, and similar).
 - **New map…** lets you choose an existing campaign image or **Load image…**. Loaded files are copied into that folder’s `Art/` (usually `Maps/Art/`) and named to match the map.
-- `campaign.json`, `combat.json`, and `README.md` stay hidden from the tree.
+- `campaign.json`, `combat.json`, `README.md`, and `Templates/` stay hidden from the tree.
 
 Navigation: **← Back** in the note header, **Alt+←**, or mouse back button.
 

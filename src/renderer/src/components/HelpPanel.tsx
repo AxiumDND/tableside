@@ -269,7 +269,8 @@ export default function HelpPanel({
           <Ul
             items={[
               <>
-                Click a note, image, or PDF to open it. Folders start collapsed; the open file’s folder stays expanded.{' '}
+                Click a note, image, or PDF to open it. Folders start collapsed; the open file’s folder expands so you
+                can see it. Click the folder again to collapse it and look elsewhere.{' '}
                 <Code>Art/</Code> stays collapsed — portraits still load onto sheets.
               </>,
               <>
@@ -277,8 +278,8 @@ export default function HelpPanel({
                 art by name. <Code>Esc</Code> clears, then hides the box.
               </>,
               <>
-                Right-click a folder for Templates (player, NPC, monster, spell, gear, game night sheet, map, place,
-                shop, faction). <Action>Add art…</Action> on Party, NPCs, Bestiary, Places, Factions, Spells, Sessions,
+                Right-click a folder to add a player, NPC, monster, spell, gear, game night sheet, map, place, shop, or
+                faction — the sheet comes in ready to fill. <Action>Add art…</Action> on Party, NPCs, Bestiary, Places, Factions, Spells, Sessions,
                 Maps, Handouts, a Gear subsection, or the <Code>Art/</Code> folder itself — pictures go in that
                 folder’s <Code>Art/</Code>. Name them like the sheet (<Code>Ghoul.webp</Code>) so portraits attach.{' '}
                 <Action>Add files…</Action> still imports notes and PDFs into the folder you clicked. Player, NPC, and

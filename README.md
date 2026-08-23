@@ -4,13 +4,13 @@ A local Windows app for running **in-person** tabletop games. Your laptop is the
 
 This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table.
 
-**New campaign** asks which system pack to use: **D&D 5e** (bundled SRD 5.2.1), **Pathfinder 2e** (small original core), or **Vampire 5th Edition** (Health / Willpower / Hunger tracker and original table procedures). Existing folders without a `system` field keep working as D&D 5e. Sample is still the 5e Greystead one-shot. Current release: **1.2.6**.
+**New campaign** asks which system pack to use: **D&D 5e** (bundled SRD 5.2.1), **Pathfinder 2e** (small original core), or **Vampire 5th Edition** (Health / Willpower / Hunger tracker and original table procedures). Existing folders without a `system` field keep working as D&D 5e. Sample is still the 5e Greystead one-shot. Current release: **1.2.7**.
 
 Tableside is a table app. It is not an official Wizards, Paizo, or Paradox product.
 
 ## Install (Windows)
 
-**[Download the latest installer](https://github.com/AxiumDND/tableside/releases/latest)** — look for `Tableside-Setup-1.2.6.exe`. No account, no admin.
+**[Download the latest installer](https://github.com/AxiumDND/tableside/releases/latest)** — look for `Tableside-Setup-1.2.7.exe`. No account, no admin.
 
 1. Run the installer. It is a per-user install: Start Menu + desktop shortcuts. You can pick the folder.
 2. Open **Tableside** from the Start Menu.
@@ -70,7 +70,7 @@ npm start
 npm run dist
 ```
 
-Writes `dist/Tableside-Setup-1.2.6.exe`. Pushing a `v1.2.6` tag builds that file and attaches it to the [GitHub Release](https://github.com/AxiumDND/tableside/releases/latest).
+Writes `dist/Tableside-Setup-1.2.7.exe`. Pushing a `v1.2.7` tag builds that file and attaches it to the [GitHub Release](https://github.com/AxiumDND/tableside/releases/latest).
 
 `npm run fetch-srd` is only needed if you want to refresh the bundled SRD snapshot from the [Open5e API](https://api.open5e.com/) (`srd-2024`).
 
@@ -83,6 +83,7 @@ The bundled sample is **[examples/greystead](examples/greystead)**. Tableside co
 | [docs/TABLE.md](docs/TABLE.md) | DMs — console layout, combat, Lookup, player display |
 | [docs/RECIPES.md](docs/RECIPES.md) | DMs — game night sheet → initiative, Lookup → campaign note |
 | [docs/CAMPAIGN.md](docs/CAMPAIGN.md) | DMs — folder layout, game night sheets, combatants, images |
+| [docs/AI-CAMPAIGN.md](docs/AI-CAMPAIGN.md) | Agents — convert a vault into Tableside folders and sheets |
 | [docs/MARKDOWN.md](docs/MARKDOWN.md) | DMs — wikilinks, callouts, `statblock` fields |
 | [WOTC/README.md](WOTC/README.md) | Optional PHB / DMG lookup file formats |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Contributors — scripts, architecture, CI |
@@ -105,7 +106,6 @@ Spells/           campaign spell copies
 Gear/             weapons, equipment, magic items
 Maps/             Art/ + Print/ (map notes with DM pins)
 Handouts/         letters and props (+ Art/)
-Templates/        blank sheets
 Reference/        trackers and cheat sheets
 Archive/          recaps and old drafts
 ```

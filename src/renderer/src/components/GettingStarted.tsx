@@ -34,7 +34,7 @@ export default function GettingStarted({
         </h2>
         <p className="mt-2 text-sm leading-relaxed text-parchment/85">
           {hasCampaign
-            ? 'Start Here has the overview. Then open a session, game night sheet, or map from the file tree. Right-click a folder to add players, NPCs, places, or shops from Templates.'
+            ? 'Start Here has the overview. Then open a session, game night sheet, or map from the file tree. Right-click a folder to add players, NPCs, places, or shops.'
             : 'Local dual-monitor tool for in-person games. Pick a system when you create a campaign (D&D 5e, Pathfinder 2e, or Vampire 5th). Your laptop is the DM console; the second screen shows maps and art — no account, no cloud. First launch opens Greystead, a D&D 5e level-1 one-shot; Sample loads the same folder.'}
         </p>
       </div>

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   folderMatchesCanonical,
   folderOrderIndex,
+  folderIsOpenInTree,
   folderRevealsOpenFile,
   folderUsesArt,
   gearSectionIndex,
@@ -9,7 +10,9 @@ import {
   artFolderRelativePath,
   isArtFolderName,
   isGearFolderName,
-  adjacentCampaignFile
+  adjacentCampaignFile,
+  shouldHideFromFileTree,
+  shouldSkipCampaignDir
 } from './campaignLayout'
 import type { CampaignTreeNode } from './types'
 
@@ -54,6 +57,18 @@ describe('Art folders', () => {
     expect(folderRevealsOpenFile('Bestiary', 'Bestiary', 'Bestiary/Art/Ghoul.webp')).toBe(true)
   })
 
+  it('lets a click collapse the open file’s folder until another file is opened', () => {
+    expect(folderIsOpenInTree('Bestiary', 'Bestiary', 'Bestiary/Ghoul.md', false, undefined)).toBe(true)
+    expect(folderIsOpenInTree('Bestiary', 'Bestiary', 'Bestiary/Ghoul.md', false, 'Bestiary/Ghoul.md')).toBe(
+      false
+    )
+    expect(folderIsOpenInTree('Bestiary', 'Bestiary', 'Bestiary/Zombie.md', false, 'Bestiary/Ghoul.md')).toBe(
+      true
+    )
+    expect(folderIsOpenInTree('NPCs', 'NPCs', 'Bestiary/Ghoul.md', false, undefined)).toBe(false)
+    expect(folderIsOpenInTree('NPCs', 'NPCs', 'Bestiary/Ghoul.md', true, undefined)).toBe(true)
+  })
+
   it('resolves the Art sidecar for a notes folder', () => {
     expect(artFolderRelativePath('Bestiary')).toBe('Bestiary/Art')
     expect(artFolderRelativePath('Bestiary/Art')).toBe('Bestiary/Art')
@@ -72,6 +87,25 @@ describe('Art folders', () => {
     expect(folderUsesArt('Gear')).toBe(false)
     expect(folderUsesArt('Maps/Print')).toBe(false)
     expect(folderUsesArt('Templates')).toBe(false)
+  })
+
+  it('treats Player characters as Party', () => {
+    expect(folderMatchesCanonical('Player characters', 'party')).toBe(true)
+    expect(folderMatchesCanonical('Party', 'party')).toBe(true)
+  })
+
+  it('hides local adventure-book dumps and zz_ scratch folders', () => {
+    expect(shouldSkipCampaignDir('Adventure book Dungeons of Drakkenheim')).toBe(true)
+    expect(shouldSkipCampaignDir('zz_asset-files')).toBe(true)
+    expect(shouldSkipCampaignDir('Places')).toBe(false)
+    expect(shouldSkipCampaignDir('.obsidian')).toBe(true)
+  })
+
+  it('hides Templates from the file tree but still scans it for note seeds', () => {
+    expect(shouldHideFromFileTree('Templates')).toBe(true)
+    expect(shouldHideFromFileTree('templates')).toBe(true)
+    expect(shouldSkipCampaignDir('Templates')).toBe(false)
+    expect(shouldHideFromFileTree('Places')).toBe(false)
   })
 
   it('treats Locations / World as Places', () => {
