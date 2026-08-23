@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { playerWindowNeedsRebuild, shouldShowPlayerWindow } from './playerWindow'
+import { playerOutputScaleMismatch, playerWindowNeedsRebuild, shouldShowPlayerWindow } from './playerWindow'
 
 describe('shouldShowPlayerWindow', () => {
   it('stays hidden on a single monitor', () => {
@@ -22,5 +22,14 @@ describe('playerWindowNeedsRebuild', () => {
 
   it('keeps the window when the same TV and scale are still in use', () => {
     expect(playerWindowNeedsRebuild({ id: 2, scaleFactor: 1 }, { id: 2, scaleFactor: 1 })).toBe(false)
+  })
+})
+
+describe('playerOutputScaleMismatch', () => {
+  it('rebuilds when Chromium still has the 4K desktop ratio on a 1080p TV', () => {
+    expect(playerOutputScaleMismatch(2, 1)).toBe(true)
+    expect(playerOutputScaleMismatch(1.5, 1)).toBe(true)
+    expect(playerOutputScaleMismatch(1, 1)).toBe(false)
+    expect(playerOutputScaleMismatch(1.25, 1.25)).toBe(false)
   })
 })

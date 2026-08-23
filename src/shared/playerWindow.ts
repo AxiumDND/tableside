@@ -16,3 +16,8 @@ export function playerWindowNeedsRebuild(
   if (!current) return true
   return current.id !== target.id || current.scaleFactor !== target.scaleFactor
 }
+
+/** Chromium may keep the 4K desktop DPR after the window is already on a 1080p TV. */
+export function playerOutputScaleMismatch(devicePixelRatio: number, displayScale: number): boolean {
+  return Math.abs(devicePixelRatio - displayScale) > 0.05
+}

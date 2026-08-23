@@ -19,7 +19,11 @@ import type {
 import { emptyCombat, emptyPlayerState, emptySettings } from '../shared/types'
 import { setupAppUpdater, scheduleLaunchUpdateCheck } from './appUpdater'
 import { mapArtRelativeFolder, setMapFenceImage } from '../shared/mapCreate'
-import { playerWindowNeedsRebuild, shouldShowPlayerWindow } from '../shared/playerWindow'
+import {
+  playerOutputScaleMismatch,
+  playerWindowNeedsRebuild,
+  shouldShowPlayerWindow
+} from '../shared/playerWindow'
 import { APP_NAME, APP_VERSION } from '../shared/version'
 import {
   LIBRARY_FOLDER_NAMES,
@@ -83,6 +87,9 @@ if (process.platform === 'win32') {
 let dmWindow: BrowserWindow | null = null
 let playerWindow: BrowserWindow | null = null
 let playerWindowWanted = true
+let playerWindowScaleOk = false
+let playerScaleRetries = 0
+let playerWindowWarmup = true
 const programmaticPlayerCloses = new WeakSet<BrowserWindow>()
 let campaignFolder: string | null = null
 let playerState: PlayerState = emptyPlayerState()
@@ -364,7 +371,10 @@ function createDmWindow(): void {
     })
   }
 
-  dmWindow.on('ready-to-show', () => dmWindow?.show())
+  dmWindow.on('ready-to-show', () => {
+    dmWindow?.show()
+    syncPlayerWindow()
+  })
   dmWindow.on('moved', scheduleBoundsSave)
   dmWindow.on('resized', scheduleBoundsSave)
   dmWindow.on('close', (event) => {
@@ -428,21 +438,27 @@ function broadcastPlayerWindow(): void {
   dmWindow?.webContents.send('player:window', playerWindowVisible())
 }
 
-function destroyPlayerWindow(): void {
+function destroyPlayerWindow(resetWarmup = false): void {
   const win = playerWindow
+  if (resetWarmup) {
+    playerWindowWarmup = true
+    playerScaleRetries = 0
+  }
   if (!win || win.isDestroyed()) {
     playerWindow = null
+    playerWindowScaleOk = false
     broadcastPlayerWindow()
     return
   }
   programmaticPlayerCloses.add(win)
   playerWindow = null
+  playerWindowScaleOk = false
   win.destroy()
   broadcastPlayerWindow()
 }
 
 function hidePlayerWindow(): void {
-  destroyPlayerWindow()
+  destroyPlayerWindow(true)
 }
 
 function closePlayerWindow(): void {
@@ -450,7 +466,7 @@ function closePlayerWindow(): void {
   hidePlayerWindow()
 }
 
-function showPlayerWindow(display?: Electron.Display): void {
+function showPlayerWindow(display?: Electron.Display, forceRebuild = false): void {
   playerWindowWanted = true
   if (!hasSecondDisplay()) {
     hidePlayerWindow()
@@ -459,6 +475,8 @@ function showPlayerWindow(display?: Electron.Display): void {
   const target = display ?? targetPlayerDisplay()
   const current = currentPlayerDisplay()
   if (
+    !forceRebuild &&
+    playerWindowScaleOk &&
     playerWindow &&
     !playerWindow.isDestroyed() &&
     playerWindow.isVisible() &&
@@ -470,7 +488,7 @@ function showPlayerWindow(display?: Electron.Display): void {
     broadcastPlayerWindow()
     return
   }
-  destroyPlayerWindow()
+  destroyPlayerWindow(forceRebuild || !playerWindowScaleOk)
   createPlayerWindow(target)
 }
 
@@ -511,14 +529,44 @@ function createPlayerWindow(display = targetPlayerDisplay()): void {
   })
   playerWindow.once('ready-to-show', () => {
     if (!playerWindow || playerWindow.isDestroyed()) return
+    if (playerWindowWarmup) {
+      playerWindowWarmup = false
+      destroyPlayerWindow(false)
+      createPlayerWindow(display)
+      return
+    }
     playerWindow.setBounds(bounds)
     playerWindow.setSkipTaskbar(false)
     playerWindow.show()
     playerWindow.setFullScreen(true)
     applyPlayerOutputScale()
     broadcastPlayerWindow()
+    void verifyPlayerOutputScale(created, display)
   })
   playerWindow.loadURL(rendererUrl('player'))
+}
+
+async function verifyPlayerOutputScale(win: BrowserWindow, display: Electron.Display): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, 80))
+  if (playerWindow !== win || win.isDestroyed()) return
+  let dpr: unknown
+  try {
+    dpr = await win.webContents.executeJavaScript('window.devicePixelRatio')
+  } catch {
+    return
+  }
+  if (typeof dpr === 'number' && !playerOutputScaleMismatch(dpr, display.scaleFactor)) {
+    playerWindowScaleOk = true
+    playerScaleRetries = 0
+    return
+  }
+  if (playerScaleRetries >= 1 || !playerWindowWanted || !hasSecondDisplay()) {
+    playerWindowScaleOk = true
+    return
+  }
+  playerScaleRetries += 1
+  destroyPlayerWindow()
+  createPlayerWindow(display)
 }
 
 function syncPlayerWindow(): void {
@@ -562,7 +610,7 @@ function watchDisplays(): void {
   screen.on('display-metrics-changed', (_event, changed) => {
     const current = currentPlayerDisplay()
     if (current && changed.id === current.id && playerWindowWanted) {
-      destroyPlayerWindow()
+      destroyPlayerWindow(true)
       syncPlayerWindow()
     }
     broadcastDisplays()
@@ -1233,7 +1281,7 @@ function registerIpc(): void {
         mapView: payload.mapView ?? null
       }
       sendPlayerState()
-      showPlayerWindow()
+      showPlayerWindow(undefined, !playerWindowScaleOk)
       return playerState
     }
   )
@@ -1274,7 +1322,7 @@ function registerIpc(): void {
     const display = screen.getAllDisplays().find((d) => d.id === displayId)
     if (!display) return listDisplays()
     await patchSettings({ playerDisplayId: displayId })
-    if (hasSecondDisplay()) showPlayerWindow(display)
+    if (hasSecondDisplay()) showPlayerWindow(display, true)
     else hidePlayerWindow()
     return listDisplays()
   })
@@ -1483,7 +1531,6 @@ app.whenReady().then(async () => {
   }
 
   createDmWindow()
-  syncPlayerWindow()
   watchDisplays()
   scheduleLaunchUpdateCheck()
 
