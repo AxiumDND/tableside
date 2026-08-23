@@ -60,7 +60,17 @@ const api = {
   pickCampaignFolder: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:pick-folder'),
   openCampaignPath: (folder: string): Promise<CampaignInfo | null> =>
     ipcRenderer.invoke('campaign:open-path', folder),
-  newCampaign: (system?: string): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:new', system),
+  newCampaign: (
+    system?: string,
+    theme?: string,
+    options?: { holoPortraits?: boolean; digitalRain?: boolean }
+  ): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:new', system, theme, options),
+  setCampaignTheme: (theme: string): Promise<CampaignInfo | null> =>
+    ipcRenderer.invoke('campaign:set-theme', theme),
+  setCampaignHoloPortraits: (enabled: boolean): Promise<CampaignInfo | null> =>
+    ipcRenderer.invoke('campaign:set-holo-portraits', enabled),
+  setCampaignDigitalRain: (enabled: boolean): Promise<CampaignInfo | null> =>
+    ipcRenderer.invoke('campaign:set-digital-rain', enabled),
   openSampleCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:open-sample'),
   getCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:get'),
   readFile: (relativePath: string): Promise<string> =>

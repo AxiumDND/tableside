@@ -97,7 +97,8 @@ export default function NpcSheet({
   onSelectImage,
   onAddToCombat,
   onSetPortrait,
-  renderNotes
+  renderNotes,
+  holo = false
 }: {
   path: string
   markdown: string
@@ -108,6 +109,7 @@ export default function NpcSheet({
   onAddToCombat?: () => void
   onSetPortrait?: (image: CreateNoteMapImage) => Promise<void>
   renderNotes?: (markdown: string) => ReactNode
+  holo?: boolean
 }) {
   const title = titleFrom(path, markdown)
   const tagline = extractTagline(markdown)
@@ -143,6 +145,7 @@ export default function NpcSheet({
             images={images}
             onSelectImage={onSelectImage}
             onSetPortrait={onSetPortrait}
+            holo={holo}
             onSrdError={() => {
               if (srdSrc) setSrdFailed(true)
             }}

@@ -35,7 +35,7 @@ export default function GettingStarted({
         <p className="mt-2 text-sm leading-relaxed text-parchment/85">
           {hasCampaign
             ? 'Start Here has the overview. Then open a session, game night sheet, or map from the file tree. Right-click a folder to add players, NPCs, places, or shops.'
-            : 'Local dual-monitor tool for in-person games. Pick a system when you create a campaign (D&D 5e, Pathfinder 2e, or Vampire 5th). Your laptop is the DM console; the second screen shows maps and art — no account, no cloud. First launch opens Greystead, a D&D 5e level-1 one-shot; Sample loads the same folder.'}
+            : 'Local dual-monitor tool for in-person games. Pick a system and a look when you create a campaign (D&D 5e, Pathfinder 2e, or Vampire 5th). Your laptop is the DM console; the second screen shows maps and art — no account, no cloud. First launch opens Greystead, a D&D 5e level-1 one-shot; Sample loads the same folder.'}
         </p>
       </div>
 
@@ -45,7 +45,7 @@ export default function GettingStarted({
             <button
               type="button"
               onClick={onOpenSample}
-              className="rounded bg-amber px-3 py-1.5 text-sm font-semibold text-ink"
+              className="rounded bg-amber px-3 py-1.5 text-sm font-semibold text-on-amber"
             >
               Open Sample
             </button>
@@ -111,7 +111,8 @@ export default function GettingStarted({
       </div>
 
       <p className="text-[12px] leading-relaxed text-muted">
-        Open <span className="text-amber">Help</span> in the header for night-sheet and Lookup recipes. Campaign folders
+        Open <span className="text-amber">Help & settings</span> in the header for the campaign look, night-sheet, and
+        Lookup recipes. Campaign folders
         are ordinary Markdown on disk (Obsidian-friendly) — see{' '}
         <span className="text-parchment/70">docs/RECIPES.md</span> in the repo for the same steps in writing.
       </p>

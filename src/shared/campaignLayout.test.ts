@@ -12,7 +12,9 @@ import {
   isGearFolderName,
   adjacentCampaignFile,
   shouldHideFromFileTree,
-  shouldSkipCampaignDir
+  shouldSkipCampaignDir,
+  isStartHerePath,
+  isHoloPortraitPath
 } from './campaignLayout'
 import type { CampaignTreeNode } from './types'
 
@@ -34,6 +36,21 @@ describe('gear folders', () => {
       return a.localeCompare(b)
     })
     expect(names).toEqual(['Weapons', 'Armor', 'Equipment', 'Trade Goods', 'Magic Items', 'Art'])
+  })
+
+  it('marks party, NPC, beast, and gear sheets for hologram portraits', () => {
+    expect(isHoloPortraitPath('Party/Kay.md')).toBe(true)
+    expect(isHoloPortraitPath('NPCs/Orson.md')).toBe(true)
+    expect(isHoloPortraitPath('Bestiary/Ghoul.md')).toBe(true)
+    expect(isHoloPortraitPath('Gear/Weapons/Longsword.md')).toBe(true)
+    expect(isHoloPortraitPath('Places/Town.md')).toBe(false)
+    expect(isHoloPortraitPath('Maps/Forest.md')).toBe(false)
+  })
+
+  it('treats Start Here aliases as the campaign hub', () => {
+    expect(isStartHerePath('Start Here/Overview.md')).toBe(true)
+    expect(isStartHerePath('Getting Started/Welcome.md')).toBe(true)
+    expect(isStartHerePath('Sessions/Night.md')).toBe(false)
   })
 
   it('keeps top-level Gear in the standard folder order', () => {

@@ -14,7 +14,7 @@ function LockMark() {
 export default function GmOnly({ title, children }: { title?: string; children: ReactNode }) {
   return (
     <section className="gm-only my-5">
-      <div className="relative rounded-md border border-moss/35 bg-[#10140f] px-4 pb-4 pt-5">
+      <div className="relative rounded-md border border-moss/35 bg-panel-2 px-4 pb-4 pt-5">
         <div className="pointer-events-none absolute inset-y-0 left-0 w-1 rounded-l-md bg-moss" />
         <div className="absolute -top-3 left-3 flex items-center gap-1.5 bg-panel px-2">
           <span className="text-moss">

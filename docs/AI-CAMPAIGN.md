@@ -19,10 +19,12 @@ Tableside is a **local folder of Markdown**. No account. The DM laptop is the co
 `campaign.json` (required for a named pack; hidden in the tree):
 
 ```json
-{ "name": "Campaign Name", "system": "dnd5e" }
+{ "name": "Campaign Name", "system": "dnd5e", "theme": "classic" }
 ```
 
 `system` is `dnd5e` | `pf2e` | `v5`. Missing field = 5e. Do not change mid-campaign.
+
+`theme` is the DM console look: `classic` | `light` | `scifi` | `vampire` | `cyberpunk` | `matrix`. Missing field = Classic fantasy. Add a new look later by registering it in `src/shared/theme.ts` and tokens in `index.css`.
 
 `combat.json` is live initiative. Leave it alone or omit it.
 

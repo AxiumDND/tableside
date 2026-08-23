@@ -141,7 +141,8 @@ export default function ItemSheet({
   onRerollStock,
   onChangeStock,
   onChangeStanding,
-  renderNotes
+  renderNotes,
+  holo = false
 }: {
   path: string
   markdown: string
@@ -153,6 +154,7 @@ export default function ItemSheet({
   onChangeStock?: (stock: ShopStockOffer[]) => Promise<void>
   onChangeStanding?: (standing: ShopStanding) => Promise<void>
   renderNotes?: (markdown: string) => ReactNode
+  holo?: boolean
 }) {
   const title = titleFrom(path, markdown)
   const rawTagline = extractTagline(markdown)
@@ -251,6 +253,7 @@ export default function ItemSheet({
             aspect={artAspect}
             onSelectImage={onSelectImage}
             onSetPortrait={onSetPortrait}
+            holo={holo}
             stockArt={stockChoices}
             stockArtLabel={isShop ? 'Shop type' : isFaction ? 'Emblem' : 'Place type'}
             onSrdError={() => setSrdFailed(true)}

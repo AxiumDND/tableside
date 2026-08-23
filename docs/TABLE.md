@@ -6,18 +6,18 @@ How the DM console and player window work during a session.
 
 | Area | Role |
 | --- | --- |
-| Header | Campaign name, Combat / Lookup / Help panels, New / Open / Sample, player display picker, Clear |
+| Header | Campaign name, Combat / Lookup / Help & settings, New / Open / Sample, player display picker, Clear |
 | Left column | Mini **Players see** preview, campaign file tree, dice tray |
 | Center | Open note, image, or PDF |
-| Right (optional) | Combat tracker, Lookup, or Help |
+| Right (optional) | Combat tracker, Lookup, or Help & settings |
 
-Two Electron windows open: the DM console, and a fullscreen **player** window on a second monitor. **Close** on the Players see preview shuts the player window so you can use the TV for something else. Pick a monitor or **Show to players** to open it again.
+Two Electron windows open: the DM console, and a fullscreen **player** window on a second monitor. **Close** on the Players see preview shuts the player window so you can use the TV for something else. Pick a monitor or **Show to players** to open it again. **Theme** is a campaign setting (Classic fantasy, Light, Sci-fi, Vampire, Cyberpunk, Digital rain): New campaign asks for it, Open applies `campaign.json`, and you can change it from **Help & settings** or **Start Here**. Sci-fi can turn on **Hologram portraits** for party, NPC, beast, and gear art. Digital rain can turn on **Falling code** in the file list and notes. The player TV stays black.
 
 ## Start a session
 
 1. **Sample** — copies Greystead (the 5e level-1 one-shot) into user data and opens it (safe to edit). First launch with no campaign folder does the same.
 2. **Open campaign** — pick any campaign folder on disk. Folders without `"system"` in `campaign.json` run as D&D 5e.
-3. **New campaign** — pick a system (D&D 5e, Pathfinder 2e, or Vampire 5th), then an empty folder; Tableside scaffolds the standard layout. Changing system later is not supported.
+3. **New campaign** — pick a system (D&D 5e, Pathfinder 2e, or Vampire 5th), then a look, then an empty folder; Tableside scaffolds the standard layout. Changing system later is not supported. Theme can change any time from Start Here.
 
 With more than one display, click the **Players see** preview to put the player window on the TV/monitor facing the table. Close that window when you do not need it. The player window is built on that screen’s pixels (a 1080p TV next to a 4K laptop stays sharp after a restart or after you unplug the TV).
 
@@ -89,9 +89,9 @@ Offline MiniSearch over the **open campaign’s system pack**. D&D 5e uses the b
 
 Step-by-step save flow: [RECIPES.md](RECIPES.md#lookup--campaign-note).
 
-## Help panel
+## Help & settings
 
-**Help** in the header opens a side panel written for the table: quick start, player screen, files and maps, combat and game night sheets, Lookup, dice, and shortcuts. Click a heading to open it; click again to close.
+**Help & settings** in the header opens a side panel: campaign look, then quick start, player screen, files and maps, combat and game night sheets, Lookup, dice, and shortcuts. Click a heading to open it; click again to close.
 
 ## Dice tray
 

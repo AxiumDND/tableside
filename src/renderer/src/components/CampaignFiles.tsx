@@ -436,8 +436,8 @@ export default function CampaignFiles({
     prompt?.kind === 'create' ? stockArtForTemplate(prompt.template) : []
 
   return (
-    <aside className="flex min-h-0 flex-1 flex-col bg-ink">
-      <header className="border-b border-line px-3 py-2" onContextMenu={(event) => openMenu(event)}>
+    <aside className="matrix-rain-well flex min-h-0 flex-1 flex-col bg-ink">
+      <header className="border-b border-line bg-ink px-3 py-2" onContextMenu={(event) => openMenu(event)}>
         <div className="flex items-baseline justify-between gap-2">
           <div className="font-display text-amber">Files</div>
           <button
@@ -742,7 +742,7 @@ export default function CampaignFiles({
               <button
                 type="submit"
                 disabled={busy || (prompt.kind !== 'delete' && !name.trim())}
-                className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-ink disabled:bg-line"
+                className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-on-amber disabled:bg-line"
               >
                 {busy
                   ? 'Working…'

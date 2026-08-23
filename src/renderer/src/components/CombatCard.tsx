@@ -24,7 +24,7 @@ export default function CombatCard({
 }) {
   return (
     <section className="combat-card my-4">
-      <div className="relative rounded-md border border-blood/45 bg-[#1a1416] px-4 pb-3 pt-4">
+      <div className="relative rounded-md border border-blood/45 bg-panel-2 px-4 pb-3 pt-4">
         <div className="pointer-events-none absolute inset-y-0 left-0 w-1 rounded-l-md bg-blood" />
         <div className="absolute -top-3 left-3 flex items-center gap-1.5 bg-panel px-2">
           <span className="text-blood">
@@ -38,7 +38,7 @@ export default function CombatCard({
               type="button"
               title="Load these sheets plus every PC in PCs/party. Anyone already listed is skipped. NPCs/monsters at init 0 are rolled."
               onClick={onAdd}
-              className="rounded bg-amber px-2 py-1 text-[11px] font-semibold text-ink"
+              className="rounded bg-amber px-2 py-1 text-[11px] font-semibold text-on-amber"
             >
               {adding ? 'Adding…' : 'Add to initiative'}
             </button>

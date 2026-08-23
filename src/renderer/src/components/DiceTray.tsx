@@ -110,7 +110,7 @@ export default function DiceTray() {
           placeholder="2d6+3"
           className="min-w-0 flex-1 rounded border border-line bg-ink px-2 py-0.5 text-[11px]"
         />
-        <button type="submit" className="rounded bg-amber px-2 py-0.5 text-[11px] font-semibold text-ink">
+        <button type="submit" className="rounded bg-amber px-2 py-0.5 text-[11px] font-semibold text-on-amber">
           Roll
         </button>
       </form>

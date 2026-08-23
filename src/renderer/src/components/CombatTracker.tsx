@@ -189,7 +189,7 @@ export default function CombatTracker({
               type="button"
               disabled={ordered.length === 0}
               onClick={startCombat}
-              className="rounded bg-amber px-2 py-1 text-[11px] font-semibold text-ink disabled:bg-line"
+              className="rounded bg-amber px-2 py-1 text-[11px] font-semibold text-on-amber disabled:bg-line"
             >
               Start combat
             </button>
@@ -222,7 +222,7 @@ export default function CombatTracker({
             onClick={() => update({ showOrderToPlayers: !combat.showOrderToPlayers })}
             className={`rounded px-2 py-1 text-[11px] ${
               combat.showOrderToPlayers
-                ? 'bg-amber font-semibold text-ink'
+                ? 'bg-amber font-semibold text-on-amber'
                 : 'border border-line hover:border-amber'
             }`}
             title="Superimpose initiative over the player image"
@@ -389,7 +389,7 @@ export default function CombatTracker({
               type="button"
               onClick={onAddParty}
               disabled={partyCount > 0 && partyInCombat >= partyCount}
-              className="w-full rounded bg-amber px-3 py-1.5 text-sm font-semibold text-ink disabled:bg-line disabled:text-muted"
+              className="w-full rounded bg-amber px-3 py-1.5 text-sm font-semibold text-on-amber disabled:bg-line disabled:text-muted"
             >
               {partyCount > 0 && partyInCombat >= partyCount ? 'Party added' : 'Add all players'}
             </button>
@@ -476,7 +476,7 @@ export default function CombatTracker({
               className="col-span-2 rounded border border-line bg-panel-2 px-2 py-1"
             />
           ) : null}
-          <button type="submit" className="col-span-2 rounded bg-amber/90 font-semibold text-ink">
+          <button type="submit" className="col-span-2 rounded bg-amber/90 font-semibold text-on-amber">
             Add
           </button>
         </form>

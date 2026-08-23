@@ -28,7 +28,7 @@ function RollChip({ label, expr, onRoll }: { label: string; expr: string; onRoll
     <button
       type="button"
       onClick={() => onRoll(rollExpr(expr))}
-      className="rounded border border-amber-dim bg-ink px-1.5 py-0.5 text-[11px] text-amber hover:bg-amber hover:text-ink"
+      className="rounded border border-amber-dim bg-ink px-1.5 py-0.5 text-[11px] text-amber hover:bg-amber hover:text-on-amber"
     >
       {label} {expr}
     </button>
@@ -122,7 +122,7 @@ export default function RollableStatBlock({
               <button
                 type="button"
                 onClick={onAddToCombat}
-                className="shrink-0 rounded bg-amber px-2 py-1 text-xs font-semibold text-ink"
+                className="shrink-0 rounded bg-amber px-2 py-1 text-xs font-semibold text-on-amber"
               >
                 Add to combat
               </button>

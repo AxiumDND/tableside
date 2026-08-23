@@ -2,7 +2,7 @@
 
 Short table workflows. UI overview: [TABLE.md](TABLE.md). Authoring: [CAMPAIGN.md](CAMPAIGN.md), [MARKDOWN.md](MARKDOWN.md).
 
-These recipes also appear in the in-app **Help** panel (header), along with layout, maps, combat overlay, Lookup chips, and shortcuts.
+These recipes also appear in the in-app **Help & settings** panel (header), along with campaign look, layout, maps, combat overlay, Lookup chips, and shortcuts.
 
 ## Game night sheet → initiative
 

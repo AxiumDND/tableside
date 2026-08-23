@@ -1,9 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import type { AppUpdateNotice } from '../../../shared/appUpdate'
+import { THEME_BLURBS, THEME_IDS, THEME_LABELS, type ThemeId } from '../../../shared/theme'
 import type { AppFolders } from '../../../shared/types'
 import { APP_VERSION } from '../../../shared/version'
 
-type HelpSection = 'start' | 'screens' | 'files' | 'combat' | 'lookup' | 'keys' | 'updates'
+type HelpSection = 'settings' | 'start' | 'screens' | 'files' | 'combat' | 'lookup' | 'keys' | 'updates'
 
 function Section({
   id,
@@ -98,14 +99,26 @@ export default function HelpPanel({
   onClose,
   updateNotice,
   onCheckUpdate,
-  onStartUpdate
+  onStartUpdate,
+  theme,
+  onThemeChange,
+  holoPortraits = false,
+  onHoloPortraitsChange,
+  digitalRain = false,
+  onDigitalRainChange
 }: {
   onClose?: () => void
   updateNotice?: AppUpdateNotice | null
   onCheckUpdate?: () => void
   onStartUpdate?: () => void
+  theme?: ThemeId
+  onThemeChange?: (theme: ThemeId) => void
+  holoPortraits?: boolean
+  onHoloPortraitsChange?: (enabled: boolean) => void
+  digitalRain?: boolean
+  onDigitalRainChange?: (enabled: boolean) => void
 }) {
-  const [open, setOpen] = useState<HelpSection | null>('start')
+  const [open, setOpen] = useState<HelpSection | null>('settings')
   const [folders, setFolders] = useState<AppFolders | null>(null)
 
   function toggle(id: HelpSection): void {
@@ -120,27 +133,95 @@ export default function HelpPanel({
     <aside className="flex min-h-0 w-[400px] shrink-0 flex-col border-l border-line bg-ink">
       <header className="border-b border-line px-3 py-2">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-lg text-amber">Help</h2>
+          <h2 className="font-display text-lg text-amber">Help & settings</h2>
           {onClose ? (
             <button type="button" onClick={onClose} className="text-xs text-muted hover:text-amber">
               Hide
             </button>
           ) : null}
         </div>
-        <p className="mt-1 text-[11px] text-muted">How to run the table from this console. Click a heading to open it.</p>
+        <p className="mt-1 text-[11px] text-muted">
+          Campaign look and how to run the table. Click a heading to open it.
+        </p>
       </header>
 
       <div className="min-h-0 flex-1 overflow-auto">
+        <Section id="settings" title="Settings" open={open} onToggle={toggle}>
+          <Sub>Campaign look</Sub>
+          <p>
+            Saved with this folder. You can also set it when you create a campaign, or from <Code>Start Here</Code>.
+            The player TV stays black.
+          </p>
+          {theme && onThemeChange ? (
+            <ul className="space-y-2">
+              {THEME_IDS.map((id) => {
+                const selected = theme === id
+                return (
+                  <li key={id}>
+                    <button
+                      type="button"
+                      onClick={() => onThemeChange(id)}
+                      className={`w-full rounded border px-3 py-2 text-left ${
+                        selected ? 'border-amber bg-amber/10' : 'border-line hover:border-amber'
+                      }`}
+                    >
+                      <span className={`block text-sm font-semibold ${selected ? 'text-amber' : 'text-parchment'}`}>
+                        {THEME_LABELS[id]}
+                      </span>
+                      <span className="mt-0.5 block text-[12px] leading-snug text-muted">{THEME_BLURBS[id]}</span>
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          ) : (
+            <p className="text-muted">Open a campaign to choose a look.</p>
+          )}
+          {theme === 'scifi' && onHoloPortraitsChange ? (
+            <label className="mt-3 flex items-start gap-2 text-[13px] text-parchment/90">
+              <input
+                type="checkbox"
+                className="mt-0.5"
+                checked={holoPortraits}
+                onChange={(event) => onHoloPortraitsChange(event.target.checked)}
+              />
+              <span>
+                <span className="font-semibold text-parchment">Hologram portraits</span>
+                <span className="mt-0.5 block text-[12px] leading-snug text-muted">
+                  On by default for Sci-fi. Player, NPC, beast, and gear art as a projector plate. Places and maps
+                  stay as-is.
+                </span>
+              </span>
+            </label>
+          ) : null}
+          {theme === 'matrix' && onDigitalRainChange ? (
+            <label className="mt-3 flex items-start gap-2 text-[13px] text-parchment/90">
+              <input
+                type="checkbox"
+                className="mt-0.5"
+                checked={digitalRain}
+                onChange={(event) => onDigitalRainChange(event.target.checked)}
+              />
+              <span>
+                <span className="font-semibold text-parchment">Falling code</span>
+                <span className="mt-0.5 block text-[12px] leading-snug text-muted">
+                  On by default for Digital rain. Slow wallpaper in the file list and notes. Header stays clear.
+                </span>
+              </span>
+            </label>
+          ) : null}
+        </Section>
         <Section id="start" title="Quick start" open={open} onToggle={toggle}>
           <Ol
             items={[
               <>
                 <Action>Open campaign</Action> picks any folder. <Action>New campaign</Action> asks which system to
-                use (D&D 5e, Pathfinder 2e, or Vampire 5th), then scaffolds Party, NPCs, Places, Factions, Maps,
-                and the rest in an empty folder, with the hub note in <Code>Start Here</Code>. First launch with no
-                folder opens the Greystead one-shot (5e); <Action>Sample</Action> loads that same copy. Open{' '}
-                <Code>Start Here</Code> first. Changing system on an existing folder is not supported — start a new
-                campaign instead.
+                use (D&D 5e, Pathfinder 2e, or Vampire 5th), then which look (and hologram or falling-code if that
+                look has them), then scaffolds Party, NPCs, Places,
+                Factions, Maps, and the rest in an empty folder, with the hub note in <Code>Start Here</Code>. First
+                launch with no folder opens the Greystead one-shot (5e); <Action>Sample</Action> loads that same copy.
+                Open <Code>Start Here</Code> first — the campaign look is there too. Changing system on an existing
+                folder is not supported — start a new campaign instead.
               </>,
               <>
                 This DM console always opens. The fullscreen <strong>player</strong> window stays hidden until a second
@@ -215,12 +296,15 @@ export default function HelpPanel({
           <Sub>This console</Sub>
           <Ul
             items={[
-              <>Header: campaign name, New / Open, Lookup, Combat, Help.</>,
+              <>
+                Header: campaign name, New / Open, Lookup, Combat, <strong>Help & settings</strong>. Campaign look
+                lives under Settings (also on <Code>Start Here</Code>). DM-only — the player TV stays black.
+              </>,
               <>
                 Left: <strong>Players see</strong> preview, file tree, dice tray. Hide the preview if you need height.
               </>,
               <>Center: the open note, image, or PDF.</>,
-              <>Right: Combat, Lookup, or this Help panel — one at a time.</>
+              <>Right: Combat, Lookup, or this panel — one at a time.</>
             ]}
           />
           <Sub>Show maps and art</Sub>

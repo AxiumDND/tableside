@@ -24,6 +24,7 @@ import {
   playerWindowNeedsRebuild,
   shouldShowPlayerWindow
 } from '../shared/playerWindow'
+import { digitalRainEnabled, holoPortraitsEnabled, parseThemeId, THEME_WINDOW_BACKGROUND } from '../shared/theme'
 import { APP_NAME, APP_VERSION } from '../shared/version'
 import {
   LIBRARY_FOLDER_NAMES,
@@ -261,8 +262,14 @@ async function writeSettings(next: AppSettings): Promise<void> {
   await writeFile(settingsPath(), JSON.stringify(next, null, 2), 'utf8')
 }
 
+function applyDmWindowTheme(theme?: string | null): void {
+  if (!dmWindow || dmWindow.isDestroyed()) return
+  dmWindow.setBackgroundColor(THEME_WINDOW_BACKGROUND[parseThemeId(theme)])
+}
+
 async function patchSettings(partial: AppSettings): Promise<AppSettings> {
   await writeSettings({ ...settings, ...partial })
+  if (partial.theme !== undefined) applyDmWindowTheme(settings.theme)
   return settings
 }
 
@@ -353,7 +360,7 @@ function createDmWindow(): void {
     minHeight: 720,
     show: false,
     autoHideMenuBar: true,
-    backgroundColor: '#0e0c0a',
+    backgroundColor: THEME_WINDOW_BACKGROUND[parseThemeId(settings.theme)],
     title: `${APP_NAME} ${APP_VERSION}`,
     icon,
     webPreferences: {
@@ -784,7 +791,20 @@ async function packTemplates(root: string): Promise<ReturnType<typeof templatesF
   return templatesFor(await readCampaignSystem(root))
 }
 
-async function seedNewCampaignFiles(root: string, system: SystemId = 'dnd5e'): Promise<void> {
+type CampaignFile = {
+  name?: string
+  system?: string
+  theme?: string
+  holoPortraits?: boolean
+  digitalRain?: boolean
+}
+
+async function seedNewCampaignFiles(
+  root: string,
+  system: SystemId = 'dnd5e',
+  theme?: string,
+  options?: { holoPortraits?: boolean; digitalRain?: boolean }
+): Promise<void> {
   const title = basename(root)
   await migrateRootOverviewToStartHere(root)
   const startHere = (await existingCanonicalDir(root, 'start here')) ?? join(root, 'Start Here')
@@ -794,10 +814,16 @@ async function seedNewCampaignFiles(root: string, system: SystemId = 'dnd5e'): P
     await writeFile(overview, overviewMarkdown(system, title), 'utf8')
   }
   const campaignPath = join(root, 'campaign.json')
-  const prior = existsSync(campaignPath)
-    ? await readJson<{ name?: string; system?: string }>(campaignPath, {})
-    : {}
-  await writeJson(campaignPath, { ...prior, name: prior.name ?? title, system })
+  const prior = existsSync(campaignPath) ? await readJson<CampaignFile>(campaignPath, {}) : {}
+  const nextTheme = parseThemeId(theme ?? prior.theme)
+  await writeJson(campaignPath, {
+    ...prior,
+    name: prior.name ?? title,
+    system,
+    theme: nextTheme,
+    holoPortraits: nextTheme === 'scifi' ? options?.holoPortraits !== false : prior.holoPortraits,
+    digitalRain: nextTheme === 'matrix' ? options?.digitalRain !== false : prior.digitalRain
+  })
   await refreshStockNightSheetTemplate(root)
 }
 
@@ -913,10 +939,11 @@ async function listSessions(dir: string): Promise<SessionFile[]> {
 
 async function loadCampaign(folder: string): Promise<CampaignInfo> {
   const fallbackName = basename(folder)
-  const campaign = await readJson<{ name?: string; system?: string }>(join(folder, 'campaign.json'), {})
+  const campaign = await readJson<CampaignFile>(join(folder, 'campaign.json'), {})
   const name =
     campaign.name && campaign.name !== 'Untitled campaign' ? campaign.name : fallbackName
   const system = parseSystemId(campaign.system)
+  const theme = parseThemeId(campaign.theme)
   if (campaign.name !== name || campaign.system !== system) {
     await writeJson(join(folder, 'campaign.json'), { ...campaign, name, system })
   }
@@ -930,6 +957,9 @@ async function loadCampaign(folder: string): Promise<CampaignInfo> {
     folder,
     name,
     system,
+    theme,
+    holoPortraits: holoPortraitsEnabled(theme, campaign.holoPortraits),
+    digitalRain: digitalRainEnabled(theme, campaign.digitalRain),
     media,
     sessions: await listSessions(await findChildDir(folder, isSessionsFolderName, 'Sessions')),
     party: await listJsonCharacters(await findChildDir(folder, isPartyFolderName, 'Party')),
@@ -1354,16 +1384,54 @@ function registerIpc(): void {
     return setCampaignFolder(folder)
   })
 
-  ipcMain.handle('campaign:new', async (_e, systemId?: string) => {
+  ipcMain.handle(
+    'campaign:new',
+    async (
+      _e,
+      systemId?: string,
+      themeId?: string,
+      options?: { holoPortraits?: boolean; digitalRain?: boolean }
+    ) => {
     const system = parseSystemId(systemId)
+    const theme = parseThemeId(themeId)
     const result = await dialog.showOpenDialog(dmWindow ?? undefined, {
       title: 'New campaign folder',
       properties: ['openDirectory', 'createDirectory']
     })
     if (result.canceled || !result.filePaths[0]) return null
     await ensureCampaignLayout(result.filePaths[0])
-    await seedNewCampaignFiles(result.filePaths[0], system)
+    await seedNewCampaignFiles(result.filePaths[0], system, theme, options)
     return setCampaignFolder(result.filePaths[0])
+  })
+
+  ipcMain.handle('campaign:set-theme', async (_e, themeId?: string) => {
+    if (!campaignFolder) return null
+    const campaignPath = join(campaignFolder, 'campaign.json')
+    const campaign = await readJson<CampaignFile>(campaignPath, {})
+    const theme = parseThemeId(themeId)
+    await writeJson(campaignPath, {
+      ...campaign,
+      theme,
+      ...(theme === 'scifi' ? { holoPortraits: true } : {}),
+      ...(theme === 'matrix' ? { digitalRain: true } : {})
+    })
+    return loadCampaign(campaignFolder)
+  })
+
+  ipcMain.handle('campaign:set-holo-portraits', async (_e, enabled?: boolean) => {
+    if (!campaignFolder) return null
+    const campaignPath = join(campaignFolder, 'campaign.json')
+    const campaign = await readJson<CampaignFile>(campaignPath, {})
+    await writeJson(campaignPath, { ...campaign, holoPortraits: enabled === true })
+    return loadCampaign(campaignFolder)
+  })
+
+  ipcMain.handle('campaign:set-digital-rain', async (_e, enabled?: boolean) => {
+    if (!campaignFolder) return null
+    const campaignPath = join(campaignFolder, 'campaign.json')
+    const campaign = await readJson<CampaignFile>(campaignPath, {})
+    await writeJson(campaignPath, { ...campaign, digitalRain: enabled === true })
+    return loadCampaign(campaignFolder)
   })
 
   ipcMain.handle('campaign:open-sample', async () =>

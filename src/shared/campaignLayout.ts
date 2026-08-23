@@ -262,6 +262,20 @@ export const LIBRARY_FOLDER_NAMES: Record<CampaignLibraryFolder, string> = {
   gear: 'Gear'
 }
 
+export function isHoloPortraitPath(path: string): boolean {
+  return (
+    pathHasFolder(path, 'party') ||
+    pathHasFolder(path, 'npcs') ||
+    pathHasFolder(path, 'bestiary') ||
+    pathHasFolder(path, 'gear')
+  )
+}
+
+export function isStartHerePath(path: string): boolean {
+  const root = path.replaceAll('\\', '/').split('/').find(Boolean) ?? ''
+  return canonicalFolder(root) === 'start here'
+}
+
 export function pathHasFolder(
   path: string,
   kind: 'party' | 'npcs' | 'bestiary' | 'gear' | 'spells' | 'sessions' | 'maps' | 'places' | 'factions'

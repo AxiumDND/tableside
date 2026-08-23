@@ -13,6 +13,330 @@
   --color-muted: #8b95a6;
   --color-blood: #e05b55;
   --color-moss: #6ecb86;
+  --color-on-amber: #0b0d11;
+}
+
+html[data-theme='light'] {
+  --font-ui: 'Segoe UI', 'Candara', system-ui, sans-serif;
+  --font-display: 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  --color-ink: #f4efe4;
+  --color-panel: #ebe4d4;
+  --color-panel-2: #e0d7c4;
+  --color-line: #c4b8a0;
+  --color-amber: #8a6d28;
+  --color-amber-dim: #6b5420;
+  --color-parchment: #2a2418;
+  --color-muted: #6b6356;
+  --color-blood: #b33b36;
+  --color-moss: #2f7a48;
+  --color-on-amber: #f4efe4;
+}
+
+html[data-theme='scifi'] {
+  --font-ui: Bahnschrift, 'Segoe UI', system-ui, sans-serif;
+  --font-display: Bahnschrift, 'Segoe UI', system-ui, sans-serif;
+  --color-ink: #020c18;
+  --color-panel: #0a2238;
+  --color-panel-2: #12304c;
+  --color-line: #2d6f94;
+  --color-amber: #7ed4f0;
+  --color-amber-dim: #4a9bb8;
+  --color-parchment: #d4eef8;
+  --color-muted: #6a9ab0;
+  --color-blood: #ff3b30;
+  --color-moss: #3ecf9a;
+  --color-on-amber: #021018;
+}
+
+html[data-theme='vampire'] {
+  --font-ui: 'Segoe UI', 'Candara', system-ui, sans-serif;
+  --font-display: 'Palatino Linotype', Palatino, Georgia, serif;
+  --color-ink: #0a0608;
+  --color-panel: #160c10;
+  --color-panel-2: #1e1016;
+  --color-line: #3d2430;
+  --color-amber: #c45a5a;
+  --color-amber-dim: #8a3d42;
+  --color-parchment: #ead8d4;
+  --color-muted: #9a7f84;
+  --color-blood: #e05b55;
+  --color-moss: #6ecb86;
+  --color-on-amber: #14080a;
+}
+
+html[data-theme='cyberpunk'] {
+  --font-ui: Consolas, 'Segoe UI', system-ui, sans-serif;
+  --font-display: Consolas, 'Segoe UI', system-ui, sans-serif;
+  --color-ink: #0a0b10;
+  --color-panel: #12141c;
+  --color-panel-2: #1a1d28;
+  --color-line: #3a3550;
+  --color-amber: #ff2bd6;
+  --color-amber-dim: #c04aaa;
+  --color-parchment: #e8e6f2;
+  --color-muted: #5ec8d4;
+  --color-blood: #ff4d6a;
+  --color-moss: #39ff88;
+  --color-on-amber: #0a0b10;
+  letter-spacing: -0.015em;
+}
+
+html[data-theme='matrix'] {
+  --font-ui: Consolas, 'Lucida Console', 'Segoe UI', system-ui, sans-serif;
+  --font-display: Consolas, 'Lucida Console', 'Segoe UI', system-ui, sans-serif;
+  --color-ink: #010301;
+  --color-panel: #031408;
+  --color-panel-2: #062411;
+  --color-line: #0d4a24;
+  --color-amber: #00ff41;
+  --color-amber-dim: #1f8f3a;
+  --color-parchment: #b8ffc8;
+  --color-muted: #3d8f55;
+  --color-blood: #ff3344;
+  --color-moss: #6aff8a;
+  --color-on-amber: #001405;
+}
+
+/* Sci-fi HUD chrome — blueprint hologram blues, tracked titles. No crawl, no logos. */
+html[data-theme='scifi'] {
+  font-stretch: condensed;
+  letter-spacing: 0.03em;
+}
+
+html[data-theme='scifi'] .font-display,
+html[data-theme='scifi'] .markdown-body h1,
+html[data-theme='scifi'] .markdown-body h2,
+html[data-theme='scifi'] .markdown-body h3 {
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-weight: 600;
+  font-stretch: condensed;
+}
+
+html[data-theme='scifi'] .markdown-body h1,
+html[data-theme='scifi'] .markdown-body h2 {
+  border-bottom: 1px solid color-mix(in srgb, var(--color-amber) 42%, transparent);
+  padding-bottom: 0.22em;
+}
+
+html[data-theme='scifi'] button,
+html[data-theme='scifi'] select,
+html[data-theme='scifi'] input,
+html[data-theme='scifi'] textarea {
+  border-radius: 0;
+  letter-spacing: 0.08em;
+}
+
+html[data-theme='scifi'] button {
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+html[data-theme='matrix'] .font-display,
+html[data-theme='matrix'] .markdown-body h1,
+html[data-theme='matrix'] .markdown-body h2,
+html[data-theme='matrix'] .markdown-body h3 {
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-shadow: 0 0 10px color-mix(in srgb, var(--color-amber) 55%, transparent);
+}
+
+html[data-theme='matrix'] header {
+  box-shadow: inset 0 -1px 0 var(--color-amber);
+}
+
+/* Rain lives in ink wells only — header and solid chrome stay opaque. */
+html[data-theme='matrix'][data-digital-rain='on'] .matrix-rain-well {
+  background-color: transparent !important;
+}
+
+html[data-theme='scifi'] header {
+  box-shadow: inset 0 -2px 0 var(--color-amber);
+}
+
+html[data-theme='scifi'] #root {
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-amber) 55%, transparent);
+}
+
+/* Optional hologram projector — moving scan, sweep, flicker, emitter pad. */
+.sheet-art-holo-plate {
+  box-shadow:
+    0 0 0 1px color-mix(in srgb, var(--color-amber) 70%, transparent),
+    0 0 18px color-mix(in srgb, var(--color-amber) 40%, transparent),
+    inset 0 -18px 22px color-mix(in srgb, var(--color-amber) 18%, transparent);
+}
+
+.sheet-art-holo img {
+  filter: grayscale(0.25) sepia(0.45) hue-rotate(160deg) saturate(2.6) brightness(1.14) contrast(1.18);
+  animation: holo-breathe 2.8s ease-in-out infinite, holo-jitter 5.2s steps(2, end) infinite;
+}
+
+.sheet-art-holo-scan,
+.sheet-art-holo-cone {
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+}
+
+.sheet-art-holo-scan {
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 2px,
+    rgba(2, 18, 36, 0.38) 2px,
+    rgba(2, 18, 36, 0.38) 3px
+  );
+  background-size: 100% 4px;
+  mix-blend-mode: multiply;
+  animation: holo-lines 0.7s linear infinite, holo-flicker 4.8s ease-in-out infinite;
+}
+
+.sheet-art-holo-sweep {
+  pointer-events: none;
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: -24%;
+  height: 22%;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    color-mix(in srgb, var(--color-amber) 55%, transparent),
+    transparent
+  );
+  mix-blend-mode: screen;
+  animation: holo-sweep 2.4s linear infinite;
+}
+
+.sheet-art-holo-cone {
+  background: linear-gradient(
+    to top,
+    color-mix(in srgb, var(--color-amber) 32%, transparent),
+    transparent 55%
+  );
+  clip-path: polygon(28% 100%, 72% 100%, 100% 0, 0 0);
+  mix-blend-mode: screen;
+  animation: holo-cone 2.6s ease-in-out infinite;
+}
+
+.sheet-art-holo-base {
+  display: block;
+  height: 9px;
+  margin-top: 3px;
+  border-radius: 999px;
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, var(--color-amber) 90%, white),
+    color-mix(in srgb, var(--color-amber) 40%, transparent) 55%,
+    transparent 72%
+  );
+  box-shadow: 0 0 10px color-mix(in srgb, var(--color-amber) 70%, transparent);
+  animation: holo-base 1.8s ease-in-out infinite;
+}
+
+@keyframes holo-breathe {
+  0%,
+  100% {
+    opacity: 0.78;
+  }
+  50% {
+    opacity: 0.96;
+  }
+}
+
+@keyframes holo-jitter {
+  0%,
+  86%,
+  100% {
+    transform: translate(0, 0);
+  }
+  88% {
+    transform: translate(0.6px, -0.5px);
+  }
+  91% {
+    transform: translate(-0.5px, 0.4px);
+  }
+  94% {
+    transform: translate(0.4px, 0.5px);
+  }
+}
+
+@keyframes holo-lines {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 0 4px;
+  }
+}
+
+@keyframes holo-flicker {
+  0%,
+  82%,
+  100% {
+    opacity: 0.85;
+  }
+  84% {
+    opacity: 0.35;
+  }
+  86% {
+    opacity: 0.95;
+  }
+  88% {
+    opacity: 0.45;
+  }
+  90% {
+    opacity: 0.88;
+  }
+}
+
+@keyframes holo-sweep {
+  0% {
+    top: -24%;
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.95;
+  }
+  92% {
+    opacity: 0.95;
+  }
+  100% {
+    top: 108%;
+    opacity: 0;
+  }
+}
+
+@keyframes holo-cone {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes holo-base {
+  0%,
+  100% {
+    opacity: 0.7;
+    filter: brightness(1);
+  }
+  50% {
+    opacity: 1;
+    filter: brightness(1.35);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .sheet-art-holo img,
+  .sheet-art-holo-scan,
+  .sheet-art-holo-sweep,
+  .sheet-art-holo-cone,
+  .sheet-art-holo-base {
+    animation: none;
+  }
 }
 
 html,
@@ -67,7 +391,7 @@ body,
 .markdown-body p,
 .markdown-body li {
   line-height: 1.6;
-  color: #d2dae6;
+  color: color-mix(in srgb, var(--color-parchment) 88%, var(--color-muted));
 }
 
 .markdown-body ul {
@@ -76,7 +400,7 @@ body,
 }
 
 .markdown-body code {
-  background: #1a202a;
+  background: var(--color-panel-2);
   padding: 0.1rem 0.35rem;
   border-radius: 4px;
   font-size: 0.9em;
@@ -119,7 +443,7 @@ body,
   border-left: 3px solid var(--color-amber-dim);
   margin: 0.6rem 0;
   padding: 0.15rem 0 0.15rem 0.8rem;
-  color: #b8c2d0;
+  color: color-mix(in srgb, var(--color-parchment) 72%, var(--color-muted));
 }
 
 .combat-card-body > h1:first-child,
@@ -247,7 +571,7 @@ body,
 }
 
 .player-init-item.is-bloodied:not(.is-turn) {
-  color: #f0c9c6;
+  color: color-mix(in srgb, var(--color-blood) 35%, var(--color-parchment));
 }
 
 .player-init-item.is-dead .player-init-name,
@@ -257,7 +581,7 @@ body,
 
 .player-init-item.is-dead:not(.is-turn),
 .player-init-item.is-unconscious:not(.is-turn) {
-  color: #c4a09c;
+  color: color-mix(in srgb, var(--color-blood) 28%, var(--color-muted));
 }
 
 .player-init-name {
@@ -326,7 +650,7 @@ body,
 .gm-only-body p,
 .markdown-body .gm-only-body p,
 .markdown-body .gm-only-body li {
-  color: #d5e0cc;
+  color: color-mix(in srgb, var(--color-moss) 45%, var(--color-parchment));
   line-height: 1.6;
 }
 

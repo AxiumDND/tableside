@@ -4,56 +4,56 @@ const VARIANTS: Record<string, { label: string; bar: string; box: string; labelC
   tip: {
     label: 'Tip',
     bar: 'bg-amber',
-    box: 'border-amber/35 bg-[#171b22]',
+    box: 'border-amber/35 bg-panel-2',
     labelClass: 'text-amber',
     titleClass: 'text-amber'
   },
   warning: {
     label: 'Warning',
     bar: 'bg-blood',
-    box: 'border-blood/40 bg-[#1a1416]',
+    box: 'border-blood/40 bg-panel-2',
     labelClass: 'text-blood',
     titleClass: 'text-blood'
   },
   danger: {
     label: 'Danger',
     bar: 'bg-blood',
-    box: 'border-blood/50 bg-[#1c1012]',
+    box: 'border-blood/50 bg-panel-2',
     labelClass: 'text-blood',
     titleClass: 'text-blood'
   },
   example: {
     label: 'Close',
     bar: 'bg-parchment',
-    box: 'border-parchment/25 bg-[#161a20]',
+    box: 'border-parchment/25 bg-panel-2',
     labelClass: 'text-parchment',
     titleClass: 'text-parchment'
   },
   abstract: {
     label: 'Summary',
     bar: 'bg-muted',
-    box: 'border-line bg-[#151920]',
+    box: 'border-line bg-panel-2',
     labelClass: 'text-muted',
     titleClass: 'text-parchment'
   },
   note: {
     label: 'Note',
     bar: 'bg-muted',
-    box: 'border-line bg-[#151920]',
+    box: 'border-line bg-panel-2',
     labelClass: 'text-muted',
     titleClass: 'text-parchment'
   },
   success: {
     label: 'Done',
     bar: 'bg-moss',
-    box: 'border-moss/35 bg-[#10140f]',
+    box: 'border-moss/35 bg-panel-2',
     labelClass: 'text-moss',
     titleClass: 'text-moss'
   },
   info: {
     label: 'Info',
     bar: 'bg-amber-dim',
-    box: 'border-amber-dim/40 bg-[#171b22]',
+    box: 'border-amber-dim/40 bg-panel-2',
     labelClass: 'text-amber-dim',
     titleClass: 'text-amber'
   }
@@ -62,7 +62,7 @@ const VARIANTS: Record<string, { label: string; bar: string; box: string; labelC
 const FALLBACK = {
   label: 'Note',
   bar: 'bg-muted',
-  box: 'border-line bg-[#151920]',
+  box: 'border-line bg-panel-2',
   labelClass: 'text-muted',
   titleClass: 'text-parchment'
 }

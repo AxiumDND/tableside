@@ -104,6 +104,12 @@ export interface CampaignInfo {
   folder: string
   name: string
   system: 'dnd5e' | 'pf2e' | 'v5'
+  /** DM console look for this folder. Unknown ids fall back to classic. */
+  theme: string
+  /** Sci-fi only: hologram overlay on party / NPC / beast / gear art. */
+  holoPortraits?: boolean
+  /** Digital rain only: falling-code wallpaper in the dark wells. */
+  digitalRain?: boolean
   media: MediaItem[]
   sessions: SessionFile[]
   party: Character[]
@@ -188,6 +194,7 @@ export interface AppSettings {
   lastOpenKind?: string
   rightPanel?: 'combat' | 'lookup' | 'help' | null
   showPlayerPreview?: boolean
+  theme?: string
   recentCampaigns?: RecentCampaign[]
   dismissedUpdateVersion?: string
 }

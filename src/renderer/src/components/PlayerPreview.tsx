@@ -24,7 +24,7 @@ function MonitorList({
             type="button"
             onClick={() => onPick(display.id)}
             className={`mb-1 block w-full truncate rounded px-2 py-1 text-left text-[11px] last:mb-0 ${
-              selected ? 'bg-amber font-semibold text-ink' : 'border border-line hover:border-amber'
+              selected ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
             }`}
           >
             {display.label}

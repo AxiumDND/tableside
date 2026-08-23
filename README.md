@@ -4,13 +4,13 @@ A local Windows app for running **in-person** tabletop games. Your laptop is the
 
 This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table.
 
-**New campaign** asks which system pack to use: **D&D 5e** (bundled SRD 5.2.1), **Pathfinder 2e** (small original core), or **Vampire 5th Edition** (Health / Willpower / Hunger tracker and original table procedures). Existing folders without a `system` field keep working as D&D 5e. Sample is still the 5e Greystead one-shot. Current release: **1.2.10**.
+**New campaign** asks which system pack to use: **D&D 5e** (bundled SRD 5.2.1), **Pathfinder 2e** (small original core), or **Vampire 5th Edition** (Health / Willpower / Hunger tracker and original table procedures). Existing folders without a `system` field keep working as D&D 5e. Sample is still the 5e Greystead one-shot. Current release: **1.3.0**.
 
 Tableside is a table app. It is not an official Wizards, Paizo, or Paradox product.
 
 ## Install (Windows)
 
-**[Download the latest installer](https://github.com/AxiumDND/tableside/releases/latest)** — look for `Tableside-Setup-1.2.10.exe`. No account, no admin.
+**[Download the latest installer](https://github.com/AxiumDND/tableside/releases/latest)** — look for `Tableside-Setup-1.3.0.exe`. No account, no admin.
 
 1. Run the installer. It is a per-user install: Start Menu + desktop shortcuts. You can pick the folder.
 2. Open **Tableside** from the Start Menu.
@@ -49,7 +49,7 @@ Questions or thanks: [tableside.gm@gmail.com](mailto:tableside.gm@gmail.com). If
 - Offline Lookup for the open campaign’s system pack (5e SRD; PF2e original core; V5 original procedures)
 - Optional extra 5e lookup from your own WOTC text files in `WOTC/` (spells, equipment, magic items)
 - Add a monster, spell, or gear item from Lookup into the campaign Bestiary, Spells, or Gear folder
-- In-app **Help**, recent campaigns, file-tree filter, and table hotkeys (`Alt+S` / `Alt+T` / `Alt+X`)
+- In-app **Help & settings**, recent campaigns, file-tree filter, and table hotkeys (`Alt+S` / `Alt+T` / `Alt+X`)
 - Installed copies check GitHub at launch and ask to install if a newer release exists
 
 ## Run from source
@@ -70,7 +70,7 @@ npm start
 npm run dist
 ```
 
-Writes `dist/Tableside-Setup-1.2.10.exe`. Pushing a `v1.2.10` tag builds that file and attaches it to the [GitHub Release](https://github.com/AxiumDND/tableside/releases/latest).
+Writes `dist/Tableside-Setup-1.3.0.exe`. Pushing a `v1.3.0` tag builds that file and attaches it to the [GitHub Release](https://github.com/AxiumDND/tableside/releases/latest).
 
 `npm run fetch-srd` is only needed if you want to refresh the bundled SRD snapshot from the [Open5e API](https://api.open5e.com/) (`srd-2024`).
 
@@ -92,7 +92,7 @@ The bundled sample is **[examples/greystead](examples/greystead)**. Tableside co
 
 ## Campaign folders
 
-Campaigns are ordinary folders on disk. **New campaign** picks a system, then scaffolds the standard layout; **Open campaign** reads any folder and fills in missing pieces. Folders without `"system"` in `campaign.json` default to D&D 5e.
+Campaigns are ordinary folders on disk. **New campaign** picks a system and a look, then scaffolds the standard layout; **Open campaign** reads any folder and fills in missing pieces. Folders without `"system"` in `campaign.json` default to D&D 5e. Theme is saved on the campaign and can be changed from Help & settings or Start Here.
 
 ```
 Start Here/       hub notes (Overview.md — opens first)

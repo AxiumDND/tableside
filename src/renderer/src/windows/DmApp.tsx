@@ -10,6 +10,14 @@ import type {
   RecentCampaign
 } from '../../../shared/types'
 import { emptyCombat, emptyPlayerState } from '../../../shared/types'
+import {
+  applyThemeToDocument,
+  digitalRainEnabled,
+  holoPortraitsEnabled,
+  resolveConsoleTheme,
+  type ThemeId,
+  type ThemeOptions
+} from '../../../shared/theme'
 import { getSystemPack, type SystemId } from '../../../shared/systemPack'
 import CampaignFiles, {
   campaignFileUrl,
@@ -23,6 +31,8 @@ import PlayerPreview from '../components/PlayerPreview'
 import RulesSearch from '../components/RulesSearch'
 import SessionNotes, { type EncounterAddItem } from '../components/SessionNotes'
 import SystemPicker from '../components/SystemPicker'
+import ThemeSetup from '../components/ThemeSetup'
+import DigitalRain from '../components/DigitalRain'
 import { combatToPlayerInitiative, combatProfileFor, advanceCombatTurn, rollInitiativeFor } from '../lib/combat'
 import { flattenImages, imageTitle, isImagePath, isPdfPath } from '../lib/images'
 import {
@@ -90,9 +100,12 @@ export default function DmApp() {
   const [history, setHistory] = useState<{ path: string; kind: FileKind }[]>([])
   const [playerDisplayId, setPlayerDisplayId] = useState<number | ''>('')
   const [showPlayerPreview, setShowPlayerPreview] = useState(true)
+  const [theme, setTheme] = useState<ThemeId>('classic')
   const [playerWindowOpen, setPlayerWindowOpen] = useState(false)
   const [recentCampaigns, setRecentCampaigns] = useState<RecentCampaign[]>([])
-  const [pickingSystem, setPickingSystem] = useState(false)
+  const [campaignSetup, setCampaignSetup] = useState<null | { step: 'system' } | { step: 'theme'; system: SystemId }>(
+    null
+  )
   const [updateNotice, setUpdateNotice] = useState<AppUpdateNotice | null>(null)
   const playerSrcRef = useRef(player.imageSrc)
   const mapLiveRef = useRef<{ src: string; title: string; view: PlayerMapView } | null>(null)
@@ -119,6 +132,9 @@ export default function DmApp() {
         : (screens.find((d) => !d.dm)?.id ?? screens[0]?.id ?? '')
     )
     setShowPlayerPreview(prefs.showPlayerPreview !== false)
+    const nextTheme = resolveConsoleTheme(info?.theme, prefs.theme)
+    setTheme(nextTheme)
+    applyThemeToDocument(nextTheme)
     setRecentCampaigns(prefs.recentCampaigns ?? [])
     if (
       prefs.rightPanel === 'combat' ||
@@ -147,6 +163,14 @@ export default function DmApp() {
   }, [])
 
   useEffect(() => {
+    if (digitalRainEnabled(theme, campaign?.digitalRain)) {
+      document.documentElement.dataset.digitalRain = 'on'
+    } else {
+      delete document.documentElement.dataset.digitalRain
+    }
+  }, [theme, campaign?.digitalRain])
+
+  useEffect(() => {
     void refresh()
     const stopPlayer = window.tabledm.onPlayerState(setPlayer)
     const stopPlayerWindow = window.tabledm.onPlayerWindow?.(setPlayerWindowOpen)
@@ -165,8 +189,15 @@ export default function DmApp() {
     }
   }, [refresh])
 
-  function applyCampaign(info: CampaignInfo | null): void {
+  function applyConsoleTheme(next: ThemeId): void {
+    setTheme(next)
+    applyThemeToDocument(next)
+    void window.tabledm.saveSettings({ theme: next })
+  }
+
+  function applyCampaign(info: CampaignInfo | null, appTheme?: string | null): void {
     setCampaign(info)
+    applyConsoleTheme(resolveConsoleTheme(info?.theme, appTheme))
     const note = info ? firstNote(info.tree) : ''
     setOpenPath(note)
     setOpenKind('note')
@@ -188,16 +219,39 @@ export default function DmApp() {
     setRecentCampaigns((await window.tabledm.getSettings()).recentCampaigns ?? [])
   }
 
-  async function newCampaign(system?: SystemId): Promise<void> {
+  async function newCampaign(system?: SystemId, themeId?: ThemeId, options?: ThemeOptions): Promise<void> {
     if (!system) {
-      setPickingSystem(true)
+      setCampaignSetup({ step: 'system' })
       return
     }
-    setPickingSystem(false)
-    const info = await window.tabledm.newCampaign(system)
-    applyCampaign(info)
+    if (!themeId) {
+      setCampaignSetup({ step: 'theme', system })
+      return
+    }
+    setCampaignSetup(null)
+    const info = await window.tabledm.newCampaign(system, themeId, options)
+    applyCampaign(info, themeId)
     setPlayer(await window.tabledm.getPlayerState())
     setRecentCampaigns((await window.tabledm.getSettings()).recentCampaigns ?? [])
+  }
+
+  async function changeCampaignTheme(next: ThemeId): Promise<void> {
+    applyConsoleTheme(next)
+    if (!campaign) return
+    const updated = await window.tabledm.setCampaignTheme(next)
+    if (updated) setCampaign(updated)
+  }
+
+  async function changeHoloPortraits(enabled: boolean): Promise<void> {
+    if (!campaign) return
+    const updated = await window.tabledm.setCampaignHoloPortraits(enabled)
+    if (updated) setCampaign(updated)
+  }
+
+  async function changeDigitalRain(enabled: boolean): Promise<void> {
+    if (!campaign) return
+    const updated = await window.tabledm.setCampaignDigitalRain(enabled)
+    if (updated) setCampaign(updated)
   }
 
   async function openSample(): Promise<void> {
@@ -577,7 +631,7 @@ export default function DmApp() {
           type="button"
           onClick={() => changeRightPanel((open) => (open === 'lookup' ? null : 'lookup'))}
           className={`rounded px-3 py-1 text-sm ${
-            rightPanel === 'lookup' ? 'bg-amber font-semibold text-ink' : 'border border-line hover:border-amber'
+            rightPanel === 'lookup' ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
           }`}
         >
           Lookup
@@ -588,7 +642,7 @@ export default function DmApp() {
             changeRightPanel((open) => (open === 'combat' ? null : 'combat'))
           }}
           className={`rounded px-3 py-1 text-sm ${
-            rightPanel === 'combat' ? 'bg-amber font-semibold text-ink' : 'border border-line hover:border-amber'
+            rightPanel === 'combat' ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
           }`}
         >
           Combat
@@ -598,12 +652,13 @@ export default function DmApp() {
           type="button"
           onClick={() => changeRightPanel((open) => (open === 'help' ? null : 'help'))}
           className={`rounded px-3 py-1 text-sm ${
-            rightPanel === 'help' ? 'bg-amber font-semibold text-ink' : 'border border-line hover:border-amber'
+            rightPanel === 'help' ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
           }`}
         >
-          Help
+          Help & settings
         </button>
       </header>
+      <div>
       <UpdateBanner
         notice={updateNotice}
         onUpdate={() => void window.tabledm.startUpdate()}
@@ -614,9 +669,11 @@ export default function DmApp() {
           setUpdateNotice(null)
         }}
       />
+      </div>
 
-      <div className="flex min-h-0 flex-1">
-        <div className="flex w-64 shrink-0 flex-col border-r border-line">
+      <div className="relative flex min-h-0 flex-1">
+        {digitalRainEnabled(theme, campaign?.digitalRain) ? <DigitalRain /> : null}
+        <div className="relative z-[1] flex w-64 shrink-0 flex-col border-r border-line">
           <PlayerPreview
             state={player}
             hidden={!showPlayerPreview}
@@ -667,10 +724,11 @@ export default function DmApp() {
               }}
             />
           ) : (
-            <div className="flex-1 bg-ink px-3 py-4 text-xs text-muted">Open a campaign to see files.</div>
+            <div className="matrix-rain-well flex-1 px-3 py-4 text-xs text-muted">Open a campaign to see files.</div>
           )}
           <DiceTray />
         </div>
+        <div className="relative z-[1] flex min-h-0 min-w-0 flex-1">
         <SessionNotes
           path={openPath}
           kind={openKind}
@@ -700,6 +758,12 @@ export default function DmApp() {
           recentCampaigns={recentCampaigns}
           onOpenRecent={(folder) => void openRecent(folder)}
           shopsEnabled={getSystemPack(campaign?.system).shopsEnabled}
+          theme={theme}
+          onThemeChange={(next) => void changeCampaignTheme(next)}
+          holoPortraits={holoPortraitsEnabled(theme, campaign?.holoPortraits)}
+          digitalRain={digitalRainEnabled(theme, campaign?.digitalRain)}
+          onHoloPortraitsChange={campaign ? (enabled) => void changeHoloPortraits(enabled) : undefined}
+          onDigitalRainChange={campaign ? (enabled) => void changeDigitalRain(enabled) : undefined}
         />
         {rightPanel === 'combat' ? (
           <CombatTracker
@@ -737,11 +801,25 @@ export default function DmApp() {
             updateNotice={updateNotice}
             onCheckUpdate={() => void window.tabledm.checkForUpdate(true)}
             onStartUpdate={() => void window.tabledm.startUpdate()}
+            theme={theme}
+            onThemeChange={(next) => void changeCampaignTheme(next)}
+            holoPortraits={holoPortraitsEnabled(theme, campaign?.holoPortraits)}
+            onHoloPortraitsChange={campaign ? (enabled) => void changeHoloPortraits(enabled) : undefined}
+            digitalRain={digitalRainEnabled(theme, campaign?.digitalRain)}
+            onDigitalRainChange={campaign ? (enabled) => void changeDigitalRain(enabled) : undefined}
           />
         ) : null}
+        </div>
       </div>
-      {pickingSystem ? (
-        <SystemPicker onPick={(id) => void newCampaign(id)} onCancel={() => setPickingSystem(false)} />
+      {campaignSetup?.step === 'system' ? (
+        <SystemPicker onPick={(id) => void newCampaign(id)} onCancel={() => setCampaignSetup(null)} />
+      ) : null}
+      {campaignSetup?.step === 'theme' ? (
+        <ThemeSetup
+          onPick={(id, options) => void newCampaign(campaignSetup.system, id, options)}
+          onBack={() => setCampaignSetup({ step: 'system' })}
+          onCancel={() => setCampaignSetup(null)}
+        />
       ) : null}
     </div>
     </DiceLogProvider>

@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { pathHasFolder } from '../../../shared/campaignLayout'
+import { isHoloPortraitPath, isStartHerePath, pathHasFolder } from '../../../shared/campaignLayout'
+import { holoPortraitsEnabled, type ThemeId } from '../../../shared/theme'
 import type { CampaignInfo, Character, CreateNoteMapImage, PlayerMapView } from '../../../shared/types'
 import {
   imageTitle,
@@ -31,6 +32,7 @@ import { isMapNote, mapImagePath } from '../lib/mapNote'
 import CalloutCard from './CalloutCard'
 import CombatCard from './CombatCard'
 import GettingStarted from './GettingStarted'
+import StartHereTheme from './StartHereTheme'
 import GmOnly from './GmOnly'
 import MapView from './MapView'
 import ReadAloud from './ReadAloud'
@@ -102,7 +104,13 @@ export default function SessionNotes({
   recentCampaigns,
   onOpenRecent,
   onCampaignChange,
-  shopsEnabled = true
+  shopsEnabled = true,
+  theme,
+  onThemeChange,
+  holoPortraits = false,
+  digitalRain = false,
+  onHoloPortraitsChange,
+  onDigitalRainChange
 }: {
   path: string
   kind: FileKind
@@ -128,6 +136,12 @@ export default function SessionNotes({
   onOpenRecent?: (folder: string) => void
   onCampaignChange?: (campaign: CampaignInfo) => void
   shopsEnabled?: boolean
+  theme?: ThemeId
+  onThemeChange?: (theme: ThemeId) => void
+  holoPortraits?: boolean
+  digitalRain?: boolean
+  onHoloPortraitsChange?: (enabled: boolean) => void
+  onDigitalRainChange?: (enabled: boolean) => void
 }) {
   const [markdown, setMarkdown] = useState('')
   const [original, setOriginal] = useState('')
@@ -511,8 +525,12 @@ export default function SessionNotes({
   }
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col bg-panel">
-      <header className="border-b border-line px-3 py-2">
+    <section
+      className={`matrix-rain-well relative z-[1] flex min-h-0 flex-1 flex-col ${
+        theme === 'matrix' && digitalRain ? 'bg-transparent' : 'bg-panel'
+      }`}
+    >
+      <header className="border-b border-line bg-panel px-3 py-2">
         <div className="flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
             {onBack ? (
@@ -552,7 +570,7 @@ export default function SessionNotes({
                 type="button"
                 onClick={() => setShowLinks((open) => !open)}
                 className={`rounded px-2.5 py-1 text-xs ${
-                  showLinks ? 'bg-amber font-semibold text-ink' : 'border border-line hover:border-amber'
+                  showLinks ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
                 }`}
               >
                 Links
@@ -572,7 +590,7 @@ export default function SessionNotes({
                     type="button"
                     disabled={disabled}
                     onClick={() => void save()}
-                    className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-ink disabled:bg-line"
+                    className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-on-amber disabled:bg-line"
                   >
                     Save
                   </button>
@@ -604,7 +622,7 @@ export default function SessionNotes({
               <button
                 type="button"
                 onClick={onShowToPlayers}
-                className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-ink"
+                className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-on-amber"
               >
                 Show to players
               </button>
@@ -723,6 +741,7 @@ export default function SessionNotes({
               originalRef.current = result.markdown
               onCampaignChange?.(result.campaign)
             }}
+            holo={holoPortraitsEnabled(theme, holoPortraits) && isHoloPortraitPath(path)}
             renderNotes={(body) =>
               renderDocument(
                 linkWikiNotes(prepareNoteMarkdown(body, path, images, { injectPortrait: false }), path, noteIndex),
@@ -749,6 +768,7 @@ export default function SessionNotes({
             onRerollStock={shopsEnabled ? rerollShopStock : undefined}
             onChangeStock={shopsEnabled ? changeShopStock : undefined}
             onChangeStanding={changeShopStanding}
+            holo={holoPortraitsEnabled(theme, holoPortraits) && isHoloPortraitPath(path)}
             renderNotes={(body) =>
               renderDocument(
                 linkWikiNotes(prepareNoteMarkdown(body, path, images, { injectPortrait: false }), path, noteIndex),
@@ -757,7 +777,19 @@ export default function SessionNotes({
             }
           />
         ) : (
-          <div className="mx-auto max-w-3xl text-base">{renderDocument(rendered || '_This file is empty._', 'note')}</div>
+          <div className="mx-auto max-w-3xl text-base">
+            {theme && onThemeChange && isStartHerePath(path) ? (
+              <StartHereTheme
+                theme={theme}
+                onChange={onThemeChange}
+                holoPortraits={holoPortraits}
+                onHoloPortraitsChange={onHoloPortraitsChange}
+                digitalRain={digitalRain}
+                onDigitalRainChange={onDigitalRainChange}
+              />
+            ) : null}
+            {renderDocument(rendered || '_This file is empty._', 'note')}
+          </div>
         )}
       </div>
       )}
@@ -798,7 +830,7 @@ export default function SessionNotes({
               <button
                 type="button"
                 onClick={() => void save()}
-                className="rounded bg-amber px-3 py-1.5 text-sm font-semibold text-ink"
+                className="rounded bg-amber px-3 py-1.5 text-sm font-semibold text-on-amber"
               >
                 Save
               </button>
