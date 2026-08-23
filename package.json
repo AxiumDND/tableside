@@ -1,6 +1,6 @@
 {
   "name": "tableside",
-  "version": "1.2.7",
+  "version": "1.2.8",
   "description": "Tableside — in-person dual-monitor DM tool (D&D 5e, Pathfinder 2e, Vampire 5th)",
   "main": "./out/main/index.js",
   "author": "James",

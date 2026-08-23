@@ -31,6 +31,13 @@ const api = {
   },
   placePlayerOnDisplay: (displayId: number): Promise<DisplayInfo[]> =>
     ipcRenderer.invoke('player:place-on-display', displayId),
+  closePlayerWindow: (): Promise<boolean> => ipcRenderer.invoke('player:close-window'),
+  getPlayerWindowOpen: (): Promise<boolean> => ipcRenderer.invoke('player:window-open'),
+  onPlayerWindow: (callback: (open: boolean) => void) => {
+    const listener = (_event: unknown, open: boolean) => callback(open)
+    ipcRenderer.on('player:window', listener)
+    return () => ipcRenderer.removeListener('player:window', listener)
+  },
   onDisplaysChanged: (callback: (displays: DisplayInfo[]) => void) => {
     const listener = (_event: unknown, displays: DisplayInfo[]) => callback(displays)
     ipcRenderer.on('app:displays-changed', listener)

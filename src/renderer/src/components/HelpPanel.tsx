@@ -144,8 +144,10 @@ export default function HelpPanel({
               </>,
               <>
                 This DM console always opens. The fullscreen <strong>player</strong> window stays hidden until a second
-                monitor is connected, then it appears there. Click the <Action>Players see</Action> preview to pick the
-                TV. Unplug the second screen and the player view hides again.
+                monitor is connected, then it appears there. <Action>Close</Action> on the{' '}
+                <Action>Players see</Action> preview shuts it until you pick a monitor or{' '}
+                <Action>Show to players</Action>. Click the preview to pick the TV. Unplug the second screen and the
+                player view hides again.
               </>,
               <>
                 Click a map or portrait in a note so it is selected, then <Action>Show to players</Action> (or{' '}

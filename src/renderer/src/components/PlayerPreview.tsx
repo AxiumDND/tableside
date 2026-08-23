@@ -39,20 +39,24 @@ function MonitorList({
 export default function PlayerPreview({
   state,
   hidden,
+  playerWindowOpen = false,
   displays,
   playerDisplayId,
   onClear,
   onToggle,
   onPickDisplay,
+  onCloseWindow,
   onRefreshDisplays
 }: {
   state: PlayerState
   hidden?: boolean
+  playerWindowOpen?: boolean
   displays: DisplayInfo[]
   playerDisplayId: number | ''
   onClear: () => void
   onToggle: () => void
   onPickDisplay: (displayId: number) => void
+  onCloseWindow?: () => void
   onRefreshDisplays: () => Promise<void>
 }) {
   const [picking, setPicking] = useState(false)
@@ -99,6 +103,16 @@ export default function PlayerPreview({
               Clear
             </button>
           )}
+          {onCloseWindow ? (
+            <button
+              type="button"
+              onClick={onCloseWindow}
+              className="rounded border border-line px-2 py-0.5 text-[11px] hover:border-amber"
+              title="Close the player window on the other monitor"
+            >
+              Close
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={onToggle}
@@ -131,7 +145,9 @@ export default function PlayerPreview({
               ? 'Player screen waits for a second monitor'
               : picking
                 ? 'Choose a monitor'
-                : 'Click to choose monitor'}
+                : playerWindowOpen
+                  ? 'Click to choose monitor'
+                  : 'Player window closed — click to reopen'}
           </p>
           {picking ? (
             <div className="absolute inset-0 z-10 flex flex-col justify-end rounded bg-ink/95 p-1.5">

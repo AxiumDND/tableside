@@ -19,6 +19,7 @@ import type {
 import { emptyCombat, emptyPlayerState, emptySettings } from '../shared/types'
 import { setupAppUpdater, scheduleLaunchUpdateCheck } from './appUpdater'
 import { mapArtRelativeFolder, setMapFenceImage } from '../shared/mapCreate'
+import { shouldShowPlayerWindow } from '../shared/playerWindow'
 import { APP_NAME, APP_VERSION } from '../shared/version'
 import {
   LIBRARY_FOLDER_NAMES,
@@ -81,6 +82,7 @@ if (process.platform === 'win32') {
 
 let dmWindow: BrowserWindow | null = null
 let playerWindow: BrowserWindow | null = null
+let playerWindowWanted = true
 let campaignFolder: string | null = null
 let playerState: PlayerState = emptyPlayerState()
 let settings: AppSettings = emptySettings()
@@ -430,13 +432,25 @@ function fullscreenPlayerOnDisplay(display: Electron.Display): void {
   win.setFullScreen(false)
 }
 
+function playerWindowVisible(): boolean {
+  return Boolean(playerWindow && !playerWindow.isDestroyed() && playerWindow.isVisible())
+}
+
+function broadcastPlayerWindow(): void {
+  dmWindow?.webContents.send('player:window', playerWindowVisible())
+}
+
 function hidePlayerWindow(): void {
-  if (!playerWindow || playerWindow.isDestroyed()) return
+  if (!playerWindow || playerWindow.isDestroyed()) {
+    broadcastPlayerWindow()
+    return
+  }
   const win = playerWindow
   const hide = (): void => {
     if (win.isDestroyed()) return
     win.hide()
     win.setSkipTaskbar(true)
+    broadcastPlayerWindow()
   }
   if (win.isFullScreen()) {
     win.once('leave-full-screen', hide)
@@ -447,7 +461,13 @@ function hidePlayerWindow(): void {
   hide()
 }
 
+function closePlayerWindow(): void {
+  playerWindowWanted = false
+  hidePlayerWindow()
+}
+
 function showPlayerWindow(display?: Electron.Display): void {
+  playerWindowWanted = true
   if (!hasSecondDisplay()) {
     hidePlayerWindow()
     return
@@ -460,6 +480,7 @@ function showPlayerWindow(display?: Electron.Display): void {
   playerWindow.setSkipTaskbar(false)
   playerWindow.show()
   fullscreenPlayerOnDisplay(target)
+  broadcastPlayerWindow()
 }
 
 function createPlayerWindow(display = targetPlayerDisplay()): void {
@@ -492,6 +513,8 @@ function createPlayerWindow(display = targetPlayerDisplay()): void {
 
   playerWindow.on('closed', () => {
     playerWindow = null
+    playerWindowWanted = false
+    broadcastPlayerWindow()
   })
   playerWindow.loadURL(rendererUrl('player'))
   playerWindow.webContents.on('did-finish-load', () => {
@@ -500,10 +523,11 @@ function createPlayerWindow(display = targetPlayerDisplay()): void {
   playerWindow.setSkipTaskbar(false)
   playerWindow.show()
   fullscreenPlayerOnDisplay(display)
+  broadcastPlayerWindow()
 }
 
 function syncPlayerWindow(): void {
-  if (hasSecondDisplay()) showPlayerWindow()
+  if (shouldShowPlayerWindow(hasSecondDisplay(), playerWindowWanted)) showPlayerWindow()
   else hidePlayerWindow()
 }
 
@@ -1205,7 +1229,7 @@ function registerIpc(): void {
         mapView: payload.mapView ?? null
       }
       sendPlayerState()
-      syncPlayerWindow()
+      showPlayerWindow()
       return playerState
     }
   )
@@ -1234,6 +1258,13 @@ function registerIpc(): void {
   )
 
   ipcMain.handle('player:get-state', () => playerState)
+
+  ipcMain.handle('player:window-open', () => playerWindowVisible())
+
+  ipcMain.handle('player:close-window', () => {
+    closePlayerWindow()
+    return playerWindowVisible()
+  })
 
   ipcMain.handle('player:place-on-display', async (_e, displayId: number) => {
     const display = screen.getAllDisplays().find((d) => d.id === displayId)

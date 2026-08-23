@@ -11,7 +11,7 @@ How the DM console and player window work during a session.
 | Center | Open note, image, or PDF |
 | Right (optional) | Combat tracker, Lookup, or Help |
 
-Two Electron windows open: the DM console, and a fullscreen **player** window (preferably on a second monitor).
+Two Electron windows open: the DM console, and a fullscreen **player** window on a second monitor. **Close** on the Players see preview shuts the player window so you can use the TV for something else. Pick a monitor or **Show to players** to open it again.
 
 ## Start a session
 
@@ -19,7 +19,7 @@ Two Electron windows open: the DM console, and a fullscreen **player** window (p
 2. **Open campaign** — pick any campaign folder on disk. Folders without `"system"` in `campaign.json` run as D&D 5e.
 3. **New campaign** — pick a system (D&D 5e, Pathfinder 2e, or Vampire 5th), then an empty folder; Tableside scaffolds the standard layout. Changing system later is not supported.
 
-With more than one display, use **Player display…** to put the player window on the TV/monitor facing the table.
+With more than one display, click the **Players see** preview to put the player window on the TV/monitor facing the table. Close that window when you do not need it.
 
 ## Show maps and art
 

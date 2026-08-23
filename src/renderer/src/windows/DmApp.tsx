@@ -90,6 +90,7 @@ export default function DmApp() {
   const [history, setHistory] = useState<{ path: string; kind: FileKind }[]>([])
   const [playerDisplayId, setPlayerDisplayId] = useState<number | ''>('')
   const [showPlayerPreview, setShowPlayerPreview] = useState(true)
+  const [playerWindowOpen, setPlayerWindowOpen] = useState(false)
   const [recentCampaigns, setRecentCampaigns] = useState<RecentCampaign[]>([])
   const [pickingSystem, setPickingSystem] = useState(false)
   const [updateNotice, setUpdateNotice] = useState<AppUpdateNotice | null>(null)
@@ -100,15 +101,17 @@ export default function DmApp() {
   playerSrcRef.current = player.imageSrc
 
   const refresh = useCallback(async () => {
-    const [info, state, screens, prefs] = await Promise.all([
+    const [info, state, screens, prefs, windowOpen] = await Promise.all([
       window.tabledm.getCampaign(),
       window.tabledm.getPlayerState(),
       window.tabledm.getDisplays(),
-      window.tabledm.getSettings()
+      window.tabledm.getSettings(),
+      window.tabledm.getPlayerWindowOpen?.() ?? Promise.resolve(false)
     ])
     setCampaign(info)
     setPlayer(state)
     setDisplays(screens)
+    setPlayerWindowOpen(Boolean(windowOpen))
     const saved = prefs.playerDisplayId
     setPlayerDisplayId(
       saved != null && screens.some((d) => d.id === saved)
@@ -146,6 +149,7 @@ export default function DmApp() {
   useEffect(() => {
     void refresh()
     const stopPlayer = window.tabledm.onPlayerState(setPlayer)
+    const stopPlayerWindow = window.tabledm.onPlayerWindow?.(setPlayerWindowOpen)
     const stopUpdate = window.tabledm.onAppUpdate(setUpdateNotice)
     const stopDisplays = window.tabledm.onDisplaysChanged((screens) => {
       setDisplays(screens)
@@ -155,6 +159,7 @@ export default function DmApp() {
     })
     return () => {
       stopPlayer()
+      stopPlayerWindow?.()
       stopUpdate()
       stopDisplays()
     }
@@ -615,12 +620,19 @@ export default function DmApp() {
           <PlayerPreview
             state={player}
             hidden={!showPlayerPreview}
+            playerWindowOpen={playerWindowOpen}
             displays={displays}
             playerDisplayId={playerDisplayId}
             onClear={() => void clearPlayer()}
+            onCloseWindow={() => {
+              void window.tabledm.closePlayerWindow().then(setPlayerWindowOpen)
+            }}
             onPickDisplay={(id) => {
               setPlayerDisplayId(id)
-              void window.tabledm.placePlayerOnDisplay(id).then(setDisplays)
+              void window.tabledm.placePlayerOnDisplay(id).then((screens) => {
+                setDisplays(screens)
+                void window.tabledm.getPlayerWindowOpen().then(setPlayerWindowOpen)
+              })
             }}
             onRefreshDisplays={async () => {
               setDisplays(await window.tabledm.getDisplays())
