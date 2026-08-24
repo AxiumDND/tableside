@@ -477,8 +477,8 @@ export default function HelpPanel({
               <>
                 In a session or game night sheet, use a heading that includes <Code>Combat</Code>, <Code>Encounter</Code>
                 , or ⚔️. Skip headings that say <Code>no combat</Code>. Right-click Sessions for{' '}
-                <Action>New game night sheet…</Action> — it uses the Lazy DM 10 steps and links every existing Party
-                sheet.
+                <Action>New game night sheet…</Action> — Party links and scene blocks with optional read-aloud, GM-only notes, secrets, treasure, NPCs, combat, and table cues (place, map, checks, music, sound).
+                Copy a <Code>[!scene]</Code> block to add another beat.
               </>,
               <>
                 Add a line like <Code>**Combatants:** [[Vesper]] · [[Cultist]] ×3 · party</Code>
@@ -626,8 +626,9 @@ export default function HelpPanel({
           />
           <p className="text-[12px] text-muted">
             After the session, combat stays in <Code>combat.json</Code> until you clear it. Keep lasting work in your
-            own campaign folder. <Action>Sample</Action> copies Greystead once into user data; delete that folder and
-            click Sample again to refresh from the bundle.
+            own campaign folder. <Action>Sample</Action> copies Greystead into user data; Tableside refreshes it when the
+            bundled <Code>sampleRevision</Code> is newer. Delete <Code>samples\greystead</Code> and click Sample to
+            force a refresh.
           </p>
         </Section>
       </div>

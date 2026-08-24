@@ -2,7 +2,7 @@
 
 Level 1 one-shot. The mayor’s daughter is missing. The town swears bandits took her to a cave on the ridge. The cave is a costume.
 
-Open **[[Session 1]]** to run the night. The fight map is **[[Pale Well Caves]]**. Papers are in **[[Handouts]]**.
+Open **[[Session 1 — Game Night Sheet]]** to run the night. **[[Session 1]]** has prose, show order, and reference. The fight map is **[[Pale Well Caves]]**. Papers are in **[[Handouts]]**.
 
 ## Tonight
 
@@ -38,4 +38,4 @@ Open **[[Session 1]]** to run the night. The fight map is **[[Pale Well Caves]]*
 - [[Hymn — The Nine Mouths]] — on Vesper
 
 > [!gmonly]
-> Founding-blood. The Crowe line. Nine mouths; tonight was meant to be three. If the bowl is smashed or the chant finishes, Greystead is marked. The papers point to **Millhollow** and a Warden on the valley road. See [[Session 1]] endings and [[Handouts]].
+> Founding-blood. The Crowe line. Nine mouths; tonight was meant to be three. If the bowl is smashed or the chant finishes, Greystead is marked. The papers point to **Millhollow** and a Warden on the valley road. See **[[Session 1 — Game Night Sheet]]** endings and [[Handouts]].

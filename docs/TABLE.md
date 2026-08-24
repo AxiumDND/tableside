@@ -15,7 +15,7 @@ Two Electron windows open: the DM console, and a fullscreen **player** window on
 
 ## Start a session
 
-1. **Sample** — copies Greystead (the 5e level-1 one-shot) into user data and opens it (safe to edit). First launch with no campaign folder does the same.
+1. **Sample** — copies Greystead (the 5e level-1 one-shot) into user data and opens it (safe to edit). On install or update, the copy is replaced when the bundled `sampleRevision` is newer. First launch with no campaign folder does the same.
 2. **Open campaign** — pick any campaign folder on disk. Folders without `"system"` in `campaign.json` run as D&D 5e.
 3. **New campaign** — pick a system (D&D 5e, Pathfinder 2e, or Vampire 5th), then a look, then an empty folder; Tableside scaffolds the standard layout. Changing system later is not supported. Theme can change any time from Start Here.
 
@@ -57,7 +57,7 @@ Each strip has **Add audio…**. Right-click an Audio folder works the same. Ope
 - **Search** (hidden until you click it next to Files, or press `Ctrl+F` / `/`) finds notes, maps, and art by name. Results are a flat ranked list with folder paths — `Esc` clears, then hides the box.
 - **Right-click** a folder (or empty tree area) to create a player, NPC, monster, spell, gear, game night sheet, map, place, shop, or faction. **Add art…** on Party, NPCs, Bestiary, Places, Factions, Spells, Sessions, Maps, Handouts, a Gear subsection, or the `Art/` folder itself copies pictures into that folder’s `Art/` (creates it if needed). Name art like the sheet (`Ghoul.webp`) so portraits attach. **Add files…** still imports notes and PDFs into the folder you clicked. Gear has **Weapons**, **Armor**, **Equipment**, and **Magic Items** — right-click the subsection to add a note or art there.
 - Right-click a file to **Duplicate…**, **Add art here…** (into that folder’s `Art/`), add files beside it, or **Delete…** (asks first).
-- Creating **New player / NPC / monster / spell / gear / game night sheet / map / place / shop / faction** fills the built-in sheet for that type and the name you type. **New game night sheet…** is a Lazy DM 10-step page and links every existing `Party/` sheet. **New place…** / **New shop…** live on `Places/` and include bundled default art (town, dungeon, mountain, swamp, inn, and similar). **New faction…** is on `Factions/` (thieves’ guild, city watch, cult, and similar).
+- Creating **New player / NPC / monster / spell / gear / game night sheet / map / place / shop / faction** fills the built-in sheet for that type and the name you type. **New game night sheet…** is Party + Scenes (copy a `[!scene]` block to add beats) and links every existing `Party/` sheet. **New place…** / **New shop…** live on `Places/` and include bundled default art (town, dungeon, mountain, swamp, inn, and similar). **New faction…** is on `Factions/` (thieves’ guild, city watch, cult, and similar).
 - **New map…** lets you choose an existing campaign image or **Load image…**. Loaded files are copied into that folder’s `Art/` (usually `Maps/Art/`) and named to match the map.
 - `campaign.json`, `combat.json`, `audio.json`, `README.md`, and `Templates/` stay hidden from the tree.
 
@@ -133,5 +133,5 @@ Bottom of the left column: quick d4–d20 buttons plus a custom expression field
 
 - Combat state remains in `combat.json` until you clear it.
 - Note edits write straight to the campaign folder (Obsidian vaults stay in sync on disk).
-- **Sample** copies Greystead once into user data. Delete `%APPDATA%\Tableside\samples\greystead` and click Sample again to refresh from the bundle. Keep lasting edits in your own campaign folder.
+- **Sample** lives in `%APPDATA%\Tableside\samples\greystead`. Tableside refreshes it automatically when the bundled `sampleRevision` in `campaign.json` is newer than your copy. Delete that folder and click **Sample** to force a refresh. Keep lasting edits in your own campaign folder.
 - **Updates** — if you are online, a newer GitHub release can show a dismissible bar. Help → Updates to check by hand. Offline, nothing is shown.

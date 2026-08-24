@@ -1,6 +1,6 @@
 # How to use Tableside
 
-Step-by-step for a night at the table. Current release: **1.4.3**.
+Step-by-step for a night at the table. Current release: **1.4.4**.
 
 Tableside is a **local Windows DM console**. Your laptop holds the notes. A second monitor (TV) shows players a clean picture — maps, art, initiative, or a sci-fi opening crawl. There is no account and no internet required once the app is installed.
 
@@ -8,7 +8,7 @@ Deeper reference: [TABLE.md](TABLE.md) (every control), [CAMPAIGN.md](CAMPAIGN.m
 
 ## Install
 
-1. Download **[Tableside-Setup-1.4.3.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
+1. Download **[Tableside-Setup-1.4.4.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
 2. Run it. Per-user install — Start Menu + desktop shortcut. No admin.
 3. If Windows says **Windows protected your PC**, click **More info**, then **Run anyway**. The installer is not code-signed. That is expected.
 4. Open **Tableside**.
@@ -71,12 +71,18 @@ Large and Huge tokens stay 2× / 3× a Medium token.
 
 ### 4. Start a fight
 
-Prep combatants on a **game night sheet** (right-click **Sessions/** → **New game night sheet…**):
+Prep on a **game night sheet** (right-click **Sessions/** → **New game night sheet…**):
+
+1. **The Party** — linked PC sheets plus a **Focus tonight** note.
+2. **Scenes** — Opening scene block, then more `[!scene]` blocks (copy one to add a beat). Each can have art, read-aloud, GM-only notes, optional secrets/treasure/NPCs/combat, and **At the table** cues (place, map, checks, music, sound, leads to).
+3. Combatants for a fight **inside the scene block** that needs it:
 
 ```markdown
-## ⚔️ Combat 1 — the door
-
-**Combatants:** [[Vesper]] · [[Cultist]] ×3 · party
+> [!scene] The door
+> …
+> ## ⚔️ Combat 1 — the door
+>
+> **Combatants:** [[Vesper]] · [[Cultist]] ×3 · party
 ```
 
 At the table:
@@ -160,7 +166,7 @@ The **dice tray** sits at the bottom of the left column. Quick d4–d20 buttons,
 - Note edits are already on disk in the campaign folder. Obsidian vaults stay in sync.
 - Combat stays in `combat.json` until you clear it.
 - Mixer volumes stay in `audio.json`.
-- **Sample** lives in `%APPDATA%\Tableside\samples\greystead`. Delete that folder and click Sample again to refresh from the bundle. Keep lasting work in your own campaign folder.
+- **Sample** lives in `%APPDATA%\Tableside\samples\greystead`. On install or update, Tableside refreshes the sample when the bundled `sampleRevision` in `campaign.json` is newer than your copy. Delete that folder and click **Sample** to force a refresh anytime.
 - Uninstall from Windows Settings. Campaign folders and `%APPDATA%\Tableside` stay put.
 
 ## Keyboard

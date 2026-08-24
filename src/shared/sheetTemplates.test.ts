@@ -70,10 +70,27 @@ describe('game night sheet template', () => {
     expect(body).toContain('[[PC — Lucian Radu|Lucian Radu]]')
     expect(body).not.toContain('{{party}}')
     expect(body).toContain('**Combatants:** [[Monster Name]] · party')
-    expect(body).toContain('## 1. The characters')
-    expect(body).toContain('## 5. Locations')
-    expect(body).toContain('[[Place Name]]')
-    expect(body).toContain('## 10. Likely endings')
+    expect(body).toContain('## 1. The Party')
+    expect(body).toContain('[!note] Focus tonight')
+    expect(body).toContain('## 2. Scenes')
+    expect(body).toContain('[!scene] Opening — name the beat')
+    expect(body).toContain('[!scene] Scene — name the beat')
+    expect(body).toContain('**NPCs in this scene**')
+    expect(body).toContain('**Secrets and clues in this scene**')
+    expect(body).toContain('**Treasure in this scene**')
+    expect(body).toContain('**Combat in this scene**')
+    expect(body).toContain('**At the table**')
+    expect(body).toContain('If they miss / flee')
+    expect(body).toContain('Music: General / Creepy / Combat')
+    expect(body).toContain('[!gmonly] Only you')
+    expect(body).not.toContain('## 3. Secrets and clues')
+    expect(body).not.toContain('## 3. From last time')
+    expect(body).not.toContain('## 4. Likely endings')
+    expect(body).not.toContain('## 4. NPCs')
+    expect(body).not.toContain('## 4. Treasure')
+    expect(body).not.toContain('## 5. Monsters')
+    expect(body).not.toContain('## 1. The characters')
+    expect(body).not.toContain('## 5. Locations')
     expect(body).not.toContain('{{crawl}}')
     expect(body).not.toContain('[!crawl]')
   })
@@ -96,13 +113,13 @@ describe('game night sheet template', () => {
 
   it('injects a crawl into an old Sci-fi night sheet that has no {{crawl}} marker', () => {
     const body = fillTemplate(
-      '# Session Name — Night Sheet\n\n> [!abstract] Tonight\n> Start.\n\n## 1. The characters\n',
+      '# Session Name — Night Sheet\n\n> [!abstract] Tonight\n> Start.\n\n## 1. The Party\n',
       'nightsheet',
       'Session 4',
       { theme: 'scifi' }
     )
     expect(body).toContain('[!crawl] The Siege of Kestrel')
-    expect(body.indexOf('[!crawl]')).toBeLessThan(body.indexOf('## 1. The characters'))
+    expect(body.indexOf('[!crawl]')).toBeLessThan(body.indexOf('## 1. The Party'))
   })
 
   it('injects Party links into an old night sheet that has no {{party}} marker', () => {

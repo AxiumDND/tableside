@@ -32,7 +32,7 @@ Rules of thumb:
 
 Skip headings that say `no combat`.
 
-A short **game night sheet** is enough for numbers and combatant lines; longer campaigns can keep prose in `Session N.md`. The Greystead sample puts the whole night on one page so you can run without flipping. **New game night sheet…** starts from the Lazy DM 10-step template and links existing Party files.
+A short **game night sheet** is enough for Party focus, scene beats, and combatant lines; longer campaigns can keep prose in `Session N.md`. Greystead runs from **Session 1 — Game Night Sheet** with prose in **Session 1**. **New game night sheet…** starts from the Party + Scenes template and links existing Party files.
 
 ### At the table
 
@@ -50,7 +50,7 @@ A short **game night sheet** is enough for numbers and combatant lines; longer c
 - Heading does not look like combat (add `Combat` or ⚔️).
 - No `statblock` — add one, or open the sheet and confirm AC/HP parse.
 
-Example in the Sample campaign: `examples/greystead/Sessions/Session 1.md`.
+Example in the Sample campaign: `examples/greystead/Sessions/Session 1 — Game Night Sheet.md`.
 
 ## Lookup → campaign note
 

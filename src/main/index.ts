@@ -342,10 +342,26 @@ async function removeDroppedAppSamples(): Promise<void> {
   }
 }
 
+async function readSampleRevision(folder: string): Promise<number> {
+  const file = join(folder, 'campaign.json')
+  if (!existsSync(file)) return 0
+  try {
+    const data = JSON.parse(await readFile(file, 'utf8')) as { sampleRevision?: unknown }
+    return typeof data.sampleRevision === 'number' && Number.isFinite(data.sampleRevision)
+      ? Math.floor(data.sampleRevision)
+      : 0
+  } catch {
+    return 0
+  }
+}
+
 async function ensureSampleWorkingCopy(): Promise<string> {
   const source = sampleSourcePath()
   const dest = sampleWorkingPath()
-  if (!existsSync(dest)) {
+  const sourceRevision = await readSampleRevision(source)
+  const destRevision = existsSync(dest) ? await readSampleRevision(dest) : 0
+  if (!existsSync(dest) || destRevision < sourceRevision) {
+    if (existsSync(dest)) await rm(dest, { recursive: true, force: true })
     await mkdir(dirname(dest), { recursive: true })
     await cp(source, dest, { recursive: true })
   }
@@ -940,12 +956,27 @@ async function refreshStockNightSheetTemplate(root: string): Promise<void> {
     current.includes('{{party}}') &&
     current.includes('{{crawl}}') &&
     current.includes('# Session Name — Game Night Sheet') &&
-    !current.includes('What this page does')
+    current.includes('## 1. The Party') &&
+    current.includes('[!scene]') &&
+    !current.includes('What this page does') &&
+    !current.includes('## 4. NPCs') &&
+    !current.includes('## 3. Secrets and clues') &&
+    !current.includes('## 3. From last time') &&
+    !current.includes('## 4. Likely endings') &&
+    current.includes('**At the table**')
   if (!alreadyCurrent) {
     const stock =
       current.includes('{{party}}') ||
       current.includes('Numbers and cues for behind the screen') ||
-      current.includes('Combat 1 — name the encounter')
+      current.includes('Combat 1 — name the encounter') ||
+      current.includes('## 1. The characters') ||
+      current.includes('## 5. Locations') ||
+      current.includes('## 4. NPCs') ||
+      current.includes('## 3. Secrets and clues') ||
+      current.includes('## 4. Treasure') ||
+      current.includes('## 3. From last time') ||
+      current.includes('## 4. Likely endings') ||
+      (current.includes('[!scene]') && !current.includes('**At the table**'))
     if (stock) await writeFile(dest, (await packTemplates(root)).nightsheet, 'utf8')
   } else if (currentPath !== dest) {
     await writeFile(dest, current, 'utf8')
@@ -957,7 +988,15 @@ async function refreshStockNightSheetTemplate(root: string): Promise<void> {
     const stock =
       text.includes('{{party}}') ||
       text.includes('Numbers and cues for behind the screen') ||
-      text.includes('Combat 1 — name the encounter')
+      text.includes('Combat 1 — name the encounter') ||
+      text.includes('## 1. The characters') ||
+      text.includes('## 5. Locations') ||
+      text.includes('## 4. NPCs') ||
+      text.includes('## 3. Secrets and clues') ||
+      text.includes('## 4. Treasure') ||
+      text.includes('## 3. From last time') ||
+      text.includes('## 4. Likely endings') ||
+      (text.includes('[!scene]') && !text.includes('**At the table**'))
     if (stock) await unlink(extra)
   }
 }

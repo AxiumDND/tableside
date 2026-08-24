@@ -5,6 +5,7 @@ import {
   npcNotes,
   parseNightEncounters,
   splitCalloutBlocks,
+  splitLeadingSceneArt,
   type CampaignNote
 } from './notes'
 import { isNpcSheet, parseStatblockYaml } from './statblock'
@@ -52,6 +53,21 @@ describe('night sheet parsing', () => {
     expect(parseNightEncounters(md, 'Sessions/Night.md', notes)).toHaveLength(0)
     expect(missingCombatantTokens(md, 'Sessions/Night.md', notes)).toEqual([])
   })
+
+  it('parses combat inside a scene block', () => {
+    const md = [
+      '## 2. Scenes',
+      '',
+      '> [!scene] The mill fight',
+      '> ## ⚔️ Combat 1 — the mill',
+      '> **Combatants:** [[Wolf]] ×2 · party',
+      ''
+    ].join('\n')
+    const encounters = parseNightEncounters(md, 'Sessions/Night.md', notes)
+    expect(encounters).toHaveLength(1)
+    expect(encounters[0].heading).toBe('⚔️ Combat 1 — the mill')
+    expect(encounters[0].combatants.find((c) => c.name === 'Wolf')?.count).toBe(2)
+  })
 })
 
 describe('opening crawl callouts', () => {
@@ -72,6 +88,64 @@ describe('opening crawl callouts', () => {
     expect(opening[0]?.kind).toBe('crawl')
     expect(opening[0]?.type).toBe('opening')
     expect(opening[0]?.markdown).toBe('A courier ship leaves the docks.')
+  })
+})
+
+describe('scene callouts', () => {
+  it('parses a scene and leaves nested read-aloud for the body', () => {
+    const parts = splitCalloutBlocks(
+      [
+        '> [!scene] Opening — the Grey Mare',
+        '> ![[The Grey Mare.webp]]',
+        '>',
+        "> Marta wants them upstairs before Kell's men see them.",
+        '>',
+        '> > [!readaloud]',
+        '> > Rain hammers the shutters.',
+        '>',
+        '> - Map: [[The Grey Mare]]'
+      ].join('\n')
+    ).filter((part) => part.kind !== 'prose' || part.markdown.trim())
+    expect(parts).toHaveLength(1)
+    expect(parts[0]).toMatchObject({
+      kind: 'scene',
+      type: 'scene',
+      title: 'Opening — the Grey Mare'
+    })
+    expect(parts[0]?.markdown).toContain('![[The Grey Mare.webp]]')
+    expect(parts[0]?.markdown).toContain('> [!readaloud]')
+    expect(parts[0]?.markdown).toContain('Rain hammers the shutters.')
+    const nested = splitCalloutBlocks(parts[0]?.markdown ?? '')
+    expect(nested.some((part) => part.kind === 'readaloud')).toBe(true)
+  })
+
+  it('splits leading scene art for a right-side frame', () => {
+    const wiki = splitLeadingSceneArt('![[The Grey Mare.webp]]\n\nRain on the shutters.\n')
+    expect(wiki).toEqual({
+      artSrc: 'The Grey Mare.webp',
+      artLabel: 'The Grey Mare.webp',
+      body: 'Rain on the shutters.\n'
+    })
+
+    const prepared = splitLeadingSceneArt(
+      '![The Grey Mare](<tabledm://file/?path=Places%2FArt%2FThe%20Grey%20Mare.webp>)\n\nWho wants what.\n'
+    )
+    expect(prepared.artSrc).toContain('tabledm://file/')
+    expect(prepared.artLabel).toBe('The Grey Mare')
+    expect(prepared.body).toBe('Who wants what.\n')
+
+    const missing = splitLeadingSceneArt('*[missing image: Scene art.webp]*\n\nFirst thing they see.\n')
+    expect(missing).toEqual({
+      artSrc: null,
+      artLabel: 'Scene art.webp',
+      body: 'First thing they see.\n'
+    })
+
+    expect(splitLeadingSceneArt('No art here.\n')).toEqual({
+      artSrc: null,
+      artLabel: null,
+      body: 'No art here.\n'
+    })
   })
 })
 

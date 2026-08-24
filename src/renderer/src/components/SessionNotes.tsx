@@ -21,11 +21,13 @@ import {
 import {
   childText,
   combatantLabel,
+  encounterSectionId,
   flattenNotes,
   headingId,
   linkWikiNotes,
   parseNightEncounters,
   partyNotes,
+  splitLeadingSceneArt,
   splitMarkdownSections,
   splitCombatCardContent,
   splitCalloutBlocks,
@@ -44,6 +46,8 @@ import StartHereTheme from './StartHereTheme'
 import GmOnly from './GmOnly'
 import MapView from './MapView'
 import ReadAloud from './ReadAloud'
+import SceneCard from './SceneCard'
+import SheetArtFrame from './SheetArtFrame'
 import ItemSheet from './ItemSheet'
 import NpcSheet from './NpcSheet'
 import { CharacterCard } from './StatBlock'
@@ -502,6 +506,40 @@ export default function SessionNotes({
           </ReadAloud>
         )
       }
+      if (part.kind === 'scene') {
+        const { artSrc, artLabel, body } = splitLeadingSceneArt(part.markdown)
+        const resolved = artSrc ? resolveMarkdownImageSrc(artSrc, path, images) : { url: '', path: null }
+        const showArt = Boolean(artSrc || artLabel)
+        return (
+          <SceneCard
+            key={key}
+            title={part.title}
+            art={
+              showArt ? (
+                <SheetArtFrame
+                  title={part.title?.trim() || artLabel || 'Scene'}
+                  imageSrc={resolved.path ? resolved.url : null}
+                  selectValue={resolved.path}
+                  selectedImage={selectedImage}
+                  images={images}
+                  aspect="portrait"
+                  onSelectImage={onSelectImage}
+                  onSrdError={() => undefined}
+                />
+              ) : undefined
+            }
+          >
+            {body.trim()
+              ? renderSectionedMarkdown(
+                  body,
+                  `${key}-body`,
+                  part.title?.trim() || undefined,
+                  crawlOffset + crawlLocal
+                )
+              : null}
+          </SceneCard>
+        )
+      }
       if (part.kind === 'crawl') {
         const crawlIndex = crawlOffset + crawlLocal
         crawlLocal += 1
@@ -551,6 +589,53 @@ export default function SessionNotes({
         <Markdown key={key} remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform} components={markdownComponents}>
           {part.markdown}
         </Markdown>
+      )
+    })
+  }
+
+  function renderSectionedMarkdown(
+    text: string,
+    keyPrefix: string,
+    encounterScope?: string,
+    crawlOffset = 0
+  ) {
+    const docSections = splitMarkdownSections(text)
+    if (docSections.length === 0) {
+      return renderMarkdown(text || '_This file is empty._', keyPrefix, crawlOffset)
+    }
+    let crawlsBefore = 0
+    return docSections.map((section, index) => {
+      const sectionId = encounterScope
+        ? encounterSectionId(section.heading, encounterScope)
+        : section.id
+      const encounter = encounters.find((item) => item.id === sectionId)
+      const boxed = Boolean(encounter) || isCombatHeading(section.heading)
+      const key = `${keyPrefix}-${section.id || index}`
+      const sectionCrawls = splitCalloutBlocks(section.markdown).filter((block) => block.kind === 'crawl').length
+      const offset = crawlOffset + crawlsBefore
+      crawlsBefore += sectionCrawls
+      if (!boxed) {
+        return (
+          <div key={key} className="markdown-body">
+            {renderMarkdown(section.markdown || '_This file is empty._', key, offset)}
+          </div>
+        )
+      }
+      const { card, rest } = splitCombatCardContent(section.markdown)
+      const cardCrawls = splitCalloutBlocks(card).filter((block) => block.kind === 'crawl').length
+      return (
+        <div key={key}>
+          <CombatCard
+            adding={Boolean(encounter && addingId === encounter.id)}
+            onAdd={encounter && onAddEncounter ? () => void addEncounter(encounter) : undefined}
+            missing={missingCombatantTokens(section.markdown, path, noteIndex)}
+          >
+            {renderMarkdown(card, `${key}-card`, offset)}
+          </CombatCard>
+          {rest.trim() ? (
+            <div className="markdown-body">{renderMarkdown(rest, `${key}-rest`, offset + cardCrawls)}</div>
+          ) : null}
+        </div>
       )
     })
   }

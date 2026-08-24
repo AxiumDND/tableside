@@ -621,7 +621,7 @@ export default function CampaignFiles({
               {prompt.kind === 'delete'
                 ? `Remove ${prompt.fileName} from this campaign. This cannot be undone.`
                 : prompt.kind === 'create' && prompt.template === 'nightsheet'
-                  ? 'Lazy DM 10-step game night sheet. Existing Party characters are linked in. Combatants lines feed Add to initiative. Sci-fi campaigns include an Opening crawl sample.'
+                  ? 'Party and Scenes — each scene block can hold read-aloud, GM-only notes, secrets, treasure, NPCs, combat, and table cues. Existing Party characters are linked in. Copy a scene block to add another beat. Sci-fi campaigns include an Opening crawl sample.'
                   : prompt.kind === 'create' && prompt.template === 'map'
                   ? 'Pick a campaign image, or load one — loaded files go in this folder’s Art/ and are named after the map.'
                   : prompt.kind === 'create' && prompt.template === 'place'

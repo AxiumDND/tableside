@@ -159,6 +159,7 @@ Supported image types: `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`, `.bmp`.
 | Type | Aliases | Role |
 | --- | --- | --- |
 | `readaloud` | `flavor` | Player-facing text to speak |
+| `scene` | `beat` | Scene card — art, what could happen, nested read-aloud, cues. Copy a block to add another beat. |
 | `crawl` | `opening` | Opening crawl. Play (Sci-fi look only) shows a starfield, a far-off line (`preface:`), a generic emblem (or the first `![[image]]`), then a silent perspective prologue. Write your own words. |
 | `gmonly` | `secret` | Collapsed GM-only block |
 | `infobox` | — | Sheet header / portrait card |
@@ -197,15 +198,19 @@ You can also **Add to campaign** from Lookup (monster → Bestiary, spell → Sp
 
 ## Game night sheets and combat
 
-A **game night sheet** is a session note with combat sections that feed the initiative tracker. Right-click **Sessions** → **New game night sheet…** for a Lazy DM 10-step page (characters, strong start, scenes, secrets, locations, NPCs, monsters, treasure, last time, endings). Existing `Party/` sheets are linked in automatically. New files are named `Session N — Game Night Sheet.md`. Sci-fi campaigns also get an Opening crawl sample — rewrite it, then **Play**.
+A **game night sheet** is a session note with Party focus and scene blocks that hold the night's beats. Right-click **Sessions** → **New game night sheet…** for The Party and Scenes. Existing `Party/` sheets are linked in automatically. New files are named `Session N — Game Night Sheet.md`. Sci-fi campaigns also get an Opening crawl sample — rewrite it, then **Play**.
 
-1. Use a heading that includes `Combat`, `Encounter`, or ⚔️ (skip headings that say `no combat`).
+Scene blocks use `> [!scene] Title`. Put optional art with `![[…]]`, a short “what could happen” note, nested `> [!readaloud]` for spoken text, nested `> [!gmonly]` for hidden prep, optional secrets/treasure/NPC bullets/combat, and an **At the table** cue list (place, map, checks, if they miss, music, sound, leads to). Copy a whole scene block to add another beat.
+
+1. Inside a scene (or at document level on older sheets), use a heading that includes `Combat`, `Encounter`, or ⚔️ (skip headings that say `no combat`).
 2. List combatants with wikilinks to Party / NPCs / Bestiary sheets:
 
 ```markdown
-## ⚔️ Combat 1 — the door
-
-**Combatants:** [[Vesper]] · [[Cultist]] ×3 · party
+> [!scene] The door
+> …
+> ## ⚔️ Combat 1 — the door
+>
+> **Combatants:** [[Vesper]] · [[Cultist]] ×3 · party
 ```
 
 - `party` adds every PC under `Party/`.
@@ -216,7 +221,7 @@ If there is no `Combatants:` line, Tableside still picks up wikilinks (and some 
 
 On the game night sheet, use **Add to initiative** / **Add encounter** to load those sheets into Combat. **Add all players** pulls every PC sheet.
 
-Suggested split: long prose in `Session N.md`, numbers and combatant lines in `Session N — Game Night Sheet.md`, cross-linked with wikilinks. A one-shot can put the whole night on one page — Greystead’s `Session 1.md` is that.
+Suggested split: long prose in `Session N.md`, numbers and combatant lines in `Session N — Game Night Sheet.md`, cross-linked with wikilinks. Greystead uses that split — run **Session 1 — Game Night Sheet**, reference **Session 1** for show order and coin.
 
 Full recipe (prep + troubleshooting): [RECIPES.md](RECIPES.md#game-night-sheet--initiative).
 
