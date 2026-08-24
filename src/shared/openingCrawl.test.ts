@@ -7,6 +7,7 @@ import {
   crawlDurationMs,
   crawlLogoRef,
   crawlMusicRef,
+  crawlMusicStartDelayMs,
   crawlPlainText,
   crawlPreface,
   crawlWordCount,
@@ -114,6 +115,14 @@ describe('crawl hold', () => {
     expect(CRAWL_HOLD_MS).toBe(2000)
     expect(CRAWL_PREFACE_MS).toBe(8000)
     expect(CRAWL_LOGO_MS).toBe(2500)
+  })
+})
+
+describe('crawlMusicStartDelayMs', () => {
+  it('starts crawl music 0.5s before the emblem, after hold and far-off line', () => {
+    expect(crawlMusicStartDelayMs(undefined)).toBe(CRAWL_HOLD_MS + CRAWL_PREFACE_MS - 500)
+    expect(crawlMusicStartDelayMs('Past the rim.')).toBe(CRAWL_HOLD_MS + CRAWL_PREFACE_MS - 500)
+    expect(crawlMusicStartDelayMs(null)).toBe(CRAWL_HOLD_MS - 500)
   })
 })
 

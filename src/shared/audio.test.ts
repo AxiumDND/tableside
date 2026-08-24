@@ -172,6 +172,23 @@ describe('mixer commands', () => {
     expect(state.playback.musicTrack).toBe(moodTrack)
   })
 
+  it('arms crawl by fading mood without starting the crawl track yet', () => {
+    let state = ready()
+    state = applyMixerCommand(state, { type: 'play-music', playlistId: 'Audio/Music/General' })
+    const moodTrack = state.playback.musicTrack
+    state = applyMixerCommand(state, { type: 'arm-crawl-music' })
+    expect(state.playback.musicPlaying).toBe(false)
+    expect(state.playback.musicTrack).toBe(moodTrack)
+    expect(state.playback.crawlMusic).toBe(null)
+    expect(state.playback.musicResumeAfterCrawl).toBe(true)
+    state = applyMixerCommand(state, {
+      type: 'play-crawl-music',
+      path: 'Audio/Music/Creepy/Dread.mp3'
+    })
+    expect(state.playback.crawlMusic).toBe('Audio/Music/Creepy/Dread.mp3')
+    expect(state.playback.musicResumeAfterCrawl).toBe(true)
+  })
+
   it('clamps saved volumes', () => {
     const prefs = parseMixerPrefs({ masterVolume: 4, musicVolume: -1, shuffle: false })
     expect(prefs.masterVolume).toBe(1)

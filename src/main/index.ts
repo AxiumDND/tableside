@@ -1569,6 +1569,7 @@ function registerIpc(): void {
   ipcMain.handle('mixer:play-crawl-music', (_e, path: string) =>
     runMixer({ type: 'play-crawl-music', path: String(path ?? '') })
   )
+  ipcMain.handle('mixer:arm-crawl-music', () => runMixer({ type: 'arm-crawl-music' }))
   ipcMain.handle('mixer:stop-crawl-music', () => runMixer({ type: 'stop-crawl-music' }))
   ipcMain.handle('mixer:stop-all', () => runMixer({ type: 'stop-all' }))
   ipcMain.handle('mixer:set-prefs', (_e, prefs: Partial<MixerPrefs>) =>

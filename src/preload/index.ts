@@ -72,6 +72,7 @@ const api = {
   mixerOneshot: (path: string): Promise<MixerState> => ipcRenderer.invoke('mixer:oneshot', path),
   mixerPlayCrawlMusic: (path: string): Promise<MixerState> =>
     ipcRenderer.invoke('mixer:play-crawl-music', path),
+  mixerArmCrawlMusic: (): Promise<MixerState> => ipcRenderer.invoke('mixer:arm-crawl-music'),
   mixerStopCrawlMusic: (): Promise<MixerState> => ipcRenderer.invoke('mixer:stop-crawl-music'),
   mixerStopAll: (): Promise<MixerState> => ipcRenderer.invoke('mixer:stop-all'),
   mixerSetPrefs: (prefs: Partial<MixerPrefs>): Promise<MixerState> =>

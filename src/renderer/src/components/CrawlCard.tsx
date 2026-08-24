@@ -209,7 +209,7 @@ export default function CrawlCard({
           <div>
             <span className="text-[10px] uppercase tracking-wider text-muted">Crawl music</span>
             <p className="mt-0.5 text-[11px] text-muted">
-              Overrides the mood playlist while the crawl plays, then resumes it.
+              Mood fades out on Play. Crawl track starts just before the emblem, then mood resumes when the crawl ends.
             </p>
             <div className="mt-1 flex flex-wrap items-center gap-1">
               <select

@@ -99,6 +99,7 @@ export type MixerCommand =
   | { type: 'stop-ambience' }
   | { type: 'oneshot'; path: string }
   | { type: 'play-crawl-music'; path: string }
+  | { type: 'arm-crawl-music' }
   | { type: 'stop-crawl-music' }
   | { type: 'stop-all' }
   | { type: 'ended'; layer: MixerLayerId | 'crawl' }
@@ -381,6 +382,27 @@ export function allMusicTracks(library: AudioLibrary): AudioTrack[] {
   return out
 }
 
+function armCrawlMusic(state: MixerState): MixerState {
+  const resume = state.playback.musicPlaying || state.playback.musicResumeAfterCrawl
+  if (
+    !state.playback.musicPlaying &&
+    !state.playback.crawlMusic &&
+    state.playback.musicResumeAfterCrawl === resume
+  ) {
+    return state
+  }
+  return {
+    ...state,
+    playback: {
+      ...state.playback,
+      musicPlaying: false,
+      musicResumeAfterCrawl: resume,
+      crawlMusic: null,
+      error: null
+    }
+  }
+}
+
 function stopCrawlMusic(state: MixerState): MixerState {
   if (!state.playback.crawlMusic && !state.playback.musicResumeAfterCrawl) return state
   const resume =
@@ -632,6 +654,8 @@ export function applyMixerCommand(state: MixerState, command: MixerCommand): Mix
         }
       }
     }
+    case 'arm-crawl-music':
+      return armCrawlMusic(state)
     case 'stop-crawl-music':
       return stopCrawlMusic(state)
     case 'stop-all':

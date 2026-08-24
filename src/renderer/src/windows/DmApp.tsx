@@ -10,6 +10,7 @@ import type {
   RecentCampaign
 } from '../../../shared/types'
 import { emptyMixerClock, emptyMixerState, mixerIsActive } from '../../../shared/audio'
+import { crawlMusicStartDelayMs } from '../../../shared/openingCrawl'
 import { emptyCombat, emptyPlayerState } from '../../../shared/types'
 import {
   applyThemeToDocument,
@@ -116,8 +117,16 @@ export default function DmApp() {
   const playerSrcRef = useRef(player.imageSrc)
   const mapLiveRef = useRef<{ src: string; title: string; view: PlayerMapView } | null>(null)
   const playerLiveRef = useRef(false)
+  const crawlMusicTimerRef = useRef<number | null>(null)
   const skipRestoredCombatShow = useRef(true)
   playerSrcRef.current = player.imageSrc
+
+  function clearCrawlMusicTimer(): void {
+    if (crawlMusicTimerRef.current != null) {
+      window.clearTimeout(crawlMusicTimerRef.current)
+      crawlMusicTimerRef.current = null
+    }
+  }
 
   const refresh = useCallback(async () => {
     const [info, state, mix, screens, prefs, windowOpen] = await Promise.all([
@@ -363,22 +372,29 @@ export default function DmApp() {
     musicPath?: string | null
   ): Promise<void> {
     playerLiveRef.current = false
-    if (musicPath?.trim()) {
-      setMixer(await window.tabledm.mixerPlayCrawlMusic(musicPath.trim()))
-    } else {
-      setMixer(await window.tabledm.mixerStopCrawlMusic())
+    clearCrawlMusicTimer()
+    setMixer(await window.tabledm.mixerArmCrawlMusic())
+    const track = musicPath?.trim()
+    if (track) {
+      const delay = crawlMusicStartDelayMs(preface)
+      crawlMusicTimerRef.current = window.setTimeout(() => {
+        crawlMusicTimerRef.current = null
+        void window.tabledm.mixerPlayCrawlMusic(track).then(setMixer)
+      }, delay)
     }
     setActiveCrawl({ title, body })
     setPlayer(await window.tabledm.showCrawl({ title, body, logoSrc, preface }))
   }
 
   async function stopCrawl(): Promise<void> {
+    clearCrawlMusicTimer()
     setMixer(await window.tabledm.mixerStopCrawlMusic())
     setPlayer(await window.tabledm.stopCrawl())
   }
 
   async function clearPlayer(): Promise<void> {
     playerLiveRef.current = false
+    clearCrawlMusicTimer()
     setActiveCrawl(null)
     setMixer(await window.tabledm.mixerStopCrawlMusic())
     setPlayer(await window.tabledm.clearPlayer())

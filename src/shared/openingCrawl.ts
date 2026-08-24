@@ -80,6 +80,15 @@ export const CRAWL_PREFACE_MS = 8000
 export const CRAWL_LOGO_MS = 2500
 /** Fade to black when the crawl ends or the DM stops early. Matches mood crossfade. */
 export const CRAWL_FADE_OUT_MS = 5000
+/** Crawl theme starts this long before the emblem (silence through hold + far-off line). */
+export const CRAWL_MUSIC_LEAD_MS = 500
+
+/** Delay from Play until crawl music should start (mood fades immediately). */
+export function crawlMusicStartDelayMs(preface: string | null | undefined): number {
+  const line = preface === undefined ? CRAWL_PREFACE_DEFAULT : preface
+  const prefaceMs = line ? CRAWL_PREFACE_MS : 0
+  return Math.max(0, CRAWL_HOLD_MS + prefaceMs - CRAWL_MUSIC_LEAD_MS)
+}
 
 const BASE_SECONDS = 8
 const SECONDS_PER_WORD = 0.35
