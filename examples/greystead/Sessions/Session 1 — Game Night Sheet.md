@@ -32,7 +32,7 @@
 > - Map: [[Pale Well Caves]] when they leave town
 > - Checks: —
 > - If they miss / flee: Alden still pays 10 gp and stops looking them in the eye
-> - Music: General
+> - Music: **General** — inn morning; drop to **Creepy** if the table goes quiet after Alden’s plea
 > - Sound: inn fire · morning crowd
 > - Leads to: village clues (any two) / [[The Ridge Road]]
 >
@@ -57,7 +57,7 @@
 > - Map: —
 > - Checks: Investigation DC 12 (Lira’s room) · Insight DC 12 (false camp, later)
 > - If they miss / flee: ridge still sings; Lira stays gone
-> - Music: General
+> - Music: **General** (gossip, mill, red herring) · **Creepy** (Lira’s room, shrine, shepherd on the ridge)
 > - Sound: mill wheel · distant ridge wind
 > - Leads to: [[The Ridge Road]]
 >
@@ -101,7 +101,7 @@
 > - Map: [[Pale Well Caves]] when they enter
 > - Checks: Perception DC 12 (trip-line in A, if you use it)
 > - If they miss / flee: note on a lookout or wolf pouch still findable
-> - Music: Creepy
+> - Music: **Travel** on the climb · **Creepy** at the boarded cave · **Combat** when lookouts fight
 > - Sound: wind · wet stone
 > - Leads to: [[Pale Well Caves]]
 >
@@ -131,7 +131,7 @@
 > - Place: [[The Ridge Cave]]
 > - Map: [[Pale Well Caves]]
 > - Checks: Perception DC 12 (trip-line) · Dex DC 12 (trip or snare) · Acrobatics DC 12 (drop)
-> - Music: Creepy
+> - Music: **Creepy** — keep through the false camp reveal
 > - Sound: dripping water · distant chant
 > - Leads to: cells / the Pale Well
 >
@@ -151,6 +151,7 @@
 > **At the table:**
 > - Map: [[Pale Well Caves]]
 > - Checks: —
+> - Music: **Creepy** — chant louder as they near E
 > - Leads to: the Pale Well
 >
 > **C — Choke**
@@ -170,7 +171,7 @@
 > - Map: [[Pale Well Caves]] pin E
 > - Checks: —
 > - If they miss / flee: see Endings scene
-> - Music: Combat
+> - Music: **Creepy** while the chant runs · **Combat** when blades come out
 > - Sound: chant · water ring
 > - Leads to: Endings
 >
@@ -207,6 +208,7 @@
 >
 > **At the table:**
 > - If they miss / flee: ridge sings again in a week
+> - Music: **General** if they stop it clean · **Creepy** if they mess it up or flee
 > - Leads to: **Millhollow** hook · [[Handouts]]
 >
 > **They stop it**
