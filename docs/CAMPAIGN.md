@@ -160,7 +160,7 @@ Supported image types: `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`, `.bmp`.
 | --- | --- | --- |
 | `readaloud` | `flavor` | Player-facing text to speak |
 | `scene` | `beat` | Scene card — art, what could happen, nested read-aloud, cues. Copy a block to add another beat. |
-| `crawl` | `opening` | Opening crawl. Play (Sci-fi look only) shows a starfield, a far-off line (`preface:`), a generic emblem (or the first `![[image]]`), then a silent perspective prologue. Write your own words. |
+| `crawl` | `opening` | Opening crawl. Play (Sci-fi look only) shows a starfield, a far-off line (`preface:`), a generic emblem (or the first `![[image]]`), then a perspective prologue. Optional `music:` path under `Audio/Music/` overrides the mood playlist while that track plays, then resumes it. Write your own words. |
 | `gmonly` | `secret` | Collapsed GM-only block |
 | `infobox` | — | Sheet header / portrait card |
 | `tip`, `warning`, `note`, `info`, `danger`, `success`, `example`, `abstract` | — | Highlighted callout cards |

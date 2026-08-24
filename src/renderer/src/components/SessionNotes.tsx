@@ -6,11 +6,13 @@ import {
   crawlLogoRef,
   crawlPlainText,
   crawlPreface,
+  crawlMusicRef,
   replaceNthCrawlCallout,
   type CrawlCalloutFields
 } from '../../../shared/openingCrawl'
 import { holoPortraitsEnabled, type ThemeId } from '../../../shared/theme'
 import type { CampaignInfo, Character, CreateNoteMapImage, PlayerMapView } from '../../../shared/types'
+import type { AudioTrack } from '../../../shared/audio'
 import {
   imageTitle,
   markdownUrlTransform,
@@ -103,6 +105,7 @@ export default function SessionNotes({
   onSelectImage,
   onShowToPlayers,
   onPlayCrawl,
+  musicTracks,
   onMapLiveView,
   onOpenNote,
   onBack,
@@ -138,8 +141,10 @@ export default function SessionNotes({
     title: string | undefined,
     body: string,
     logoSrc?: string | null,
-    preface?: string | null
+    preface?: string | null,
+    musicPath?: string | null
   ) => void
+  musicTracks?: AudioTrack[]
   onMapLiveView?: (imagePath: string, view: PlayerMapView) => void
   onOpenNote?: (path: string) => void
   onBack?: () => void
@@ -339,7 +344,13 @@ export default function SessionNotes({
   async function playCrawlCard(index: number, fields: CrawlCalloutFields): Promise<void> {
     await persistCrawl(index, fields)
     const logo = fields.logoRef ? resolveMarkdownImageSrc(fields.logoRef, path, images).url : null
-    onPlayCrawl?.(fields.title || undefined, fields.body, logo || null, fields.preface)
+    onPlayCrawl?.(
+      fields.title || undefined,
+      fields.body,
+      logo || null,
+      fields.preface,
+      fields.musicRef
+    )
   }
 
   async function loadCrawlLogo(): Promise<string | null> {
@@ -350,6 +361,13 @@ export default function SessionNotes({
     if (!result) return null
     onCampaignChange?.(result.campaign)
     return result.fileName
+  }
+
+  async function loadCrawlMusic(): Promise<string | null> {
+    const result = await window.tabledm.addFiles('Audio/Music/Crawl')
+    if (!result?.paths?.length) return null
+    onCampaignChange?.(result.campaign)
+    return result.paths[0] ?? null
   }
 
   async function persistShopMarkdown(next: string): Promise<void> {
@@ -546,6 +564,7 @@ export default function SessionNotes({
         const raw = rawCrawls[crawlIndex] ?? part
         const logoRef = crawlLogoRef(raw.markdown)
         const logoUrl = logoRef ? resolveMarkdownImageSrc(logoRef, path, images).url : null
+        const musicRef = crawlMusicRef(raw.markdown)
         return (
           <CrawlCard
             key={key}
@@ -554,12 +573,15 @@ export default function SessionNotes({
             body={crawlPlainText(raw.markdown)}
             logoRef={logoRef}
             logoUrl={logoUrl}
+            musicRef={musicRef}
+            musicTracks={musicTracks}
             images={images}
             canPlay={theme === 'scifi'}
             disabled={disabled}
             onChange={(fields) => void persistCrawl(crawlIndex, fields)}
             onPlay={onPlayCrawl ? (fields) => void playCrawlCard(crawlIndex, fields) : undefined}
             onLoadLogo={() => loadCrawlLogo()}
+            onLoadMusic={() => loadCrawlMusic()}
           />
         )
       }

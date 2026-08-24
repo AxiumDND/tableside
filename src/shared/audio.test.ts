@@ -152,6 +152,26 @@ describe('mixer commands', () => {
     expect(state.library.music.length).toBeGreaterThan(0)
   })
 
+  it('pauses mood music for a crawl track then resumes when the crawl ends', () => {
+    let state = ready()
+    state = applyMixerCommand(state, { type: 'play-music', playlistId: 'Audio/Music/General' })
+    const moodTrack = state.playback.musicTrack
+    expect(state.playback.musicPlaying).toBe(true)
+    state = applyMixerCommand(state, {
+      type: 'play-crawl-music',
+      path: 'Audio/Music/Creepy/Dread.mp3'
+    })
+    expect(state.playback.musicPlaying).toBe(false)
+    expect(state.playback.musicTrack).toBe(moodTrack)
+    expect(state.playback.crawlMusic).toBe('Audio/Music/Creepy/Dread.mp3')
+    expect(state.playback.musicResumeAfterCrawl).toBe(true)
+    state = applyMixerCommand(state, { type: 'ended', layer: 'crawl' })
+    expect(state.playback.crawlMusic).toBe(null)
+    expect(state.playback.musicResumeAfterCrawl).toBe(false)
+    expect(state.playback.musicPlaying).toBe(true)
+    expect(state.playback.musicTrack).toBe(moodTrack)
+  })
+
   it('clamps saved volumes', () => {
     const prefs = parseMixerPrefs({ masterVolume: 4, musicVolume: -1, shuffle: false })
     expect(prefs.masterVolume).toBe(1)

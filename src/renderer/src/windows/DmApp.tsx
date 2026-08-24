@@ -354,14 +354,21 @@ export default function DmApp() {
     title: string | undefined,
     body: string,
     logoSrc?: string | null,
-    preface?: string | null
+    preface?: string | null,
+    musicPath?: string | null
   ): Promise<void> {
     playerLiveRef.current = false
+    if (musicPath?.trim()) {
+      setMixer(await window.tabledm.mixerPlayCrawlMusic(musicPath.trim()))
+    } else {
+      setMixer(await window.tabledm.mixerStopCrawlMusic())
+    }
     setPlayer(await window.tabledm.showCrawl({ title, body, logoSrc, preface }))
   }
 
   async function clearPlayer(): Promise<void> {
     playerLiveRef.current = false
+    setMixer(await window.tabledm.mixerStopCrawlMusic())
     setPlayer(await window.tabledm.clearPlayer())
   }
 
@@ -781,7 +788,10 @@ export default function DmApp() {
           disabled={!campaign}
           onSelectImage={setSelectedImage}
           onShowToPlayers={() => void showSelectedToPlayers()}
-          onPlayCrawl={(title, body, logoSrc, preface) => void playCrawl(title, body, logoSrc, preface)}
+          onPlayCrawl={(title, body, logoSrc, preface, musicPath) =>
+            void playCrawl(title, body, logoSrc, preface, musicPath)
+          }
+          musicTracks={mixer.library.music.flatMap((playlist) => playlist.tracks)}
           onMapLiveView={handleMapLiveView}
           onOpenNote={openNote}
           onBack={history.length > 0 ? goBack : undefined}

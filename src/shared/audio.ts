@@ -68,6 +68,11 @@ export interface MixerPlayback {
   ambiencePlaylistId: string | null
   ambienceTrack: string | null
   ambienceGeneration: number
+  /** Crawl theme track — pauses mood music while set, resumes when cleared. */
+  crawlMusic: string | null
+  crawlMusicGeneration: number
+  /** Resume mood music after crawl music ends or is cleared. */
+  musicResumeAfterCrawl: boolean
   oneshot: { path: string; at: number } | null
   error: string | null
 }
@@ -93,8 +98,10 @@ export type MixerCommand =
   | { type: 'play-ambience'; playlistId: string }
   | { type: 'stop-ambience' }
   | { type: 'oneshot'; path: string }
+  | { type: 'play-crawl-music'; path: string }
+  | { type: 'stop-crawl-music' }
   | { type: 'stop-all' }
-  | { type: 'ended'; layer: MixerLayerId }
+  | { type: 'ended'; layer: MixerLayerId | 'crawl' }
   | { type: 'set-prefs'; prefs: Partial<MixerPrefs> }
   | { type: 'set-library'; library: AudioLibrary }
   | { type: 'error'; message: string | null }
@@ -257,6 +264,9 @@ export function emptyMixerPlayback(): MixerPlayback {
     ambiencePlaylistId: null,
     ambienceTrack: null,
     ambienceGeneration: 0,
+    crawlMusic: null,
+    crawlMusicGeneration: 0,
+    musicResumeAfterCrawl: false,
     oneshot: null,
     error: null
   }
@@ -349,6 +359,45 @@ function findSfxTrack(library: AudioLibrary, path: string): AudioTrack | null {
   return null
 }
 
+function findMusicTrack(library: AudioLibrary, path: string): AudioTrack | null {
+  for (const playlist of library.music) {
+    const track = playlist.tracks.find((item) => item.relativePath === path)
+    if (track) return track
+  }
+  return null
+}
+
+/** Flat list of every music track in the library (for crawl theme pickers). */
+export function allMusicTracks(library: AudioLibrary): AudioTrack[] {
+  const seen = new Set<string>()
+  const out: AudioTrack[] = []
+  for (const playlist of library.music) {
+    for (const track of playlist.tracks) {
+      if (seen.has(track.relativePath)) continue
+      seen.add(track.relativePath)
+      out.push(track)
+    }
+  }
+  return out
+}
+
+function stopCrawlMusic(state: MixerState): MixerState {
+  if (!state.playback.crawlMusic && !state.playback.musicResumeAfterCrawl) return state
+  const resume =
+    state.playback.musicResumeAfterCrawl &&
+    Boolean(state.playback.musicPlaylistId && state.playback.musicTrack)
+  return {
+    ...state,
+    playback: {
+      ...state.playback,
+      crawlMusic: null,
+      musicResumeAfterCrawl: false,
+      musicPlaying: resume ? true : state.playback.musicPlaying,
+      error: null
+    }
+  }
+}
+
 export function pickNextTrack(
   tracks: AudioTrack[],
   current: string | null,
@@ -420,6 +469,10 @@ export function applyMixerCommand(state: MixerState, command: MixerCommand): Mix
         ambience.tracks.some((track) => track.relativePath === state.playback.ambienceTrack)
           ? state.playback.ambienceTrack
           : (ambience?.tracks[0]?.relativePath ?? null)
+      const crawlOk =
+        Boolean(state.playback.crawlMusic) &&
+        (findMusicTrack(library, state.playback.crawlMusic!) != null ||
+          isAudioPath(state.playback.crawlMusic!))
       return {
         ...state,
         library,
@@ -430,27 +483,43 @@ export function applyMixerCommand(state: MixerState, command: MixerCommand): Mix
           musicPlaying: Boolean(musicOk && state.playback.musicPlaying && musicTrack),
           ambiencePlaylistId: ambience ? state.playback.ambiencePlaylistId : null,
           ambienceTrack: ambience ? ambienceTrack : null,
-          ambiencePlaying: Boolean(ambience && state.playback.ambiencePlaying && ambienceTrack)
+          ambiencePlaying: Boolean(ambience && state.playback.ambiencePlaying && ambienceTrack),
+          crawlMusic: crawlOk ? state.playback.crawlMusic : null,
+          musicResumeAfterCrawl: crawlOk ? state.playback.musicResumeAfterCrawl : false
         }
       }
     }
     case 'play-music': {
-      const current = state.playback.musicPlaylistId
-      if (state.playback.musicPlaying && current === command.playlistId) {
+      const withoutCrawl = state.playback.crawlMusic
+        ? {
+            ...state,
+            playback: {
+              ...state.playback,
+              crawlMusic: null,
+              musicResumeAfterCrawl: false
+            }
+          }
+        : state
+      const current = withoutCrawl.playback.musicPlaylistId
+      if (withoutCrawl.playback.musicPlaying && current === command.playlistId) {
         return {
-          ...state,
-          prefs: { ...state.prefs, lastMusicId: command.playlistId },
-          playback: { ...state.playback, error: null }
+          ...withoutCrawl,
+          prefs: { ...withoutCrawl.prefs, lastMusicId: command.playlistId },
+          playback: { ...withoutCrawl.playback, error: null }
         }
       }
-      if (!state.playback.musicPlaying && current === command.playlistId && state.playback.musicTrack) {
+      if (
+        !withoutCrawl.playback.musicPlaying &&
+        current === command.playlistId &&
+        withoutCrawl.playback.musicTrack
+      ) {
         return {
-          ...state,
-          prefs: { ...state.prefs, lastMusicId: command.playlistId },
-          playback: { ...state.playback, musicPlaying: true, error: null }
+          ...withoutCrawl,
+          prefs: { ...withoutCrawl.prefs, lastMusicId: command.playlistId },
+          playback: { ...withoutCrawl.playback, musicPlaying: true, error: null }
         }
       }
-      return startMusic(state, command.playlistId)
+      return startMusic(withoutCrawl, command.playlistId)
     }
     case 'pause-music':
       if (!state.playback.musicPlaying) return state
@@ -542,12 +611,38 @@ export function applyMixerCommand(state: MixerState, command: MixerCommand): Mix
         ...state,
         playback: { ...state.playback, oneshot: { path: command.path, at: Date.now() }, error: null }
       }
+    case 'play-crawl-music': {
+      const path = posix(command.path.trim())
+      if (!path || (!findMusicTrack(state.library, path) && !isAudioPath(path))) {
+        return {
+          ...state,
+          playback: { ...state.playback, error: 'Pick a crawl track under Audio/Music/ (or Load audio…).' }
+        }
+      }
+      const resume = state.playback.musicPlaying || state.playback.musicResumeAfterCrawl
+      return {
+        ...state,
+        playback: {
+          ...state.playback,
+          musicPlaying: false,
+          musicResumeAfterCrawl: resume,
+          crawlMusic: path,
+          crawlMusicGeneration: state.playback.crawlMusicGeneration + 1,
+          error: null
+        }
+      }
+    }
+    case 'stop-crawl-music':
+      return stopCrawlMusic(state)
     case 'stop-all':
       return {
         ...state,
         playback: emptyMixerPlayback()
       }
     case 'ended': {
+      if (command.layer === 'crawl') {
+        return stopCrawlMusic(state)
+      }
       if (command.layer === 'ambience') {
         const playlist = findPlaylist(state.library, 'ambience', state.playback.ambiencePlaylistId)
         if (!playlist || !state.playback.ambiencePlaying) return state

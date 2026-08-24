@@ -1,6 +1,6 @@
 # How to use Tableside
 
-Step-by-step for a night at the table. Current release: **1.4.5**.
+Step-by-step for a night at the table. Current release: **1.4.6**.
 
 Tableside is a **local Windows DM console**. Your laptop holds the notes. A second monitor (TV) shows players a clean picture — maps, art, initiative, or a sci-fi opening crawl. There is no account and no internet required once the app is installed.
 
@@ -8,7 +8,7 @@ Deeper reference: [TABLE.md](TABLE.md) (every control), [CAMPAIGN.md](CAMPAIGN.m
 
 ## Install
 
-1. Download **[Tableside-Setup-1.4.5.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
+1. Download **[Tableside-Setup-1.4.6.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
 2. Run it. Per-user install — Start Menu + desktop shortcut. No admin.
 3. If Windows says **Windows protected your PC**, click **More info**, then **Run anyway**. The installer is not code-signed. That is expected.
 4. Open **Tableside**.
@@ -136,10 +136,11 @@ Write your own words. Tableside does not include licensed crawl text, logos, or 
 > It is a time of unrest. Relay stations along the outer belt have gone dark.
 ```
 
-3. Edit title, far-off line, emblem, and crawl on the card — they write back into the note.
+3. Edit title, far-off line, emblem, crawl music, and crawl on the card — they write back into the note.
 4. `preface: none` skips the far-off line. Omit `![[…]]` to use the generic emblem.
-5. **Play** on the card. The TV shows stars, then the far-off line, the emblem, then a silent perspective crawl.
-6. **Clear** or `Alt+X` stops it.
+5. Optional **Crawl music** — pick a track under `Audio/Music/`, or **Load audio…** into `Audio/Music/Crawl/`. On **Play**, that track overrides the mood playlist; when it ends (or you **Clear**), the previous mood resumes.
+6. **Play** on the card. The TV shows stars, then the far-off line, the emblem, then a perspective crawl.
+7. **Clear** or `Alt+X` stops the picture and restores mood music.
 
 Other looks still show the card so the note stays readable. Play stays disabled until the look is Sci-fi. New sci-fi campaigns get a sample crawl on the game night sheet — rewrite it.
 

@@ -1538,12 +1538,19 @@ function registerIpc(): void {
   )
   ipcMain.handle('mixer:stop-ambience', () => runMixer({ type: 'stop-ambience' }))
   ipcMain.handle('mixer:oneshot', (_e, path: string) => runMixer({ type: 'oneshot', path: String(path ?? '') }))
+  ipcMain.handle('mixer:play-crawl-music', (_e, path: string) =>
+    runMixer({ type: 'play-crawl-music', path: String(path ?? '') })
+  )
+  ipcMain.handle('mixer:stop-crawl-music', () => runMixer({ type: 'stop-crawl-music' }))
   ipcMain.handle('mixer:stop-all', () => runMixer({ type: 'stop-all' }))
   ipcMain.handle('mixer:set-prefs', (_e, prefs: Partial<MixerPrefs>) =>
     runMixer({ type: 'set-prefs', prefs: prefs ?? {} })
   )
-  ipcMain.handle('mixer:ended', (_e, layer: 'music' | 'ambience') =>
-    runMixer({ type: 'ended', layer: layer === 'ambience' ? 'ambience' : 'music' })
+  ipcMain.handle('mixer:ended', (_e, layer: 'music' | 'ambience' | 'crawl') =>
+    runMixer({
+      type: 'ended',
+      layer: layer === 'ambience' ? 'ambience' : layer === 'crawl' ? 'crawl' : 'music'
+    })
   )
   ipcMain.handle('mixer:error', (_e, message: string | null) =>
     runMixer({ type: 'error', message: typeof message === 'string' && message ? message : null })

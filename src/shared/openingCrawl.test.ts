@@ -6,6 +6,7 @@ import {
   CRAWL_PREFACE_MS,
   crawlDurationMs,
   crawlLogoRef,
+  crawlMusicRef,
   crawlPlainText,
   crawlPreface,
   crawlWordCount,
@@ -24,9 +25,11 @@ describe('crawlPlainText', () => {
     expect(crawlPlainText('![[Fleet Mark.png]]\n\nIt is a time of unrest.')).toBe('It is a time of unrest.')
   })
 
-  it('drops the preface line from the scrolling body', () => {
+  it('drops the preface and music lines from the scrolling body', () => {
     expect(
-      crawlPlainText('preface: In an age before memory, beyond the rim of charted stars.\n\nIt is a time of unrest.')
+      crawlPlainText(
+        'preface: In an age before memory, beyond the rim of charted stars.\nmusic: Audio/Music/Crawl/Fanfare.mp3\n\nIt is a time of unrest.'
+      )
     ).toBe('It is a time of unrest.')
   })
 })
@@ -43,6 +46,19 @@ describe('crawlPreface', () => {
   })
 })
 
+describe('crawlMusicRef', () => {
+  it('reads an optional crawl music path', () => {
+    expect(crawlMusicRef('music: Audio/Music/Crawl/Fanfare.mp3\n\nGo.')).toBe(
+      'Audio/Music/Crawl/Fanfare.mp3'
+    )
+    expect(crawlMusicRef('theme: [[Audio/Music/General/Town.mp3]]\nGo.')).toBe(
+      'Audio/Music/General/Town.mp3'
+    )
+    expect(crawlMusicRef('music: none\nGo.')).toBeNull()
+    expect(crawlMusicRef('It is a time of unrest.')).toBeNull()
+  })
+})
+
 describe('crawlLogoRef', () => {
   it('reads the first wiki or markdown image', () => {
     expect(crawlLogoRef('![[Fleet Mark.png]]\n\nIt is a time of unrest.')).toBe('Fleet Mark.png')
@@ -53,36 +69,36 @@ describe('crawlLogoRef', () => {
 })
 
 describe('crawl callout rewrite', () => {
-  it('serializes title, preface, emblem, and body', () => {
+  it('serializes title, preface, music, emblem, and body', () => {
     expect(
       serializeCrawlCallout({
         title: 'The Siege of Kestrel',
         preface: 'In an age before memory, beyond the rim of charted stars.',
+        musicRef: 'Audio/Music/Crawl/Fanfare.mp3',
         logoRef: 'Fleet Mark.png',
         body: 'It is a time of unrest.\n\nThe outer colonies have gone silent.'
       })
-    ).toBe(`> [!crawl] The Siege of Kestrel
-> preface: In an age before memory, beyond the rim of charted stars.
-> ![[Fleet Mark.png]]
->
-> It is a time of unrest.
->
-> The outer colonies have gone silent.`)
+    ).toBe(
+      [
+        '> [!crawl] The Siege of Kestrel',
+        '> preface: In an age before memory, beyond the rim of charted stars.',
+        '> music: Audio/Music/Crawl/Fanfare.mp3',
+        '> ![[Fleet Mark.png]]',
+        '>',
+        '> It is a time of unrest.',
+        '>',
+        '> The outer colonies have gone silent.'
+      ].join('\n')
+    )
   })
 
   it('replaces the first crawl block in a night sheet', () => {
-    const src = `# Session 4
-
-> [!crawl] Old
-> preface: none
-> Go.
-
-## 1. The characters
-`
+    const src = ['# Session 4', '', '> [!crawl] Old', '> preface: none', '> Go.', '', '## 1. The characters', ''].join('\n')
     const next = replaceNthCrawlCallout(src, 0, {
       title: 'New',
       preface: 'Past the last mapped sun.',
       logoRef: null,
+      musicRef: null,
       body: 'A courier leaves the docks.'
     })
     expect(next).toContain('> [!crawl] New')

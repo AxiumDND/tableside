@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react'
 import { CRAWL_PREFACE_DEFAULT } from '../../../shared/openingCrawl'
+import type { AudioTrack } from '../../../shared/audio'
 import type { CampaignImage } from '../lib/images'
 import crawlEmblem from '../assets/crawl-emblem.webp'
-
 function FilmMark() {
   return (
     <svg viewBox="0 0 24 24" className="h-3.5 w-3.5" aria-hidden="true">
@@ -13,67 +13,82 @@ function FilmMark() {
     </svg>
   )
 }
-
+type CrawlFields = {
+  title: string
+  preface: string | null
+  body: string
+  logoRef: string | null
+  musicRef: string | null
+}
 export default function CrawlCard({
   title,
   preface,
   body,
   logoRef,
   logoUrl,
+  musicRef,
+  musicTracks,
   images,
   canPlay,
   disabled,
   onChange,
   onPlay,
-  onLoadLogo
+  onLoadLogo,
+  onLoadMusic
 }: {
   title?: string
   preface: string | null
   body: string
   logoRef: string | null
   logoUrl?: string | null
+  musicRef: string | null
+  musicTracks?: AudioTrack[]
   images: CampaignImage[]
   canPlay?: boolean
   disabled?: boolean
-  onChange: (next: { title: string; preface: string | null; body: string; logoRef: string | null }) => void
-  onPlay?: (fields: { title: string; preface: string | null; body: string; logoRef: string | null }) => void
+  onChange: (next: CrawlFields) => void
+  onPlay?: (fields: CrawlFields) => void
   onLoadLogo?: () => Promise<string | null>
+  onLoadMusic?: () => Promise<string | null>
 }) {
   const [titleValue, setTitleValue] = useState(title ?? '')
   const [prefaceOn, setPrefaceOn] = useState(preface != null)
   const [prefaceValue, setPrefaceValue] = useState(preface ?? CRAWL_PREFACE_DEFAULT)
   const [bodyValue, setBodyValue] = useState(body)
   const [logoValue, setLogoValue] = useState(logoRef)
+  const [musicValue, setMusicValue] = useState(musicRef)
   const [busy, setBusy] = useState(false)
-
+  const [musicBusy, setMusicBusy] = useState(false)
   useEffect(() => {
     setTitleValue(title ?? '')
     setPrefaceOn(preface != null)
     setPrefaceValue(preface ?? CRAWL_PREFACE_DEFAULT)
     setBodyValue(body)
     setLogoValue(logoRef)
-  }, [title, preface, body, logoRef])
-
+    setMusicValue(musicRef)
+  }, [title, preface, body, logoRef, musicRef])
   function commit(partial?: {
     title?: string
     prefaceOn?: boolean
     preface?: string
     body?: string
     logoRef?: string | null
+    musicRef?: string | null
   }): void {
     const nextTitle = partial?.title ?? titleValue
     const nextOn = partial?.prefaceOn ?? prefaceOn
     const nextPreface = partial?.preface ?? prefaceValue
     const nextBody = partial?.body ?? bodyValue
     const nextLogo = partial && 'logoRef' in partial ? partial.logoRef ?? null : logoValue
+    const nextMusic = partial && 'musicRef' in partial ? partial.musicRef ?? null : musicValue
     onChange({
       title: nextTitle,
       preface: nextOn ? nextPreface : null,
       body: nextBody,
-      logoRef: nextLogo
+      logoRef: nextLogo,
+      musicRef: nextMusic
     })
   }
-
   async function loadLogo(): Promise<void> {
     if (!onLoadLogo) return
     setBusy(true)
@@ -87,9 +102,22 @@ export default function CrawlCard({
       setBusy(false)
     }
   }
-
+  async function loadMusic(): Promise<void> {
+    if (!onLoadMusic) return
+    setMusicBusy(true)
+    try {
+      const next = await onLoadMusic()
+      if (next) {
+        setMusicValue(next)
+        commit({ musicRef: next })
+      }
+    } finally {
+      setMusicBusy(false)
+    }
+  }
   const preview = logoValue ? logoUrl || crawlEmblem : crawlEmblem
-
+  const tracks = musicTracks ?? []
+  const musicKnown = tracks.some((track) => track.relativePath === musicValue)
   return (
     <section className="opening-crawl-card my-5">
       <div className="relative rounded-md border border-amber/40 bg-panel-2 px-4 pb-4 pt-5">
@@ -172,6 +200,42 @@ export default function CrawlCard({
               </div>
             </div>
           </div>
+          <div>
+            <span className="text-[10px] uppercase tracking-wider text-muted">Crawl music</span>
+            <p className="mt-0.5 text-[11px] text-muted">
+              Overrides the mood playlist while the crawl plays, then resumes it.
+            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-1">
+              <select
+                disabled={disabled || musicBusy}
+                value={musicValue ?? ''}
+                onChange={(event) => {
+                  const value = event.target.value || null
+                  setMusicValue(value)
+                  commit({ musicRef: value })
+                }}
+                className="min-w-0 flex-1 rounded border border-line bg-ink px-1 py-1 text-[11px] text-parchment outline-none focus:border-amber disabled:opacity-50"
+              >
+                <option value="">Silent (no crawl track)</option>
+                {musicValue && !musicKnown ? (
+                  <option value={musicValue}>{musicValue}</option>
+                ) : null}
+                {tracks.map((track) => (
+                  <option key={track.relativePath} value={track.relativePath}>
+                    {track.relativePath}
+                  </option>
+                ))}
+              </select>
+              <button
+                type="button"
+                disabled={disabled || musicBusy || !onLoadMusic}
+                onClick={() => void loadMusic()}
+                className="rounded border border-line px-2 py-0.5 text-[11px] hover:border-amber disabled:text-muted"
+              >
+                {musicBusy ? 'Saving…' : 'Load audio…'}
+              </button>
+            </div>
+          </div>
           <label className="block">
             <span className="text-[10px] uppercase tracking-wider text-muted">Crawl</span>
             <textarea
@@ -192,7 +256,8 @@ export default function CrawlCard({
                 title: titleValue,
                 preface: prefaceOn ? prefaceValue : null,
                 body: bodyValue,
-                logoRef: logoValue
+                logoRef: logoValue,
+                musicRef: musicValue
               }
               onChange(fields)
               onPlay?.(fields)

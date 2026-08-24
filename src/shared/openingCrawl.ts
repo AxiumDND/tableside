@@ -1,4 +1,4 @@
-/** Perspective title crawl — original user text only. No licensed copy, fonts, or music. */
+/** Perspective title crawl — original user text only. No licensed copy or fonts. User may attach their own crawl music. */
 
 /** Sample body written into new Sci-fi game night sheets. Rewrite it for the table. */
 export const NIGHTSHEET_CRAWL_SAMPLE = `> [!crawl] The Siege of Kestrel
@@ -26,6 +26,7 @@ export function crawlLogoRef(markdown: string): string | null {
 }
 
 const PREFACE_LINE = /^(?:preface|ago)\s*:\s*(.*)$/i
+const MUSIC_LINE = /^(?:music|crawl\s*music|theme)\s*:\s*(.*)$/i
 
 /** `preface:` / `ago:` line, or the default. `none` skips the far-off card. */
 export function crawlPreface(markdown: string): string | null {
@@ -40,10 +41,24 @@ export function crawlPreface(markdown: string): string | null {
   return value.replace(/\\n/g, '\n')
 }
 
+/** Optional crawl music path under Audio/ (overrides the mood playlist while the crawl runs). */
+export function crawlMusicRef(markdown: string): string | null {
+  const match = markdown
+    .replace(/\r/g, '')
+    .split('\n')
+    .map((line) => MUSIC_LINE.exec(line.trim()))
+    .find((item): item is RegExpExecArray => Boolean(item))
+  if (!match) return null
+  const value = (match[1] ?? '').trim().replace(/^\[\[|\]\]$/g, '').replace(/^!\[\[|\]\]$/g, '')
+  if (!value || /^(none|-|off|skip)$/i.test(value)) return null
+  return value
+}
+
 export function crawlPlainText(markdown: string): string {
   return markdown
     .replace(/\r/g, '')
     .replace(/^(?:preface|ago)\s*:.*$/gim, '')
+    .replace(/^(?:music|crawl\s*music|theme)\s*:.*$/gim, '')
     .replace(/!\[\[[^\]]*\]\]/g, '')
     .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
     .replace(/\[\[([^\]|\n]+)(?:\|([^\]\n]+))?\]\]/g, (_m, target: string, label?: string) =>
@@ -80,6 +95,7 @@ export interface CrawlCalloutFields {
   title?: string
   preface: string | null
   logoRef: string | null
+  musicRef: string | null
   body: string
 }
 
@@ -88,6 +104,9 @@ export function serializeCrawlCallout(fields: CrawlCalloutFields): string {
   const lines = [`> [!crawl]${title ? ` ${title}` : ''}`]
   if (fields.preface == null) lines.push('> preface: none')
   else lines.push(`> preface: ${fields.preface.replace(/\r/g, '').replace(/\n+/g, ' ').trim()}`)
+  if (fields.musicRef?.trim()) {
+    lines.push(`> music: ${fields.musicRef.trim().replace(/^\[\[|\]\]$/g, '')}`)
+  }
   if (fields.logoRef?.trim()) {
     const ref = fields.logoRef.trim().replace(/^!\[\[|\]\]$/g, '')
     lines.push(`> ![[${ref}]]`)

@@ -119,13 +119,14 @@ If nothing plays: unmute Master / Music, confirm Output, and check the file is u
 ```markdown
 > [!crawl] Episode title
 > preface: A far-off line of your own.
+> music: Audio/Music/Crawl/Fanfare.mp3
 > The scrolling prologue goes here.
 ```
 
-3. Edit title, far-off line, emblem, and crawl on the card.
-4. **Play**. **Clear** or `Alt+X` stops it.
+3. Edit title, far-off line, emblem, crawl music, and crawl on the card.
+4. **Play**. Mood music pauses for the crawl track, then resumes when the track ends. **Clear** or `Alt+X` stops the picture and restores mood music.
 
-`preface: none` skips the far-off line. `![[mark.png]]` in the block replaces the generic emblem. Write your own words — no licensed crawl text ships with the app. Play stays disabled on other looks.
+`preface: none` skips the far-off line. `![[mark.png]]` in the block replaces the generic emblem. **Load audio…** copies a file into `Audio/Music/Crawl/`. Write your own words — no licensed crawl text or music ships with the app. Play stays disabled on other looks.
 
 ## Map with tokens and fog
 

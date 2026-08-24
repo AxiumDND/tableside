@@ -69,10 +69,13 @@ const api = {
     ipcRenderer.invoke('mixer:play-ambience', playlistId),
   mixerStopAmbience: (): Promise<MixerState> => ipcRenderer.invoke('mixer:stop-ambience'),
   mixerOneshot: (path: string): Promise<MixerState> => ipcRenderer.invoke('mixer:oneshot', path),
+  mixerPlayCrawlMusic: (path: string): Promise<MixerState> =>
+    ipcRenderer.invoke('mixer:play-crawl-music', path),
+  mixerStopCrawlMusic: (): Promise<MixerState> => ipcRenderer.invoke('mixer:stop-crawl-music'),
   mixerStopAll: (): Promise<MixerState> => ipcRenderer.invoke('mixer:stop-all'),
   mixerSetPrefs: (prefs: Partial<MixerPrefs>): Promise<MixerState> =>
     ipcRenderer.invoke('mixer:set-prefs', prefs),
-  mixerTrackEnded: (layer: 'music' | 'ambience'): Promise<MixerState> =>
+  mixerTrackEnded: (layer: 'music' | 'ambience' | 'crawl'): Promise<MixerState> =>
     ipcRenderer.invoke('mixer:ended', layer),
   mixerError: (message: string | null): Promise<MixerState> =>
     ipcRenderer.invoke('mixer:error', message),
