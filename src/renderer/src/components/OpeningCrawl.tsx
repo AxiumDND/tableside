@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import {
+  CRAWL_FADE_OUT_MS,
   CRAWL_HOLD_MS,
   CRAWL_LOGO_MS,
   CRAWL_PREFACE_DEFAULT,
@@ -10,11 +11,12 @@ import type { PlayerCrawl } from '../../../shared/types'
 import crawlEmblem from '../assets/crawl-emblem.webp'
 import Starfield from './Starfield'
 
-type CrawlPhase = 'hold' | 'preface' | 'logo' | 'crawl' | 'done'
+type CrawlPhase = 'hold' | 'preface' | 'logo' | 'crawl' | 'end' | 'done'
 
 export default function OpeningCrawl({ crawl }: { crawl: PlayerCrawl }) {
   const durationMs = crawlDurationMs(crawl.title, crawl.body)
   const stopping = crawl.stoppingAt != null
+  const endSrc = crawl.endSrc?.trim() || null
   const [phase, setPhase] = useState<CrawlPhase>('hold')
   const paragraphs = crawl.body
     .split(/\n\s*\n/)
@@ -37,16 +39,25 @@ export default function OpeningCrawl({ crawl }: { crawl: PlayerCrawl }) {
     at += CRAWL_LOGO_MS
     timers.push(window.setTimeout(() => setPhase('crawl'), at))
     at += durationMs
-    timers.push(window.setTimeout(() => setPhase('done'), at))
+    if (endSrc) {
+      timers.push(window.setTimeout(() => setPhase('end'), at))
+    } else {
+      timers.push(window.setTimeout(() => setPhase('done'), at))
+    }
     return () => {
       for (const timer of timers) window.clearTimeout(timer)
     }
-  }, [crawl.startedAt, durationMs, preface, prefaceMs, stopping])
+  }, [crawl.startedAt, durationMs, preface, prefaceMs, stopping, endSrc])
 
   const fadingOut = stopping || phase === 'done'
+  const showEnd = Boolean(endSrc) && (phase === 'end' || (!stopping && phase === 'done'))
 
   return (
-    <div className={`opening-crawl${fadingOut ? ' is-done' : ''}`} aria-label="Opening crawl">
+    <div
+      className={`opening-crawl${fadingOut ? ' is-done' : ''}${phase === 'end' ? ' has-end' : ''}`}
+      aria-label="Opening crawl"
+      style={{ ['--crawl-fade-ms' as string]: `${CRAWL_FADE_OUT_MS}ms` }}
+    >
       <Starfield />
       {phase === 'preface' && preface ? (
         <p
@@ -64,8 +75,8 @@ export default function OpeningCrawl({ crawl }: { crawl: PlayerCrawl }) {
           <img src={logoSrc} alt="" />
         </div>
       ) : null}
-      {phase === 'crawl' || phase === 'done' ? (
-        <div className="opening-crawl-perspective">
+      {phase === 'crawl' || phase === 'done' || phase === 'end' ? (
+        <div className={`opening-crawl-perspective${phase === 'end' ? ' is-fading' : ''}`}>
           <div className="opening-crawl-track">
             <div
               key={crawl.startedAt}
@@ -78,6 +89,11 @@ export default function OpeningCrawl({ crawl }: { crawl: PlayerCrawl }) {
               ))}
             </div>
           </div>
+        </div>
+      ) : null}
+      {showEnd && endSrc ? (
+        <div className="opening-crawl-end" aria-hidden="true">
+          <img src={endSrc} alt="" />
         </div>
       ) : null}
     </div>

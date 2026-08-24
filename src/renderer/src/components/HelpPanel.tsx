@@ -333,9 +333,11 @@ export default function HelpPanel({
             Put <Code>{'> [!crawl] Title'}</Code> (or <Code>opening</Code>) in any note, then write the prologue under
             it. Edit the title, far-off line, emblem, crawl music, and crawl on the card. Optional <Code>preface:</Code> in the note
             also works (<Code>none</Code> skips it). <Code>![[your-mark.png]]</Code> replaces the generic emblem. Optional{' '}
+            <Code>end: ![[planet.png]]</Code> (or <Action>End image</Action> on the card) fades in when the crawl finishes.
+            Optional{' '}
             <Code>music: Audio/Music/…</Code> (or <Action>Load audio…</Action> into <Code>Audio/Music/Crawl/</Code>) — mood
-            fades out on Play; the crawl track starts half a second before the emblem (silence through the far-off line),
-            then mood resumes when the crawl ends or you Stop/Clear. <Action>Play</Action> is on when the campaign look is
+            fades out on Play; the crawl track starts half a second before the emblem (silence through the far-off line) and
+            runs for 1:32 — longer files fade out there — then mood resumes when the crawl ends or you Stop/Clear. <Action>Play</Action> is on when the campaign look is
             Sci-fi. The player screen and the <Action>Players see</Action> preview show a starfield, then the far-off line,
             the emblem, then a perspective title crawl — write your own words. Tableside does not include licensed crawl
             text, logos, or music files. <Action>Clear</Action> stops the picture and restores mood music.

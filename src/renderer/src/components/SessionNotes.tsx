@@ -7,6 +7,7 @@ import {
   crawlPlainText,
   crawlPreface,
   crawlMusicRef,
+  crawlEndImageRef,
   replaceNthCrawlCallout,
   type CrawlCalloutFields
 } from '../../../shared/openingCrawl'
@@ -145,7 +146,8 @@ export default function SessionNotes({
     body: string,
     logoSrc?: string | null,
     preface?: string | null,
-    musicPath?: string | null
+    musicPath?: string | null,
+    endSrc?: string | null
   ) => void
   onStopCrawl?: () => void
   activeCrawl?: { title?: string; body: string } | null
@@ -350,12 +352,16 @@ export default function SessionNotes({
   async function playCrawlCard(index: number, fields: CrawlCalloutFields): Promise<void> {
     await persistCrawl(index, fields)
     const logo = fields.logoRef ? resolveMarkdownImageSrc(fields.logoRef, path, images).url : null
+    const endImage = fields.endImageRef
+      ? resolveMarkdownImageSrc(fields.endImageRef, path, images).url
+      : null
     onPlayCrawl?.(
       fields.title || undefined,
       fields.body,
       logo || null,
       fields.preface,
-      fields.musicRef
+      fields.musicRef,
+      endImage || null
     )
   }
 
@@ -367,6 +373,10 @@ export default function SessionNotes({
     if (!result) return null
     onCampaignChange?.(result.campaign)
     return result.fileName
+  }
+
+  async function loadCrawlEndImage(): Promise<string | null> {
+    return loadCrawlLogo()
   }
 
   async function loadCrawlMusic(): Promise<string | null> {
@@ -571,6 +581,8 @@ export default function SessionNotes({
         const logoRef = crawlLogoRef(raw.markdown)
         const logoUrl = logoRef ? resolveMarkdownImageSrc(logoRef, path, images).url : null
         const musicRef = crawlMusicRef(raw.markdown)
+        const endImageRef = crawlEndImageRef(raw.markdown)
+        const endImageUrl = endImageRef ? resolveMarkdownImageSrc(endImageRef, path, images).url : null
         const crawlBody = crawlPlainText(raw.markdown)
         const crawlTitle = raw.title
         const isActiveCrawl =
@@ -585,6 +597,8 @@ export default function SessionNotes({
             body={crawlBody}
             logoRef={logoRef}
             logoUrl={logoUrl}
+            endImageRef={endImageRef}
+            endImageUrl={endImageUrl}
             musicRef={musicRef}
             musicTracks={musicTracks}
             images={images}
@@ -596,6 +610,7 @@ export default function SessionNotes({
             crawlActive={isActiveCrawl && Boolean(playerCrawl)}
             crawlStopping={isActiveCrawl && playerCrawl?.stoppingAt != null}
             onLoadLogo={() => loadCrawlLogo()}
+            onLoadEndImage={() => loadCrawlEndImage()}
             onLoadMusic={() => loadCrawlMusic()}
           />
         )

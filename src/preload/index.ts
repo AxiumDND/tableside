@@ -50,6 +50,7 @@ const api = {
     title?: string
     body: string
     logoSrc?: string | null
+    endSrc?: string | null
     preface?: string | null
   }): Promise<PlayerState> => ipcRenderer.invoke('player:show-crawl', payload),
   stopCrawl: (): Promise<PlayerState> => ipcRenderer.invoke('player:stop-crawl'),

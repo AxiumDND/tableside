@@ -1476,10 +1476,17 @@ function registerIpc(): void {
 
   ipcMain.handle(
     'player:show-crawl',
-    (_e, payload: { title?: string; body?: string; logoSrc?: string | null; preface?: string | null }) => {
+    (_e, payload: {
+      title?: string
+      body?: string
+      logoSrc?: string | null
+      endSrc?: string | null
+      preface?: string | null
+    }) => {
     const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
     const body = typeof payload?.body === 'string' ? payload.body : ''
     const logoSrc = typeof payload?.logoSrc === 'string' && payload.logoSrc.trim() ? payload.logoSrc.trim() : null
+    const endSrc = typeof payload?.endSrc === 'string' && payload.endSrc.trim() ? payload.endSrc.trim() : null
     const preface = payload?.preface === null ? null : typeof payload?.preface === 'string' ? payload.preface : undefined
     playerState = {
       ...playerState,
@@ -1490,6 +1497,7 @@ function registerIpc(): void {
         title: title || undefined,
         body,
         logoSrc,
+        endSrc,
         preface,
         startedAt: Date.now()
       }

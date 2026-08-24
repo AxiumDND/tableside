@@ -10,7 +10,7 @@ import type {
   RecentCampaign
 } from '../../../shared/types'
 import { emptyMixerClock, emptyMixerState, mixerIsActive } from '../../../shared/audio'
-import { crawlMusicStartDelayMs } from '../../../shared/openingCrawl'
+import { crawlMusicStartDelayMs, CRAWL_SYNC_MS, CRAWL_FADE_OUT_MS } from '../../../shared/openingCrawl'
 import { emptyCombat, emptyPlayerState } from '../../../shared/types'
 import {
   applyThemeToDocument,
@@ -118,6 +118,9 @@ export default function DmApp() {
   const mapLiveRef = useRef<{ src: string; title: string; view: PlayerMapView } | null>(null)
   const playerLiveRef = useRef(false)
   const crawlMusicTimerRef = useRef<number | null>(null)
+  const crawlMusicEndTimerRef = useRef<number | null>(null)
+  const crawlSettleTimerRef = useRef<number | null>(null)
+  const crawlHasEndImageRef = useRef(false)
   const skipRestoredCombatShow = useRef(true)
   playerSrcRef.current = player.imageSrc
 
@@ -125,6 +128,14 @@ export default function DmApp() {
     if (crawlMusicTimerRef.current != null) {
       window.clearTimeout(crawlMusicTimerRef.current)
       crawlMusicTimerRef.current = null
+    }
+    if (crawlMusicEndTimerRef.current != null) {
+      window.clearTimeout(crawlMusicEndTimerRef.current)
+      crawlMusicEndTimerRef.current = null
+    }
+    if (crawlSettleTimerRef.current != null) {
+      window.clearTimeout(crawlSettleTimerRef.current)
+      crawlSettleTimerRef.current = null
     }
   }
 
@@ -369,25 +380,43 @@ export default function DmApp() {
     body: string,
     logoSrc?: string | null,
     preface?: string | null,
-    musicPath?: string | null
+    musicPath?: string | null,
+    endSrc?: string | null
   ): Promise<void> {
     playerLiveRef.current = false
     clearCrawlMusicTimer()
+    const hasEnd = Boolean(endSrc?.trim())
+    crawlHasEndImageRef.current = hasEnd
     setMixer(await window.tabledm.mixerArmCrawlMusic())
     const track = musicPath?.trim()
+    const musicDelay = crawlMusicStartDelayMs(preface)
     if (track) {
-      const delay = crawlMusicStartDelayMs(preface)
       crawlMusicTimerRef.current = window.setTimeout(() => {
         crawlMusicTimerRef.current = null
         void window.tabledm.mixerPlayCrawlMusic(track).then(setMixer)
-      }, delay)
+      }, musicDelay)
     }
+    // Fade crawl music (and resume mood) when the timed crawl ends — even if the file is longer.
+    crawlMusicEndTimerRef.current = window.setTimeout(() => {
+      crawlMusicEndTimerRef.current = null
+      void window.tabledm.mixerStopCrawlMusic().then(setMixer)
+    }, musicDelay + CRAWL_SYNC_MS)
+    // After fade-out / end-image fade-in, restore Play on the card.
+    crawlSettleTimerRef.current = window.setTimeout(() => {
+      crawlSettleTimerRef.current = null
+      setActiveCrawl(null)
+      if (!crawlHasEndImageRef.current) {
+        void window.tabledm.clearPlayer().then(setPlayer)
+      }
+    }, musicDelay + CRAWL_SYNC_MS + CRAWL_FADE_OUT_MS)
     setActiveCrawl({ title, body })
-    setPlayer(await window.tabledm.showCrawl({ title, body, logoSrc, preface }))
+    setPlayer(await window.tabledm.showCrawl({ title, body, logoSrc, preface, endSrc }))
   }
 
   async function stopCrawl(): Promise<void> {
     clearCrawlMusicTimer()
+    crawlHasEndImageRef.current = false
+    setActiveCrawl(null)
     setMixer(await window.tabledm.mixerStopCrawlMusic())
     setPlayer(await window.tabledm.stopCrawl())
   }
@@ -816,8 +845,8 @@ export default function DmApp() {
           disabled={!campaign}
           onSelectImage={setSelectedImage}
           onShowToPlayers={() => void showSelectedToPlayers()}
-          onPlayCrawl={(title, body, logoSrc, preface, musicPath) =>
-            void playCrawl(title, body, logoSrc, preface, musicPath)
+          onPlayCrawl={(title, body, logoSrc, preface, musicPath, endSrc) =>
+            void playCrawl(title, body, logoSrc, preface, musicPath, endSrc)
           }
           onStopCrawl={() => void stopCrawl()}
           activeCrawl={activeCrawl}

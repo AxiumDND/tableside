@@ -27,6 +27,16 @@ export function crawlLogoRef(markdown: string): string | null {
 
 const PREFACE_LINE = /^(?:preface|ago)\s*:\s*(.*)$/i
 const MUSIC_LINE = /^(?:music|crawl\s*music|theme)\s*:\s*(.*)$/i
+const END_LINE = /^(?:end|end\s*image|finale)\s*:\s*(.*)$/i
+
+function stripWikiPath(value: string): string {
+  const trimmed = value.trim()
+  const wiki = /^!?\[\[([^\]|\n]+)(?:\|[^\]\n]+)?\]\]$/.exec(trimmed)
+  if (wiki?.[1]) return wiki[1].trim()
+  const md = /^!\[[^\]]*\]\(\s*<?([^>\s)]+)/.exec(trimmed)
+  if (md?.[1]) return md[1].trim()
+  return trimmed.replace(/^\[\[|\]\]$/g, '').trim()
+}
 
 /** `preface:` / `ago:` line, or the default. `none` skips the far-off card. */
 export function crawlPreface(markdown: string): string | null {
@@ -49,7 +59,20 @@ export function crawlMusicRef(markdown: string): string | null {
     .map((line) => MUSIC_LINE.exec(line.trim()))
     .find((item): item is RegExpExecArray => Boolean(item))
   if (!match) return null
-  const value = (match[1] ?? '').trim().replace(/^\[\[|\]\]$/g, '').replace(/^!\[\[|\]\]$/g, '')
+  const value = stripWikiPath(match[1] ?? '')
+  if (!value || /^(none|-|off|skip)$/i.test(value)) return null
+  return value
+}
+
+/** Optional closing still that fades in when the crawl ends (planet, ship, etc.). */
+export function crawlEndImageRef(markdown: string): string | null {
+  const match = markdown
+    .replace(/\r/g, '')
+    .split('\n')
+    .map((line) => END_LINE.exec(line.trim()))
+    .find((item): item is RegExpExecArray => Boolean(item))
+  if (!match) return null
+  const value = stripWikiPath(match[1] ?? '')
   if (!value || /^(none|-|off|skip)$/i.test(value)) return null
   return value
 }
@@ -59,6 +82,7 @@ export function crawlPlainText(markdown: string): string {
     .replace(/\r/g, '')
     .replace(/^(?:preface|ago)\s*:.*$/gim, '')
     .replace(/^(?:music|crawl\s*music|theme)\s*:.*$/gim, '')
+    .replace(/^(?:end|end\s*image|finale)\s*:.*$/gim, '')
     .replace(/!\[\[[^\]]*\]\]/g, '')
     .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
     .replace(/\[\[([^\]|\n]+)(?:\|([^\]\n]+))?\]\]/g, (_m, target: string, label?: string) =>
@@ -82,6 +106,8 @@ export const CRAWL_LOGO_MS = 2500
 export const CRAWL_FADE_OUT_MS = 5000
 /** Crawl theme starts this long before the emblem (silence through hold + far-off line). */
 export const CRAWL_MUSIC_LEAD_MS = 500
+/** Timed crawl from when crawl music starts (1:32). Longer tracks fade out here. */
+export const CRAWL_SYNC_MS = 92_000
 
 /** Delay from Play until crawl music should start (mood fades immediately). */
 export function crawlMusicStartDelayMs(preface: string | null | undefined): number {
@@ -90,10 +116,10 @@ export function crawlMusicStartDelayMs(preface: string | null | undefined): numb
   return Math.max(0, CRAWL_HOLD_MS + prefaceMs - CRAWL_MUSIC_LEAD_MS)
 }
 
-const BASE_SECONDS = 8
-const SECONDS_PER_WORD = 0.35
-const MIN_SECONDS = 20
-const MAX_SECONDS = 90
+/** Scroll length so logo + crawl finish exactly at CRAWL_SYNC_MS after music starts. */
+export function crawlScrollDurationMs(): number {
+  return Math.max(0, CRAWL_SYNC_MS - CRAWL_MUSIC_LEAD_MS - CRAWL_LOGO_MS)
+}
 
 export function crawlWordCount(title: string | undefined, body: string): number {
   return `${title ?? ''} ${body}`
@@ -106,6 +132,7 @@ export interface CrawlCalloutFields {
   title?: string
   preface: string | null
   logoRef: string | null
+  endImageRef: string | null
   musicRef: string | null
   body: string
 }
@@ -121,6 +148,10 @@ export function serializeCrawlCallout(fields: CrawlCalloutFields): string {
   if (fields.logoRef?.trim()) {
     const ref = fields.logoRef.trim().replace(/^!\[\[|\]\]$/g, '')
     lines.push(`> ![[${ref}]]`)
+  }
+  if (fields.endImageRef?.trim()) {
+    const ref = fields.endImageRef.trim().replace(/^!\[\[|\]\]$/g, '')
+    lines.push(`> end: ![[${ref}]]`)
   }
   const body = fields.body.replace(/\r/g, '').trim()
   if (body) {
@@ -157,8 +188,7 @@ export function replaceNthCrawlCallout(source: string, index: number, fields: Cr
   return source
 }
 
-/** Scroll time from word count, then the picture fades to black. */
-export function crawlDurationMs(title: string | undefined, body: string): number {
-  const seconds = Math.min(MAX_SECONDS, Math.max(MIN_SECONDS, BASE_SECONDS + crawlWordCount(title, body) * SECONDS_PER_WORD))
-  return Math.round(seconds * 1000)
+/** Scroll time synced to crawl music (1:32 from audio start), then the picture fades to black. */
+export function crawlDurationMs(_title?: string | undefined, _body?: string): number {
+  return crawlScrollDurationMs()
 }

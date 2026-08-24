@@ -170,6 +170,7 @@ export interface PlayerCrawl {
   body: string
   startedAt: number
   logoSrc?: string | null
+  endSrc?: string | null
   preface?: string | null
   /** Set when the DM stops early — player view fades out, then clears. */
   stoppingAt?: number

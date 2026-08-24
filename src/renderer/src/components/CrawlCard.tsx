@@ -18,6 +18,7 @@ type CrawlFields = {
   preface: string | null
   body: string
   logoRef: string | null
+  endImageRef: string | null
   musicRef: string | null
 }
 export default function CrawlCard({
@@ -26,6 +27,8 @@ export default function CrawlCard({
   body,
   logoRef,
   logoUrl,
+  endImageRef,
+  endImageUrl,
   musicRef,
   musicTracks,
   images,
@@ -37,6 +40,7 @@ export default function CrawlCard({
   crawlActive,
   crawlStopping,
   onLoadLogo,
+  onLoadEndImage,
   onLoadMusic
 }: {
   title?: string
@@ -44,6 +48,8 @@ export default function CrawlCard({
   body: string
   logoRef: string | null
   logoUrl?: string | null
+  endImageRef: string | null
+  endImageUrl?: string | null
   musicRef: string | null
   musicTracks?: AudioTrack[]
   images: CampaignImage[]
@@ -55,6 +61,7 @@ export default function CrawlCard({
   crawlActive?: boolean
   crawlStopping?: boolean
   onLoadLogo?: () => Promise<string | null>
+  onLoadEndImage?: () => Promise<string | null>
   onLoadMusic?: () => Promise<string | null>
 }) {
   const [titleValue, setTitleValue] = useState(title ?? '')
@@ -62,8 +69,10 @@ export default function CrawlCard({
   const [prefaceValue, setPrefaceValue] = useState(preface ?? CRAWL_PREFACE_DEFAULT)
   const [bodyValue, setBodyValue] = useState(body)
   const [logoValue, setLogoValue] = useState(logoRef)
+  const [endValue, setEndValue] = useState(endImageRef)
   const [musicValue, setMusicValue] = useState(musicRef)
   const [busy, setBusy] = useState(false)
+  const [endBusy, setEndBusy] = useState(false)
   const [musicBusy, setMusicBusy] = useState(false)
   useEffect(() => {
     setTitleValue(title ?? '')
@@ -71,14 +80,16 @@ export default function CrawlCard({
     setPrefaceValue(preface ?? CRAWL_PREFACE_DEFAULT)
     setBodyValue(body)
     setLogoValue(logoRef)
+    setEndValue(endImageRef)
     setMusicValue(musicRef)
-  }, [title, preface, body, logoRef, musicRef])
+  }, [title, preface, body, logoRef, endImageRef, musicRef])
   function commit(partial?: {
     title?: string
     prefaceOn?: boolean
     preface?: string
     body?: string
     logoRef?: string | null
+    endImageRef?: string | null
     musicRef?: string | null
   }): void {
     const nextTitle = partial?.title ?? titleValue
@@ -86,12 +97,14 @@ export default function CrawlCard({
     const nextPreface = partial?.preface ?? prefaceValue
     const nextBody = partial?.body ?? bodyValue
     const nextLogo = partial && 'logoRef' in partial ? partial.logoRef ?? null : logoValue
+    const nextEnd = partial && 'endImageRef' in partial ? partial.endImageRef ?? null : endValue
     const nextMusic = partial && 'musicRef' in partial ? partial.musicRef ?? null : musicValue
     onChange({
       title: nextTitle,
       preface: nextOn ? nextPreface : null,
       body: nextBody,
       logoRef: nextLogo,
+      endImageRef: nextEnd,
       musicRef: nextMusic
     })
   }
@@ -108,6 +121,19 @@ export default function CrawlCard({
       setBusy(false)
     }
   }
+  async function loadEndImage(): Promise<void> {
+    if (!onLoadEndImage) return
+    setEndBusy(true)
+    try {
+      const next = await onLoadEndImage()
+      if (next) {
+        setEndValue(next)
+        commit({ endImageRef: next })
+      }
+    } finally {
+      setEndBusy(false)
+    }
+  }
   async function loadMusic(): Promise<void> {
     if (!onLoadMusic) return
     setMusicBusy(true)
@@ -122,8 +148,14 @@ export default function CrawlCard({
     }
   }
   const preview = logoValue ? logoUrl || crawlEmblem : crawlEmblem
+  const endPreview = endValue ? endImageUrl : null
   const tracks = musicTracks ?? []
   const musicKnown = tracks.some((track) => track.relativePath === musicValue)
+  function imageSelectValue(ref: string | null): string {
+    return (
+      images.find((img) => img.relativePath === ref || img.name === ref)?.relativePath ?? ref ?? ''
+    )
+  }
   return (
     <section className="opening-crawl-card my-5">
       <div className="relative rounded-md border border-amber/40 bg-panel-2 px-4 pb-4 pt-5">
@@ -175,12 +207,7 @@ export default function CrawlCard({
               <div className="min-w-0 flex-1 space-y-1">
                 <select
                   disabled={disabled || busy}
-                  value={
-                    images.find((img) => img.relativePath === logoValue || img.name === logoValue)
-                      ?.relativePath ??
-                    logoValue ??
-                    ''
-                  }
+                  value={imageSelectValue(logoValue)}
                   onChange={(event) => {
                     const value = event.target.value || null
                     setLogoValue(value)
@@ -207,9 +234,46 @@ export default function CrawlCard({
             </div>
           </div>
           <div>
+            <span className="text-[10px] uppercase tracking-wider text-muted">End image</span>
+            <p className="mt-0.5 text-[11px] text-muted">Fades in when the crawl finishes (planet, ship, etc.).</p>
+            <div className="mt-1 flex items-start gap-2">
+              <div className="flex h-14 w-24 items-center justify-center rounded border border-line bg-ink text-[10px] text-muted">
+                {endPreview ? <img src={endPreview} alt="" className="h-full w-full object-contain" /> : 'None'}
+              </div>
+              <div className="min-w-0 flex-1 space-y-1">
+                <select
+                  disabled={disabled || endBusy}
+                  value={imageSelectValue(endValue)}
+                  onChange={(event) => {
+                    const value = event.target.value || null
+                    setEndValue(value)
+                    commit({ endImageRef: value })
+                  }}
+                  className="w-full rounded border border-line bg-ink px-1 py-1 text-[11px] text-parchment outline-none focus:border-amber disabled:opacity-50"
+                >
+                  <option value="">None (fade to black)</option>
+                  {images.map((img) => (
+                    <option key={img.relativePath} value={img.relativePath}>
+                      {img.relativePath}
+                    </option>
+                  ))}
+                </select>
+                <button
+                  type="button"
+                  disabled={disabled || endBusy || !onLoadEndImage}
+                  onClick={() => void loadEndImage()}
+                  className="rounded border border-line px-2 py-0.5 text-[11px] hover:border-amber disabled:text-muted"
+                >
+                  {endBusy ? 'Saving…' : 'Load image…'}
+                </button>
+              </div>
+            </div>
+          </div>
+          <div>
             <span className="text-[10px] uppercase tracking-wider text-muted">Crawl music</span>
             <p className="mt-0.5 text-[11px] text-muted">
-              Mood fades out on Play. Crawl track starts just before the emblem, then mood resumes when the crawl ends.
+              Mood fades out on Play. Crawl track runs for 1:32 from when it starts (fades out if longer), then mood
+              resumes.
             </p>
             <div className="mt-1 flex flex-wrap items-center gap-1">
               <select
@@ -223,9 +287,7 @@ export default function CrawlCard({
                 className="min-w-0 flex-1 rounded border border-line bg-ink px-1 py-1 text-[11px] text-parchment outline-none focus:border-amber disabled:opacity-50"
               >
                 <option value="">Silent (no crawl track)</option>
-                {musicValue && !musicKnown ? (
-                  <option value={musicValue}>{musicValue}</option>
-                ) : null}
+                {musicValue && !musicKnown ? <option value={musicValue}>{musicValue}</option> : null}
                 {tracks.map((track) => (
                   <option key={track.relativePath} value={track.relativePath}>
                     {track.relativePath}
@@ -273,6 +335,7 @@ export default function CrawlCard({
                   preface: prefaceOn ? prefaceValue : null,
                   body: bodyValue,
                   logoRef: logoValue,
+                  endImageRef: endValue,
                   musicRef: musicValue
                 }
                 onChange(fields)

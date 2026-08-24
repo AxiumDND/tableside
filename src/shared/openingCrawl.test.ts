@@ -4,7 +4,9 @@ import {
   CRAWL_LOGO_MS,
   CRAWL_PREFACE_DEFAULT,
   CRAWL_PREFACE_MS,
+  CRAWL_SYNC_MS,
   crawlDurationMs,
+  crawlEndImageRef,
   crawlLogoRef,
   crawlMusicRef,
   crawlMusicStartDelayMs,
@@ -69,14 +71,24 @@ describe('crawlLogoRef', () => {
   })
 })
 
+describe('crawlEndImageRef', () => {
+  it('reads an optional closing still', () => {
+    expect(crawlEndImageRef('end: ![[Art/Planet.png]]\n\nGo.')).toBe('Art/Planet.png')
+    expect(crawlEndImageRef('end image: Sessions/Ship.jpg\nGo.')).toBe('Sessions/Ship.jpg')
+    expect(crawlEndImageRef('end: none\nGo.')).toBeNull()
+    expect(crawlEndImageRef('It is a time of unrest.')).toBeNull()
+  })
+})
+
 describe('crawl callout rewrite', () => {
-  it('serializes title, preface, music, emblem, and body', () => {
+  it('serializes title, preface, music, emblem, end image, and body', () => {
     expect(
       serializeCrawlCallout({
         title: 'The Siege of Kestrel',
         preface: 'In an age before memory, beyond the rim of charted stars.',
         musicRef: 'Audio/Music/Crawl/Fanfare.mp3',
         logoRef: 'Fleet Mark.png',
+        endImageRef: 'Art/Planet.png',
         body: 'It is a time of unrest.\n\nThe outer colonies have gone silent.'
       })
     ).toBe(
@@ -85,6 +97,7 @@ describe('crawl callout rewrite', () => {
         '> preface: In an age before memory, beyond the rim of charted stars.',
         '> music: Audio/Music/Crawl/Fanfare.mp3',
         '> ![[Fleet Mark.png]]',
+        '> end: ![[Art/Planet.png]]',
         '>',
         '> It is a time of unrest.',
         '>',
@@ -99,6 +112,7 @@ describe('crawl callout rewrite', () => {
       title: 'New',
       preface: 'Past the last mapped sun.',
       logoRef: null,
+      endImageRef: null,
       musicRef: null,
       body: 'A courier leaves the docks.'
     })
@@ -127,15 +141,12 @@ describe('crawlMusicStartDelayMs', () => {
 })
 
 describe('crawlDurationMs', () => {
-  it('clamps short copy to 20 seconds', () => {
+  it('scrolls for a fixed 1:32 sync from music start (logo + lead subtracted)', () => {
+    expect(CRAWL_SYNC_MS).toBe(92_000)
+    expect(crawlDurationMs('Kestrel', 'Go.')).toBe(CRAWL_SYNC_MS - 500 - CRAWL_LOGO_MS)
+    expect(crawlDurationMs('Title', Array.from({ length: 400 }, () => 'fleet').join(' '))).toBe(
+      CRAWL_SYNC_MS - 500 - CRAWL_LOGO_MS
+    )
     expect(crawlWordCount('Kestrel', 'Go.')).toBe(2)
-    expect(crawlDurationMs('Kestrel', 'Go.')).toBe(20_000)
-  })
-
-  it('grows with word count and caps at 90 seconds', () => {
-    const mid = Array.from({ length: 80 }, () => 'fleet').join(' ')
-    expect(crawlDurationMs(undefined, mid)).toBe(Math.round((8 + 80 * 0.35) * 1000))
-    const long = Array.from({ length: 400 }, () => 'fleet').join(' ')
-    expect(crawlDurationMs('Title', long)).toBe(90_000)
   })
 })
