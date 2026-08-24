@@ -14,6 +14,7 @@ type CrawlPhase = 'hold' | 'preface' | 'logo' | 'crawl' | 'done'
 
 export default function OpeningCrawl({ crawl }: { crawl: PlayerCrawl }) {
   const durationMs = crawlDurationMs(crawl.title, crawl.body)
+  const stopping = crawl.stoppingAt != null
   const [phase, setPhase] = useState<CrawlPhase>('hold')
   const paragraphs = crawl.body
     .split(/\n\s*\n/)
@@ -24,6 +25,7 @@ export default function OpeningCrawl({ crawl }: { crawl: PlayerCrawl }) {
   const prefaceMs = preface ? CRAWL_PREFACE_MS : 0
 
   useEffect(() => {
+    if (stopping) return
     setPhase('hold')
     const timers: number[] = []
     let at = CRAWL_HOLD_MS
@@ -39,10 +41,12 @@ export default function OpeningCrawl({ crawl }: { crawl: PlayerCrawl }) {
     return () => {
       for (const timer of timers) window.clearTimeout(timer)
     }
-  }, [crawl.startedAt, durationMs, preface, prefaceMs])
+  }, [crawl.startedAt, durationMs, preface, prefaceMs, stopping])
+
+  const fadingOut = stopping || phase === 'done'
 
   return (
-    <div className={`opening-crawl${phase === 'done' ? ' is-done' : ''}`} aria-label="Opening crawl">
+    <div className={`opening-crawl${fadingOut ? ' is-done' : ''}`} aria-label="Opening crawl">
       <Starfield />
       {phase === 'preface' && preface ? (
         <p

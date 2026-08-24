@@ -37,6 +37,7 @@ import {
 } from '../shared/playerWindow'
 import { digitalRainEnabled, holoPortraitsEnabled, parseThemeId, THEME_WINDOW_BACKGROUND } from '../shared/theme'
 import { APP_NAME, APP_VERSION } from '../shared/version'
+import { CRAWL_FADE_OUT_MS } from '../shared/openingCrawl'
 import {
   LIBRARY_FOLDER_NAMES,
   STANDARD_LAYOUT,
@@ -106,6 +107,7 @@ let playerWindowWarmup = true
 const programmaticPlayerCloses = new WeakSet<BrowserWindow>()
 let campaignFolder: string | null = null
 let playerState: PlayerState = emptyPlayerState()
+let crawlStopTimer: ReturnType<typeof setTimeout> | null = null
 let mixer: MixerState = emptyMixerState()
 let settings: AppSettings = emptySettings()
 let allowQuit = false
@@ -1498,8 +1500,34 @@ function registerIpc(): void {
   })
 
   ipcMain.handle('player:clear', () => {
+    if (crawlStopTimer) {
+      clearTimeout(crawlStopTimer)
+      crawlStopTimer = null
+    }
     playerState = { ...playerState, imageSrc: null, imageTitle: '', mapView: null, crawl: null }
     sendPlayerState()
+    return playerState
+  })
+
+  ipcMain.handle('player:stop-crawl', () => {
+    const crawl = playerState.crawl
+    if (!crawl || crawl.stoppingAt != null) return playerState
+    if (crawlStopTimer) {
+      clearTimeout(crawlStopTimer)
+      crawlStopTimer = null
+    }
+    playerState = {
+      ...playerState,
+      crawl: { ...crawl, stoppingAt: Date.now() }
+    }
+    sendPlayerState()
+    crawlStopTimer = setTimeout(() => {
+      crawlStopTimer = null
+      if (playerState.crawl?.stoppingAt) {
+        playerState = { ...playerState, crawl: null }
+        sendPlayerState()
+      }
+    }, CRAWL_FADE_OUT_MS)
     return playerState
   })
 

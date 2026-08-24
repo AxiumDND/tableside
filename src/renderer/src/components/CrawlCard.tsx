@@ -33,6 +33,9 @@ export default function CrawlCard({
   disabled,
   onChange,
   onPlay,
+  onStop,
+  crawlActive,
+  crawlStopping,
   onLoadLogo,
   onLoadMusic
 }: {
@@ -48,6 +51,9 @@ export default function CrawlCard({
   disabled?: boolean
   onChange: (next: CrawlFields) => void
   onPlay?: (fields: CrawlFields) => void
+  onStop?: () => void
+  crawlActive?: boolean
+  crawlStopping?: boolean
   onLoadLogo?: () => Promise<string | null>
   onLoadMusic?: () => Promise<string | null>
 }) {
@@ -249,24 +255,35 @@ export default function CrawlCard({
           </label>
         </div>
         <div className="mt-3 flex flex-wrap items-center gap-2 pl-2">
-          <button
-            type="button"
-            onClick={() => {
-              const fields = {
-                title: titleValue,
-                preface: prefaceOn ? prefaceValue : null,
-                body: bodyValue,
-                logoRef: logoValue,
-                musicRef: musicValue
-              }
-              onChange(fields)
-              onPlay?.(fields)
-            }}
-            disabled={!canPlay || !onPlay}
-            className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-on-amber disabled:bg-line disabled:text-muted"
-          >
-            Play
-          </button>
+          {crawlActive ? (
+            <button
+              type="button"
+              onClick={() => onStop?.()}
+              disabled={crawlStopping || !onStop}
+              className="rounded border border-line px-2.5 py-1 text-xs font-semibold hover:border-amber disabled:text-muted"
+            >
+              {crawlStopping ? 'Stopping…' : 'Stop'}
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => {
+                const fields = {
+                  title: titleValue,
+                  preface: prefaceOn ? prefaceValue : null,
+                  body: bodyValue,
+                  logoRef: logoValue,
+                  musicRef: musicValue
+                }
+                onChange(fields)
+                onPlay?.(fields)
+              }}
+              disabled={!canPlay || !onPlay}
+              className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-on-amber disabled:bg-line disabled:text-muted"
+            >
+              Play
+            </button>
+          )}
           {!canPlay ? <span className="text-[11px] text-muted">Sci-fi look required</span> : null}
         </div>
       </div>

@@ -78,6 +78,8 @@ export const CRAWL_HOLD_MS = 2000
 export const CRAWL_PREFACE_MS = 8000
 /** Generic emblem after the far-off card, before the crawl. */
 export const CRAWL_LOGO_MS = 2500
+/** Fade to black when the crawl ends or the DM stops early. Matches mood crossfade. */
+export const CRAWL_FADE_OUT_MS = 5000
 
 const BASE_SECONDS = 8
 const SECONDS_PER_WORD = 0.35

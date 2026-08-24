@@ -95,6 +95,7 @@ function firstNote(nodes: CampaignTreeNode[]): string {
 export default function DmApp() {
   const [campaign, setCampaign] = useState<CampaignInfo | null>(null)
   const [player, setPlayer] = useState<PlayerState>(emptyPlayerState())
+  const [activeCrawl, setActiveCrawl] = useState<{ title?: string; body: string } | null>(null)
   const [mixer, setMixer] = useState(emptyMixerState())
   const [mixerClock, setMixerClock] = useState(() => emptyMixerClock())
   const [displays, setDisplays] = useState<DisplayInfo[]>([])
@@ -164,6 +165,10 @@ export default function DmApp() {
       }
     }
   }, [openPath])
+
+  useEffect(() => {
+    if (!player.crawl) setActiveCrawl(null)
+  }, [player.crawl])
 
   useEffect(() => {
     playerLiveRef.current = false
@@ -363,11 +368,18 @@ export default function DmApp() {
     } else {
       setMixer(await window.tabledm.mixerStopCrawlMusic())
     }
+    setActiveCrawl({ title, body })
     setPlayer(await window.tabledm.showCrawl({ title, body, logoSrc, preface }))
+  }
+
+  async function stopCrawl(): Promise<void> {
+    setMixer(await window.tabledm.mixerStopCrawlMusic())
+    setPlayer(await window.tabledm.stopCrawl())
   }
 
   async function clearPlayer(): Promise<void> {
     playerLiveRef.current = false
+    setActiveCrawl(null)
     setMixer(await window.tabledm.mixerStopCrawlMusic())
     setPlayer(await window.tabledm.clearPlayer())
   }
@@ -791,6 +803,9 @@ export default function DmApp() {
           onPlayCrawl={(title, body, logoSrc, preface, musicPath) =>
             void playCrawl(title, body, logoSrc, preface, musicPath)
           }
+          onStopCrawl={() => void stopCrawl()}
+          activeCrawl={activeCrawl}
+          playerCrawl={player.crawl}
           musicTracks={mixer.library.music.flatMap((playlist) => playlist.tracks)}
           onMapLiveView={handleMapLiveView}
           onOpenNote={openNote}

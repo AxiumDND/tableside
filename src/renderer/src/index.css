@@ -632,7 +632,7 @@ body,
 }
 
 .opening-crawl.is-done {
-  animation: player-fade-out 3s ease forwards;
+  animation: player-fade-out 5s ease forwards;
 }
 
 .opening-crawl-stars {

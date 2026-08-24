@@ -233,7 +233,9 @@ export default function HelpPanel({
               <>
                 Click a map or portrait in a note so it is selected, then <Action>Show to players</Action> (or{' '}
                 <Code>Alt+S</Code>). It fades in over about five seconds. In a Sci-fi campaign,{' '}
-                <Action>Play</Action> on an Opening crawl card sends that text to the player screen.{' '}
+                <Action>Play</Action> on an Opening crawl card sends that text to the player screen. While it runs,{' '}
+                <Action>Stop</Action> fades to black over five seconds, fades out crawl music, and resumes the mood
+                playlist.{' '}
                 <Action>Clear</Action> on the <Action>Players see</Action> preview (or <Code>Alt+X</Code>) blanks the
                 player screen.
               </>,

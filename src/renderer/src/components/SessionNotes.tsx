@@ -105,6 +105,9 @@ export default function SessionNotes({
   onSelectImage,
   onShowToPlayers,
   onPlayCrawl,
+  onStopCrawl,
+  activeCrawl,
+  playerCrawl,
   musicTracks,
   onMapLiveView,
   onOpenNote,
@@ -144,6 +147,9 @@ export default function SessionNotes({
     preface?: string | null,
     musicPath?: string | null
   ) => void
+  onStopCrawl?: () => void
+  activeCrawl?: { title?: string; body: string } | null
+  playerCrawl?: import('../../../shared/types').PlayerCrawl | null
   musicTracks?: AudioTrack[]
   onMapLiveView?: (imagePath: string, view: PlayerMapView) => void
   onOpenNote?: (path: string) => void
@@ -565,12 +571,18 @@ export default function SessionNotes({
         const logoRef = crawlLogoRef(raw.markdown)
         const logoUrl = logoRef ? resolveMarkdownImageSrc(logoRef, path, images).url : null
         const musicRef = crawlMusicRef(raw.markdown)
+        const crawlBody = crawlPlainText(raw.markdown)
+        const crawlTitle = raw.title
+        const isActiveCrawl =
+          activeCrawl != null &&
+          (activeCrawl.title ?? '') === (crawlTitle ?? '') &&
+          activeCrawl.body === crawlBody
         return (
           <CrawlCard
             key={key}
-            title={raw.title}
+            title={crawlTitle}
             preface={crawlPreface(raw.markdown)}
-            body={crawlPlainText(raw.markdown)}
+            body={crawlBody}
             logoRef={logoRef}
             logoUrl={logoUrl}
             musicRef={musicRef}
@@ -580,6 +592,9 @@ export default function SessionNotes({
             disabled={disabled}
             onChange={(fields) => void persistCrawl(crawlIndex, fields)}
             onPlay={onPlayCrawl ? (fields) => void playCrawlCard(crawlIndex, fields) : undefined}
+            onStop={onStopCrawl}
+            crawlActive={isActiveCrawl && Boolean(playerCrawl)}
+            crawlStopping={isActiveCrawl && playerCrawl?.stoppingAt != null}
             onLoadLogo={() => loadCrawlLogo()}
             onLoadMusic={() => loadCrawlMusic()}
           />
