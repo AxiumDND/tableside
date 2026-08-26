@@ -54,6 +54,28 @@ const api = {
     preface?: string | null
   }): Promise<PlayerState> => ipcRenderer.invoke('player:show-crawl', payload),
   stopCrawl: (): Promise<PlayerState> => ipcRenderer.invoke('player:stop-crawl'),
+  showLegend: (payload: {
+    title?: string
+    body: string
+    logoSrc?: string | null
+    endSrc?: string | null
+    preface?: string | null
+  }): Promise<PlayerState> => ipcRenderer.invoke('player:show-legend', payload),
+  stopLegend: (): Promise<PlayerState> => ipcRenderer.invoke('player:stop-legend'),
+  showGallery: (payload: {
+    title?: string
+    slides: { src: string; label?: string }[]
+    intervalSec?: number | null
+  }): Promise<PlayerState> => ipcRenderer.invoke('player:show-gallery', payload),
+  gallerySetIndex: (index: number): Promise<PlayerState> =>
+    ipcRenderer.invoke('player:gallery-set-index', index),
+  stopGallery: (): Promise<PlayerState> => ipcRenderer.invoke('player:stop-gallery'),
+  showVideo: (payload: {
+    title?: string
+    src: string
+    muted?: boolean
+  }): Promise<PlayerState> => ipcRenderer.invoke('player:show-video', payload),
+  stopVideo: (): Promise<PlayerState> => ipcRenderer.invoke('player:stop-video'),
   clearPlayer: (): Promise<PlayerState> => ipcRenderer.invoke('player:clear'),
   setPlayerInitiative: (payload: {
     entries: PlayerState['initiative']

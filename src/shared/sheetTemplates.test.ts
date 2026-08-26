@@ -109,6 +109,65 @@ describe('game night sheet template', () => {
     })
     expect(classic).not.toContain('[!crawl]')
     expect(classic).not.toContain('{{crawl}}')
+    expect(classic).toContain('[!legend] The Pale Well')
+    expect(classic).not.toContain('{{legend}}')
+  })
+
+  it('adds an Opening legend sample on Classic, Light, and Vampire campaigns', () => {
+    for (const theme of ['classic', 'light', 'vampire'] as const) {
+      const body = fillTemplate(FALLBACK_TEMPLATES.nightsheet, 'nightsheet', 'Session 4', { theme })
+      expect(body).toContain('[!legend] The Pale Well')
+      expect(body).not.toContain('{{legend}}')
+    }
+    const scifi = fillTemplate(FALLBACK_TEMPLATES.nightsheet, 'nightsheet', 'Session 4', { theme: 'scifi' })
+    expect(scifi).not.toContain('[!legend]')
+  })
+
+  it('injects a legend into the Greystead stock night sheet template file', async () => {
+    const { readFile } = await import('node:fs/promises')
+    const { fileURLToPath } = await import('node:url')
+    const { dirname, join } = await import('node:path')
+    const root = join(dirname(fileURLToPath(import.meta.url)), '../../examples/greystead/Templates/Game Night Sheet.md')
+    const oldTemplate = await readFile(root, 'utf8')
+    const body = fillTemplate(oldTemplate, 'nightsheet', 'Session 4', {
+      partyStems: ['PC — Bren Oak'],
+      theme: 'classic'
+    })
+    expect(body).toContain('[!legend] The Pale Well')
+  })
+
+  it('injects a legend into an old Classic night sheet template without {{legend}} (CRLF)', () => {
+    const oldTemplate = [
+      '# Session Name — Game Night Sheet',
+      '',
+      '> [!abstract] Tonight at a glance',
+      '> Opening scene → next beats → **the fight** → fallout.',
+      '',
+      '{{crawl}}',
+      '',
+      '## 1. The Party',
+      ''
+    ].join('\r\n')
+    const body = fillTemplate(oldTemplate, 'nightsheet', 'Session 4', { theme: 'classic' })
+    expect(body).toContain('[!legend] The Pale Well')
+    expect(body.indexOf('[!legend]')).toBeLessThan(body.indexOf('## 1. The Party'))
+  })
+
+  it('injects a legend into an old Classic night sheet with Mac-style line endings', () => {
+    const oldTemplate = [
+      '# Session Name — Game Night Sheet',
+      '',
+      '> [!abstract] Tonight at a glance',
+      '> Opening scene → next beats → **the fight** → fallout.',
+      '',
+      '{{crawl}}',
+      '',
+      '## 1. The Party',
+      ''
+    ].join('\r\r\n')
+    const body = fillTemplate(oldTemplate, 'nightsheet', 'Session 4', { theme: 'classic' })
+    expect(body).toContain('[!legend] The Pale Well')
+    expect(body.indexOf('[!legend]')).toBeLessThan(body.indexOf('## 1. The Party'))
   })
 
   it('injects a crawl into an old Sci-fi night sheet that has no {{crawl}} marker', () => {

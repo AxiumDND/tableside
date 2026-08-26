@@ -176,6 +176,30 @@ export interface PlayerCrawl {
   stoppingAt?: number
 }
 
+/** Parchment legend scroll — same payload shape as crawl. */
+export type PlayerLegend = PlayerCrawl
+
+export interface PlayerGallerySlide {
+  src: string
+  label?: string
+}
+
+export interface PlayerGallery {
+  title?: string
+  slides: PlayerGallerySlide[]
+  index: number
+  startedAt: number
+  /** Auto-advance seconds; omit or 0 for manual. */
+  intervalSec?: number | null
+}
+
+export interface PlayerVideo {
+  title?: string
+  src: string
+  muted: boolean
+  startedAt: number
+}
+
 export interface PlayerState {
   imageSrc: string | null
   imageTitle: string
@@ -185,6 +209,9 @@ export interface PlayerState {
   initiativeRound?: number
   mapView?: PlayerMapView | null
   crawl?: PlayerCrawl | null
+  legend?: PlayerLegend | null
+  gallery?: PlayerGallery | null
+  video?: PlayerVideo | null
 }
 
 export interface RecentCampaign {
@@ -232,7 +259,10 @@ export const emptyPlayerState = (): PlayerState => ({
   showInitiative: false,
   initiativeRound: 0,
   mapView: null,
-  crawl: null
+  crawl: null,
+  legend: null,
+  gallery: null,
+  video: null
 })
 
 export const emptySettings = (): AppSettings => ({})

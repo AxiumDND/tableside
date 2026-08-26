@@ -91,7 +91,15 @@ export default function PlayerPreview({
         <button type="button" onClick={() => void togglePicker()} className="min-w-0 text-left hover:text-amber">
           <div className="text-[10px] uppercase tracking-wider text-muted">Players see</div>
           <div className="truncate text-xs">
-            {state.crawl ? state.crawl.title || 'Opening crawl' : state.imageTitle || 'Nothing showing'}
+            {state.crawl
+              ? state.crawl.title || 'Opening crawl'
+              : state.legend
+                ? state.legend.title || 'Campfire chronicle'
+                : state.gallery
+                  ? state.gallery.title || 'Gallery'
+                  : state.video
+                    ? state.video.title || 'Video'
+                    : state.imageTitle || 'Nothing showing'}
           </div>
         </button>
         <div className="flex shrink-0 items-center gap-1">
@@ -99,7 +107,7 @@ export default function PlayerPreview({
             <button
               type="button"
               onClick={onClear}
-              disabled={!state.imageSrc && !state.crawl}
+              disabled={!state.imageSrc && !state.crawl && !state.legend && !state.gallery && !state.video}
               className="rounded border border-line px-2 py-0.5 text-[11px] hover:border-amber disabled:text-muted"
             >
               Clear

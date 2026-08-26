@@ -300,6 +300,9 @@ export type CalloutKind =
   | 'readaloud'
   | 'gmonly'
   | 'crawl'
+  | 'legend'
+  | 'gallery'
+  | 'video'
   | 'scene'
   | 'tip'
   | 'warning'
@@ -323,6 +326,9 @@ function calloutKind(type: string): CalloutKind {
   if (/^read[-_]?aloud$/.test(folded) || folded === 'flavor') return 'readaloud'
   if (/^gm[-_]?only$/.test(folded) || folded === 'secret') return 'gmonly'
   if (folded === 'crawl' || folded === 'opening') return 'crawl'
+  if (folded === 'legend' || folded === 'tale' || folded === 'chronicle') return 'legend'
+  if (folded === 'gallery' || folded === 'slides' || folded === 'sequence') return 'gallery'
+  if (folded === 'video' || folded === 'clip' || folded === 'film') return 'video'
   if (folded === 'scene' || folded === 'beat') return 'scene'
   if (
     folded === 'tip' ||

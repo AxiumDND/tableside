@@ -11,15 +11,37 @@ import {
   replaceNthCrawlCallout,
   type CrawlCalloutFields
 } from '../../../shared/openingCrawl'
-import { holoPortraitsEnabled, type ThemeId } from '../../../shared/theme'
+import {
+  legendLogoRef,
+  legendPlainText,
+  legendPreface,
+  legendMusicRef,
+  legendEndImageRef,
+  replaceNthLegendCallout,
+  type LegendCalloutFields
+} from '../../../shared/openingLegend'
+import {
+  galleryImageRefs,
+  galleryIntervalSec,
+  replaceNthGalleryCallout,
+  type GalleryCalloutFields
+} from '../../../shared/playerGallery'
+import {
+  parseVideoFields,
+  replaceNthVideoCallout,
+  type VideoCalloutFields
+} from '../../../shared/playerVideo'
+import { holoPortraitsEnabled, legendPlayEnabled, type ThemeId } from '../../../shared/theme'
 import type { CampaignInfo, Character, CreateNoteMapImage, PlayerMapView } from '../../../shared/types'
 import type { AudioTrack } from '../../../shared/audio'
 import {
+  campaignFileUrl,
   imageTitle,
   markdownUrlTransform,
   prepareNoteMarkdown,
   resolveMarkdownImageSrc,
-  type CampaignImage
+  type CampaignImage,
+  type CampaignVideo
 } from '../lib/images'
 import {
   childText,
@@ -43,6 +65,9 @@ import { extractStatblock, fallbackStatblock, isNpcSheet, type ParsedStatblock }
 import { isMapNote, mapImagePath } from '../lib/mapNote'
 import CalloutCard from './CalloutCard'
 import CrawlCard from './CrawlCard'
+import LegendCard from './LegendCard'
+import GalleryCard from './GalleryCard'
+import VideoCard from './VideoCard'
 import CombatCard from './CombatCard'
 import GettingStarted from './GettingStarted'
 import StartHereTheme from './StartHereTheme'
@@ -109,6 +134,21 @@ export default function SessionNotes({
   onStopCrawl,
   activeCrawl,
   playerCrawl,
+  onPlayLegend,
+  onStopLegend,
+  activeLegend,
+  playerLegend,
+  onPlayGallery,
+  onStopGallery,
+  onGalleryPrev,
+  onGalleryNext,
+  activeGallery,
+  playerGallery,
+  onPlayVideo,
+  onStopVideo,
+  activeVideo,
+  playerVideo,
+  videos,
   musicTracks,
   onMapLiveView,
   onOpenNote,
@@ -152,6 +192,33 @@ export default function SessionNotes({
   onStopCrawl?: () => void
   activeCrawl?: { title?: string; body: string } | null
   playerCrawl?: import('../../../shared/types').PlayerCrawl | null
+  onPlayLegend?: (
+    title: string | undefined,
+    body: string,
+    logoSrc?: string | null,
+    preface?: string | null,
+    musicPath?: string | null,
+    endSrc?: string | null
+  ) => void
+  onStopLegend?: () => void
+  activeLegend?: { title?: string; body: string } | null
+  playerLegend?: import('../../../shared/types').PlayerLegend | null
+  onPlayGallery?: (
+    title: string | undefined,
+    slides: { src: string; label?: string }[],
+    imageRefs: string[],
+    intervalSec?: number | null
+  ) => void
+  onStopGallery?: () => void
+  onGalleryPrev?: () => void
+  onGalleryNext?: () => void
+  activeGallery?: { title?: string; imageRefs: string[] } | null
+  playerGallery?: import('../../../shared/types').PlayerGallery | null
+  onPlayVideo?: (title: string | undefined, src: string, muted: boolean, videoRef: string) => void
+  onStopVideo?: () => void
+  activeVideo?: { title?: string; videoRef: string } | null
+  playerVideo?: import('../../../shared/types').PlayerVideo | null
+  videos?: CampaignVideo[]
   musicTracks?: AudioTrack[]
   onMapLiveView?: (imagePath: string, view: PlayerMapView) => void
   onOpenNote?: (path: string) => void
@@ -342,6 +409,81 @@ export default function SessionNotes({
     setEditing(false)
   }
 
+  async function persistLegend(index: number, fields: LegendCalloutFields): Promise<void> {
+    if (!path) return
+    const next = replaceNthLegendCallout(markdownRef.current, index, fields)
+    if (next === markdownRef.current) return
+    await persistShopMarkdown(next)
+  }
+
+  async function playLegendCard(index: number, fields: LegendCalloutFields): Promise<void> {
+    await persistLegend(index, fields)
+    const logo = fields.logoRef ? resolveMarkdownImageSrc(fields.logoRef, path, images).url : null
+    const endImage = fields.endImageRef
+      ? resolveMarkdownImageSrc(fields.endImageRef, path, images).url
+      : null
+    onPlayLegend?.(
+      fields.title || undefined,
+      fields.body,
+      logo || null,
+      fields.preface,
+      fields.musicRef,
+      endImage || null
+    )
+  }
+
+  async function loadLegendLogo(): Promise<string | null> {
+    return loadCrawlLogo()
+  }
+
+  async function loadLegendEndImage(): Promise<string | null> {
+    return loadCrawlLogo()
+  }
+
+  async function loadLegendMusic(): Promise<string | null> {
+    return loadCrawlMusic()
+  }
+
+  async function persistGallery(index: number, fields: GalleryCalloutFields): Promise<void> {
+    if (!path) return
+    const next = replaceNthGalleryCallout(markdownRef.current, index, fields)
+    if (next === markdownRef.current) return
+    await persistShopMarkdown(next)
+  }
+
+  async function playGalleryCard(index: number, fields: GalleryCalloutFields): Promise<void> {
+    await persistGallery(index, fields)
+    const slides = fields.imageRefs
+      .map((ref) => {
+        const resolved = resolveMarkdownImageSrc(ref, path, images)
+        return resolved.url ? { src: resolved.url, label: imageTitle(ref) } : null
+      })
+      .filter((s): s is { src: string; label: string } => Boolean(s))
+    if (slides.length === 0) return
+    onPlayGallery?.(fields.title || undefined, slides, fields.imageRefs, fields.intervalSec)
+  }
+
+  async function persistVideo(index: number, fields: VideoCalloutFields): Promise<void> {
+    if (!path) return
+    const next = replaceNthVideoCallout(markdownRef.current, index, fields)
+    if (next === markdownRef.current) return
+    await persistShopMarkdown(next)
+  }
+
+  async function playVideoCard(index: number, fields: VideoCalloutFields): Promise<void> {
+    await persistVideo(index, fields)
+    const ref = fields.videoRef?.trim()
+    if (!ref) return
+    onPlayVideo?.(fields.title || undefined, campaignFileUrl(ref), fields.muted, ref)
+  }
+
+  async function loadVideoFile(): Promise<string | null> {
+    const result = await window.tabledm.addFiles('Handouts')
+    if (!result?.paths?.length) return null
+    onCampaignChange?.(result.campaign)
+    return result.paths[0] ?? null
+  }
+
   async function persistCrawl(index: number, fields: CrawlCalloutFields): Promise<void> {
     if (!path) return
     const next = replaceNthCrawlCallout(markdownRef.current, index, fields)
@@ -526,9 +668,22 @@ export default function SessionNotes({
     }
   }
 
-  function renderMarkdown(text: string, keyPrefix: string, crawlOffset = 0) {
+  function renderMarkdown(
+    text: string,
+    keyPrefix: string,
+    crawlOffset = 0,
+    legendOffset = 0,
+    galleryOffset = 0,
+    videoOffset = 0
+  ) {
     const rawCrawls = splitCalloutBlocks(markdown).filter((block) => block.kind === 'crawl')
+    const rawLegends = splitCalloutBlocks(markdown).filter((block) => block.kind === 'legend')
+    const rawGalleries = splitCalloutBlocks(markdown).filter((block) => block.kind === 'gallery')
+    const rawVideos = splitCalloutBlocks(markdown).filter((block) => block.kind === 'video')
     let crawlLocal = 0
+    let legendLocal = 0
+    let galleryLocal = 0
+    let videoLocal = 0
     return splitCalloutBlocks(text).map((part, i) => {
       const key = `${keyPrefix}-${i}`
       if (part.kind === 'readaloud') {
@@ -568,7 +723,10 @@ export default function SessionNotes({
                   body,
                   `${key}-body`,
                   part.title?.trim() || undefined,
-                  crawlOffset + crawlLocal
+                  crawlOffset + crawlLocal,
+                  legendOffset + legendLocal,
+                  galleryOffset + galleryLocal,
+                  videoOffset + videoLocal
                 )
               : null}
           </SceneCard>
@@ -615,6 +773,104 @@ export default function SessionNotes({
           />
         )
       }
+      if (part.kind === 'legend') {
+        const legendIndex = legendOffset + legendLocal
+        legendLocal += 1
+        const raw = rawLegends[legendIndex] ?? part
+        const logoRef = legendLogoRef(raw.markdown)
+        const logoUrl = logoRef ? resolveMarkdownImageSrc(logoRef, path, images).url : null
+        const musicRef = legendMusicRef(raw.markdown)
+        const endImageRef = legendEndImageRef(raw.markdown)
+        const endImageUrl = endImageRef ? resolveMarkdownImageSrc(endImageRef, path, images).url : null
+        const legendBody = legendPlainText(raw.markdown)
+        const legendTitle = raw.title
+        const isActiveLegend =
+          activeLegend != null &&
+          (activeLegend.title ?? '') === (legendTitle ?? '') &&
+          activeLegend.body === legendBody
+        return (
+          <LegendCard
+            key={key}
+            title={legendTitle}
+            preface={legendPreface(raw.markdown)}
+            body={legendBody}
+            logoRef={logoRef}
+            logoUrl={logoUrl}
+            endImageRef={endImageRef}
+            endImageUrl={endImageUrl}
+            musicRef={musicRef}
+            musicTracks={musicTracks}
+            images={images}
+            canPlay={legendPlayEnabled(theme)}
+            disabled={disabled}
+            onChange={(fields) => void persistLegend(legendIndex, fields)}
+            onPlay={onPlayLegend ? (fields) => void playLegendCard(legendIndex, fields) : undefined}
+            onStop={onStopLegend}
+            legendActive={isActiveLegend && Boolean(playerLegend)}
+            legendStopping={isActiveLegend && playerLegend?.stoppingAt != null}
+            onLoadLogo={() => loadLegendLogo()}
+            onLoadEndImage={() => loadLegendEndImage()}
+            onLoadMusic={() => loadLegendMusic()}
+          />
+        )
+      }
+      if (part.kind === 'gallery') {
+        const galleryIndex = galleryOffset + galleryLocal
+        galleryLocal += 1
+        const raw = rawGalleries[galleryIndex] ?? part
+        const refs = galleryImageRefs(raw.markdown)
+        const intervalSec = galleryIntervalSec(raw.markdown)
+        const urls = refs.map((ref) => resolveMarkdownImageSrc(ref, path, images).url || null)
+        const refsKey = refs.join('\n')
+        const isActiveGallery =
+          activeGallery != null &&
+          (activeGallery.title ?? '') === (raw.title ?? '') &&
+          activeGallery.imageRefs.join('\n') === refsKey
+        return (
+          <GalleryCard
+            key={key}
+            title={raw.title}
+            intervalSec={intervalSec}
+            imageRefs={refs}
+            images={images}
+            imageUrls={urls}
+            disabled={disabled}
+            onChange={(fields) => void persistGallery(galleryIndex, fields)}
+            onPlay={onPlayGallery ? (fields) => void playGalleryCard(galleryIndex, fields) : undefined}
+            onStop={onStopGallery}
+            onPrev={onGalleryPrev}
+            onNext={onGalleryNext}
+            galleryActive={isActiveGallery && Boolean(playerGallery)}
+            slideIndex={isActiveGallery ? playerGallery?.index : undefined}
+            slideCount={isActiveGallery ? playerGallery?.slides.length : undefined}
+          />
+        )
+      }
+      if (part.kind === 'video') {
+        const videoIndex = videoOffset + videoLocal
+        videoLocal += 1
+        const raw = rawVideos[videoIndex] ?? part
+        const fields = parseVideoFields(raw.title, raw.markdown)
+        const isActiveVideo =
+          activeVideo != null &&
+          (activeVideo.title ?? '') === (fields.title ?? '') &&
+          activeVideo.videoRef === (fields.videoRef ?? '')
+        return (
+          <VideoCard
+            key={key}
+            title={fields.title}
+            videoRef={fields.videoRef}
+            muted={fields.muted}
+            videos={videos ?? []}
+            disabled={disabled}
+            onChange={(next) => void persistVideo(videoIndex, next)}
+            onPlay={onPlayVideo ? (next) => void playVideoCard(videoIndex, next) : undefined}
+            onStop={onStopVideo}
+            videoActive={isActiveVideo && Boolean(playerVideo)}
+            onLoadVideo={() => loadVideoFile()}
+          />
+        )
+      }
       if (part.kind === 'gmonly') {
         if (/^what this page does$/i.test(part.title ?? '')) return null
         return (
@@ -649,13 +905,26 @@ export default function SessionNotes({
     text: string,
     keyPrefix: string,
     encounterScope?: string,
-    crawlOffset = 0
+    crawlOffset = 0,
+    legendOffset = 0,
+    galleryOffset = 0,
+    videoOffset = 0
   ) {
     const docSections = splitMarkdownSections(text)
     if (docSections.length === 0) {
-      return renderMarkdown(text || '_This file is empty._', keyPrefix, crawlOffset)
+      return renderMarkdown(
+        text || '_This file is empty._',
+        keyPrefix,
+        crawlOffset,
+        legendOffset,
+        galleryOffset,
+        videoOffset
+      )
     }
     let crawlsBefore = 0
+    let legendsBefore = 0
+    let galleriesBefore = 0
+    let videosBefore = 0
     return docSections.map((section, index) => {
       const sectionId = encounterScope
         ? encounterSectionId(section.heading, encounterScope)
@@ -663,18 +932,39 @@ export default function SessionNotes({
       const encounter = encounters.find((item) => item.id === sectionId)
       const boxed = Boolean(encounter) || isCombatHeading(section.heading)
       const key = `${keyPrefix}-${section.id || index}`
-      const sectionCrawls = splitCalloutBlocks(section.markdown).filter((block) => block.kind === 'crawl').length
-      const offset = crawlOffset + crawlsBefore
+      const parts = splitCalloutBlocks(section.markdown)
+      const sectionCrawls = parts.filter((block) => block.kind === 'crawl').length
+      const sectionLegends = parts.filter((block) => block.kind === 'legend').length
+      const sectionGalleries = parts.filter((block) => block.kind === 'gallery').length
+      const sectionVideos = parts.filter((block) => block.kind === 'video').length
+      const crawlOff = crawlOffset + crawlsBefore
+      const legendOff = legendOffset + legendsBefore
+      const galleryOff = galleryOffset + galleriesBefore
+      const videoOff = videoOffset + videosBefore
       crawlsBefore += sectionCrawls
+      legendsBefore += sectionLegends
+      galleriesBefore += sectionGalleries
+      videosBefore += sectionVideos
       if (!boxed) {
         return (
           <div key={key} className="markdown-body">
-            {renderMarkdown(section.markdown || '_This file is empty._', key, offset)}
+            {renderMarkdown(
+              section.markdown || '_This file is empty._',
+              key,
+              crawlOff,
+              legendOff,
+              galleryOff,
+              videoOff
+            )}
           </div>
         )
       }
       const { card, rest } = splitCombatCardContent(section.markdown)
-      const cardCrawls = splitCalloutBlocks(card).filter((block) => block.kind === 'crawl').length
+      const cardParts = splitCalloutBlocks(card)
+      const cardCrawls = cardParts.filter((block) => block.kind === 'crawl').length
+      const cardLegends = cardParts.filter((block) => block.kind === 'legend').length
+      const cardGalleries = cardParts.filter((block) => block.kind === 'gallery').length
+      const cardVideos = cardParts.filter((block) => block.kind === 'video').length
       return (
         <div key={key}>
           <CombatCard
@@ -682,10 +972,19 @@ export default function SessionNotes({
             onAdd={encounter && onAddEncounter ? () => void addEncounter(encounter) : undefined}
             missing={missingCombatantTokens(section.markdown, path, noteIndex)}
           >
-            {renderMarkdown(card, `${key}-card`, offset)}
+            {renderMarkdown(card, `${key}-card`, crawlOff, legendOff, galleryOff, videoOff)}
           </CombatCard>
           {rest.trim() ? (
-            <div className="markdown-body">{renderMarkdown(rest, `${key}-rest`, offset + cardCrawls)}</div>
+            <div className="markdown-body">
+              {renderMarkdown(
+                rest,
+                `${key}-rest`,
+                crawlOff + cardCrawls,
+                legendOff + cardLegends,
+                galleryOff + cardGalleries,
+                videoOff + cardVideos
+              )}
+            </div>
           ) : null}
         </div>
       )
@@ -698,22 +997,46 @@ export default function SessionNotes({
       return <div className="markdown-body">{renderMarkdown(text || '_This file is empty._', keyPrefix)}</div>
     }
     let crawlsBefore = 0
+    let legendsBefore = 0
+    let galleriesBefore = 0
+    let videosBefore = 0
     return docSections.map((section, index) => {
       const encounter = encounters.find((item) => item.id === section.id)
       const boxed = Boolean(encounter) || isCombatHeading(section.heading)
       const key = `${keyPrefix}-${section.id || index}`
-      const sectionCrawls = splitCalloutBlocks(section.markdown).filter((block) => block.kind === 'crawl').length
-      const offset = crawlsBefore
+      const parts = splitCalloutBlocks(section.markdown)
+      const sectionCrawls = parts.filter((block) => block.kind === 'crawl').length
+      const sectionLegends = parts.filter((block) => block.kind === 'legend').length
+      const sectionGalleries = parts.filter((block) => block.kind === 'gallery').length
+      const sectionVideos = parts.filter((block) => block.kind === 'video').length
+      const crawlOff = crawlsBefore
+      const legendOff = legendsBefore
+      const galleryOff = galleriesBefore
+      const videoOff = videosBefore
       crawlsBefore += sectionCrawls
+      legendsBefore += sectionLegends
+      galleriesBefore += sectionGalleries
+      videosBefore += sectionVideos
       if (!boxed) {
         return (
           <div key={key} className="markdown-body">
-            {renderMarkdown(section.markdown || '_This file is empty._', key, offset)}
+            {renderMarkdown(
+              section.markdown || '_This file is empty._',
+              key,
+              crawlOff,
+              legendOff,
+              galleryOff,
+              videoOff
+            )}
           </div>
         )
       }
       const { card, rest } = splitCombatCardContent(section.markdown)
-      const cardCrawls = splitCalloutBlocks(card).filter((block) => block.kind === 'crawl').length
+      const cardParts = splitCalloutBlocks(card)
+      const cardCrawls = cardParts.filter((block) => block.kind === 'crawl').length
+      const cardLegends = cardParts.filter((block) => block.kind === 'legend').length
+      const cardGalleries = cardParts.filter((block) => block.kind === 'gallery').length
+      const cardVideos = cardParts.filter((block) => block.kind === 'video').length
       return (
         <div key={key}>
           <CombatCard
@@ -721,10 +1044,19 @@ export default function SessionNotes({
             onAdd={encounter && onAddEncounter ? () => void addEncounter(encounter) : undefined}
             missing={missingCombatantTokens(section.markdown, path, noteIndex)}
           >
-            {renderMarkdown(card, `${key}-card`, offset)}
+            {renderMarkdown(card, `${key}-card`, crawlOff, legendOff, galleryOff, videoOff)}
           </CombatCard>
           {rest.trim() ? (
-            <div className="markdown-body">{renderMarkdown(rest, `${key}-rest`, offset + cardCrawls)}</div>
+            <div className="markdown-body">
+              {renderMarkdown(
+                rest,
+                `${key}-rest`,
+                crawlOff + cardCrawls,
+                legendOff + cardLegends,
+                galleryOff + cardGalleries,
+                videoOff + cardVideos
+              )}
+            </div>
           ) : null}
         </div>
       )

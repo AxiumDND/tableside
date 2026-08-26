@@ -5,6 +5,24 @@
 > [!abstract] Tonight at a glance
 > Hire in [[The Grey Mare]] → any **two** clues in [[Greystead]] → [[The Ridge Road]] → [[Pale Well Caves]] → **stop the rite or break it**. Next hook is Millhollow, not a sermon.
 
+> [!legend] The Pale Well
+> preface: In the year the ridge road failed, when Greystead still trusted its walls.
+> It is a quiet season in the uplands. Grain waits at the mill. The watch argues over bandits on the ridge.
+>
+> A girl named Lira vanishes on the night the well runs cold. The mayor's purse is already on the table, and the town swears it was thieves.
+>
+> In the caves beneath the pale stone, something older keeps its count. If the rite is not stopped, the ridge will not hold another winter.
+
+> [!gallery] Faces on the ridge
+> interval: manual
+> ![[Alden Crowe.webp]]
+> ![[Lira Crowe.webp]]
+> ![[Marta Fenn.webp]]
+> ![[Vesper.webp]]
+
+> [!video] Vision at the Pale Well
+> mute: true
+
 ## 1. The Party
 
 - [[PC — Bren Oak|Bren Oak]]

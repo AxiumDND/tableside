@@ -4,6 +4,9 @@ import { decodeFog } from '../lib/mapFog'
 import MapStage from './MapStage'
 import MapTokenMark from './MapTokenMark'
 import OpeningCrawl from './OpeningCrawl'
+import OpeningLegend from './OpeningLegend'
+import OpeningGallery from './OpeningGallery'
+import OpeningVideo from './OpeningVideo'
 
 const FADE_MS = 5000
 
@@ -62,12 +65,21 @@ export default function PlayerView({
     return () => clearTimeout(t)
   }, [layers.at(-1)?.id])
 
-  const showInit = !state.crawl && state.showInitiative && state.initiative.length > 0
+  const showInit =
+    !state.crawl &&
+    !state.legend &&
+    !state.gallery &&
+    !state.video &&
+    state.showInitiative &&
+    state.initiative.length > 0
 
   return (
     <div className={`player-stage${compact ? ' player-stage-compact' : ''}`}>
       {state.crawl ? <OpeningCrawl crawl={state.crawl} /> : null}
-      {!state.crawl &&
+      {state.legend ? <OpeningLegend legend={state.legend} /> : null}
+      {state.gallery ? <OpeningGallery gallery={state.gallery} /> : null}
+      {state.video ? <OpeningVideo video={state.video} /> : null}
+      {!state.crawl && !state.legend && !state.gallery && !state.video &&
         layers.map((layer, index) => {
           const top = index === layers.length - 1
           const fadeIn = top && !clearing && (index > 0 || Boolean(layer.fromBlack))

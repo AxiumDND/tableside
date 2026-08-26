@@ -11,6 +11,7 @@ import type {
 } from '../../../shared/types'
 import { emptyMixerClock, emptyMixerState, mixerIsActive } from '../../../shared/audio'
 import { crawlMusicStartDelayMs, CRAWL_SYNC_MS, CRAWL_FADE_OUT_MS } from '../../../shared/openingCrawl'
+import { legendMusicStartDelayMs, LEGEND_SYNC_MS } from '../../../shared/openingLegend'
 import { emptyCombat, emptyPlayerState } from '../../../shared/types'
 import {
   applyThemeToDocument,
@@ -38,7 +39,7 @@ import SystemPicker from '../components/SystemPicker'
 import ThemeSetup from '../components/ThemeSetup'
 import DigitalRain from '../components/DigitalRain'
 import { combatToPlayerInitiative, combatProfileFor, advanceCombatTurn, rollInitiativeFor } from '../lib/combat'
-import { flattenImages, imageTitle, isImagePath, isPdfPath } from '../lib/images'
+import { flattenImages, flattenVideos, imageTitle, isImagePath, isPdfPath } from '../lib/images'
 import {
   allPartyNotes,
   bestiaryNotes,
@@ -97,6 +98,9 @@ export default function DmApp() {
   const [campaign, setCampaign] = useState<CampaignInfo | null>(null)
   const [player, setPlayer] = useState<PlayerState>(emptyPlayerState())
   const [activeCrawl, setActiveCrawl] = useState<{ title?: string; body: string } | null>(null)
+  const [activeLegend, setActiveLegend] = useState<{ title?: string; body: string } | null>(null)
+  const [activeGallery, setActiveGallery] = useState<{ title?: string; imageRefs: string[] } | null>(null)
+  const [activeVideo, setActiveVideo] = useState<{ title?: string; videoRef: string } | null>(null)
   const [mixer, setMixer] = useState(emptyMixerState())
   const [mixerClock, setMixerClock] = useState(() => emptyMixerClock())
   const [displays, setDisplays] = useState<DisplayInfo[]>([])
@@ -120,7 +124,8 @@ export default function DmApp() {
   const crawlMusicTimerRef = useRef<number | null>(null)
   const crawlMusicEndTimerRef = useRef<number | null>(null)
   const crawlSettleTimerRef = useRef<number | null>(null)
-  const crawlHasEndImageRef = useRef(false)
+  const galleryAdvanceTimerRef = useRef<number | null>(null)
+  const prologueHasEndImageRef = useRef(false)
   const skipRestoredCombatShow = useRef(true)
   playerSrcRef.current = player.imageSrc
 
@@ -136,6 +141,13 @@ export default function DmApp() {
     if (crawlSettleTimerRef.current != null) {
       window.clearTimeout(crawlSettleTimerRef.current)
       crawlSettleTimerRef.current = null
+    }
+  }
+
+  function clearGalleryAdvanceTimer(): void {
+    if (galleryAdvanceTimerRef.current != null) {
+      window.clearInterval(galleryAdvanceTimerRef.current)
+      galleryAdvanceTimerRef.current = null
     }
   }
 
@@ -386,7 +398,11 @@ export default function DmApp() {
     playerLiveRef.current = false
     clearCrawlMusicTimer()
     const hasEnd = Boolean(endSrc?.trim())
-    crawlHasEndImageRef.current = hasEnd
+    prologueHasEndImageRef.current = hasEnd
+    setActiveLegend(null)
+    setActiveGallery(null)
+    setActiveVideo(null)
+    clearGalleryAdvanceTimer()
     setMixer(await window.tabledm.mixerArmCrawlMusic())
     const track = musicPath?.trim()
     const musicDelay = crawlMusicStartDelayMs(preface)
@@ -405,7 +421,7 @@ export default function DmApp() {
     crawlSettleTimerRef.current = window.setTimeout(() => {
       crawlSettleTimerRef.current = null
       setActiveCrawl(null)
-      if (!crawlHasEndImageRef.current) {
+      if (!prologueHasEndImageRef.current) {
         void window.tabledm.clearPlayer().then(setPlayer)
       }
     }, musicDelay + CRAWL_SYNC_MS + CRAWL_FADE_OUT_MS)
@@ -413,18 +429,154 @@ export default function DmApp() {
     setPlayer(await window.tabledm.showCrawl({ title, body, logoSrc, preface, endSrc }))
   }
 
+  async function playLegend(
+    title: string | undefined,
+    body: string,
+    logoSrc?: string | null,
+    preface?: string | null,
+    musicPath?: string | null,
+    endSrc?: string | null
+  ): Promise<void> {
+    playerLiveRef.current = false
+    clearCrawlMusicTimer()
+    const hasEnd = Boolean(endSrc?.trim())
+    prologueHasEndImageRef.current = hasEnd
+    setActiveCrawl(null)
+    setActiveGallery(null)
+    setActiveVideo(null)
+    clearGalleryAdvanceTimer()
+    setMixer(await window.tabledm.mixerArmCrawlMusic())
+    const track = musicPath?.trim()
+    const musicDelay = legendMusicStartDelayMs(preface)
+    if (track) {
+      crawlMusicTimerRef.current = window.setTimeout(() => {
+        crawlMusicTimerRef.current = null
+        void window.tabledm.mixerPlayCrawlMusic(track).then(setMixer)
+      }, musicDelay)
+    }
+    crawlMusicEndTimerRef.current = window.setTimeout(() => {
+      crawlMusicEndTimerRef.current = null
+      void window.tabledm.mixerStopCrawlMusic().then(setMixer)
+    }, musicDelay + LEGEND_SYNC_MS)
+    crawlSettleTimerRef.current = window.setTimeout(() => {
+      crawlSettleTimerRef.current = null
+      setActiveLegend(null)
+      if (!prologueHasEndImageRef.current) {
+        void window.tabledm.clearPlayer().then(setPlayer)
+      }
+    }, musicDelay + LEGEND_SYNC_MS + CRAWL_FADE_OUT_MS)
+    setActiveLegend({ title, body })
+    setPlayer(await window.tabledm.showLegend({ title, body, logoSrc, preface, endSrc }))
+  }
+
   async function stopCrawl(): Promise<void> {
     clearCrawlMusicTimer()
-    crawlHasEndImageRef.current = false
+    prologueHasEndImageRef.current = false
     setActiveCrawl(null)
     setMixer(await window.tabledm.mixerStopCrawlMusic())
     setPlayer(await window.tabledm.stopCrawl())
   }
 
+  async function stopLegend(): Promise<void> {
+    clearCrawlMusicTimer()
+    prologueHasEndImageRef.current = false
+    setActiveLegend(null)
+    setMixer(await window.tabledm.mixerStopCrawlMusic())
+    setPlayer(await window.tabledm.stopLegend())
+  }
+
+  async function playGallery(
+    title: string | undefined,
+    slides: { src: string; label?: string }[],
+    imageRefs: string[],
+    intervalSec?: number | null
+  ): Promise<void> {
+    playerLiveRef.current = false
+    clearCrawlMusicTimer()
+    clearGalleryAdvanceTimer()
+    setActiveCrawl(null)
+    setActiveLegend(null)
+    setActiveVideo(null)
+    setActiveGallery({ title, imageRefs })
+    setMixer(await window.tabledm.mixerStopCrawlMusic())
+    const state = await window.tabledm.showGallery({
+      title,
+      slides,
+      intervalSec: intervalSec && intervalSec > 0 ? intervalSec : null
+    })
+    setPlayer(state)
+    const sec = intervalSec && intervalSec > 0 ? intervalSec : null
+    if (sec && slides.length > 1) {
+      galleryAdvanceTimerRef.current = window.setInterval(() => {
+        void window.tabledm.getPlayerState().then((current) => {
+          const g = current.gallery
+          if (!g) {
+            clearGalleryAdvanceTimer()
+            return
+          }
+          if (g.index >= g.slides.length - 1) {
+            clearGalleryAdvanceTimer()
+            return
+          }
+          void window.tabledm.gallerySetIndex(g.index + 1).then(setPlayer)
+        })
+      }, sec * 1000)
+    }
+  }
+
+  async function galleryPrev(): Promise<void> {
+    const g = player.gallery
+    if (!g || g.index <= 0) return
+    setPlayer(await window.tabledm.gallerySetIndex(g.index - 1))
+  }
+
+  async function galleryNext(): Promise<void> {
+    const g = player.gallery
+    if (!g || g.index >= g.slides.length - 1) return
+    setPlayer(await window.tabledm.gallerySetIndex(g.index + 1))
+  }
+
+  async function stopGallery(): Promise<void> {
+    clearGalleryAdvanceTimer()
+    setActiveGallery(null)
+    setPlayer(await window.tabledm.stopGallery())
+  }
+
+  async function playVideo(
+    title: string | undefined,
+    src: string,
+    muted: boolean,
+    videoRef: string
+  ): Promise<void> {
+    playerLiveRef.current = false
+    clearCrawlMusicTimer()
+    clearGalleryAdvanceTimer()
+    setActiveCrawl(null)
+    setActiveLegend(null)
+    setActiveGallery(null)
+    setActiveVideo({ title, videoRef })
+    if (!muted) {
+      setMixer(await window.tabledm.mixerArmCrawlMusic())
+    } else {
+      setMixer(await window.tabledm.mixerStopCrawlMusic())
+    }
+    setPlayer(await window.tabledm.showVideo({ title, src, muted }))
+  }
+
+  async function stopVideo(): Promise<void> {
+    setActiveVideo(null)
+    setMixer(await window.tabledm.mixerStopCrawlMusic())
+    setPlayer(await window.tabledm.stopVideo())
+  }
+
   async function clearPlayer(): Promise<void> {
     playerLiveRef.current = false
     clearCrawlMusicTimer()
+    clearGalleryAdvanceTimer()
     setActiveCrawl(null)
+    setActiveLegend(null)
+    setActiveGallery(null)
+    setActiveVideo(null)
     setMixer(await window.tabledm.mixerStopCrawlMusic())
     setPlayer(await window.tabledm.clearPlayer())
   }
@@ -851,6 +1003,25 @@ export default function DmApp() {
           onStopCrawl={() => void stopCrawl()}
           activeCrawl={activeCrawl}
           playerCrawl={player.crawl}
+          onPlayLegend={(title, body, logoSrc, preface, musicPath, endSrc) =>
+            void playLegend(title, body, logoSrc, preface, musicPath, endSrc)
+          }
+          onStopLegend={() => void stopLegend()}
+          activeLegend={activeLegend}
+          playerLegend={player.legend}
+          onPlayGallery={(title, slides, imageRefs, intervalSec) =>
+            void playGallery(title, slides, imageRefs, intervalSec)
+          }
+          onStopGallery={() => void stopGallery()}
+          onGalleryPrev={() => void galleryPrev()}
+          onGalleryNext={() => void galleryNext()}
+          activeGallery={activeGallery}
+          playerGallery={player.gallery}
+          onPlayVideo={(title, src, muted, videoRef) => void playVideo(title, src, muted, videoRef)}
+          onStopVideo={() => void stopVideo()}
+          activeVideo={activeVideo}
+          playerVideo={player.video}
+          videos={campaign ? flattenVideos(campaign.tree) : []}
           musicTracks={mixer.library.music.flatMap((playlist) => playlist.tracks)}
           onMapLiveView={handleMapLiveView}
           onOpenNote={openNote}

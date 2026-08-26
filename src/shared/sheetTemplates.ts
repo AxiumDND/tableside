@@ -1,4 +1,5 @@
 import { NIGHTSHEET_CRAWL_SAMPLE } from './openingCrawl'
+import { NIGHTSHEET_LEGEND_SAMPLE } from './openingLegend'
 import { parseThemeId } from './theme'
 
 export type SheetTemplateKind =
@@ -244,6 +245,7 @@ const NIGHTSHEET = `<!--
   Right-click Sessions/ → New game night sheet…
   {{party}} is replaced with wikilinks to every Party/ sheet.
   {{crawl}} is replaced on Sci-fi campaigns with an Opening crawl sample (Play on the player screen).
+  {{legend}} is replaced on Classic, Light, and Vampire campaigns with an Opening legend sample.
   Scene blocks: > [!scene] Title — art, what could happen, nested > [!readaloud] / > [!gmonly], optional NPCs, secrets, treasure, combat, and table cues.
   Copy a scene block to add another beat.
   Combat headings inside a scene (⚔️ / Combat / Encounter) + Combatants lines feed Add to initiative.
@@ -258,6 +260,8 @@ const NIGHTSHEET = `<!--
 > Opening scene → next beats → **the fight** → fallout.
 
 {{crawl}}
+
+{{legend}}
 
 ## 1. The Party
 
@@ -573,20 +577,61 @@ export function fillTemplate(
       body = body.replace(/^(# .+\r?\n)/, `$1\n## The characters\n\n${partyLinkList(stems)}\n\n`)
     }
     body = applyNightsheetCrawl(body, extras?.theme)
+    body = applyNightsheetLegend(body, extras?.theme)
   }
   return body
 }
 
+function normalizeNightSheetBody(body: string): string {
+  return body.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+}
+
+function applyNightsheetLegend(body: string, theme?: string | null): string {
+  const normalized = normalizeNightSheetBody(body)
+  const id = parseThemeId(theme)
+  const legend =
+    id === 'classic' || id === 'light' || id === 'vampire' ? NIGHTSHEET_LEGEND_SAMPLE : ''
+  if (normalized.includes('{{legend}}')) {
+    return normalizeNightSheetBody(
+      normalized
+        .replaceAll('{{legend}}\n', legend ? `${legend}\n` : '')
+        .replaceAll('{{legend}}', legend)
+        .replace(/\n{3,}/g, '\n\n')
+    )
+  }
+  if (!legend || /^\s*>\s*\[!(?:legend|tale|chronicle)\]/m.test(normalized)) return body
+  if (/^> \[!abstract\][\s\S]*?\n\n/m.test(normalized)) {
+    return normalizeNightSheetBody(
+      normalized.replace(/^(> \[!abstract\][\s\S]*?\n\n)/m, `$1${legend}\n\n`)
+    )
+  }
+  if (/^## 1\. The Party/m.test(normalized)) {
+    return normalizeNightSheetBody(normalized.replace(/^## 1\. The Party/m, `${legend}\n\n## 1. The Party`))
+  }
+  return normalizeNightSheetBody(normalized.replace(/^(# .+\n)/, `$1\n${legend}\n`))
+}
+
 function applyNightsheetCrawl(body: string, theme?: string | null): string {
+  const normalized = normalizeNightSheetBody(body)
   const crawl = parseThemeId(theme) === 'scifi' ? NIGHTSHEET_CRAWL_SAMPLE : ''
-  if (body.includes('{{crawl}}')) {
-    return body.replaceAll('{{crawl}}\r\n', crawl ? `${crawl}\r\n` : '').replaceAll('{{crawl}}', crawl).replace(/\n{3,}/g, '\n\n')
+  if (normalized.includes('{{crawl}}')) {
+    return normalizeNightSheetBody(
+      normalized
+        .replaceAll('{{crawl}}\n', crawl ? `${crawl}\n` : '')
+        .replaceAll('{{crawl}}', crawl)
+        .replace(/\n{3,}/g, '\n\n')
+    )
   }
-  if (!crawl || /^\s*>\s*\[!(?:crawl|opening)\]/m.test(body)) return body
-  if (/^> \[!abstract\][\s\S]*?\n\n/m.test(body)) {
-    return body.replace(/^(> \[!abstract\][\s\S]*?\n\n)/m, `$1${crawl}\n\n`)
+  if (!crawl || /^\s*>\s*\[!(?:crawl|opening)\]/m.test(normalized)) return body
+  if (/^> \[!abstract\][\s\S]*?\n\n/m.test(normalized)) {
+    return normalizeNightSheetBody(
+      normalized.replace(/^(> \[!abstract\][\s\S]*?\n\n)/m, `$1${crawl}\n\n`)
+    )
   }
-  return body.replace(/^(# .+\r?\n)/, `$1\n${crawl}\n`)
+  if (/^## 1\. The Party/m.test(normalized)) {
+    return normalizeNightSheetBody(normalized.replace(/^## 1\. The Party/m, `${crawl}\n\n## 1. The Party`))
+  }
+  return normalizeNightSheetBody(normalized.replace(/^(# .+\n)/, `$1\n${crawl}\n`))
 }
 
 export function rewriteDuplicatedMarkdown(source: string, fromStem: string, toStem: string): string {

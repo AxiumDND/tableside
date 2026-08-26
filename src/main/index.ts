@@ -108,6 +108,7 @@ const programmaticPlayerCloses = new WeakSet<BrowserWindow>()
 let campaignFolder: string | null = null
 let playerState: PlayerState = emptyPlayerState()
 let crawlStopTimer: ReturnType<typeof setTimeout> | null = null
+let legendStopTimer: ReturnType<typeof setTimeout> | null = null
 let mixer: MixerState = emptyMixerState()
 let settings: AppSettings = emptySettings()
 let allowQuit = false
@@ -138,8 +139,11 @@ const FILE_MIME: Record<string, string> = {
   '.wav': 'audio/wav',
   '.m4a': 'audio/mp4',
   '.flac': 'audio/flac',
-  '.webm': 'audio/webm',
-  '.aac': 'audio/aac'
+  '.aac': 'audio/aac',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.mov': 'video/quicktime',
+  '.m4v': 'video/mp4'
 }
 
 let srdPortraitCache: Map<string, string> | null = null
@@ -957,6 +961,7 @@ async function refreshStockNightSheetTemplate(root: string): Promise<void> {
   const alreadyCurrent =
     current.includes('{{party}}') &&
     current.includes('{{crawl}}') &&
+    current.includes('{{legend}}') &&
     current.includes('# Session Name — Game Night Sheet') &&
     current.includes('## 1. The Party') &&
     current.includes('[!scene]') &&
@@ -1388,7 +1393,10 @@ async function addCampaignFiles(
               'm4a',
               'flac',
               'webm',
-              'aac'
+              'aac',
+              'mp4',
+              'mov',
+              'm4v'
             ]
           },
           { name: 'Audio', extensions: ['mp3', 'ogg', 'wav', 'm4a', 'flac', 'webm', 'aac'] },
@@ -1466,7 +1474,10 @@ function registerIpc(): void {
         imageSrc: payload.src,
         imageTitle: payload.title,
         mapView: payload.mapView ?? null,
-        crawl: null
+        crawl: null,
+        legend: null,
+        gallery: null,
+        video: null
       }
       sendPlayerState()
       showPlayerWindow(undefined, !playerWindowScaleOk)
@@ -1500,7 +1511,46 @@ function registerIpc(): void {
         endSrc,
         preface,
         startedAt: Date.now()
-      }
+      },
+      legend: null,
+      gallery: null,
+      video: null
+    }
+    sendPlayerState()
+    showPlayerWindow(undefined, !playerWindowScaleOk)
+    return playerState
+  })
+
+  ipcMain.handle(
+    'player:show-legend',
+    (_e, payload: {
+      title?: string
+      body?: string
+      logoSrc?: string | null
+      endSrc?: string | null
+      preface?: string | null
+    }) => {
+    const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
+    const body = typeof payload?.body === 'string' ? payload.body : ''
+    const logoSrc = typeof payload?.logoSrc === 'string' && payload.logoSrc.trim() ? payload.logoSrc.trim() : null
+    const endSrc = typeof payload?.endSrc === 'string' && payload.endSrc.trim() ? payload.endSrc.trim() : null
+    const preface = payload?.preface === null ? null : typeof payload?.preface === 'string' ? payload.preface : undefined
+    playerState = {
+      ...playerState,
+      imageSrc: null,
+      imageTitle: title || 'Campfire chronicle',
+      mapView: null,
+      crawl: null,
+      legend: {
+        title: title || undefined,
+        body,
+        logoSrc,
+        endSrc,
+        preface,
+        startedAt: Date.now()
+      },
+      gallery: null,
+      video: null
     }
     sendPlayerState()
     showPlayerWindow(undefined, !playerWindowScaleOk)
@@ -1512,7 +1562,20 @@ function registerIpc(): void {
       clearTimeout(crawlStopTimer)
       crawlStopTimer = null
     }
-    playerState = { ...playerState, imageSrc: null, imageTitle: '', mapView: null, crawl: null }
+    if (legendStopTimer) {
+      clearTimeout(legendStopTimer)
+      legendStopTimer = null
+    }
+    playerState = {
+      ...playerState,
+      imageSrc: null,
+      imageTitle: '',
+      mapView: null,
+      crawl: null,
+      legend: null,
+      gallery: null,
+      video: null
+    }
     sendPlayerState()
     return playerState
   })
@@ -1536,6 +1599,126 @@ function registerIpc(): void {
         sendPlayerState()
       }
     }, CRAWL_FADE_OUT_MS)
+    return playerState
+  })
+
+  ipcMain.handle('player:stop-legend', () => {
+    const legend = playerState.legend
+    if (!legend || legend.stoppingAt != null) return playerState
+    if (legendStopTimer) {
+      clearTimeout(legendStopTimer)
+      legendStopTimer = null
+    }
+    playerState = {
+      ...playerState,
+      legend: { ...legend, stoppingAt: Date.now() }
+    }
+    sendPlayerState()
+    legendStopTimer = setTimeout(() => {
+      legendStopTimer = null
+      if (playerState.legend?.stoppingAt) {
+        playerState = { ...playerState, legend: null }
+        sendPlayerState()
+      }
+    }, CRAWL_FADE_OUT_MS)
+    return playerState
+  })
+
+  ipcMain.handle(
+    'player:show-gallery',
+    (
+      _e,
+      payload: {
+        title?: string
+        slides?: { src: string; label?: string }[]
+        intervalSec?: number | null
+      }
+    ) => {
+      const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
+      const slides = Array.isArray(payload?.slides)
+        ? payload.slides
+            .filter((s) => s && typeof s.src === 'string' && s.src.trim())
+            .map((s) => ({
+              src: s.src.trim(),
+              label: typeof s.label === 'string' && s.label.trim() ? s.label.trim() : undefined
+            }))
+        : []
+      if (slides.length === 0) return playerState
+      const intervalRaw = payload?.intervalSec
+      const intervalSec =
+        typeof intervalRaw === 'number' && Number.isFinite(intervalRaw) && intervalRaw > 0
+          ? Math.min(120, Math.round(intervalRaw))
+          : null
+      playerState = {
+        ...playerState,
+        imageSrc: null,
+        imageTitle: title || 'Gallery',
+        mapView: null,
+        crawl: null,
+        legend: null,
+        gallery: {
+          title: title || undefined,
+          slides,
+          index: 0,
+          startedAt: Date.now(),
+          intervalSec
+        },
+        video: null
+      }
+      sendPlayerState()
+      showPlayerWindow(undefined, !playerWindowScaleOk)
+      return playerState
+    }
+  )
+
+  ipcMain.handle('player:gallery-set-index', (_e, index: number) => {
+    const gallery = playerState.gallery
+    if (!gallery) return playerState
+    const next = Math.max(0, Math.min(gallery.slides.length - 1, Math.floor(Number(index) || 0)))
+    if (next === gallery.index) return playerState
+    playerState = { ...playerState, gallery: { ...gallery, index: next } }
+    sendPlayerState()
+    return playerState
+  })
+
+  ipcMain.handle('player:stop-gallery', () => {
+    if (!playerState.gallery) return playerState
+    playerState = { ...playerState, gallery: null, imageTitle: '' }
+    sendPlayerState()
+    return playerState
+  })
+
+  ipcMain.handle(
+    'player:show-video',
+    (_e, payload: { title?: string; src?: string; muted?: boolean }) => {
+      const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
+      const src = typeof payload?.src === 'string' ? payload.src.trim() : ''
+      if (!src) return playerState
+      playerState = {
+        ...playerState,
+        imageSrc: null,
+        imageTitle: title || 'Video',
+        mapView: null,
+        crawl: null,
+        legend: null,
+        gallery: null,
+        video: {
+          title: title || undefined,
+          src,
+          muted: Boolean(payload?.muted),
+          startedAt: Date.now()
+        }
+      }
+      sendPlayerState()
+      showPlayerWindow(undefined, !playerWindowScaleOk)
+      return playerState
+    }
+  )
+
+  ipcMain.handle('player:stop-video', () => {
+    if (!playerState.video) return playerState
+    playerState = { ...playerState, video: null, imageTitle: '' }
+    sendPlayerState()
     return playerState
   })
 

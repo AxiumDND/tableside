@@ -342,6 +342,26 @@ export default function HelpPanel({
             the emblem, then a perspective title crawl — write your own words. Tableside does not include licensed crawl
             text, logos, or music files. <Action>Clear</Action> stops the picture and restores mood music.
           </p>
+          <Sub>Opening legend (Classic, Light, Vampire)</Sub>
+          <p>
+            Put <Code>{'> [!legend] Title'}</Code> (or <Code>tale</Code> / <Code>chronicle</Code>) in any note for a
+            campfire chronicle on the player screen — embers, a glowing seal, then the tale rising like a tapestry. Same
+            fields as the crawl card: <Code>preface:</Code>, herald sigil, <Code>music:</Code>, optional <Code>end:</Code>{' '}
+            still, and body text. <Action>Play</Action> is on when the campaign look is Classic, Light, or Vampire. Mood
+            and music timing match the Sci-fi crawl (1:32 sync). <Action>Stop</Action> fades to black and resumes mood.
+          </p>
+          <Sub>Gallery</Sub>
+          <p>
+            Put <Code>{'> [!gallery] Title'}</Code> (or <Code>slides</Code> / <Code>sequence</Code>) with image embeds
+            underneath. <Action>Play</Action> shows them on the player screen; <Action>Prev</Action> / <Action>Next</Action>{' '}
+            advance manually. Optional <Code>interval: 8s</Code> auto-advances. Works on every campaign look.
+          </p>
+          <Sub>Video</Sub>
+          <p>
+            Put <Code>{'> [!video] Title'}</Code> (or <Code>clip</Code> / <Code>film</Code>) with a local{' '}
+            <Code>![[clip.mp4]]</Code> (mp4 / webm / mov). <Action>Play</Action> sends it to the player screen. Optional{' '}
+            <Code>mute: true</Code> keeps mood music; otherwise mood fades while the clip has sound.
+          </p>
         </Section>
 
         <Section id="music" title="Music & sound" open={open} onToggle={toggle}>
@@ -453,6 +473,13 @@ export default function HelpPanel({
               <>
                 <Code>[[Note Name]]</Code> opens another note. Images in the note stay clickable for Show to players.{' '}
                 <Code>{'> [!crawl]'}</Code> is an Opening crawl card.
+              </>,
+              <>
+                <Code>{'> [!legend]'}</Code> is an Opening legend card (Classic, Light, Vampire).
+              </>,
+              <>
+                <Code>{'> [!gallery]'}</Code> is an image sequence on the player screen;{' '}
+                <Code>{'> [!video]'}</Code> plays a local clip.
               </>,
               <>
                 Party / NPC / Bestiary sheets with a <Code>statblock</Code> fence open in sheet view: portrait and

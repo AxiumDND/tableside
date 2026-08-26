@@ -91,6 +91,32 @@ describe('opening crawl callouts', () => {
   })
 })
 
+describe('opening legend callouts', () => {
+  it('parses legend, tale, and chronicle aliases', () => {
+    const legend = splitCalloutBlocks(`> [!legend] The Pale Well
+> The well runs cold.
+`).find((part) => part.kind === 'legend')
+    expect(legend).toMatchObject({
+      kind: 'legend',
+      type: 'legend',
+      title: 'The Pale Well',
+      markdown: 'The well runs cold.'
+    })
+
+    expect(splitCalloutBlocks('> [!tale]\n> Once upon a ridge.\n')[0]?.kind).toBe('legend')
+    expect(splitCalloutBlocks('> [!chronicle] Year of the Well\n> Go.\n')[0]?.kind).toBe('legend')
+  })
+})
+
+describe('gallery and video callouts', () => {
+  it('parses gallery and video aliases', () => {
+    expect(splitCalloutBlocks('> [!gallery] Faces\n> ![[A.png]]\n')[0]?.kind).toBe('gallery')
+    expect(splitCalloutBlocks('> [!slides]\n> ![[A.png]]\n')[0]?.kind).toBe('gallery')
+    expect(splitCalloutBlocks('> [!video] Intro\n> ![[Clip.mp4]]\n')[0]?.kind).toBe('video')
+    expect(splitCalloutBlocks('> [!film]\n> ![[Clip.mp4]]\n')[0]?.kind).toBe('video')
+  })
+})
+
 describe('scene callouts', () => {
   it('parses a scene and leaves nested read-aloud for the body', () => {
     const parts = splitCalloutBlocks(

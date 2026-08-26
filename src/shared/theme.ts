@@ -68,3 +68,9 @@ export function holoPortraitsEnabled(theme?: string | null, holoPortraits?: bool
 export function digitalRainEnabled(theme?: string | null, digitalRain?: boolean | null): boolean {
   return parseThemeId(theme) === 'matrix' && digitalRain !== false
 }
+
+/** Opening legend scroll on the player screen. Classic, Light, and Vampire looks. */
+export function legendPlayEnabled(theme?: string | null): boolean {
+  const id = parseThemeId(theme)
+  return id === 'classic' || id === 'light' || id === 'vampire'
+}
