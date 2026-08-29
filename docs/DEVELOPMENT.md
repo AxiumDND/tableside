@@ -109,6 +109,7 @@ Format and placement of personal PHB/DMG text files: [Additional Books/README.md
 | Sample campaign copy / refresh | `src/main/sampleCampaign.ts` |
 | Campaign folder load / tree / templates | `src/main/campaignFolder.ts` |
 | Note create / duplicate / art / delete | `src/main/campaignNotes.ts` |
+| Shared image extension set | `src/shared/imageExt.ts` |
 | Campaign audio mixer / library | `src/main/campaignMixer.ts` |
 | Player window / display / state | `src/main/playerOutput.ts` |
 | App settings / folders / migrate | `src/main/appSettings.ts` |

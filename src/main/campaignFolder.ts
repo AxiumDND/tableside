@@ -10,7 +10,7 @@ import type {
   SessionFile
 } from '../shared/types'
 import { emptyCombat } from '../shared/types'
-import { IMAGE_EXT } from './mediaAssets'
+import { IMAGE_EXT } from '../shared/imageExt'
 import {
   STANDARD_LAYOUT,
   folderMatchesCanonical,

@@ -32,8 +32,8 @@ import {
   resolveShopCatalog,
   setShopTypeFields
 } from '../shared/shopStock'
+import { IMAGE_EXT } from '../shared/imageExt'
 import {
-  IMAGE_EXT,
   findSrdItemFile,
   findSrdPortraitFile,
   findSrdSchoolFile,

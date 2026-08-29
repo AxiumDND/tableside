@@ -2,8 +2,9 @@ import { app, net, protocol } from 'electron'
 import { existsSync, readdirSync } from 'node:fs'
 import { extname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { IMAGE_EXT } from '../shared/imageExt'
 
-export const IMAGE_EXT = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.bmp'])
+export { IMAGE_EXT }
 
 const FILE_MIME: Record<string, string> = {
   '.pdf': 'application/pdf',
