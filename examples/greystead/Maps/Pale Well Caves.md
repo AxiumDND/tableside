@@ -39,8 +39,9 @@ Battlemap for [[Session 1]]. Gazetteer: [[The Ridge Cave]]. Pins are DM-only.
 
 Trip-line: DC 12 Perception; DC 12 Dex or prone and 1d4. Fresh mud. Tin cup.
 
-> [!readaloud]
-> Daylight dies two steps in. Twine at ankle height if nobody cut it.
+[!readaloud]
+Daylight dies two steps in. Twine at ankle height if nobody cut it.
+[!/readaloud]
 
 ## B — False camp
 

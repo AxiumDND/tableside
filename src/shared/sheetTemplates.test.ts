@@ -46,14 +46,16 @@ describe('creature sheet templates', () => {
 })
 
 describe('item sheet templates', () => {
-  it('puts gear and spell stats in an infobox table', () => {
+  it('puts gear and spell stats in a typed sheet header table', () => {
     const gear = fillTemplate(FALLBACK_TEMPLATES.gear, 'gear', 'Acid')
-    expect(gear).toContain('[!infobox]')
+    expect(gear).toContain('[!gear]')
+    expect(gear).toContain('[!/gear]')
     expect(gear).toContain('![[Acid.png]]')
     expect(gear).toContain('| **Weight** |')
     expect(gear).toContain('| **Cost** |')
     const spell = fillTemplate(FALLBACK_TEMPLATES.spell, 'spell', 'Fireball')
-    expect(spell).toContain('[!infobox]')
+    expect(spell).toContain('[!spell]')
+    expect(spell).toContain('[!/spell]')
     expect(spell).toContain('| **Casting Time** |')
     expect(spell).toContain('| **Range** |')
   })
@@ -70,10 +72,116 @@ describe('game night sheet template', () => {
     expect(body).toContain('[[PC — Lucian Radu|Lucian Radu]]')
     expect(body).not.toContain('{{party}}')
     expect(body).toContain('**Combatants:** [[Monster Name]] · party')
-    expect(body).toContain('## 1. The characters')
-    expect(body).toContain('## 5. Locations')
-    expect(body).toContain('[[Place Name]]')
-    expect(body).toContain('## 10. Likely endings')
+    expect(body).toContain('## 1. The Party')
+    expect(body).toContain('[!party]')
+    expect(body).toContain('[!note] Focus tonight')
+    expect(body).toContain('## 2. Scenes')
+    expect(body).toContain('[!scene] Opening — name the beat')
+    expect(body).toContain('[!scene] Scene — name the beat')
+    expect(body).toContain('**NPCs in this scene**')
+    expect(body).toContain('**Secrets and clues in this scene**')
+    expect(body).toContain('**Treasure in this scene**')
+    expect(body).toContain('**Combat in this scene**')
+    expect(body).toContain('**At the table**')
+    expect(body).toContain('If they miss / flee')
+    expect(body).toContain('Music: General / Creepy / Combat')
+    expect(body).toContain('[!gmonly] Only you')
+    expect(body).not.toContain('## 3. Secrets and clues')
+    expect(body).not.toContain('## 3. From last time')
+    expect(body).not.toContain('## 4. Likely endings')
+    expect(body).not.toContain('## 4. NPCs')
+    expect(body).not.toContain('## 4. Treasure')
+    expect(body).not.toContain('## 5. Monsters')
+    expect(body).not.toContain('## 1. The characters')
+    expect(body).not.toContain('## 5. Locations')
+    expect(body).not.toContain('{{crawl}}')
+    expect(body).not.toContain('[!crawl]')
+  })
+
+  it('adds an Opening crawl sample only on Sci-fi campaigns', () => {
+    const scifi = fillTemplate(FALLBACK_TEMPLATES.nightsheet, 'nightsheet', 'Session 4', {
+      theme: 'scifi'
+    })
+    expect(scifi).toContain('[!crawl] The Siege of Kestrel')
+    expect(scifi).toContain('It is a time of unrest.')
+    expect(scifi).toContain('Kestrel’s orbital ring')
+    expect(scifi).not.toContain('{{crawl}}')
+
+    const classic = fillTemplate(FALLBACK_TEMPLATES.nightsheet, 'nightsheet', 'Session 4', {
+      theme: 'classic'
+    })
+    expect(classic).not.toContain('[!crawl]')
+    expect(classic).not.toContain('{{crawl}}')
+    expect(classic).toContain('[!legend] The Pale Well')
+    expect(classic).not.toContain('{{legend}}')
+  })
+
+  it('adds an Opening legend sample on Classic, Light, and Vampire campaigns', () => {
+    for (const theme of ['classic', 'light', 'vampire'] as const) {
+      const body = fillTemplate(FALLBACK_TEMPLATES.nightsheet, 'nightsheet', 'Session 4', { theme })
+      expect(body).toContain('[!legend] The Pale Well')
+      expect(body).not.toContain('{{legend}}')
+    }
+    const scifi = fillTemplate(FALLBACK_TEMPLATES.nightsheet, 'nightsheet', 'Session 4', { theme: 'scifi' })
+    expect(scifi).not.toContain('[!legend]')
+  })
+
+  it('injects a legend into the Greystead stock night sheet template file', async () => {
+    const { readFile } = await import('node:fs/promises')
+    const { fileURLToPath } = await import('node:url')
+    const { dirname, join } = await import('node:path')
+    const root = join(dirname(fileURLToPath(import.meta.url)), '../../examples/greystead/Templates/Game Night Sheet.md')
+    const oldTemplate = await readFile(root, 'utf8')
+    const body = fillTemplate(oldTemplate, 'nightsheet', 'Session 4', {
+      partyStems: ['PC — Bren Oak'],
+      theme: 'classic'
+    })
+    expect(body).toContain('[!legend] The Pale Well')
+  })
+
+  it('injects a legend into an old Classic night sheet template without {{legend}} (CRLF)', () => {
+    const oldTemplate = [
+      '# Session Name — Game Night Sheet',
+      '',
+      '> [!abstract] Tonight at a glance',
+      '> Opening scene → next beats → **the fight** → fallout.',
+      '',
+      '{{crawl}}',
+      '',
+      '## 1. The Party',
+      ''
+    ].join('\r\n')
+    const body = fillTemplate(oldTemplate, 'nightsheet', 'Session 4', { theme: 'classic' })
+    expect(body).toContain('[!legend] The Pale Well')
+    expect(body.indexOf('[!legend]')).toBeLessThan(body.indexOf('## 1. The Party'))
+  })
+
+  it('injects a legend into an old Classic night sheet with Mac-style line endings', () => {
+    const oldTemplate = [
+      '# Session Name — Game Night Sheet',
+      '',
+      '> [!abstract] Tonight at a glance',
+      '> Opening scene → next beats → **the fight** → fallout.',
+      '',
+      '{{crawl}}',
+      '',
+      '## 1. The Party',
+      ''
+    ].join('\r\r\n')
+    const body = fillTemplate(oldTemplate, 'nightsheet', 'Session 4', { theme: 'classic' })
+    expect(body).toContain('[!legend] The Pale Well')
+    expect(body.indexOf('[!legend]')).toBeLessThan(body.indexOf('## 1. The Party'))
+  })
+
+  it('injects a crawl into an old Sci-fi night sheet that has no {{crawl}} marker', () => {
+    const body = fillTemplate(
+      '# Session Name — Night Sheet\n\n> [!abstract] Tonight\n> Start.\n\n## 1. The Party\n',
+      'nightsheet',
+      'Session 4',
+      { theme: 'scifi' }
+    )
+    expect(body).toContain('[!crawl] The Siege of Kestrel')
+    expect(body.indexOf('[!crawl]')).toBeLessThan(body.indexOf('## 1. The Party'))
   })
 
   it('injects Party links into an old night sheet that has no {{party}} marker', () => {

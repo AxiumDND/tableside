@@ -16,7 +16,8 @@ export default function SheetArtFrame({
   aspect = 'portrait',
   onSelectImage,
   onSetPortrait,
-  onSrdError
+  onSrdError,
+  holo = false
 }: {
   title: string
   imageSrc: string | null
@@ -29,6 +30,7 @@ export default function SheetArtFrame({
   onSelectImage?: (path: string) => void
   onSetPortrait?: (image: CreateNoteMapImage) => Promise<void>
   onSrdError: () => void
+  holo?: boolean
 }) {
   const [busy, setBusy] = useState(false)
   const [open, setOpen] = useState(false)
@@ -80,16 +82,16 @@ export default function SheetArtFrame({
   }
 
   return (
-    <div ref={rootRef} className="relative w-full">
+    <div ref={rootRef} className={`relative w-full ${holo ? 'sheet-art-holo' : ''}`}>
       <button
         type="button"
         onClick={() => {
           if (hasArt && selectValue) onSelectImage?.(selectValue)
           if (onSetPortrait) setOpen((value) => !value)
         }}
-        className={`block w-full overflow-hidden rounded border border-line ${
-          hasArt && selectedImage === selectValue ? 'ring-2 ring-amber' : ''
-        }`}
+        className={`relative block w-full overflow-hidden rounded border border-line ${
+          holo ? 'sheet-art-holo-plate' : ''
+        } ${hasArt && selectedImage === selectValue ? 'ring-2 ring-amber' : ''}`}
       >
         <img
           src={imageSrc ?? portraitBlank}
@@ -101,7 +103,15 @@ export default function SheetArtFrame({
             if (imageSrc) onSrdError()
           }}
         />
+        {holo ? (
+          <>
+            <span className="sheet-art-holo-scan" aria-hidden />
+            <span className="sheet-art-holo-sweep" aria-hidden />
+            <span className="sheet-art-holo-cone" aria-hidden />
+          </>
+        ) : null}
       </button>
+      {holo ? <span className="sheet-art-holo-base" aria-hidden /> : null}
       {open && onSetPortrait ? (
         <div className="absolute inset-x-0 bottom-0 z-10 max-h-[85%] space-y-1 overflow-y-auto rounded-b bg-ink/95 p-1.5">
           {stockArt.length > 0 ? (

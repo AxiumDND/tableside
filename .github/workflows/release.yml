@@ -23,7 +23,7 @@ jobs:
       # then action-gh-release uploads the .exe, .yml, and .blockmap (needed for in-app updates).
       - run: npm run dist
       - name: Upload installer artifacts
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: tableside-windows
           path: |

@@ -1,5 +1,7 @@
 # Development
 
+User-facing how-to: [GUIDE.md](GUIDE.md).
+
 Tableside is an Electron + React + TypeScript app built with [electron-vite](https://electron-vite.org/).
 
 ## Requirements

@@ -2,12 +2,13 @@ import { describe, expect, it } from 'vitest'
 import { liftStatblockToTop } from './sheetLayout'
 
 describe('liftStatblockToTop', () => {
-  it('moves a trailing statblock under the infobox', () => {
+  it('moves a trailing statblock under the sheet header', () => {
     const src = `# Ghoul
 
-> [!infobox]+
-> ![[Ghoul.webp]]
->
+[!monster]
+![[Ghoul.webp]]
+[!/monster]
+
 *Hungry.*
 
 ## Notes
@@ -28,9 +29,10 @@ ac: 12
   it('drops a Combat heading and Combatants line that sat above the fence', () => {
     const src = `# Jackal
 
-> [!infobox]+
-> ![[Jackal.webp]]
->
+[!monster]
+![[Jackal.webp]]
+[!/monster]
+
 ## Notes
 
 Add notes.
@@ -52,17 +54,18 @@ name: Jackal
   it('strips a leftover Stat block heading after the fence moves', () => {
     const src = `# *Dallas*
 
-> [!infobox]+
-> ![[Dallas.webp]]
->
+[!pc]
+![[Dallas.webp]]
+[!/pc]
 
 ## Notes
 
 Hook.
 
 ## Stat block (DM combat reference)
-> [!gmonly]
-> Condensed from the player's sheet.
+[!gmonly]
+Condensed from the player's sheet.
+[!/gmonly]
 
 #dnd
 
@@ -76,7 +79,25 @@ name: Dallas
     expect(out.indexOf('```statblock')).toBeLessThan(out.indexOf('## Notes'))
   })
 
-  it('is a no-op when the fence is already under the infobox', () => {
+  it('is a no-op when the fence is already under the sheet header', () => {
+    const src = `# Ghoul
+
+[!monster]
+![[Ghoul.webp]]
+[!/monster]
+
+\`\`\`statblock
+name: Ghoul
+\`\`\`
+
+## Notes
+
+Three come through the doors.
+`
+    expect(liftStatblockToTop(src)).toBe(src.replace(/\n{3,}/g, '\n\n'))
+  })
+
+  it('still lifts under a legacy quote infobox', () => {
     const src = `# Ghoul
 
 > [!infobox]+
@@ -89,9 +110,10 @@ name: Ghoul
 
 ## Notes
 
-Three come through the doors.
+Done.
 `
-    expect(liftStatblockToTop(src)).toBe(src.replace(/\n{3,}/g, '\n\n'))
+    const out = liftStatblockToTop(src)
+    expect(out.indexOf('```statblock')).toBeLessThan(out.indexOf('## Notes'))
   })
 
   it('leaves notes without a statblock alone', () => {

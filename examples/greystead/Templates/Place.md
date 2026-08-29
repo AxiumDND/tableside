@@ -6,21 +6,23 @@
 -->
 # Place Name
 
-> [!infobox]+
-> ![[Place Name.png]]
->
-> ### *What this place is in one line*
->
-> | | |
-> |---|---|
-> | **Type** | Settlement / site / wilderness / dungeon |
-> | **Region** | |
-> | **Ruler / faction** | [[Faction Name]] |
-> | **Map** | [[Map Name]] |
-> | **Mood** | |
+[!place]
+![[Place Name.png]]
 
-> [!readaloud]
-> First thing they see, hear, and smell.
+### *What this place is in one line*
+
+| | |
+|---|---|
+| **Type** | Settlement / site / wilderness / dungeon |
+| **Region** | |
+| **Ruler / faction** | [[Faction Name]] |
+| **Map** | [[Map Name]] |
+| **Mood** | |
+[!/place]
+
+[!readaloud]
+First thing they see, hear, and smell.
+[!/readaloud]
 
 ## At a glance
 
@@ -40,5 +42,6 @@
 
 - 
 
-> [!gmonly]
-> Truth, timers, what happens if they stay, leave, or pick a fight.
+[!gmonly]
+Truth, timers, what happens if they stay, leave, or pick a fight.
+[!/gmonly]

@@ -1,20 +1,21 @@
 # *Ilya Song*
 
-> [!infobox]+
-> ![[Ilya Song.webp]]
->
-> ### *Half-elf with a lute · talks first*
->
-> | | |
-> |---|---|
-> | **Player** | Pregen |
-> | **Species** | Half-Elf (Medium) |
-> | **Class** | Bard 1 |
-> | **Background** | Entertainer |
-> | **Alignment** | Chaotic Good |
-> | **Role** | Face / support |
-> | **AC** | 13 (Leather) |
-> | **HP** | 9 |
+[!pc]
+![[Ilya Song.webp]]
+
+### *Half-elf with a lute · talks first*
+
+| | |
+|---|---|
+| **Player** | Pregen |
+| **Species** | Half-Elf (Medium) |
+| **Class** | Bard 1 |
+| **Background** | Entertainer |
+| **Alignment** | Chaotic Good |
+| **Role** | Face / support |
+| **AC** | 13 (Leather) |
+| **HP** | 9 |
+[!/pc]
 
 ```statblock
 layout: Basic 5e Layout
@@ -59,8 +60,9 @@ actions:
 - **Skills** — Persuasion
 - **Signature tricks** — Talks Joss down; Healing Word when someone drops
 
-> [!gmonly]
-> Let them get the toughs talking. Inspiration on Bren or Nessa in the cave.
+[!gmonly]
+Let them get the toughs talking. Inspiration on Bren or Nessa in the cave.
+[!/gmonly]
 
 ## Look & voice
 

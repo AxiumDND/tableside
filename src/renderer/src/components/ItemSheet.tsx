@@ -14,6 +14,7 @@ import {
 } from '../lib/images'
 import { extraItemFacts, ITEM_FIELD_LABELS, cleanWikiText, isPlaceholderSheetValue, isPlaceholderTagline } from '../lib/itemFacts'
 import { extractFacts, extractTagline } from '../lib/statblock'
+import { stripSheetHeader } from '../../../shared/sheetBlock'
 import type { ShopStockOffer } from '../../../shared/shopCatalogs'
 import { looksLikeShopNote, stripShopStockSection } from '../../../shared/shopStock'
 import type { ShopStanding } from '../../../shared/shopStanding'
@@ -49,20 +50,7 @@ function firstImage(markdown: string, path: string, images: CampaignImage[]): st
 }
 
 function stripInfobox(markdown: string): string {
-  const lines = markdown.replace(/\r/g, '').split('\n')
-  const out: string[] = []
-  let i = 0
-  while (i < lines.length) {
-    if (/^\s*>?\s*\[!infobox\]/i.test(lines[i])) {
-      i += 1
-      while (i < lines.length && /^>/.test(lines[i])) i += 1
-      while (i < lines.length && !lines[i].trim()) i += 1
-      continue
-    }
-    out.push(lines[i])
-    i += 1
-  }
-  return out.join('\n')
+  return stripSheetHeader(markdown)
 }
 
 function schoolFromMarkdown(markdown: string): string | null {
@@ -141,7 +129,8 @@ export default function ItemSheet({
   onRerollStock,
   onChangeStock,
   onChangeStanding,
-  renderNotes
+  renderNotes,
+  holo = false
 }: {
   path: string
   markdown: string
@@ -153,6 +142,7 @@ export default function ItemSheet({
   onChangeStock?: (stock: ShopStockOffer[]) => Promise<void>
   onChangeStanding?: (standing: ShopStanding) => Promise<void>
   renderNotes?: (markdown: string) => ReactNode
+  holo?: boolean
 }) {
   const title = titleFrom(path, markdown)
   const rawTagline = extractTagline(markdown)
@@ -251,6 +241,7 @@ export default function ItemSheet({
             aspect={artAspect}
             onSelectImage={onSelectImage}
             onSetPortrait={onSetPortrait}
+            holo={holo}
             stockArt={stockChoices}
             stockArtLabel={isShop ? 'Shop type' : isFaction ? 'Emblem' : 'Place type'}
             onSrdError={() => setSrdFailed(true)}

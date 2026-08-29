@@ -6,17 +6,18 @@
 -->
 # Faction Name
 
-> [!infobox]+
-> ![[Faction Name.png]]
->
-> ### *What they want in one line*
->
-> | | |
-> |---|---|
-> | **Type** | Guild / church / house / cult |
-> | **Leader** | [[NPC Name]] |
-> | **HQ** | [[Place Name]] |
-> | **Attitude** | Unknown / friendly / hostile |
+[!faction]
+![[Faction Name.png]]
+
+### *What they want in one line*
+
+| | |
+|---|---|
+| **Type** | Guild / church / house / cult |
+| **Leader** | [[NPC Name]] |
+| **HQ** | [[Place Name]] |
+| **Attitude** | Unknown / friendly / hostile |
+[!/faction]
 
 ## Goals
 
@@ -32,5 +33,6 @@
 
 How they work: favors, coin, threats, faith.
 
-> [!gmonly]
-> Secrets, timers, what happens if the party joins, crosses, or ignores them.
+[!gmonly]
+Secrets, timers, what happens if the party joins, crosses, or ignores them.
+[!/gmonly]

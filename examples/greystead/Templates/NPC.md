@@ -5,18 +5,19 @@
 -->
 # *NPC Name*
 
-> [!infobox]+
-> ![[NPC Name.png]]
->
-> ### *Who they are in one line*
->
-> | | |
-> |---|---|
-> | **Role** | Patron / informant / obstacle |
-> | **Faction** | [[Faction Name]] |
-> | **Location** | [[Place Name]] |
-> | **Status** | Alive |
-> | **CR** | 2 |
+[!npc]
+![[NPC Name.png]]
+
+### *Who they are in one line*
+
+| | |
+|---|---|
+| **Role** | Patron / informant / obstacle |
+| **Faction** | [[Faction Name]] |
+| **Location** | [[Place Name]] |
+| **Status** | Alive |
+| **CR** | 2 |
+[!/npc]
 
 ```statblock
 layout: Basic 5e Layout
@@ -45,11 +46,13 @@ actions:
 - **Manner** — 
 - **Quotes** — *"…"*
 
-> [!readaloud]
-> A line to speak when they first appear.
+[!readaloud]
+A line to speak when they first appear.
+[!/readaloud]
 
-> [!gmonly]
-> The truth. What they want. What they will not say.
+[!gmonly]
+The truth. What they want. What they will not say.
+[!/gmonly]
 
 ## Notes
 

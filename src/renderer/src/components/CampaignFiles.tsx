@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import type { CampaignInfo, CampaignTreeNode, CreateNoteMapImage } from '../../../shared/types'
+import { AUDIO_EXT } from '../../../shared/audio'
 import {
   artFolderRelativePath,
   folderIsOpenInTree,
   folderUsesArt,
   isArtFolderName,
+  isAudioFolderName,
   isBestiaryFolderName,
   isFactionsFolderName,
   isGearFolderName,
@@ -26,19 +29,22 @@ export { campaignFileUrl }
 
 const NOTE_EXT = new Set(['.md', '.txt', '.markdown'])
 
-export type FileKind = 'note' | 'image' | 'character' | 'pdf' | 'other'
+export type FileKind = 'note' | 'image' | 'character' | 'pdf' | 'audio' | 'other'
 
 export function fileKind(node: CampaignTreeNode): FileKind {
   const ext = node.ext ?? ''
   if (NOTE_EXT.has(ext)) return 'note'
   if (IMAGE_EXT.has(ext)) return 'image'
   if (ext === '.pdf') return 'pdf'
+  if (AUDIO_EXT.has(ext)) return 'audio'
   if (ext === '.json' && /^(party|npcs)\//.test(node.relativePath)) return 'character'
   return 'other'
 }
 
 function displayName(name: string): string {
-  return name.replace(/\.(md|markdown|txt|json|png|jpe?g|webp|gif|svg|bmp|pdf)$/i, '').replace(/[-_]/g, ' ')
+  return name
+    .replace(/\.(md|markdown|txt|json|png|jpe?g|webp|gif|svg|bmp|pdf|mp3|ogg|wav|m4a|flac|webm|aac)$/i, '')
+    .replace(/[-_]/g, ' ')
 }
 
 function fileNameOf(path: string): string {
@@ -59,7 +65,7 @@ function fileExt(path: string): string {
 
 function folderKind(
   name: string
-): 'party' | 'npcs' | 'bestiary' | 'spells' | 'gear' | 'sessions' | 'maps' | 'places' | 'factions' | null {
+): 'party' | 'npcs' | 'bestiary' | 'spells' | 'gear' | 'sessions' | 'maps' | 'places' | 'factions' | 'audio' | null {
   if (isPartyFolderName(name)) return 'party'
   if (isNpcFolderName(name)) return 'npcs'
   if (isBestiaryFolderName(name)) return 'bestiary'
@@ -69,6 +75,7 @@ function folderKind(
   if (isMapsFolderName(name)) return 'maps'
   if (isPlacesFolderName(name)) return 'places'
   if (isFactionsFolderName(name)) return 'factions'
+  if (isAudioFolderName(name)) return 'audio'
   return null
 }
 
@@ -436,8 +443,8 @@ export default function CampaignFiles({
     prompt?.kind === 'create' ? stockArtForTemplate(prompt.template) : []
 
   return (
-    <aside className="flex min-h-0 flex-1 flex-col bg-ink">
-      <header className="border-b border-line px-3 py-2" onContextMenu={(event) => openMenu(event)}>
+    <aside className="matrix-rain-well flex min-h-0 flex-1 flex-col bg-ink">
+      <header className="border-b border-line bg-ink px-3 py-2" onContextMenu={(event) => openMenu(event)}>
         <div className="flex items-baseline justify-between gap-2">
           <div className="font-display text-amber">Files</div>
           <button
@@ -525,9 +532,10 @@ export default function CampaignFiles({
         )}
       </nav>
 
-      {menu ? (
+      {menu
+        ? createPortal(
         <div
-          className="fixed z-40 min-w-44 rounded border border-line bg-panel py-1 shadow-lg"
+          className="fixed z-[80] min-w-44 rounded border border-line bg-panel py-1 shadow-lg"
           style={{ left: menu.x, top: menu.y }}
           onClick={(event) => event.stopPropagation()}
         >
@@ -544,6 +552,8 @@ export default function CampaignFiles({
             </>
           ) : artMenu ? (
             <MenuItem label="Add art…" onClick={() => void addFiles(folderPath, 'art')} />
+          ) : folderHint === 'audio' ? (
+            <MenuItem label="Add audio…" onClick={() => void addFiles(folderPath)} />
           ) : (
             <>
               {folderHint === 'party' || !folderHint ? (
@@ -583,12 +593,14 @@ export default function CampaignFiles({
               <MenuItem label="Add files…" onClick={() => void addFiles(folderPath)} />
             </>
           )}
-        </div>
+        </div>,
+        document.body
       ) : null}
 
-      {prompt ? (
+      {prompt
+        ? createPortal(
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 p-4"
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-ink/70 p-4"
           onClick={() => !busy && setPrompt(null)}
         >
           <form
@@ -609,7 +621,7 @@ export default function CampaignFiles({
               {prompt.kind === 'delete'
                 ? `Remove ${prompt.fileName} from this campaign. This cannot be undone.`
                 : prompt.kind === 'create' && prompt.template === 'nightsheet'
-                  ? 'Lazy DM 10-step game night sheet. Existing Party characters are linked in. Combatants lines feed Add to initiative.'
+                  ? 'Party and Scenes — each [!party]…[!/party] wraps PC links; each [!scene]…[!/scene] can hold read-aloud, GM-only notes, secrets, treasure, NPCs, combat, and table cues. Existing Party characters are linked in. Copy a scene block to add another beat. Sci-fi campaigns include an Opening crawl sample.'
                   : prompt.kind === 'create' && prompt.template === 'map'
                   ? 'Pick a campaign image, or load one — loaded files go in this folder’s Art/ and are named after the map.'
                   : prompt.kind === 'create' && prompt.template === 'place'
@@ -621,7 +633,7 @@ export default function CampaignFiles({
                   : prompt.kind === 'create' && sheetAcceptsPortrait(prompt.template)
                     ? 'Optional portrait — load a file or pick campaign art. It lands in this folder’s Art/ named like the sheet. You can also load art later from the sheet.'
                   : prompt.kind === 'create' && prompt.template !== 'blank'
-                    ? 'Uses the matching Templates file if you have one.'
+                    ? 'Uses the built-in sheet for this type.'
                     : prompt.kind === 'duplicate'
                       ? 'Creates a copy next to the original.'
                       : 'Creates an empty markdown note.'}
@@ -742,7 +754,7 @@ export default function CampaignFiles({
               <button
                 type="submit"
                 disabled={busy || (prompt.kind !== 'delete' && !name.trim())}
-                className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-ink disabled:bg-line"
+                className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-on-amber disabled:bg-line"
               >
                 {busy
                   ? 'Working…'
@@ -754,7 +766,8 @@ export default function CampaignFiles({
               </button>
             </div>
           </form>
-        </div>
+        </div>,
+        document.body
       ) : null}
     </aside>
   )

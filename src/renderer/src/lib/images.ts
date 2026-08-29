@@ -58,6 +58,37 @@ export function isPdfPath(path: string): boolean {
   return path.slice(path.lastIndexOf('.')).toLowerCase() === '.pdf'
 }
 
+export const VIDEO_EXT = new Set(['.mp4', '.webm', '.mov', '.m4v'])
+
+export function isVideoPath(path: string): boolean {
+  const ext = path.slice(path.lastIndexOf('.')).toLowerCase()
+  return VIDEO_EXT.has(ext)
+}
+
+export interface CampaignVideo {
+  relativePath: string
+  name: string
+  title: string
+}
+
+export function flattenVideos(nodes: CampaignTreeNode[]): CampaignVideo[] {
+  const out: CampaignVideo[] = []
+  const walk = (list: CampaignTreeNode[]): void => {
+    for (const node of list) {
+      if (node.type === 'file' && node.ext && VIDEO_EXT.has(node.ext)) {
+        out.push({
+          relativePath: node.relativePath,
+          name: node.name,
+          title: imageTitle(node.relativePath)
+        })
+      }
+      if (node.children) walk(node.children)
+    }
+  }
+  walk(nodes)
+  return out
+}
+
 export function imageTitle(path: string): string {
   const name = path.split('/').pop() ?? path
   return name.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ')
@@ -200,13 +231,16 @@ function expandWikiTargets(markdown: string, notePath: string, images: CampaignI
   })
 }
 
+import { stripAuthorComments } from '../../../shared/callouts'
+
 export function prepareNoteMarkdown(
   markdown: string,
   notePath: string,
   images: CampaignImage[],
   options?: { injectPortrait?: boolean }
 ): string {
-  let text = expandHtmlImages(markdown, notePath, images)
+  let text = stripAuthorComments(markdown)
+  text = expandHtmlImages(text, notePath, images)
   text = expandWikiTargets(text, notePath, images)
 
   if (options?.injectPortrait === false) return text

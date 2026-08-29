@@ -1,12 +1,12 @@
 # Wolf
 
-> [!infobox]+
->
-> | | |
-> |---|---|
-> | **CR** | 1/4 |
-> | **Role** | Pressure |
-> | **Source** | SRD 5.2 |
+[!monster]
+| | |
+|---|---|
+| **CR** | 1/4 |
+| **Role** | Pressure |
+| **Source** | SRD 5.2 |
+[!/monster]
 
 ```statblock
 layout: Basic 5e Layout

@@ -3,6 +3,10 @@ import type { PlayerMapView, PlayerState } from '../../../shared/types'
 import { decodeFog } from '../lib/mapFog'
 import MapStage from './MapStage'
 import MapTokenMark from './MapTokenMark'
+import OpeningCrawl from './OpeningCrawl'
+import OpeningLegend from './OpeningLegend'
+import OpeningGallery from './OpeningGallery'
+import OpeningVideo from './OpeningVideo'
 
 const FADE_MS = 5000
 
@@ -61,27 +65,38 @@ export default function PlayerView({
     return () => clearTimeout(t)
   }, [layers.at(-1)?.id])
 
-  const showInit = state.showInitiative && state.initiative.length > 0
+  const showInit =
+    !state.crawl &&
+    !state.legend &&
+    !state.gallery &&
+    !state.video &&
+    state.showInitiative &&
+    state.initiative.length > 0
 
   return (
     <div className={`player-stage${compact ? ' player-stage-compact' : ''}`}>
-      {layers.map((layer, index) => {
-        const top = index === layers.length - 1
-        const fadeIn = top && !clearing && (index > 0 || Boolean(layer.fromBlack))
-        const fadeOut = top && clearing
-        return (
-          <div
-            key={layer.id}
-            className={`player-layer${fadeIn ? ' player-fade-in' : ''}${fadeOut ? ' player-fade-out' : ''}`}
-          >
-            {layer.mapView ? (
-              <PlayerMapLayer src={layer.src} mapView={layer.mapView} />
-            ) : (
-              <img src={layer.src} alt="" />
-            )}
-          </div>
-        )
-      })}
+      {state.crawl ? <OpeningCrawl crawl={state.crawl} /> : null}
+      {state.legend ? <OpeningLegend legend={state.legend} /> : null}
+      {state.gallery ? <OpeningGallery gallery={state.gallery} /> : null}
+      {state.video ? <OpeningVideo video={state.video} /> : null}
+      {!state.crawl && !state.legend && !state.gallery && !state.video &&
+        layers.map((layer, index) => {
+          const top = index === layers.length - 1
+          const fadeIn = top && !clearing && (index > 0 || Boolean(layer.fromBlack))
+          const fadeOut = top && clearing
+          return (
+            <div
+              key={layer.id}
+              className={`player-layer${fadeIn ? ' player-fade-in' : ''}${fadeOut ? ' player-fade-out' : ''}`}
+            >
+              {layer.mapView ? (
+                <PlayerMapLayer src={layer.src} mapView={layer.mapView} />
+              ) : (
+                <img src={layer.src} alt="" />
+              )}
+            </div>
+          )
+        })}
       {showInit ? (
         <div className="player-init" aria-label="Initiative order">
           <div className="player-init-round">

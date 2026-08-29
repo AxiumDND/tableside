@@ -14,7 +14,7 @@ function BookMark() {
 export default function ReadAloud({ title, children }: { title?: string; children: ReactNode }) {
   return (
     <section className="read-aloud my-5">
-      <div className="relative rounded-md border border-amber/40 bg-[#171b22] px-4 pb-4 pt-5">
+      <div className="relative rounded-md border border-amber/40 bg-panel-2 px-4 pb-4 pt-5">
         <div className="pointer-events-none absolute inset-y-0 left-0 w-1 rounded-l-md bg-amber" />
         <span className="read-aloud-dot left-[2px] top-1.5" />
         <span className="read-aloud-dot bottom-1.5 left-[2px]" />

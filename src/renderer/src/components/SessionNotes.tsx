@@ -1,23 +1,60 @@
 import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
-import { pathHasFolder } from '../../../shared/campaignLayout'
-import type { CampaignInfo, Character, CreateNoteMapImage, PlayerMapView } from '../../../shared/types'
+import { isHoloPortraitPath, isStartHerePath, pathHasFolder } from '../../../shared/campaignLayout'
 import {
+  crawlLogoRef,
+  crawlPlainText,
+  crawlPreface,
+  crawlMusicRef,
+  crawlEndImageRef,
+  replaceNthCrawlCallout,
+  type CrawlCalloutFields
+} from '../../../shared/openingCrawl'
+import {
+  legendLogoRef,
+  legendPlainText,
+  legendPreface,
+  legendMusicRef,
+  legendEndImageRef,
+  replaceNthLegendCallout,
+  type LegendCalloutFields
+} from '../../../shared/openingLegend'
+import {
+  galleryImageRefs,
+  galleryIntervalSec,
+  galleryLoops,
+  galleryShowTitle,
+  replaceNthGalleryCallout,
+  type GalleryCalloutFields
+} from '../../../shared/playerGallery'
+import {
+  parseVideoFields,
+  replaceNthVideoCallout,
+  type VideoCalloutFields
+} from '../../../shared/playerVideo'
+import { holoPortraitsEnabled, legendPlayEnabled, type ThemeId } from '../../../shared/theme'
+import type { CampaignInfo, Character, CreateNoteMapImage, PlayerMapView } from '../../../shared/types'
+import type { AudioTrack } from '../../../shared/audio'
+import {
+  campaignFileUrl,
   imageTitle,
   markdownUrlTransform,
   prepareNoteMarkdown,
   resolveMarkdownImageSrc,
-  type CampaignImage
+  type CampaignImage,
+  type CampaignVideo
 } from '../lib/images'
 import {
   childText,
   combatantLabel,
+  encounterSectionId,
   flattenNotes,
   headingId,
   linkWikiNotes,
   parseNightEncounters,
   partyNotes,
+  splitLeadingSceneArt,
   splitMarkdownSections,
   splitCombatCardContent,
   splitCalloutBlocks,
@@ -29,11 +66,19 @@ import {
 import { extractStatblock, fallbackStatblock, isNpcSheet, type ParsedStatblock } from '../lib/statblock'
 import { isMapNote, mapImagePath } from '../lib/mapNote'
 import CalloutCard from './CalloutCard'
+import CrawlCard from './CrawlCard'
+import LegendCard from './LegendCard'
+import GalleryCard from './GalleryCard'
+import VideoCard from './VideoCard'
 import CombatCard from './CombatCard'
 import GettingStarted from './GettingStarted'
+import StartHereTheme from './StartHereTheme'
 import GmOnly from './GmOnly'
 import MapView from './MapView'
 import ReadAloud from './ReadAloud'
+import PartyCard from './PartyCard'
+import SceneCard from './SceneCard'
+import SheetArtFrame from './SheetArtFrame'
 import ItemSheet from './ItemSheet'
 import NpcSheet from './NpcSheet'
 import { CharacterCard } from './StatBlock'
@@ -88,6 +133,26 @@ export default function SessionNotes({
   disabled,
   onSelectImage,
   onShowToPlayers,
+  onPlayCrawl,
+  onStopCrawl,
+  activeCrawl,
+  playerCrawl,
+  onPlayLegend,
+  onStopLegend,
+  activeLegend,
+  playerLegend,
+  onPlayGallery,
+  onStopGallery,
+  onGalleryPrev,
+  onGalleryNext,
+  activeGallery,
+  playerGallery,
+  onPlayVideo,
+  onStopVideo,
+  activeVideo,
+  playerVideo,
+  videos,
+  musicTracks,
   onMapLiveView,
   onOpenNote,
   onBack,
@@ -102,7 +167,13 @@ export default function SessionNotes({
   recentCampaigns,
   onOpenRecent,
   onCampaignChange,
-  shopsEnabled = true
+  shopsEnabled = true,
+  theme,
+  onThemeChange,
+  holoPortraits = false,
+  digitalRain = false,
+  onHoloPortraitsChange,
+  onDigitalRainChange
 }: {
   path: string
   kind: FileKind
@@ -113,6 +184,47 @@ export default function SessionNotes({
   disabled?: boolean
   onSelectImage?: (path: string) => void
   onShowToPlayers?: () => void
+  onPlayCrawl?: (
+    title: string | undefined,
+    body: string,
+    logoSrc?: string | null,
+    preface?: string | null,
+    musicPath?: string | null,
+    endSrc?: string | null
+  ) => void
+  onStopCrawl?: () => void
+  activeCrawl?: { title?: string; body: string } | null
+  playerCrawl?: import('../../../shared/types').PlayerCrawl | null
+  onPlayLegend?: (
+    title: string | undefined,
+    body: string,
+    logoSrc?: string | null,
+    preface?: string | null,
+    musicPath?: string | null,
+    endSrc?: string | null
+  ) => void
+  onStopLegend?: () => void
+  activeLegend?: { title?: string; body: string } | null
+  playerLegend?: import('../../../shared/types').PlayerLegend | null
+  onPlayGallery?: (
+    title: string | undefined,
+    slides: { src: string; label?: string }[],
+    imageRefs: string[],
+    intervalSec?: number | null,
+    loop?: boolean,
+    showTitle?: boolean
+  ) => void
+  onStopGallery?: () => void
+  onGalleryPrev?: () => void
+  onGalleryNext?: () => void
+  activeGallery?: { title?: string; imageRefs: string[] } | null
+  playerGallery?: import('../../../shared/types').PlayerGallery | null
+  onPlayVideo?: (title: string | undefined, src: string, muted: boolean, videoRef: string) => void
+  onStopVideo?: () => void
+  activeVideo?: { title?: string; videoRef: string } | null
+  playerVideo?: import('../../../shared/types').PlayerVideo | null
+  videos?: CampaignVideo[]
+  musicTracks?: AudioTrack[]
   onMapLiveView?: (imagePath: string, view: PlayerMapView) => void
   onOpenNote?: (path: string) => void
   onBack?: () => void
@@ -128,6 +240,12 @@ export default function SessionNotes({
   onOpenRecent?: (folder: string) => void
   onCampaignChange?: (campaign: CampaignInfo) => void
   shopsEnabled?: boolean
+  theme?: ThemeId
+  onThemeChange?: (theme: ThemeId) => void
+  holoPortraits?: boolean
+  digitalRain?: boolean
+  onHoloPortraitsChange?: (enabled: boolean) => void
+  onDigitalRainChange?: (enabled: boolean) => void
 }) {
   const [markdown, setMarkdown] = useState('')
   const [original, setOriginal] = useState('')
@@ -200,7 +318,7 @@ export default function SessionNotes({
     setSaveError('')
     setShowLinks(false)
     setCharacter(null)
-    if (!path || kind === 'image' || kind === 'pdf' || kind === 'other') {
+    if (!path || kind === 'image' || kind === 'pdf' || kind === 'audio' || kind === 'other') {
       setMarkdown('')
       setOriginal('')
       return
@@ -294,6 +412,132 @@ export default function SessionNotes({
       return
     }
     setEditing(false)
+  }
+
+  async function persistLegend(index: number, fields: LegendCalloutFields): Promise<void> {
+    if (!path) return
+    const next = replaceNthLegendCallout(markdownRef.current, index, fields)
+    if (next === markdownRef.current) return
+    await persistShopMarkdown(next)
+  }
+
+  async function playLegendCard(index: number, fields: LegendCalloutFields): Promise<void> {
+    await persistLegend(index, fields)
+    const logo = fields.logoRef ? resolveMarkdownImageSrc(fields.logoRef, path, images).url : null
+    const endImage = fields.endImageRef
+      ? resolveMarkdownImageSrc(fields.endImageRef, path, images).url
+      : null
+    onPlayLegend?.(
+      fields.title || undefined,
+      fields.body,
+      logo || null,
+      fields.preface,
+      fields.musicRef,
+      endImage || null
+    )
+  }
+
+  async function loadLegendLogo(): Promise<string | null> {
+    return loadCrawlLogo()
+  }
+
+  async function loadLegendEndImage(): Promise<string | null> {
+    return loadCrawlLogo()
+  }
+
+  async function loadLegendMusic(): Promise<string | null> {
+    return loadCrawlMusic()
+  }
+
+  async function persistGallery(index: number, fields: GalleryCalloutFields): Promise<void> {
+    if (!path) return
+    const next = replaceNthGalleryCallout(markdownRef.current, index, fields)
+    if (next === markdownRef.current) return
+    await persistShopMarkdown(next)
+  }
+
+  async function playGalleryCard(index: number, fields: GalleryCalloutFields): Promise<void> {
+    await persistGallery(index, fields)
+    const slides = fields.imageRefs
+      .map((ref) => {
+        const resolved = resolveMarkdownImageSrc(ref, path, images)
+        return resolved.url ? { src: resolved.url, label: imageTitle(ref) } : null
+      })
+      .filter((s): s is { src: string; label: string } => Boolean(s))
+    if (slides.length === 0) return
+    onPlayGallery?.(
+      fields.title || undefined,
+      slides,
+      fields.imageRefs,
+      fields.intervalSec,
+      fields.loop,
+      fields.showTitle
+    )
+  }
+
+  async function persistVideo(index: number, fields: VideoCalloutFields): Promise<void> {
+    if (!path) return
+    const next = replaceNthVideoCallout(markdownRef.current, index, fields)
+    if (next === markdownRef.current) return
+    await persistShopMarkdown(next)
+  }
+
+  async function playVideoCard(index: number, fields: VideoCalloutFields): Promise<void> {
+    await persistVideo(index, fields)
+    const ref = fields.videoRef?.trim()
+    if (!ref) return
+    onPlayVideo?.(fields.title || undefined, campaignFileUrl(ref), fields.muted, ref)
+  }
+
+  async function loadVideoFile(): Promise<string | null> {
+    const result = await window.tabledm.addFiles('Handouts')
+    if (!result?.paths?.length) return null
+    onCampaignChange?.(result.campaign)
+    return result.paths[0] ?? null
+  }
+
+  async function persistCrawl(index: number, fields: CrawlCalloutFields): Promise<void> {
+    if (!path) return
+    const next = replaceNthCrawlCallout(markdownRef.current, index, fields)
+    if (next === markdownRef.current) return
+    await persistShopMarkdown(next)
+  }
+
+  async function playCrawlCard(index: number, fields: CrawlCalloutFields): Promise<void> {
+    await persistCrawl(index, fields)
+    const logo = fields.logoRef ? resolveMarkdownImageSrc(fields.logoRef, path, images).url : null
+    const endImage = fields.endImageRef
+      ? resolveMarkdownImageSrc(fields.endImageRef, path, images).url
+      : null
+    onPlayCrawl?.(
+      fields.title || undefined,
+      fields.body,
+      logo || null,
+      fields.preface,
+      fields.musicRef,
+      endImage || null
+    )
+  }
+
+  async function loadCrawlLogo(): Promise<string | null> {
+    if (!path) return null
+    const picked = await window.tabledm.pickImageFile()
+    if (!picked) return null
+    const result = await window.tabledm.copyArtToNote(path, { kind: 'import', filePath: picked.filePath }, picked.fileName)
+    if (!result) return null
+    onCampaignChange?.(result.campaign)
+    return result.fileName
+  }
+
+  async function loadCrawlEndImage(): Promise<string | null> {
+    return loadCrawlLogo()
+  }
+
+  async function loadCrawlMusic(): Promise<string | null> {
+    const result = await window.tabledm.addFiles('Audio/Music/Crawl')
+    if (!result?.paths?.length) return null
+    onCampaignChange?.(result.campaign)
+    return result.paths[0] ?? null
   }
 
   async function persistShopMarkdown(next: string): Promise<void> {
@@ -436,7 +680,22 @@ export default function SessionNotes({
     }
   }
 
-  function renderMarkdown(text: string, keyPrefix: string) {
+  function renderMarkdown(
+    text: string,
+    keyPrefix: string,
+    crawlOffset = 0,
+    legendOffset = 0,
+    galleryOffset = 0,
+    videoOffset = 0
+  ) {
+    const rawCrawls = splitCalloutBlocks(markdown).filter((block) => block.kind === 'crawl')
+    const rawLegends = splitCalloutBlocks(markdown).filter((block) => block.kind === 'legend')
+    const rawGalleries = splitCalloutBlocks(markdown).filter((block) => block.kind === 'gallery')
+    const rawVideos = splitCalloutBlocks(markdown).filter((block) => block.kind === 'video')
+    let crawlLocal = 0
+    let legendLocal = 0
+    let galleryLocal = 0
+    let videoLocal = 0
     return splitCalloutBlocks(text).map((part, i) => {
       const key = `${keyPrefix}-${i}`
       if (part.kind === 'readaloud') {
@@ -446,6 +705,201 @@ export default function SessionNotes({
               {part.markdown || ''}
             </Markdown>
           </ReadAloud>
+        )
+      }
+      if (part.kind === 'party') {
+        return (
+          <PartyCard key={key} title={part.title}>
+            {part.markdown.trim()
+              ? renderSectionedMarkdown(
+                  part.markdown,
+                  `${key}-body`,
+                  part.title?.trim() || undefined,
+                  crawlOffset + crawlLocal,
+                  legendOffset + legendLocal,
+                  galleryOffset + galleryLocal,
+                  videoOffset + videoLocal
+                )
+              : null}
+          </PartyCard>
+        )
+      }
+      if (part.kind === 'scene') {
+        const { artSrc, artLabel, body } = splitLeadingSceneArt(part.markdown)
+        const resolved = artSrc ? resolveMarkdownImageSrc(artSrc, path, images) : { url: '', path: null }
+        const showArt = Boolean(artSrc || artLabel)
+        return (
+          <SceneCard
+            key={key}
+            title={part.title}
+            art={
+              showArt ? (
+                <SheetArtFrame
+                  title={part.title?.trim() || artLabel || 'Scene'}
+                  imageSrc={resolved.path ? resolved.url : null}
+                  selectValue={resolved.path}
+                  selectedImage={selectedImage}
+                  images={images}
+                  aspect="portrait"
+                  onSelectImage={onSelectImage}
+                  onSrdError={() => undefined}
+                />
+              ) : undefined
+            }
+          >
+            {body.trim()
+              ? renderSectionedMarkdown(
+                  body,
+                  `${key}-body`,
+                  part.title?.trim() || undefined,
+                  crawlOffset + crawlLocal,
+                  legendOffset + legendLocal,
+                  galleryOffset + galleryLocal,
+                  videoOffset + videoLocal
+                )
+              : null}
+          </SceneCard>
+        )
+      }
+      if (part.kind === 'crawl') {
+        const crawlIndex = crawlOffset + crawlLocal
+        crawlLocal += 1
+        const raw = rawCrawls[crawlIndex] ?? part
+        const logoRef = crawlLogoRef(raw.markdown)
+        const logoUrl = logoRef ? resolveMarkdownImageSrc(logoRef, path, images).url : null
+        const musicRef = crawlMusicRef(raw.markdown)
+        const endImageRef = crawlEndImageRef(raw.markdown)
+        const endImageUrl = endImageRef ? resolveMarkdownImageSrc(endImageRef, path, images).url : null
+        const crawlBody = crawlPlainText(raw.markdown)
+        const crawlTitle = raw.title
+        const isActiveCrawl =
+          activeCrawl != null &&
+          (activeCrawl.title ?? '') === (crawlTitle ?? '') &&
+          activeCrawl.body === crawlBody
+        return (
+          <CrawlCard
+            key={key}
+            title={crawlTitle}
+            preface={crawlPreface(raw.markdown)}
+            body={crawlBody}
+            logoRef={logoRef}
+            logoUrl={logoUrl}
+            endImageRef={endImageRef}
+            endImageUrl={endImageUrl}
+            musicRef={musicRef}
+            musicTracks={musicTracks}
+            images={images}
+            canPlay={theme === 'scifi'}
+            disabled={disabled}
+            onChange={(fields) => void persistCrawl(crawlIndex, fields)}
+            onPlay={onPlayCrawl ? (fields) => void playCrawlCard(crawlIndex, fields) : undefined}
+            onStop={onStopCrawl}
+            crawlActive={isActiveCrawl && Boolean(playerCrawl)}
+            crawlStopping={isActiveCrawl && playerCrawl?.stoppingAt != null}
+            onLoadLogo={() => loadCrawlLogo()}
+            onLoadEndImage={() => loadCrawlEndImage()}
+            onLoadMusic={() => loadCrawlMusic()}
+          />
+        )
+      }
+      if (part.kind === 'legend') {
+        const legendIndex = legendOffset + legendLocal
+        legendLocal += 1
+        const raw = rawLegends[legendIndex] ?? part
+        const logoRef = legendLogoRef(raw.markdown)
+        const logoUrl = logoRef ? resolveMarkdownImageSrc(logoRef, path, images).url : null
+        const musicRef = legendMusicRef(raw.markdown)
+        const endImageRef = legendEndImageRef(raw.markdown)
+        const endImageUrl = endImageRef ? resolveMarkdownImageSrc(endImageRef, path, images).url : null
+        const legendBody = legendPlainText(raw.markdown)
+        const legendTitle = raw.title
+        const isActiveLegend =
+          activeLegend != null &&
+          (activeLegend.title ?? '') === (legendTitle ?? '') &&
+          activeLegend.body === legendBody
+        return (
+          <LegendCard
+            key={key}
+            title={legendTitle}
+            preface={legendPreface(raw.markdown)}
+            body={legendBody}
+            logoRef={logoRef}
+            logoUrl={logoUrl}
+            endImageRef={endImageRef}
+            endImageUrl={endImageUrl}
+            musicRef={musicRef}
+            musicTracks={musicTracks}
+            images={images}
+            canPlay={legendPlayEnabled(theme)}
+            disabled={disabled}
+            onChange={(fields) => void persistLegend(legendIndex, fields)}
+            onPlay={onPlayLegend ? (fields) => void playLegendCard(legendIndex, fields) : undefined}
+            onStop={onStopLegend}
+            legendActive={isActiveLegend && Boolean(playerLegend)}
+            legendStopping={isActiveLegend && playerLegend?.stoppingAt != null}
+            onLoadLogo={() => loadLegendLogo()}
+            onLoadEndImage={() => loadLegendEndImage()}
+            onLoadMusic={() => loadLegendMusic()}
+          />
+        )
+      }
+      if (part.kind === 'gallery') {
+        const galleryIndex = galleryOffset + galleryLocal
+        galleryLocal += 1
+        const raw = rawGalleries[galleryIndex] ?? part
+        const refs = galleryImageRefs(raw.markdown)
+        const intervalSec = galleryIntervalSec(raw.markdown)
+        const urls = refs.map((ref) => resolveMarkdownImageSrc(ref, path, images).url || null)
+        const refsKey = refs.join('\n')
+        const isActiveGallery =
+          activeGallery != null &&
+          (activeGallery.title ?? '') === (raw.title ?? '') &&
+          activeGallery.imageRefs.join('\n') === refsKey
+        return (
+          <GalleryCard
+            key={key}
+            title={raw.title}
+            intervalSec={intervalSec}
+            loop={galleryLoops(raw.markdown)}
+            showTitle={galleryShowTitle(raw.markdown)}
+            imageRefs={refs}
+            images={images}
+            imageUrls={urls}
+            disabled={disabled}
+            onChange={(fields) => void persistGallery(galleryIndex, fields)}
+            onPlay={onPlayGallery ? (fields) => void playGalleryCard(galleryIndex, fields) : undefined}
+            onStop={onStopGallery}
+            onPrev={onGalleryPrev}
+            onNext={onGalleryNext}
+            galleryActive={isActiveGallery && Boolean(playerGallery)}
+            slideIndex={isActiveGallery ? playerGallery?.index : undefined}
+            slideCount={isActiveGallery ? playerGallery?.slides.length : undefined}
+          />
+        )
+      }
+      if (part.kind === 'video') {
+        const videoIndex = videoOffset + videoLocal
+        videoLocal += 1
+        const raw = rawVideos[videoIndex] ?? part
+        const fields = parseVideoFields(raw.title, raw.markdown)
+        const isActiveVideo =
+          activeVideo != null &&
+          (activeVideo.title ?? '') === (fields.title ?? '') &&
+          activeVideo.videoRef === (fields.videoRef ?? '')
+        return (
+          <VideoCard
+            key={key}
+            title={fields.title}
+            videoRef={fields.videoRef}
+            muted={fields.muted}
+            videos={videos ?? []}
+            disabled={disabled}
+            onChange={(next) => void persistVideo(videoIndex, next)}
+            onPlay={onPlayVideo ? (next) => void playVideoCard(videoIndex, next) : undefined}
+            onStop={onStopVideo}
+            videoActive={isActiveVideo && Boolean(playerVideo)}
+            onLoadVideo={() => loadVideoFile()}
+          />
         )
       }
       if (part.kind === 'gmonly') {
@@ -478,23 +932,70 @@ export default function SessionNotes({
     })
   }
 
-  function renderDocument(text: string, keyPrefix: string) {
+  function renderSectionedMarkdown(
+    text: string,
+    keyPrefix: string,
+    encounterScope?: string,
+    crawlOffset = 0,
+    legendOffset = 0,
+    galleryOffset = 0,
+    videoOffset = 0
+  ) {
     const docSections = splitMarkdownSections(text)
     if (docSections.length === 0) {
-      return <div className="markdown-body">{renderMarkdown(text || '_This file is empty._', keyPrefix)}</div>
+      return renderMarkdown(
+        text || '_This file is empty._',
+        keyPrefix,
+        crawlOffset,
+        legendOffset,
+        galleryOffset,
+        videoOffset
+      )
     }
+    let crawlsBefore = 0
+    let legendsBefore = 0
+    let galleriesBefore = 0
+    let videosBefore = 0
     return docSections.map((section, index) => {
-      const encounter = encounters.find((item) => item.id === section.id)
+      const sectionId = encounterScope
+        ? encounterSectionId(section.heading, encounterScope)
+        : section.id
+      const encounter = encounters.find((item) => item.id === sectionId)
       const boxed = Boolean(encounter) || isCombatHeading(section.heading)
       const key = `${keyPrefix}-${section.id || index}`
+      const parts = splitCalloutBlocks(section.markdown)
+      const sectionCrawls = parts.filter((block) => block.kind === 'crawl').length
+      const sectionLegends = parts.filter((block) => block.kind === 'legend').length
+      const sectionGalleries = parts.filter((block) => block.kind === 'gallery').length
+      const sectionVideos = parts.filter((block) => block.kind === 'video').length
+      const crawlOff = crawlOffset + crawlsBefore
+      const legendOff = legendOffset + legendsBefore
+      const galleryOff = galleryOffset + galleriesBefore
+      const videoOff = videoOffset + videosBefore
+      crawlsBefore += sectionCrawls
+      legendsBefore += sectionLegends
+      galleriesBefore += sectionGalleries
+      videosBefore += sectionVideos
       if (!boxed) {
         return (
           <div key={key} className="markdown-body">
-            {renderMarkdown(section.markdown || '_This file is empty._', key)}
+            {renderMarkdown(
+              section.markdown || '_This file is empty._',
+              key,
+              crawlOff,
+              legendOff,
+              galleryOff,
+              videoOff
+            )}
           </div>
         )
       }
       const { card, rest } = splitCombatCardContent(section.markdown)
+      const cardParts = splitCalloutBlocks(card)
+      const cardCrawls = cardParts.filter((block) => block.kind === 'crawl').length
+      const cardLegends = cardParts.filter((block) => block.kind === 'legend').length
+      const cardGalleries = cardParts.filter((block) => block.kind === 'gallery').length
+      const cardVideos = cardParts.filter((block) => block.kind === 'video').length
       return (
         <div key={key}>
           <CombatCard
@@ -502,17 +1003,104 @@ export default function SessionNotes({
             onAdd={encounter && onAddEncounter ? () => void addEncounter(encounter) : undefined}
             missing={missingCombatantTokens(section.markdown, path, noteIndex)}
           >
-            {renderMarkdown(card, `${key}-card`)}
+            {renderMarkdown(card, `${key}-card`, crawlOff, legendOff, galleryOff, videoOff)}
           </CombatCard>
-          {rest.trim() ? <div className="markdown-body">{renderMarkdown(rest, `${key}-rest`)}</div> : null}
+          {rest.trim() ? (
+            <div className="markdown-body">
+              {renderMarkdown(
+                rest,
+                `${key}-rest`,
+                crawlOff + cardCrawls,
+                legendOff + cardLegends,
+                galleryOff + cardGalleries,
+                videoOff + cardVideos
+              )}
+            </div>
+          ) : null}
+        </div>
+      )
+    })
+  }
+
+  function renderDocument(text: string, keyPrefix: string) {
+    const docSections = splitMarkdownSections(text)
+    if (docSections.length === 0) {
+      return <div className="markdown-body">{renderMarkdown(text || '_This file is empty._', keyPrefix)}</div>
+    }
+    let crawlsBefore = 0
+    let legendsBefore = 0
+    let galleriesBefore = 0
+    let videosBefore = 0
+    return docSections.map((section, index) => {
+      const encounter = encounters.find((item) => item.id === section.id)
+      const boxed = Boolean(encounter) || isCombatHeading(section.heading)
+      const key = `${keyPrefix}-${section.id || index}`
+      const parts = splitCalloutBlocks(section.markdown)
+      const sectionCrawls = parts.filter((block) => block.kind === 'crawl').length
+      const sectionLegends = parts.filter((block) => block.kind === 'legend').length
+      const sectionGalleries = parts.filter((block) => block.kind === 'gallery').length
+      const sectionVideos = parts.filter((block) => block.kind === 'video').length
+      const crawlOff = crawlsBefore
+      const legendOff = legendsBefore
+      const galleryOff = galleriesBefore
+      const videoOff = videosBefore
+      crawlsBefore += sectionCrawls
+      legendsBefore += sectionLegends
+      galleriesBefore += sectionGalleries
+      videosBefore += sectionVideos
+      if (!boxed) {
+        return (
+          <div key={key} className="markdown-body">
+            {renderMarkdown(
+              section.markdown || '_This file is empty._',
+              key,
+              crawlOff,
+              legendOff,
+              galleryOff,
+              videoOff
+            )}
+          </div>
+        )
+      }
+      const { card, rest } = splitCombatCardContent(section.markdown)
+      const cardParts = splitCalloutBlocks(card)
+      const cardCrawls = cardParts.filter((block) => block.kind === 'crawl').length
+      const cardLegends = cardParts.filter((block) => block.kind === 'legend').length
+      const cardGalleries = cardParts.filter((block) => block.kind === 'gallery').length
+      const cardVideos = cardParts.filter((block) => block.kind === 'video').length
+      return (
+        <div key={key}>
+          <CombatCard
+            adding={Boolean(encounter && addingId === encounter.id)}
+            onAdd={encounter && onAddEncounter ? () => void addEncounter(encounter) : undefined}
+            missing={missingCombatantTokens(section.markdown, path, noteIndex)}
+          >
+            {renderMarkdown(card, `${key}-card`, crawlOff, legendOff, galleryOff, videoOff)}
+          </CombatCard>
+          {rest.trim() ? (
+            <div className="markdown-body">
+              {renderMarkdown(
+                rest,
+                `${key}-rest`,
+                crawlOff + cardCrawls,
+                legendOff + cardLegends,
+                galleryOff + cardGalleries,
+                videoOff + cardVideos
+              )}
+            </div>
+          ) : null}
         </div>
       )
     })
   }
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col bg-panel">
-      <header className="border-b border-line px-3 py-2">
+    <section
+      className={`matrix-rain-well relative z-[1] flex min-h-0 flex-1 flex-col ${
+        theme === 'matrix' && digitalRain ? 'bg-transparent' : 'bg-panel'
+      }`}
+    >
+      <header className="border-b border-line bg-panel px-3 py-2">
         <div className="flex items-center justify-between gap-2">
           <div className="flex min-w-0 items-center gap-2">
             {onBack ? (
@@ -552,7 +1140,7 @@ export default function SessionNotes({
                 type="button"
                 onClick={() => setShowLinks((open) => !open)}
                 className={`rounded px-2.5 py-1 text-xs ${
-                  showLinks ? 'bg-amber font-semibold text-ink' : 'border border-line hover:border-amber'
+                  showLinks ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
                 }`}
               >
                 Links
@@ -572,7 +1160,7 @@ export default function SessionNotes({
                     type="button"
                     disabled={disabled}
                     onClick={() => void save()}
-                    className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-ink disabled:bg-line"
+                    className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-on-amber disabled:bg-line"
                   >
                     Save
                   </button>
@@ -604,7 +1192,7 @@ export default function SessionNotes({
               <button
                 type="button"
                 onClick={onShowToPlayers}
-                className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-ink"
+                className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-on-amber"
               >
                 Show to players
               </button>
@@ -698,6 +1286,12 @@ export default function SessionNotes({
             src={`${imageUrl}#navpanes=0&pagemode=none`}
             className="h-full min-h-[70vh] w-full rounded border border-line bg-ink"
           />
+        ) : kind === 'audio' && imageUrl ? (
+          <div className="flex h-full flex-col items-center justify-center gap-3">
+            <p className="text-sm text-parchment">{imageTitle(path)}</p>
+            <audio controls src={imageUrl} className="w-full max-w-md" />
+            <p className="text-xs text-muted">Preview only — play table audio from the Music panel.</p>
+          </div>
         ) : kind === 'other' ? (
           <p className="text-sm text-muted">No preview for this file type.</p>
         ) : kind === 'character' && character ? (
@@ -723,6 +1317,7 @@ export default function SessionNotes({
               originalRef.current = result.markdown
               onCampaignChange?.(result.campaign)
             }}
+            holo={holoPortraitsEnabled(theme, holoPortraits) && isHoloPortraitPath(path)}
             renderNotes={(body) =>
               renderDocument(
                 linkWikiNotes(prepareNoteMarkdown(body, path, images, { injectPortrait: false }), path, noteIndex),
@@ -749,6 +1344,7 @@ export default function SessionNotes({
             onRerollStock={shopsEnabled ? rerollShopStock : undefined}
             onChangeStock={shopsEnabled ? changeShopStock : undefined}
             onChangeStanding={changeShopStanding}
+            holo={holoPortraitsEnabled(theme, holoPortraits) && isHoloPortraitPath(path)}
             renderNotes={(body) =>
               renderDocument(
                 linkWikiNotes(prepareNoteMarkdown(body, path, images, { injectPortrait: false }), path, noteIndex),
@@ -757,7 +1353,19 @@ export default function SessionNotes({
             }
           />
         ) : (
-          <div className="mx-auto max-w-3xl text-base">{renderDocument(rendered || '_This file is empty._', 'note')}</div>
+          <div className="mx-auto max-w-3xl text-base">
+            {theme && onThemeChange && isStartHerePath(path) ? (
+              <StartHereTheme
+                theme={theme}
+                onChange={onThemeChange}
+                holoPortraits={holoPortraits}
+                onHoloPortraitsChange={onHoloPortraitsChange}
+                digitalRain={digitalRain}
+                onDigitalRainChange={onDigitalRainChange}
+              />
+            ) : null}
+            {renderDocument(rendered || '_This file is empty._', 'note')}
+          </div>
         )}
       </div>
       )}
@@ -798,7 +1406,7 @@ export default function SessionNotes({
               <button
                 type="button"
                 onClick={() => void save()}
-                className="rounded bg-amber px-3 py-1.5 text-sm font-semibold text-ink"
+                className="rounded bg-amber px-3 py-1.5 text-sm font-semibold text-on-amber"
               >
                 Save
               </button>

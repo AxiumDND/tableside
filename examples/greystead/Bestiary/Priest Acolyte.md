@@ -1,12 +1,12 @@
 # Priest Acolyte
 
-> [!infobox]+
->
-> | | |
-> |---|---|
-> | **CR** | 1/4 |
-> | **Role** | Boss |
-> | **Source** | SRD 5.2 |
+[!monster]
+| | |
+|---|---|
+| **CR** | 1/4 |
+| **Role** | Boss |
+| **Source** | SRD 5.2 |
+[!/monster]
 
 ```statblock
 layout: Basic 5e Layout

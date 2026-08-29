@@ -5,21 +5,22 @@
 -->
 # *Character Name*
 
-> [!infobox]+
-> ![[Character Name.png]]
->
-> ### *One-line tagline — role at the table*
->
-> | | |
-> |---|---|
-> | **Player** | Name |
-> | **Species** | Human |
-> | **Class** | Fighter 5 |
-> | **Background** | Soldier |
-> | **Alignment** | Neutral Good |
-> | **Role** | Front line |
-> | **AC** | 18 |
-> | **HP** | 44 |
+[!pc]
+![[Character Name.png]]
+
+### *One-line tagline — role at the table*
+
+| | |
+|---|---|
+| **Player** | Name |
+| **Species** | Human |
+| **Class** | Fighter 5 |
+| **Background** | Soldier |
+| **Alignment** | Neutral Good |
+| **Role** | Front line |
+| **AC** | 18 |
+| **HP** | 44 |
+[!/pc]
 
 ```statblock
 layout: Basic 5e Layout
@@ -53,8 +54,9 @@ actions:
 - **Skills** — 
 - **Signature tricks** — 
 
-> [!gmonly]
-> How this kit bends the session. Secret hooks. What to flag if they forget a feature.
+[!gmonly]
+How this kit bends the session. Secret hooks. What to flag if they forget a feature.
+[!/gmonly]
 
 ## Look & voice
 

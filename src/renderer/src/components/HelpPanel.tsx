@@ -1,9 +1,10 @@
 import { useEffect, useState, type ReactNode } from 'react'
 import type { AppUpdateNotice } from '../../../shared/appUpdate'
+import { THEME_BLURBS, THEME_IDS, THEME_LABELS, type ThemeId } from '../../../shared/theme'
 import type { AppFolders } from '../../../shared/types'
 import { APP_VERSION } from '../../../shared/version'
 
-type HelpSection = 'start' | 'screens' | 'files' | 'combat' | 'lookup' | 'keys' | 'updates'
+type HelpSection = 'settings' | 'start' | 'screens' | 'files' | 'music' | 'combat' | 'lookup' | 'keys' | 'updates'
 
 function Section({
   id,
@@ -98,14 +99,26 @@ export default function HelpPanel({
   onClose,
   updateNotice,
   onCheckUpdate,
-  onStartUpdate
+  onStartUpdate,
+  theme,
+  onThemeChange,
+  holoPortraits = false,
+  onHoloPortraitsChange,
+  digitalRain = false,
+  onDigitalRainChange
 }: {
   onClose?: () => void
   updateNotice?: AppUpdateNotice | null
   onCheckUpdate?: () => void
   onStartUpdate?: () => void
+  theme?: ThemeId
+  onThemeChange?: (theme: ThemeId) => void
+  holoPortraits?: boolean
+  onHoloPortraitsChange?: (enabled: boolean) => void
+  digitalRain?: boolean
+  onDigitalRainChange?: (enabled: boolean) => void
 }) {
-  const [open, setOpen] = useState<HelpSection | null>('start')
+  const [open, setOpen] = useState<HelpSection | null>('settings')
   const [folders, setFolders] = useState<AppFolders | null>(null)
 
   function toggle(id: HelpSection): void {
@@ -120,37 +133,111 @@ export default function HelpPanel({
     <aside className="flex min-h-0 w-[400px] shrink-0 flex-col border-l border-line bg-ink">
       <header className="border-b border-line px-3 py-2">
         <div className="flex items-center justify-between">
-          <h2 className="font-display text-lg text-amber">Help</h2>
+          <h2 className="font-display text-lg text-amber">Help & settings</h2>
           {onClose ? (
             <button type="button" onClick={onClose} className="text-xs text-muted hover:text-amber">
               Hide
             </button>
           ) : null}
         </div>
-        <p className="mt-1 text-[11px] text-muted">How to run the table from this console. Click a heading to open it.</p>
+        <p className="mt-1 text-[11px] text-muted">
+          Campaign look and how to run the table. Click a heading to open it.
+        </p>
       </header>
 
       <div className="min-h-0 flex-1 overflow-auto">
+        <Section id="settings" title="Settings" open={open} onToggle={toggle}>
+          <Sub>Campaign look</Sub>
+          <p>
+            Saved with this folder. You can also set it when you create a campaign, or from <Code>Start Here</Code>.
+            The player TV stays black.
+          </p>
+          {theme && onThemeChange ? (
+            <ul className="space-y-2">
+              {THEME_IDS.map((id) => {
+                const selected = theme === id
+                return (
+                  <li key={id}>
+                    <button
+                      type="button"
+                      onClick={() => onThemeChange(id)}
+                      className={`w-full rounded border px-3 py-2 text-left ${
+                        selected ? 'border-amber bg-amber/10' : 'border-line hover:border-amber'
+                      }`}
+                    >
+                      <span className={`block text-sm font-semibold ${selected ? 'text-amber' : 'text-parchment'}`}>
+                        {THEME_LABELS[id]}
+                      </span>
+                      <span className="mt-0.5 block text-[12px] leading-snug text-muted">{THEME_BLURBS[id]}</span>
+                    </button>
+                  </li>
+                )
+              })}
+            </ul>
+          ) : (
+            <p className="text-muted">Open a campaign to choose a look.</p>
+          )}
+          {theme === 'scifi' && onHoloPortraitsChange ? (
+            <label className="mt-3 flex items-start gap-2 text-[13px] text-parchment/90">
+              <input
+                type="checkbox"
+                className="mt-0.5"
+                checked={holoPortraits}
+                onChange={(event) => onHoloPortraitsChange(event.target.checked)}
+              />
+              <span>
+                <span className="font-semibold text-parchment">Hologram portraits</span>
+                <span className="mt-0.5 block text-[12px] leading-snug text-muted">
+                  On by default for Sci-fi. Player, NPC, beast, and gear art as a projector plate. Places and maps
+                  stay as-is.
+                </span>
+              </span>
+            </label>
+          ) : null}
+          {theme === 'matrix' && onDigitalRainChange ? (
+            <label className="mt-3 flex items-start gap-2 text-[13px] text-parchment/90">
+              <input
+                type="checkbox"
+                className="mt-0.5"
+                checked={digitalRain}
+                onChange={(event) => onDigitalRainChange(event.target.checked)}
+              />
+              <span>
+                <span className="font-semibold text-parchment">Falling code</span>
+                <span className="mt-0.5 block text-[12px] leading-snug text-muted">
+                  On by default for Digital rain. Slow wallpaper in the file list and notes. Header stays clear.
+                </span>
+              </span>
+            </label>
+          ) : null}
+        </Section>
         <Section id="start" title="Quick start" open={open} onToggle={toggle}>
           <Ol
             items={[
               <>
                 <Action>Open campaign</Action> picks any folder. <Action>New campaign</Action> asks which system to
-                use (D&D 5e, Pathfinder 2e, or Vampire 5th), then scaffolds Party, NPCs, Places, Factions, Maps,
-                and the rest in an empty folder, with the hub note in <Code>Start Here</Code>. First launch with no
-                folder opens the Greystead one-shot (5e); <Action>Sample</Action> loads that same copy. Open{' '}
-                <Code>Start Here</Code> first. Changing system on an existing folder is not supported — start a new
-                campaign instead.
+                use (D&D 5e, Pathfinder 2e, or Vampire 5th), then which look (and hologram or falling-code if that
+                look has them), then scaffolds Party, NPCs, Places,
+                Factions, Maps, and the rest in an empty folder, with the hub note in <Code>Start Here</Code>. First
+                launch with no folder opens the Greystead one-shot (5e); <Action>Sample</Action> loads that same copy.
+                Open <Code>Start Here</Code> first — the campaign look is there too. Changing system on an existing
+                folder is not supported — start a new campaign instead.
               </>,
               <>
                 This DM console always opens. The fullscreen <strong>player</strong> window stays hidden until a second
-                monitor is connected, then it appears there. Click the <Action>Players see</Action> preview to pick the
-                TV. Unplug the second screen and the player view hides again.
+                monitor is connected, then it appears there. <Action>Close</Action> on the{' '}
+                <Action>Players see</Action> preview shuts it until you pick a monitor or{' '}
+                <Action>Show to players</Action>. Click the preview to pick the TV. Unplug the second screen and the
+                player view hides again.
               </>,
               <>
                 Click a map or portrait in a note so it is selected, then <Action>Show to players</Action> (or{' '}
-                <Code>Alt+S</Code>). It fades in over about five seconds. <Action>Clear</Action> on the{' '}
-                <Action>Players see</Action> preview (or <Code>Alt+X</Code>) blanks the player screen.
+                <Code>Alt+S</Code>). It fades in over about five seconds. In a Sci-fi campaign,{' '}
+                <Action>Play</Action> on an Opening crawl card sends that text to the player screen. While it runs,{' '}
+                <Action>Stop</Action> fades to black over five seconds, fades out crawl music, and resumes the mood
+                playlist.{' '}
+                <Action>Clear</Action> on the <Action>Players see</Action> preview (or <Code>Alt+X</Code>) blanks the
+                player screen.
               </>,
               <>
                 Open <Action>Combat</Action> or <Action>Lookup</Action> from the header when you need them. Dice live
@@ -213,12 +300,15 @@ export default function HelpPanel({
           <Sub>This console</Sub>
           <Ul
             items={[
-              <>Header: campaign name, New / Open, Lookup, Combat, Help.</>,
+              <>
+                Header: campaign name, New / Open, Lookup, Combat, Music, <strong>Help & settings</strong>. Campaign look
+                lives under Settings (also on <Code>Start Here</Code>). DM-only — the player TV stays black.
+              </>,
               <>
                 Left: <strong>Players see</strong> preview, file tree, dice tray. Hide the preview if you need height.
               </>,
               <>Center: the open note, image, or PDF.</>,
-              <>Right: Combat, Lookup, or this Help panel — one at a time.</>
+              <>Right: Combat, Music, Lookup, or this panel — one at a time.</>
             ]}
           />
           <Sub>Show maps and art</Sub>
@@ -237,6 +327,81 @@ export default function HelpPanel({
           <p className="text-[12px] text-muted">
             PDFs open here for you only — they are not sent to the player screen. Export or screenshot maps you want
             them to see, or keep images under <Code>Maps/Art/</Code>.
+          </p>
+          <Sub>Blocks</Sub>
+          <p>
+            Special blocks use fences: <Code>[!scene] Title</Code> … <Code>[!/scene]</Code> (or <Code>[!end]</Code> for
+            the innermost open block). Nest freely — blank lines are fine. Old quote-style <Code>{'> [!scene]'}</Code>{' '}
+            notes still open. Whole-line <Code>//</Code> comments and <Code>{'<!-- … -->'}</Code> stay in the editor
+            only; they never show in the reader.
+          </p>
+          <Sub>Opening crawl (Sci-fi)</Sub>
+          <p>
+            Put <Code>[!crawl] Title</Code> … <Code>[!/crawl]</Code> (or <Code>opening</Code>) in any note, then write the
+            prologue inside. Edit the title, far-off line, emblem, crawl music, and crawl on the card. Optional <Code>preface:</Code> in the note
+            also works (<Code>none</Code> skips it). <Code>![[your-mark.png]]</Code> replaces the generic emblem. Optional{' '}
+            <Code>end: ![[planet.png]]</Code> (or <Action>End image</Action> on the card) fades in when the crawl finishes.
+            Optional{' '}
+            <Code>music: Audio/Music/…</Code> (or <Action>Load audio…</Action> into <Code>Audio/Music/Crawl/</Code>) — mood
+            fades out on Play; the crawl track starts half a second before the emblem (silence through the far-off line) and
+            runs for 1:32 — longer files fade out there — then mood resumes when the crawl ends or you Stop/Clear. <Action>Play</Action> is on when the campaign look is
+            Sci-fi. The player screen and the <Action>Players see</Action> preview show a starfield, then the far-off line,
+            the emblem, then a perspective title crawl — write your own words. Tableside does not include licensed crawl
+            text, logos, or music files. <Action>Clear</Action> stops the picture and restores mood music.
+          </p>
+          <Sub>Opening legend (Classic, Light, Vampire)</Sub>
+          <p>
+            Put <Code>[!legend] Title</Code> … <Code>[!/legend]</Code> (or <Code>tale</Code> / <Code>chronicle</Code>)
+            in any note for a campfire chronicle on the player screen — embers, a glowing seal, then the tale rising like a
+            tapestry. Same fields as the crawl card: <Code>preface:</Code>, herald sigil, <Code>music:</Code>, optional{' '}
+            <Code>end:</Code> still, and body text. <Action>Play</Action> is on when the campaign look is Classic, Light, or Vampire. Mood
+            and music timing match the Sci-fi crawl (1:32 sync). <Action>Stop</Action> fades to black and resumes mood.
+          </p>
+          <Sub>Gallery</Sub>
+          <p>
+            Put <Code>[!gallery] Title</Code> … <Code>[!/gallery]</Code> (or <Code>slides</Code> / <Code>sequence</Code>)
+            with image embeds inside. <Action>Play</Action> shows them on the player screen; <Action>Prev</Action> /{' '}
+            <Action>Next</Action> advance manually. Optional <Code>interval: 8s</Code> auto-advances. Loop defaults on;
+            set <Code>loop: false</Code> or untick to stop at the end. Title stays off the player unless you tick{' '}
+            <Action>Show title on player</Action> (<Code>showTitle: true</Code>). Slide counts stay on the DM card only.
+            Works on every campaign look.
+          </p>
+          <Sub>Video</Sub>
+          <p>
+            Put <Code>[!video] Title</Code> … <Code>[!/video]</Code> (or <Code>clip</Code> / <Code>film</Code>) with a
+            local <Code>![[clip.mp4]]</Code> (mp4 / webm / mov). <Action>Play</Action> sends it to the player screen.
+            Optional <Code>mute: true</Code> keeps mood music; otherwise mood fades while the clip has sound.
+          </p>
+        </Section>
+
+        <Section id="music" title="Music & sound" open={open} onToggle={toggle}>
+          <p>
+            <Action>Music</Action> is a table mixer: one music playlist, one looping ambience bed, and a soundboard of
+            one-shots. Each strip has its own volume. Pick an <strong>Output</strong> (laptop speakers, HDMI TV, headset)
+            — the mix uses that device whether the player view is open or closed. Music and ambience fade in and out
+            over five seconds. <Action>Stop all</Action> fades both.
+          </p>
+          <Sub>Folders</Sub>
+          <Ul
+            items={[
+              <>
+                <Code>Audio/Music/Combat</Code>, <Code>Creepy</Code>, <Code>General</Code> — mood playlists. Extra
+                folders become extra moods. Pick a mood, then <Action>Play</Action>,{' '}
+                <Action>Pause</Action>, or <Action>Stop</Action>. <Action>In order</Action> or{' '}
+                <Action>Shuffle</Action> stays in that mood.
+              </>,
+              <>
+                <Code>Audio/Ambience</Code> — looping beds (crowd, rain). One at a time.
+              </>,
+              <>
+                <Code>Audio/Sfx</Code> — clickable one-shots. Subfolders become headings.
+              </>
+            ]}
+          />
+          <p className="text-[12px] text-muted">
+            Drop files you own into those three folders, or use <Action>Add audio…</Action> on each strip. Files sitting
+            in <Code>Audio/</Code> itself are ignored. Tableside does not include music.{' '}
+            <Action>Clear</Action> on the player picture does not stop the mix — use <Action>Stop all</Action>.
           </p>
         </Section>
 
@@ -278,8 +443,8 @@ export default function HelpPanel({
                 art by name. <Code>Esc</Code> clears, then hides the box.
               </>,
               <>
-                Right-click a folder for Templates (player, NPC, monster, spell, gear, game night sheet, map, place,
-                shop, faction). <Action>Add art…</Action> on Party, NPCs, Bestiary, Places, Factions, Spells, Sessions,
+                Right-click a folder to add a player, NPC, monster, spell, gear, game night sheet, map, place, shop, or
+                faction — the sheet comes in ready to fill. <Action>Add art…</Action> on Party, NPCs, Bestiary, Places, Factions, Spells, Sessions,
                 Maps, Handouts, a Gear subsection, or the <Code>Art/</Code> folder itself — pictures go in that
                 folder’s <Code>Art/</Code>. Name them like the sheet (<Code>Ghoul.webp</Code>) so portraits attach.{' '}
                 <Action>Add files…</Action> still imports notes and PDFs into the folder you clicked. Player, NPC, and
@@ -303,7 +468,7 @@ export default function HelpPanel({
                 <Action>New faction…</Action> on <Code>Factions/</Code>. Shopkeepers stay in <Code>NPCs/</Code>.
               </>,
               <>
-                <Code>campaign.json</Code>, <Code>combat.json</Code>, and <Code>README.md</Code> stay hidden from the
+                <Code>campaign.json</Code>, <Code>combat.json</Code>, <Code>audio.json</Code>, and <Code>README.md</Code> stay hidden from the
                 tree.
               </>
             ]}
@@ -316,7 +481,23 @@ export default function HelpPanel({
                 Tab inserts two spaces.
               </>,
               <>
-                <Code>[[Note Name]]</Code> opens another note. Images in the note stay clickable for Show to players.
+                <Code>[[Note Name]]</Code> opens another note. Images in the note stay clickable for Show to players.{' '}
+                <Code>[!crawl]…[!/crawl]</Code> is an Opening crawl card.
+              </>,
+              <>
+                <Code>[!legend]…[!/legend]</Code> is an Opening legend card (Classic, Light, Vampire).
+              </>,
+              <>
+                <Code>[!gallery]…[!/gallery]</Code> is an image sequence on the player screen;{' '}
+                <Code>[!video]…[!/video]</Code> plays a local clip.
+              </>,
+              <>
+                <Code>[!pc]</Code> / <Code>[!npc]</Code> / <Code>[!monster]</Code> (and place, shop, faction, gear,
+                spell) are sheet headers — portrait and facts for the sheet view. Close with <Code>[!/pc]</Code> etc.
+              </>,
+              <>
+                <Code>[!scene]…[!/scene]</Code> wraps a beat (nested read-aloud / GM-only allowed). <Code>//</Code> line
+                comments are editor-only.
               </>,
               <>
                 Party / NPC / Bestiary sheets with a <Code>statblock</Code> fence open in sheet view: portrait and
@@ -348,8 +529,8 @@ export default function HelpPanel({
               <>
                 In a session or game night sheet, use a heading that includes <Code>Combat</Code>, <Code>Encounter</Code>
                 , or ⚔️. Skip headings that say <Code>no combat</Code>. Right-click Sessions for{' '}
-                <Action>New game night sheet…</Action> — it uses the Lazy DM 10 steps and links every existing Party
-                sheet.
+                <Action>New game night sheet…</Action> — Party roster block and scene blocks with optional read-aloud, GM-only notes, secrets, treasure, NPCs, combat, and table cues (place, map, checks, music, sound).
+                Copy a <Code>[!scene]…[!/scene]</Code> block to add another beat. Wrap PC links in <Code>[!party]…[!/party]</Code>.
               </>,
               <>
                 Add a line like <Code>**Combatants:** [[Vesper]] · [[Cultist]] ×3 · party</Code>
@@ -497,8 +678,9 @@ export default function HelpPanel({
           />
           <p className="text-[12px] text-muted">
             After the session, combat stays in <Code>combat.json</Code> until you clear it. Keep lasting work in your
-            own campaign folder. <Action>Sample</Action> copies Greystead once into user data; delete that folder and
-            click Sample again to refresh from the bundle.
+            own campaign folder. <Action>Sample</Action> copies Greystead into user data; Tableside refreshes it when the
+            bundled <Code>sampleRevision</Code> is newer. Delete <Code>samples\greystead</Code> and click Sample to
+            force a refresh.
           </p>
         </Section>
       </div>

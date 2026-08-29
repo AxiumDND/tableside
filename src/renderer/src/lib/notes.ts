@@ -1,6 +1,16 @@
 import type { CampaignTreeNode } from '../../../shared/types'
+import type { CalloutBlock } from '../../../shared/callouts'
+import { maskFencedCalloutBodies, splitCalloutBlocks } from '../../../shared/callouts'
 import { IMAGE_EXT, type CampaignImage } from './images'
 import { pathHasFolder } from '../../../shared/campaignLayout'
+
+export type { CalloutBlock, CalloutKind } from '../../../shared/callouts'
+export {
+  calloutKind,
+  serializeFencedCallout,
+  splitCalloutBlocks,
+  stripAuthorComments
+} from '../../../shared/callouts'
 
 export interface CampaignNote {
   relativePath: string
@@ -197,6 +207,40 @@ export function combatantsRosterLine(markdown: string): string | null {
   return null
 }
 
+/** Pull a leading scene art embed so it can sit in a right-side frame like PC/NPC portraits. */
+export function splitLeadingSceneArt(markdown: string): {
+  artSrc: string | null
+  artLabel: string | null
+  body: string
+} {
+  const lines = markdown.replace(/\r/g, '').split('\n')
+  let start = 0
+  while (start < lines.length && !lines[start].trim()) start += 1
+  if (start >= lines.length) return { artSrc: null, artLabel: null, body: markdown }
+
+  const line = lines[start].trim()
+  const takeRest = (): string =>
+    [...lines.slice(0, start), ...lines.slice(start + 1)].join('\n').replace(/^\n+/, '')
+
+  const mdImg = /^!\[([^\]]*)\]\(\s*<?([^)>\s]+)>?\s*\)$/.exec(line)
+  if (mdImg) {
+    return { artSrc: mdImg[2], artLabel: mdImg[1].trim() || null, body: takeRest() }
+  }
+
+  const wiki = /^!\[\[([^\]\n]+)\]\]$/.exec(line)
+  if (wiki) {
+    const label = wiki[1].split('|')[0]?.trim() || wiki[1].trim()
+    return { artSrc: wiki[1].trim(), artLabel: label, body: takeRest() }
+  }
+
+  const missing = /^\*\[missing image:\s*([^\]]+)\]\*$/i.exec(line)
+  if (missing) {
+    return { artSrc: null, artLabel: missing[1].trim(), body: takeRest() }
+  }
+
+  return { artSrc: null, artLabel: null, body: markdown }
+}
+
 export interface NoteSection {
   heading: string
   level: number
@@ -259,96 +303,15 @@ export function splitCombatCardContent(markdown: string): { card: string; rest: 
   return { card, rest }
 }
 
-const CALLOUT_START = /^>\s*\[!(?!infobox)([a-z][\w-]*)\][+-]?\s*(.*)$/i
-
-export type CalloutKind =
-  | 'prose'
-  | 'readaloud'
-  | 'gmonly'
-  | 'tip'
-  | 'warning'
-  | 'example'
-  | 'abstract'
-  | 'note'
-  | 'danger'
-  | 'success'
-  | 'info'
-  | 'other'
-
-export interface CalloutBlock {
-  kind: CalloutKind
-  type?: string
-  markdown: string
-  title?: string
-}
-
-function calloutKind(type: string): CalloutKind {
-  const folded = type.toLowerCase()
-  if (/^read[-_]?aloud$/.test(folded) || folded === 'flavor') return 'readaloud'
-  if (/^gm[-_]?only$/.test(folded) || folded === 'secret') return 'gmonly'
-  if (
-    folded === 'tip' ||
-    folded === 'warning' ||
-    folded === 'example' ||
-    folded === 'abstract' ||
-    folded === 'note' ||
-    folded === 'danger' ||
-    folded === 'success' ||
-    folded === 'info'
-  ) {
-    return folded
-  }
-  return 'other'
-}
-
-export function splitCalloutBlocks(markdown: string): CalloutBlock[] {
-  const lines = markdown.replace(/\r/g, '').split('\n')
-  const out: CalloutBlock[] = []
-  let buf: string[] = []
-  let i = 0
-
-  const flushProse = (): void => {
-    if (buf.length === 0) return
-    out.push({ kind: 'prose', markdown: buf.join('\n') })
-    buf = []
-  }
-
-  while (i < lines.length) {
-    const start = CALLOUT_START.exec(lines[i])
-    if (!start) {
-      buf.push(lines[i])
-      i += 1
-      continue
-    }
-    const kind = calloutKind(start[1])
-    flushProse()
-    const title = start[2].trim()
-    const body: string[] = []
-    i += 1
-    while (i < lines.length && /^>/.test(lines[i])) {
-      body.push(lines[i].replace(/^>\s?/, ''))
-      i += 1
-    }
-    out.push({
-      kind,
-      type: start[1].toLowerCase(),
-      title: title || undefined,
-      markdown: body.join('\n').replace(/^\n+|\n+$/g, '')
-    })
-  }
-  flushProse()
-  return out
-}
-
 export function splitReadAloudBlocks(markdown: string): CalloutBlock[] {
   return splitCalloutBlocks(markdown)
 }
 
-export function parseNightEncounters(
-  markdown: string,
-  notePath: string,
-  notes: CampaignNote[]
-): NightEncounter[] {
+export function encounterSectionId(heading: string, scope?: string): string {
+  return headingId(scope ? `${scope} — ${heading}` : heading)
+}
+
+function splitEncounterSections(markdown: string): { heading: string; body: string }[] {
   const lines = markdown.replace(/\r/g, '').split('\n')
   const sections: { heading: string; body: string }[] = []
   let heading = ''
@@ -371,69 +334,93 @@ export function parseNightEncounters(
     body.push(line)
   }
   push()
+  return sections
+}
 
+function encounterFromSection(
+  section: { heading: string; body: string },
+  notePath: string,
+  notes: CampaignNote[],
+  scope?: string
+): NightEncounter | null {
+  const combatantsLine = combatantsRosterLine(section.body)
+  const combatHeading = isCombatHeading(section.heading)
+  if (!combatantsLine && !combatHeading) return null
+
+  const found: EncounterCombatantRef[] = []
+  const seen = new Set<string>()
+  const add = (ref: EncounterCombatantRef | null): void => {
+    if (!ref || seen.has(ref.notePath)) return
+    seen.add(ref.notePath)
+    found.push(ref)
+  }
+
+  let includeParty = combatHeading
+  if (combatantsLine) {
+    includeParty = /\bparty\b/i.test(combatantsLine)
+    for (const token of combatantsLine.split(/\s*[·|,;]\s*/)) {
+      if (/^party$/i.test(token.trim())) {
+        includeParty = true
+        continue
+      }
+      add(combatantFromQuery(token, notePath, notes))
+    }
+  }
+
+  if (found.length === 0) {
+    const wiki = section.body.matchAll(/\[\[([^\]\n]+)\]\]/g)
+    for (const match of wiki) {
+      const target = parseWiki(match[1]).target
+      if (IMAGE_EXT.has(`.${target.split('.').pop()?.toLowerCase() ?? ''}`)) continue
+      const note = resolveNoteRef(target, notePath, notes)
+      if (!note) continue
+      if (
+        !pathHasFolder(note.relativePath, 'npcs') &&
+        !pathHasFolder(note.relativePath, 'party') &&
+        !pathHasFolder(note.relativePath, 'bestiary')
+      )
+        continue
+      add({
+        notePath: note.relativePath,
+        name: note.stem,
+        count: 1,
+        kind: kindForNote(note)
+      })
+    }
+
+    const table = section.body.matchAll(/\|\s*\*\*([^*|]+)\*\*\s*\|/g)
+    for (const match of table) {
+      const label = match[1].trim()
+      if (SKIP_TABLE_LABELS.test(label.split(/[×x]/)[0].trim())) continue
+      add(combatantFromQuery(label, notePath, notes))
+    }
+  }
+
+  if (found.length === 0 && !includeParty) return null
+  return {
+    id: encounterSectionId(section.heading, scope),
+    heading: section.heading,
+    includeParty,
+    combatants: found
+  }
+}
+
+export function parseNightEncounters(
+  markdown: string,
+  notePath: string,
+  notes: CampaignNote[]
+): NightEncounter[] {
   const encounters: NightEncounter[] = []
-  for (const section of sections) {
-    const combatantsLine = combatantsRosterLine(section.body)
-    const combatHeading = isCombatHeading(section.heading)
-    if (!combatantsLine && !combatHeading) continue
-
-    const found: EncounterCombatantRef[] = []
-    const seen = new Set<string>()
-    const add = (ref: EncounterCombatantRef | null): void => {
-      if (!ref || seen.has(ref.notePath)) return
-      seen.add(ref.notePath)
-      found.push(ref)
+  for (const section of splitEncounterSections(maskFencedCalloutBodies(markdown))) {
+    const encounter = encounterFromSection(section, notePath, notes)
+    if (encounter) encounters.push(encounter)
+  }
+  for (const part of splitCalloutBlocks(markdown)) {
+    if (part.kind !== 'scene' || !part.title?.trim()) continue
+    for (const section of splitEncounterSections(part.markdown)) {
+      const encounter = encounterFromSection(section, notePath, notes, part.title.trim())
+      if (encounter) encounters.push(encounter)
     }
-
-    let includeParty = combatHeading
-    if (combatantsLine) {
-      includeParty = /\bparty\b/i.test(combatantsLine)
-      for (const token of combatantsLine.split(/\s*[·|,;]\s*/)) {
-        if (/^party$/i.test(token.trim())) {
-          includeParty = true
-          continue
-        }
-        add(combatantFromQuery(token, notePath, notes))
-      }
-    }
-
-    if (found.length === 0) {
-      const wiki = section.body.matchAll(/\[\[([^\]\n]+)\]\]/g)
-      for (const match of wiki) {
-        const target = parseWiki(match[1]).target
-        if (IMAGE_EXT.has(`.${target.split('.').pop()?.toLowerCase() ?? ''}`)) continue
-        const note = resolveNoteRef(target, notePath, notes)
-        if (!note) continue
-        if (
-          !pathHasFolder(note.relativePath, 'npcs') &&
-          !pathHasFolder(note.relativePath, 'party') &&
-          !pathHasFolder(note.relativePath, 'bestiary')
-        )
-          continue
-        add({
-          notePath: note.relativePath,
-          name: note.stem,
-          count: 1,
-          kind: kindForNote(note)
-        })
-      }
-
-      const table = section.body.matchAll(/\|\s*\*\*([^*|]+)\*\*\s*\|/g)
-      for (const match of table) {
-        const label = match[1].trim()
-        if (SKIP_TABLE_LABELS.test(label.split(/[×x]/)[0].trim())) continue
-        add(combatantFromQuery(label, notePath, notes))
-      }
-    }
-
-    if (found.length === 0 && !includeParty) continue
-    encounters.push({
-      id: headingId(section.heading),
-      heading: section.heading,
-      includeParty,
-      combatants: found
-    })
   }
   return encounters
 }

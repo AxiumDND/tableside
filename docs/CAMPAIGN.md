@@ -4,18 +4,21 @@ How to structure a campaign folder so Tableside can find notes, art, and combata
 
 Also read:
 
+- [GUIDE.md](GUIDE.md) — how to use the app at the table
 - [TABLE.md](TABLE.md) — DM console, combat, Lookup, player display
-- [RECIPES.md](RECIPES.md) — game night sheet → initiative, Lookup → campaign note (also in-app **Help**)
+- [RECIPES.md](RECIPES.md) — game night sheet → initiative, Lookup → campaign note, music, crawl (also in-app **Help**)
 - [MARKDOWN.md](MARKDOWN.md) — wikilinks, callouts, `statblock` field reference
+- [AI-CAMPAIGN.md](AI-CAMPAIGN.md) — short spec for an AI converting a vault into this layout
 - [WOTC/README.md](../WOTC/README.md) — optional book text for Lookup
 
 ## Folder layout
 
-**New campaign** picks a system pack, then creates this layout (plus `Start Here/Overview.md` and that pack’s Templates). **Open campaign** reads any folder live and creates missing standard folders. A root `Overview.md` moves into **Start Here** if that folder does not already have one. Folder names match case-insensitively (`Party` / `party`, `NPCs` / `npcs`). A folder with no `"system"` field is treated as D&D 5e. Do not change `system` mid-campaign — the templates and tracker will not match.
+**New campaign** picks a system pack and a DM-console look, then creates this layout (plus `Start Here/Overview.md`). **Open campaign** reads any folder live and creates missing standard folders. A root `Overview.md` moves into **Start Here** if that folder does not already have one. Folder names match case-insensitively (`Party` / `party`, `NPCs` / `npcs`). A folder with no `"system"` field is treated as D&D 5e. Do not change `system` mid-campaign — the templates and tracker will not match. `"theme"` is the DM console look (`classic` | `light` | `scifi` | `vampire` | `cyberpunk` | `matrix`); missing field = Classic fantasy. You can change theme later from Start Here.
 
 ```
-campaign.json     campaign name and system pack (`dnd5e` | `pf2e` | `v5`; hidden in the file tree)
+campaign.json     campaign name, system pack (`dnd5e` | `pf2e` | `v5`), and DM theme (hidden in the file tree)
 combat.json       live initiative (hidden)
+audio.json        mixer volumes and last playlists (hidden)
 
 Start Here/       hub notes — opens first if present
   Overview.md     campaign hook and links
@@ -48,7 +51,10 @@ Maps/
   *.md            map notes (fenced map block + DM-only pins + tokens)
 Handouts/         letters and props
   Art/            letter images
-Templates/        blank Player, NPC, Monster, Spell, Gear, Game Night Sheet, Map, Place, Shop, and Faction sheets
+Audio/
+  Music/          mood playlists (Combat, Creepy, General — add more folders as needed)
+  Ambience/       looping beds (Crowd, Rain, or loose files)
+  Sfx/            soundboard one-shots (subfolders become headings)
 Reference/        tracker, calendars, cheat sheets
 Archive/          recaps, transcripts, old drafts
 ```
@@ -67,9 +73,10 @@ Archive/          recaps, transcripts, old drafts
 | `Locations`, `World`, `Setting` | Places |
 | `Faction` | Factions |
 | `Start`, `Getting Started` | Start Here |
+| `Sounds`, `Sound` | Audio |
 | `Z Archive` | Archive |
 
-Skipped directories (not shown / not scanned as notes): `.obsidian`, `.git`, `node_modules`, `WOTC`, `out`, `dist`, and similar.
+Skipped directories (not shown / not scanned as notes): `.obsidian`, `.git`, `node_modules`, `WOTC`, `out`, `dist`, and similar. A leftover `Templates/` folder is hidden from the file tree; right-click **New …** still uses those files if they exist, otherwise the system pack sheets.
 
 Book text for Lookup is **not** part of a campaign. Put PHB / DMG exports in the app `WOTC/` folder.
 
@@ -77,12 +84,27 @@ Book text for Lookup is **not** part of a campaign. Put PHB / DMG exports in the
 
 Right-click a folder in the file tree:
 
-- **New player / NPC / monster / spell / gear / game night sheet / map / place / shop / faction** — copies the matching Templates file and substitutes the name
+- **New player / NPC / monster / spell / gear / game night sheet / map / place / shop / faction** — fills the built-in sheet for that type and substitutes the name
 - **New note** — empty markdown
 - **Add art…** — import images into that folder’s `Art/` (creates `Art/` if needed). Name files like the sheet so portraits attach
 - **Add files…** — import notes, PDFs, or other files into the folder you clicked
 
 Duplicate from a file’s context menu when you need a second vampire spawn sheet, etc.
+
+## Audio
+
+Tableside does not ship music. Put files you own in the campaign:
+
+| Put files here | Mixer strip |
+| --- | --- |
+| `Audio/Music/Combat/` | Combat mood |
+| `Audio/Music/Creepy/` | Creepy mood |
+| `Audio/Music/General/` | General mood |
+| `Audio/Music/<any folder>/` | Extra mood (folder name is the chip) |
+| `Audio/Ambience/` or `Audio/Ambience/Crowd/` | Looping beds |
+| `Audio/Sfx/` or `Audio/Sfx/Doors/` | Soundboard (subfolders are headings) |
+
+Use **Add audio…** on the Music panel, or right-click the folder. Formats: `.mp3` `.ogg` `.wav` `.m4a` `.flac` `.webm` `.aac`. Loose files in `Audio/` itself are ignored. How to play them: [GUIDE.md](GUIDE.md#5-play-music).
 
 ## Wikilinks and images
 
@@ -108,6 +130,14 @@ Supported image types: `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`, `.bmp`.
 > [!readaloud]
 > What you say out loud when the party enters.
 
+> [!crawl] The Siege of Kestrel
+> preface: In an age before memory, beyond the rim of charted stars.
+> ![[Title Mark.png]]
+> It is a time of unrest. Relay stations along the outer belt have gone dark.
+>
+> The outer colonies have gone silent. A courier ship
+> carries the last warning toward the home docks.
+
 > [!gmonly]
 > Secrets, motives, and numbers the players should not see.
 
@@ -129,6 +159,9 @@ Supported image types: `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`, `.bmp`.
 | Type | Aliases | Role |
 | --- | --- | --- |
 | `readaloud` | `flavor` | Player-facing text to speak |
+| `scene` | `beat` | Scene card — art, what could happen, nested read-aloud, cues. Copy a block to add another beat. |
+| `party` | `roster`, `pcs` | Party roster card on a game night sheet — PC links and Focus tonight. |
+| `crawl` | `opening` | Opening crawl. Play (Sci-fi look only) shows a starfield, a far-off line (`preface:`), a generic emblem (or the first `![[image]]`), then a perspective prologue. Optional `music:` path under `Audio/Music/` overrides the mood playlist while that track plays, then resumes it. Write your own words. |
 | `gmonly` | `secret` | Collapsed GM-only block |
 | `infobox` | — | Sheet header / portrait card |
 | `tip`, `warning`, `note`, `info`, `danger`, `success`, `example`, `abstract` | — | Highlighted callout cards |
@@ -162,19 +195,24 @@ actions:
 
 Field list and fallbacks: [MARKDOWN.md](MARKDOWN.md#statblock-fence).
 
-Templates under `Templates/` are a good starting point. You can also **Add to campaign** from Lookup (monster → Bestiary, spell → Spells, weapon → Gear/Weapons, armor → Gear/Armor, gear → Gear/Equipment, magic item → Gear/Magic Items).
+You can also **Add to campaign** from Lookup (monster → Bestiary, spell → Spells, weapon → Gear/Weapons, armor → Gear/Armor, gear → Gear/Equipment, magic item → Gear/Magic Items).
 
 ## Game night sheets and combat
 
-A **game night sheet** is a session note with combat sections that feed the initiative tracker. Right-click **Sessions** → **New game night sheet…** for a Lazy DM 10-step page (characters, strong start, scenes, secrets, locations, NPCs, monsters, treasure, last time, endings). Existing `Party/` sheets are linked in automatically. New files are named `Session N — Game Night Sheet.md`.
+A **game night sheet** is a session note with a Party roster block and scene blocks that hold the night's beats. Right-click **Sessions** → **New game night sheet…** for The Party and Scenes. Existing `Party/` sheets are linked in automatically. New files are named `Session N — Game Night Sheet.md`. Sci-fi campaigns also get an Opening crawl sample — rewrite it, then **Play**.
 
-1. Use a heading that includes `Combat`, `Encounter`, or ⚔️ (skip headings that say `no combat`).
+Wrap PC links in `[!party]…[!/party]` (optional Focus tonight note inside). Scene blocks use `[!scene] Title` … `[!/scene]`. Put optional art with `![[…]]`, a short “what could happen” note, nested `[!readaloud]` for spoken text, nested `[!gmonly]` for hidden prep, optional secrets/treasure/NPC bullets/combat, and an **At the table** cue list (place, map, checks, if they miss, music, sound, leads to). Copy a whole scene block to add another beat.
+
+1. Inside a scene (or at document level on older sheets), use a heading that includes `Combat`, `Encounter`, or ⚔️ (skip headings that say `no combat`).
 2. List combatants with wikilinks to Party / NPCs / Bestiary sheets:
 
 ```markdown
+[!scene] The door
+…
 ## ⚔️ Combat 1 — the door
 
 **Combatants:** [[Vesper]] · [[Cultist]] ×3 · party
+[!/scene]
 ```
 
 - `party` adds every PC under `Party/`.
@@ -185,9 +223,9 @@ If there is no `Combatants:` line, Tableside still picks up wikilinks (and some 
 
 On the game night sheet, use **Add to initiative** / **Add encounter** to load those sheets into Combat. **Add all players** pulls every PC sheet.
 
-Suggested split: long prose in `Session N.md`, numbers and combatant lines in `Session N — Game Night Sheet.md`, cross-linked with wikilinks. A one-shot can put the whole night on one page — Greystead’s `Session 1.md` is that.
+Suggested split: long prose in `Session N.md`, numbers and combatant lines in `Session N — Game Night Sheet.md`, cross-linked with wikilinks. Greystead uses that split — run **Session 1 — Game Night Sheet**, reference **Session 1** for show order and coin.
 
-Full recipe (prep + troubleshooting): [RECIPES.md](RECIPES.md#night-sheet--initiative).
+Full recipe (prep + troubleshooting): [RECIPES.md](RECIPES.md#game-night-sheet--initiative).
 
 ### Player initiative overlay
 
@@ -205,9 +243,10 @@ HP edits stay on the DM console; the overlay never shows numbers. Step-by-step U
 2. Open tonight’s session or game night sheet from the file tree.
 3. Click a map or portrait → **Show to players**.
 4. When a fight starts, add the encounter (or combatants) → roll / enter initiative → advance turns.
-5. Use **Lookup** for conditions, spells, monsters, and weapons (SRD bundled; optional WOTC files extend it).
+5. **Music** plays files from `Audio/Music`, `Audio/Ambience`, and `Audio/Sfx`.
+6. Use **Lookup** for conditions, spells, monsters, and weapons (SRD bundled; optional WOTC files extend it).
 
-Full UI walkthrough: [TABLE.md](TABLE.md).
+How-to: [GUIDE.md](GUIDE.md). Console reference: [TABLE.md](TABLE.md).
 
 ## Examples
 

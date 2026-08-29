@@ -88,7 +88,7 @@ function liveView(
 
 function toolButton(active: boolean): string {
   return active
-    ? 'rounded bg-amber px-2 py-0.5 font-semibold text-ink'
+    ? 'rounded bg-amber px-2 py-0.5 font-semibold text-on-amber'
     : 'rounded border border-line px-2 py-0.5 hover:border-amber'
 }
 
@@ -863,7 +863,7 @@ export default function MapView({
                   }}
                   className={`flex items-center gap-1.5 rounded-full border py-0.5 pr-2 pl-0.5 text-[11px] ${
                     pendingToken?.source === item.source
-                      ? 'border-amber bg-amber text-ink'
+                      ? 'border-amber bg-amber text-on-amber'
                       : 'border-line bg-ink text-parchment hover:border-amber'
                   }`}
                 >
@@ -1030,7 +1030,7 @@ export default function MapView({
                     setDragPos(null)
                   }}
                   className={`absolute z-10 flex h-6 min-w-7 items-center justify-center whitespace-nowrap rounded-full border px-1.5 text-[11px] font-semibold tabular-nums leading-none shadow ${
-                    pin.id === selectedId ? 'border-ink bg-amber text-ink' : 'border-amber bg-ink/90 text-amber'
+                    pin.id === selectedId ? 'border-ink bg-amber text-on-amber' : 'border-amber bg-ink/90 text-amber'
                   }`}
                   style={{
                     left: `${(dragPos?.id === pin.id ? dragPos.x : pin.x) * 100}%`,
@@ -1133,7 +1133,7 @@ export default function MapView({
               />
             </label>
           ) : null}
-          <button type="submit" className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-ink">
+          <button type="submit" className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-on-amber">
             {placing && draft ? 'Place' : 'Save'}
           </button>
         </form>

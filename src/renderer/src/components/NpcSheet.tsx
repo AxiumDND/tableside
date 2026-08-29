@@ -12,6 +12,7 @@ import {
   type CampaignImage
 } from '../lib/images'
 import { extractFacts, extractHook, extractTagline, type ParsedStatblock } from '../lib/statblock'
+import { stripSheetHeader } from '../../../shared/sheetBlock'
 import RollableStatBlock from './RollableStatBlock'
 import SheetArtFrame from './SheetArtFrame'
 
@@ -25,7 +26,9 @@ function titleFrom(path: string, markdown: string): string {
     const text = heading[1].replace(/\*/g, '').trim()
     if (text && !looksLikeEmbed(text)) return text
   }
-  const infobox = /\[!infobox\]\+?[^\S\n]*(.*)$/im.exec(markdown)
+  const infobox = /\[!(?:pc|npc|monster|creature|bestiary|player|character|infobox)\]\+?[^\S\n]*(.*)$/im.exec(
+    markdown
+  )
   const extra = infobox?.[1]?.trim()
   if (extra && !looksLikeEmbed(extra)) return extra
   return (path.split('/').pop() ?? path).replace(/\.[^.]+$/, '')
@@ -46,20 +49,7 @@ function firstImage(markdown: string, path: string, images: CampaignImage[]): st
 }
 
 function stripInfobox(markdown: string): string {
-  const lines = markdown.replace(/\r/g, '').split('\n')
-  const out: string[] = []
-  let i = 0
-  while (i < lines.length) {
-    if (/^\s*>?\s*\[!infobox\]/i.test(lines[i])) {
-      i += 1
-      while (i < lines.length && /^>/.test(lines[i])) i += 1
-      while (i < lines.length && !lines[i].trim()) i += 1
-      continue
-    }
-    out.push(lines[i])
-    i += 1
-  }
-  return out.join('\n')
+  return stripSheetHeader(markdown)
 }
 
 function notesBody(markdown: string): string {
@@ -97,7 +87,8 @@ export default function NpcSheet({
   onSelectImage,
   onAddToCombat,
   onSetPortrait,
-  renderNotes
+  renderNotes,
+  holo = false
 }: {
   path: string
   markdown: string
@@ -108,6 +99,7 @@ export default function NpcSheet({
   onAddToCombat?: () => void
   onSetPortrait?: (image: CreateNoteMapImage) => Promise<void>
   renderNotes?: (markdown: string) => ReactNode
+  holo?: boolean
 }) {
   const title = titleFrom(path, markdown)
   const tagline = extractTagline(markdown)
@@ -143,6 +135,7 @@ export default function NpcSheet({
             images={images}
             onSelectImage={onSelectImage}
             onSetPortrait={onSetPortrait}
+            holo={holo}
             onSrdError={() => {
               if (srdSrc) setSrdFailed(true)
             }}

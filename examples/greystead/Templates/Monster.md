@@ -5,14 +5,15 @@
 -->
 # Monster Name
 
-> [!infobox]+
-> ![[Monster Name.png]]
->
-> | | |
-> |---|---|
-> | **CR** | 1 |
-> | **Role** | Pressure / boss / minion |
-> | **Source** | MM / custom |
+[!monster]
+![[Monster Name.png]]
+
+| | |
+|---|---|
+| **CR** | 1 |
+| **Role** | Pressure / boss / minion |
+| **Source** | MM / custom |
+[!/monster]
 
 ```statblock
 layout: Basic 5e Layout
@@ -43,5 +44,6 @@ actions:
 
 Where it appears. What to telegraph. When to cut it if the fight runs long.
 
-> [!gmonly]
-> Tuning: add or drop HP, skip a recharge, or have it flee.
+[!gmonly]
+Tuning: add or drop HP, skip a recharge, or have it flee.
+[!/gmonly]

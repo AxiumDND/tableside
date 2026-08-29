@@ -1,17 +1,18 @@
 # *Vesper*
 
-> [!infobox]+
-> ![[Vesper.webp]]
->
-> ### *Priest of the Pale Well · the chant is the work*
->
-> | | |
-> |---|---|
-> | **Role** | Obstacle |
-> | **Faction** | [[The Pale Well]] |
-> | **Location** | [[Pale Well Caves]] |
-> | **Status** | Alive |
-> | **CR** | 1/4 |
+[!npc]
+![[Vesper.webp]]
+
+### *Priest of the Pale Well · the chant is the work*
+
+| | |
+|---|---|
+| **Role** | Obstacle |
+| **Faction** | [[The Pale Well]] |
+| **Location** | [[Pale Well Caves]] |
+| **Status** | Alive |
+| **CR** | 1/4 |
+[!/npc]
 
 ```statblock
 layout: Basic 5e Layout
@@ -47,5 +48,6 @@ actions:
 
 - **Quotes** — *"The well was always here."*
 
-> [!gmonly]
-> Priest Acolyte numbers. Drop him or break the circle to stop it. If captured, he smiles. He does not run. Sleeve: [[Hymn — The Nine Mouths]]. He will say the well was always here. He will not say the other eight.
+[!gmonly]
+Priest Acolyte numbers. Drop him or break the circle to stop it. If captured, he smiles. He does not run. Sleeve: [[Hymn — The Nine Mouths]]. He will say the well was always here. He will not say the other eight.
+[!/gmonly]

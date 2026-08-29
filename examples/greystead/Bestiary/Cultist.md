@@ -1,12 +1,12 @@
 # Cultist
 
-> [!infobox]+
->
-> | | |
-> |---|---|
-> | **CR** | 1/8 |
-> | **Role** | Minion |
-> | **Source** | SRD 5.2 |
+[!monster]
+| | |
+|---|---|
+| **CR** | 1/8 |
+| **Role** | Minion |
+| **Source** | SRD 5.2 |
+[!/monster]
 
 ```statblock
 layout: Basic 5e Layout
@@ -34,5 +34,6 @@ actions:
 
 *Grey hems under bandit coats. They fold if the priest drops.*
 
-> [!gmonly]
-> Use ×2 on the ridge, ×3 in E. Named sheets: [[Kell]], [[Ash]].
+[!gmonly]
+Use ×2 on the ridge, ×3 in E. Named sheets: [[Kell]], [[Ash]].
+[!/gmonly]

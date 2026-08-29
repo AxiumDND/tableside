@@ -1,4 +1,5 @@
 import type { CampaignLibraryFolder } from '../../../shared/campaignLayout'
+import { serializeSheetHeader } from '../../../shared/sheetBlock'
 import { layoutIdForSource } from '../../../shared/systemPack'
 import type { SrdRecord } from './srd'
 import { srdMonsterToBestiaryMarkdown } from './srd'
@@ -42,25 +43,17 @@ function sourceLine(record: SrdRecord): string {
   return label ? `\n*From ${label}. Edit this campaign copy.*\n` : ''
 }
 
-function cell(value: string): string {
-  return value.replace(/\|/g, '\\|')
-}
-
-function infoboxMarkdown(imageFile: string | null, tagline: string, fields: { label: string; value: string }[]): string {
-  const lines = ['> [!infobox]+']
-  if (imageFile) lines.push(`> ![[${imageFile}]]`)
-  lines.push('>')
-  if (tagline) {
-    lines.push(`> ### *${tagline}*`, '>')
-  }
-  const filled = fields.filter((field) => field.value)
-  if (filled.length > 0) {
-    lines.push('> | | |', '> |---|---|')
-    for (const field of filled) {
-      lines.push(`> | **${field.label}** | ${cell(field.value)} |`)
-    }
-  }
-  return lines.join('\n')
+function sheetHeaderMarkdown(
+  kind: 'spell' | 'gear',
+  imageFile: string | null,
+  tagline: string,
+  fields: { label: string; value: string }[]
+): string {
+  return serializeSheetHeader(kind, {
+    imageFile,
+    tagline,
+    rows: fields
+  })
 }
 
 function spellMarkdown(record: SrdRecord): string {
@@ -85,7 +78,7 @@ function spellMarkdown(record: SrdRecord): string {
   const lines = [
     `# ${record.name}`,
     '',
-    infoboxMarkdown(school ? `${school}.webp` : null, typeLine, [
+    sheetHeaderMarkdown('spell', school ? `${school}.webp` : null, typeLine, [
       { label: 'Casting Time', value: castingValue },
       { label: 'Range', value: range },
       { label: 'Components', value: components },
@@ -109,7 +102,7 @@ function itemMarkdown(record: SrdRecord): string {
   const lines = [
     `# ${record.name}`,
     '',
-    infoboxMarkdown(`${record.name}.webp`, tagline, fields)
+    sheetHeaderMarkdown('gear', `${record.name}.webp`, tagline, fields)
   ]
   const desc = String(data.desc ?? '').trim()
   if (desc) lines.push('', desc)

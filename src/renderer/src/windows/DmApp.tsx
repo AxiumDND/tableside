@@ -9,22 +9,37 @@ import type {
   PlayerState,
   RecentCampaign
 } from '../../../shared/types'
+import { emptyMixerClock, emptyMixerState, mixerIsActive } from '../../../shared/audio'
+import { crawlMusicStartDelayMs, CRAWL_SYNC_MS, CRAWL_FADE_OUT_MS } from '../../../shared/openingCrawl'
+import { legendMusicStartDelayMs, LEGEND_SYNC_MS } from '../../../shared/openingLegend'
 import { emptyCombat, emptyPlayerState } from '../../../shared/types'
+import {
+  applyThemeToDocument,
+  digitalRainEnabled,
+  holoPortraitsEnabled,
+  resolveConsoleTheme,
+  type ThemeId,
+  type ThemeOptions
+} from '../../../shared/theme'
 import { getSystemPack, type SystemId } from '../../../shared/systemPack'
 import CampaignFiles, {
   campaignFileUrl,
   fileKind,
   type FileKind
 } from '../components/CampaignFiles'
+import AudioEngine from '../components/AudioEngine'
 import CombatTracker from '../components/CombatTracker'
+import MusicPanel from '../components/MusicPanel'
 import DiceTray, { DiceLogProvider } from '../components/DiceTray'
 import HelpPanel from '../components/HelpPanel'
 import PlayerPreview from '../components/PlayerPreview'
 import RulesSearch from '../components/RulesSearch'
 import SessionNotes, { type EncounterAddItem } from '../components/SessionNotes'
 import SystemPicker from '../components/SystemPicker'
+import ThemeSetup from '../components/ThemeSetup'
+import DigitalRain from '../components/DigitalRain'
 import { combatToPlayerInitiative, combatProfileFor, advanceCombatTurn, rollInitiativeFor } from '../lib/combat'
-import { flattenImages, imageTitle, isImagePath, isPdfPath } from '../lib/images'
+import { flattenImages, flattenVideos, imageTitle, isImagePath, isPdfPath } from '../lib/images'
 import {
   allPartyNotes,
   bestiaryNotes,
@@ -82,33 +97,74 @@ function firstNote(nodes: CampaignTreeNode[]): string {
 export default function DmApp() {
   const [campaign, setCampaign] = useState<CampaignInfo | null>(null)
   const [player, setPlayer] = useState<PlayerState>(emptyPlayerState())
+  const [activeCrawl, setActiveCrawl] = useState<{ title?: string; body: string } | null>(null)
+  const [activeLegend, setActiveLegend] = useState<{ title?: string; body: string } | null>(null)
+  const [activeGallery, setActiveGallery] = useState<{ title?: string; imageRefs: string[] } | null>(null)
+  const [activeVideo, setActiveVideo] = useState<{ title?: string; videoRef: string } | null>(null)
+  const [mixer, setMixer] = useState(emptyMixerState())
+  const [mixerClock, setMixerClock] = useState(() => emptyMixerClock())
   const [displays, setDisplays] = useState<DisplayInfo[]>([])
-  const [rightPanel, setRightPanel] = useState<'combat' | 'lookup' | 'help' | null>(null)
+  const [rightPanel, setRightPanel] = useState<'combat' | 'lookup' | 'help' | 'music' | null>(null)
   const [openPath, setOpenPath] = useState('')
   const [openKind, setOpenKind] = useState<FileKind>('note')
   const [selectedImage, setSelectedImage] = useState<string | null>(null)
   const [history, setHistory] = useState<{ path: string; kind: FileKind }[]>([])
   const [playerDisplayId, setPlayerDisplayId] = useState<number | ''>('')
   const [showPlayerPreview, setShowPlayerPreview] = useState(true)
+  const [theme, setTheme] = useState<ThemeId>('classic')
+  const [playerWindowOpen, setPlayerWindowOpen] = useState(false)
   const [recentCampaigns, setRecentCampaigns] = useState<RecentCampaign[]>([])
-  const [pickingSystem, setPickingSystem] = useState(false)
+  const [campaignSetup, setCampaignSetup] = useState<null | { step: 'system' } | { step: 'theme'; system: SystemId }>(
+    null
+  )
   const [updateNotice, setUpdateNotice] = useState<AppUpdateNotice | null>(null)
   const playerSrcRef = useRef(player.imageSrc)
   const mapLiveRef = useRef<{ src: string; title: string; view: PlayerMapView } | null>(null)
   const playerLiveRef = useRef(false)
+  const crawlMusicTimerRef = useRef<number | null>(null)
+  const crawlMusicEndTimerRef = useRef<number | null>(null)
+  const crawlSettleTimerRef = useRef<number | null>(null)
+  const galleryAdvanceTimerRef = useRef<number | null>(null)
+  const prologueHasEndImageRef = useRef(false)
   const skipRestoredCombatShow = useRef(true)
   playerSrcRef.current = player.imageSrc
 
+  function clearCrawlMusicTimer(): void {
+    if (crawlMusicTimerRef.current != null) {
+      window.clearTimeout(crawlMusicTimerRef.current)
+      crawlMusicTimerRef.current = null
+    }
+    if (crawlMusicEndTimerRef.current != null) {
+      window.clearTimeout(crawlMusicEndTimerRef.current)
+      crawlMusicEndTimerRef.current = null
+    }
+    if (crawlSettleTimerRef.current != null) {
+      window.clearTimeout(crawlSettleTimerRef.current)
+      crawlSettleTimerRef.current = null
+    }
+  }
+
+  function clearGalleryAdvanceTimer(): void {
+    if (galleryAdvanceTimerRef.current != null) {
+      window.clearInterval(galleryAdvanceTimerRef.current)
+      galleryAdvanceTimerRef.current = null
+    }
+  }
+
   const refresh = useCallback(async () => {
-    const [info, state, screens, prefs] = await Promise.all([
+    const [info, state, mix, screens, prefs, windowOpen] = await Promise.all([
       window.tabledm.getCampaign(),
       window.tabledm.getPlayerState(),
+      window.tabledm.getMixer(),
       window.tabledm.getDisplays(),
-      window.tabledm.getSettings()
+      window.tabledm.getSettings(),
+      window.tabledm.getPlayerWindowOpen?.() ?? Promise.resolve(false)
     ])
     setCampaign(info)
     setPlayer(state)
+    setMixer(mix)
     setDisplays(screens)
+    setPlayerWindowOpen(Boolean(windowOpen))
     const saved = prefs.playerDisplayId
     setPlayerDisplayId(
       saved != null && screens.some((d) => d.id === saved)
@@ -116,11 +172,15 @@ export default function DmApp() {
         : (screens.find((d) => !d.dm)?.id ?? screens[0]?.id ?? '')
     )
     setShowPlayerPreview(prefs.showPlayerPreview !== false)
+    const nextTheme = resolveConsoleTheme(info?.theme, prefs.theme)
+    setTheme(nextTheme)
+    applyThemeToDocument(nextTheme)
     setRecentCampaigns(prefs.recentCampaigns ?? [])
     if (
       prefs.rightPanel === 'combat' ||
       prefs.rightPanel === 'lookup' ||
       prefs.rightPanel === 'help' ||
+      prefs.rightPanel === 'music' ||
       prefs.rightPanel === null
     ) {
       setRightPanel(prefs.rightPanel ?? null)
@@ -139,13 +199,27 @@ export default function DmApp() {
   }, [openPath])
 
   useEffect(() => {
+    if (!player.crawl) setActiveCrawl(null)
+  }, [player.crawl])
+
+  useEffect(() => {
     playerLiveRef.current = false
     void window.tabledm.clearPlayer().then(setPlayer)
   }, [])
 
   useEffect(() => {
+    if (digitalRainEnabled(theme, campaign?.digitalRain)) {
+      document.documentElement.dataset.digitalRain = 'on'
+    } else {
+      delete document.documentElement.dataset.digitalRain
+    }
+  }, [theme, campaign?.digitalRain])
+
+  useEffect(() => {
     void refresh()
     const stopPlayer = window.tabledm.onPlayerState(setPlayer)
+    const stopMixer = window.tabledm.onMixerState(setMixer)
+    const stopPlayerWindow = window.tabledm.onPlayerWindow?.(setPlayerWindowOpen)
     const stopUpdate = window.tabledm.onAppUpdate(setUpdateNotice)
     const stopDisplays = window.tabledm.onDisplaysChanged((screens) => {
       setDisplays(screens)
@@ -155,13 +229,22 @@ export default function DmApp() {
     })
     return () => {
       stopPlayer()
+      stopMixer()
+      stopPlayerWindow?.()
       stopUpdate()
       stopDisplays()
     }
   }, [refresh])
 
-  function applyCampaign(info: CampaignInfo | null): void {
+  function applyConsoleTheme(next: ThemeId): void {
+    setTheme(next)
+    applyThemeToDocument(next)
+    void window.tabledm.saveSettings({ theme: next })
+  }
+
+  function applyCampaign(info: CampaignInfo | null, appTheme?: string | null): void {
     setCampaign(info)
+    applyConsoleTheme(resolveConsoleTheme(info?.theme, appTheme))
     const note = info ? firstNote(info.tree) : ''
     setOpenPath(note)
     setOpenKind('note')
@@ -180,25 +263,51 @@ export default function DmApp() {
     const info = await window.tabledm.pickCampaignFolder()
     applyCampaign(info)
     setPlayer(await window.tabledm.getPlayerState())
+    setMixer(await window.tabledm.getMixer())
     setRecentCampaigns((await window.tabledm.getSettings()).recentCampaigns ?? [])
   }
 
-  async function newCampaign(system?: SystemId): Promise<void> {
+  async function newCampaign(system?: SystemId, themeId?: ThemeId, options?: ThemeOptions): Promise<void> {
     if (!system) {
-      setPickingSystem(true)
+      setCampaignSetup({ step: 'system' })
       return
     }
-    setPickingSystem(false)
-    const info = await window.tabledm.newCampaign(system)
-    applyCampaign(info)
+    if (!themeId) {
+      setCampaignSetup({ step: 'theme', system })
+      return
+    }
+    setCampaignSetup(null)
+    const info = await window.tabledm.newCampaign(system, themeId, options)
+    applyCampaign(info, themeId)
     setPlayer(await window.tabledm.getPlayerState())
+    setMixer(await window.tabledm.getMixer())
     setRecentCampaigns((await window.tabledm.getSettings()).recentCampaigns ?? [])
+  }
+
+  async function changeCampaignTheme(next: ThemeId): Promise<void> {
+    applyConsoleTheme(next)
+    if (!campaign) return
+    const updated = await window.tabledm.setCampaignTheme(next)
+    if (updated) setCampaign(updated)
+  }
+
+  async function changeHoloPortraits(enabled: boolean): Promise<void> {
+    if (!campaign) return
+    const updated = await window.tabledm.setCampaignHoloPortraits(enabled)
+    if (updated) setCampaign(updated)
+  }
+
+  async function changeDigitalRain(enabled: boolean): Promise<void> {
+    if (!campaign) return
+    const updated = await window.tabledm.setCampaignDigitalRain(enabled)
+    if (updated) setCampaign(updated)
   }
 
   async function openSample(): Promise<void> {
     const info = await window.tabledm.openSampleCampaign()
     applyCampaign(info)
     setPlayer(await window.tabledm.getPlayerState())
+    setMixer(await window.tabledm.getMixer())
     setRecentCampaigns((await window.tabledm.getSettings()).recentCampaigns ?? [])
   }
 
@@ -206,6 +315,7 @@ export default function DmApp() {
     const info = await window.tabledm.openCampaignPath(folder)
     applyCampaign(info)
     setPlayer(await window.tabledm.getPlayerState())
+    setMixer(await window.tabledm.getMixer())
     const prefs = await window.tabledm.getSettings()
     setRecentCampaigns(prefs.recentCampaigns ?? [])
   }
@@ -277,8 +387,216 @@ export default function DmApp() {
     void window.tabledm.showImage(src, title, view).then(setPlayer)
   }
 
+  async function playCrawl(
+    title: string | undefined,
+    body: string,
+    logoSrc?: string | null,
+    preface?: string | null,
+    musicPath?: string | null,
+    endSrc?: string | null
+  ): Promise<void> {
+    playerLiveRef.current = false
+    clearCrawlMusicTimer()
+    const hasEnd = Boolean(endSrc?.trim())
+    prologueHasEndImageRef.current = hasEnd
+    setActiveLegend(null)
+    setActiveGallery(null)
+    setActiveVideo(null)
+    clearGalleryAdvanceTimer()
+    setMixer(await window.tabledm.mixerArmCrawlMusic())
+    const track = musicPath?.trim()
+    const musicDelay = crawlMusicStartDelayMs(preface)
+    if (track) {
+      crawlMusicTimerRef.current = window.setTimeout(() => {
+        crawlMusicTimerRef.current = null
+        void window.tabledm.mixerPlayCrawlMusic(track).then(setMixer)
+      }, musicDelay)
+    }
+    // Fade crawl music (and resume mood) when the timed crawl ends — even if the file is longer.
+    crawlMusicEndTimerRef.current = window.setTimeout(() => {
+      crawlMusicEndTimerRef.current = null
+      void window.tabledm.mixerStopCrawlMusic().then(setMixer)
+    }, musicDelay + CRAWL_SYNC_MS)
+    // After fade-out / end-image fade-in, restore Play on the card.
+    crawlSettleTimerRef.current = window.setTimeout(() => {
+      crawlSettleTimerRef.current = null
+      setActiveCrawl(null)
+      if (!prologueHasEndImageRef.current) {
+        void window.tabledm.clearPlayer().then(setPlayer)
+      }
+    }, musicDelay + CRAWL_SYNC_MS + CRAWL_FADE_OUT_MS)
+    setActiveCrawl({ title, body })
+    setPlayer(await window.tabledm.showCrawl({ title, body, logoSrc, preface, endSrc }))
+  }
+
+  async function playLegend(
+    title: string | undefined,
+    body: string,
+    logoSrc?: string | null,
+    preface?: string | null,
+    musicPath?: string | null,
+    endSrc?: string | null
+  ): Promise<void> {
+    playerLiveRef.current = false
+    clearCrawlMusicTimer()
+    const hasEnd = Boolean(endSrc?.trim())
+    prologueHasEndImageRef.current = hasEnd
+    setActiveCrawl(null)
+    setActiveGallery(null)
+    setActiveVideo(null)
+    clearGalleryAdvanceTimer()
+    setMixer(await window.tabledm.mixerArmCrawlMusic())
+    const track = musicPath?.trim()
+    const musicDelay = legendMusicStartDelayMs(preface)
+    if (track) {
+      crawlMusicTimerRef.current = window.setTimeout(() => {
+        crawlMusicTimerRef.current = null
+        void window.tabledm.mixerPlayCrawlMusic(track).then(setMixer)
+      }, musicDelay)
+    }
+    crawlMusicEndTimerRef.current = window.setTimeout(() => {
+      crawlMusicEndTimerRef.current = null
+      void window.tabledm.mixerStopCrawlMusic().then(setMixer)
+    }, musicDelay + LEGEND_SYNC_MS)
+    crawlSettleTimerRef.current = window.setTimeout(() => {
+      crawlSettleTimerRef.current = null
+      setActiveLegend(null)
+      if (!prologueHasEndImageRef.current) {
+        void window.tabledm.clearPlayer().then(setPlayer)
+      }
+    }, musicDelay + LEGEND_SYNC_MS + CRAWL_FADE_OUT_MS)
+    setActiveLegend({ title, body })
+    setPlayer(await window.tabledm.showLegend({ title, body, logoSrc, preface, endSrc }))
+  }
+
+  async function stopCrawl(): Promise<void> {
+    clearCrawlMusicTimer()
+    prologueHasEndImageRef.current = false
+    setActiveCrawl(null)
+    setMixer(await window.tabledm.mixerStopCrawlMusic())
+    setPlayer(await window.tabledm.stopCrawl())
+  }
+
+  async function stopLegend(): Promise<void> {
+    clearCrawlMusicTimer()
+    prologueHasEndImageRef.current = false
+    setActiveLegend(null)
+    setMixer(await window.tabledm.mixerStopCrawlMusic())
+    setPlayer(await window.tabledm.stopLegend())
+  }
+
+  async function playGallery(
+    title: string | undefined,
+    slides: { src: string; label?: string }[],
+    imageRefs: string[],
+    intervalSec?: number | null,
+    loop = true,
+    showTitle = false
+  ): Promise<void> {
+    playerLiveRef.current = false
+    clearCrawlMusicTimer()
+    clearGalleryAdvanceTimer()
+    setActiveCrawl(null)
+    setActiveLegend(null)
+    setActiveVideo(null)
+    setActiveGallery({ title, imageRefs })
+    setMixer(await window.tabledm.mixerStopCrawlMusic())
+    const state = await window.tabledm.showGallery({
+      title,
+      slides,
+      intervalSec: intervalSec && intervalSec > 0 ? intervalSec : null,
+      loop,
+      showTitle
+    })
+    setPlayer(state)
+    const sec = intervalSec && intervalSec > 0 ? intervalSec : null
+    if (sec && slides.length > 1) {
+      galleryAdvanceTimerRef.current = window.setInterval(() => {
+        void window.tabledm.getPlayerState().then((current) => {
+          const g = current.gallery
+          if (!g) {
+            clearGalleryAdvanceTimer()
+            return
+          }
+          const last = g.slides.length - 1
+          if (g.index >= last) {
+            if (g.loop !== false) {
+              void window.tabledm.gallerySetIndex(0).then(setPlayer)
+              return
+            }
+            clearGalleryAdvanceTimer()
+            return
+          }
+          void window.tabledm.gallerySetIndex(g.index + 1).then(setPlayer)
+        })
+      }, sec * 1000)
+    }
+  }
+
+  async function galleryPrev(): Promise<void> {
+    const g = player.gallery
+    if (!g || g.slides.length === 0) return
+    if (g.index <= 0) {
+      if (g.loop === false) return
+      setPlayer(await window.tabledm.gallerySetIndex(g.slides.length - 1))
+      return
+    }
+    setPlayer(await window.tabledm.gallerySetIndex(g.index - 1))
+  }
+
+  async function galleryNext(): Promise<void> {
+    const g = player.gallery
+    if (!g || g.slides.length === 0) return
+    if (g.index >= g.slides.length - 1) {
+      if (g.loop === false) return
+      setPlayer(await window.tabledm.gallerySetIndex(0))
+      return
+    }
+    setPlayer(await window.tabledm.gallerySetIndex(g.index + 1))
+  }
+
+  async function stopGallery(): Promise<void> {
+    clearGalleryAdvanceTimer()
+    setActiveGallery(null)
+    setPlayer(await window.tabledm.stopGallery())
+  }
+
+  async function playVideo(
+    title: string | undefined,
+    src: string,
+    muted: boolean,
+    videoRef: string
+  ): Promise<void> {
+    playerLiveRef.current = false
+    clearCrawlMusicTimer()
+    clearGalleryAdvanceTimer()
+    setActiveCrawl(null)
+    setActiveLegend(null)
+    setActiveGallery(null)
+    setActiveVideo({ title, videoRef })
+    if (!muted) {
+      setMixer(await window.tabledm.mixerArmCrawlMusic())
+    } else {
+      setMixer(await window.tabledm.mixerStopCrawlMusic())
+    }
+    setPlayer(await window.tabledm.showVideo({ title, src, muted }))
+  }
+
+  async function stopVideo(): Promise<void> {
+    setActiveVideo(null)
+    setMixer(await window.tabledm.mixerStopCrawlMusic())
+    setPlayer(await window.tabledm.stopVideo())
+  }
+
   async function clearPlayer(): Promise<void> {
     playerLiveRef.current = false
+    clearCrawlMusicTimer()
+    clearGalleryAdvanceTimer()
+    setActiveCrawl(null)
+    setActiveLegend(null)
+    setActiveGallery(null)
+    setActiveVideo(null)
+    setMixer(await window.tabledm.mixerStopCrawlMusic())
     setPlayer(await window.tabledm.clearPlayer())
   }
 
@@ -544,6 +862,7 @@ export default function DmApp() {
 
   return (
     <DiceLogProvider>
+    <AudioEngine state={mixer} onClock={setMixerClock} />
     <div className="flex h-full flex-col bg-ink text-parchment">
       <header className="flex items-center gap-3 border-b border-line bg-panel px-4 py-2">
         <div>
@@ -572,7 +891,7 @@ export default function DmApp() {
           type="button"
           onClick={() => changeRightPanel((open) => (open === 'lookup' ? null : 'lookup'))}
           className={`rounded px-3 py-1 text-sm ${
-            rightPanel === 'lookup' ? 'bg-amber font-semibold text-ink' : 'border border-line hover:border-amber'
+            rightPanel === 'lookup' ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
           }`}
         >
           Lookup
@@ -583,7 +902,7 @@ export default function DmApp() {
             changeRightPanel((open) => (open === 'combat' ? null : 'combat'))
           }}
           className={`rounded px-3 py-1 text-sm ${
-            rightPanel === 'combat' ? 'bg-amber font-semibold text-ink' : 'border border-line hover:border-amber'
+            rightPanel === 'combat' ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
           }`}
         >
           Combat
@@ -591,14 +910,28 @@ export default function DmApp() {
         </button>
         <button
           type="button"
-          onClick={() => changeRightPanel((open) => (open === 'help' ? null : 'help'))}
+          onClick={() => {
+            changeRightPanel((open) => (open === 'music' ? null : 'music'))
+            void window.tabledm.getMixer().then(setMixer)
+          }}
           className={`rounded px-3 py-1 text-sm ${
-            rightPanel === 'help' ? 'bg-amber font-semibold text-ink' : 'border border-line hover:border-amber'
+            rightPanel === 'music' ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
           }`}
         >
-          Help
+          Music
+          {mixerIsActive(mixer) ? ' ·' : ''}
+        </button>
+        <button
+          type="button"
+          onClick={() => changeRightPanel((open) => (open === 'help' ? null : 'help'))}
+          className={`rounded px-3 py-1 text-sm ${
+            rightPanel === 'help' ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
+          }`}
+        >
+          Help & settings
         </button>
       </header>
+      <div>
       <UpdateBanner
         notice={updateNotice}
         onUpdate={() => void window.tabledm.startUpdate()}
@@ -609,18 +942,27 @@ export default function DmApp() {
           setUpdateNotice(null)
         }}
       />
+      </div>
 
-      <div className="flex min-h-0 flex-1">
-        <div className="flex w-64 shrink-0 flex-col border-r border-line">
+      <div className="relative flex min-h-0 flex-1">
+        {digitalRainEnabled(theme, campaign?.digitalRain) ? <DigitalRain /> : null}
+        <div className="relative z-[1] flex w-64 shrink-0 flex-col border-r border-line">
           <PlayerPreview
             state={player}
             hidden={!showPlayerPreview}
+            playerWindowOpen={playerWindowOpen}
             displays={displays}
             playerDisplayId={playerDisplayId}
             onClear={() => void clearPlayer()}
+            onCloseWindow={() => {
+              void window.tabledm.closePlayerWindow().then(setPlayerWindowOpen)
+            }}
             onPickDisplay={(id) => {
               setPlayerDisplayId(id)
-              void window.tabledm.placePlayerOnDisplay(id).then(setDisplays)
+              void window.tabledm.placePlayerOnDisplay(id).then((screens) => {
+                setDisplays(screens)
+                void window.tabledm.getPlayerWindowOpen().then(setPlayerWindowOpen)
+              })
             }}
             onRefreshDisplays={async () => {
               setDisplays(await window.tabledm.getDisplays())
@@ -655,20 +997,51 @@ export default function DmApp() {
               }}
             />
           ) : (
-            <div className="flex-1 bg-ink px-3 py-4 text-xs text-muted">Open a campaign to see files.</div>
+            <div className="matrix-rain-well flex-1 px-3 py-4 text-xs text-muted">Open a campaign to see files.</div>
           )}
           <DiceTray />
         </div>
+        <div className="relative z-[1] flex min-h-0 min-w-0 flex-1">
         <SessionNotes
           path={openPath}
           kind={openKind}
-          imageUrl={openKind === 'image' || openKind === 'pdf' ? campaignFileUrl(openPath) : undefined}
+          imageUrl={
+            openKind === 'image' || openKind === 'pdf' || openKind === 'audio'
+              ? campaignFileUrl(openPath)
+              : undefined
+          }
           images={campaign ? flattenImages(campaign.tree) : []}
           notes={campaign ? flattenNotes(campaign.tree) : []}
           selectedImage={selectedImage}
           disabled={!campaign}
           onSelectImage={setSelectedImage}
           onShowToPlayers={() => void showSelectedToPlayers()}
+          onPlayCrawl={(title, body, logoSrc, preface, musicPath, endSrc) =>
+            void playCrawl(title, body, logoSrc, preface, musicPath, endSrc)
+          }
+          onStopCrawl={() => void stopCrawl()}
+          activeCrawl={activeCrawl}
+          playerCrawl={player.crawl}
+          onPlayLegend={(title, body, logoSrc, preface, musicPath, endSrc) =>
+            void playLegend(title, body, logoSrc, preface, musicPath, endSrc)
+          }
+          onStopLegend={() => void stopLegend()}
+          activeLegend={activeLegend}
+          playerLegend={player.legend}
+          onPlayGallery={(title, slides, imageRefs, intervalSec, loop, showTitle) =>
+            void playGallery(title, slides, imageRefs, intervalSec, loop, showTitle)
+          }
+          onStopGallery={() => void stopGallery()}
+          onGalleryPrev={() => void galleryPrev()}
+          onGalleryNext={() => void galleryNext()}
+          activeGallery={activeGallery}
+          playerGallery={player.gallery}
+          onPlayVideo={(title, src, muted, videoRef) => void playVideo(title, src, muted, videoRef)}
+          onStopVideo={() => void stopVideo()}
+          activeVideo={activeVideo}
+          playerVideo={player.video}
+          videos={campaign ? flattenVideos(campaign.tree) : []}
+          musicTracks={mixer.library.music.flatMap((playlist) => playlist.tracks)}
           onMapLiveView={handleMapLiveView}
           onOpenNote={openNote}
           onBack={history.length > 0 ? goBack : undefined}
@@ -688,7 +1061,21 @@ export default function DmApp() {
           recentCampaigns={recentCampaigns}
           onOpenRecent={(folder) => void openRecent(folder)}
           shopsEnabled={getSystemPack(campaign?.system).shopsEnabled}
+          theme={theme}
+          onThemeChange={(next) => void changeCampaignTheme(next)}
+          holoPortraits={holoPortraitsEnabled(theme, campaign?.holoPortraits)}
+          digitalRain={digitalRainEnabled(theme, campaign?.digitalRain)}
+          onHoloPortraitsChange={campaign ? (enabled) => void changeHoloPortraits(enabled) : undefined}
+          onDigitalRainChange={campaign ? (enabled) => void changeDigitalRain(enabled) : undefined}
         />
+        {rightPanel === 'music' ? (
+          <MusicPanel
+            state={mixer}
+            clock={mixerClock}
+            disabled={!campaign}
+            onClose={() => changeRightPanel(null)}
+          />
+        ) : null}
         {rightPanel === 'combat' ? (
           <CombatTracker
             combat={combat}
@@ -725,11 +1112,25 @@ export default function DmApp() {
             updateNotice={updateNotice}
             onCheckUpdate={() => void window.tabledm.checkForUpdate(true)}
             onStartUpdate={() => void window.tabledm.startUpdate()}
+            theme={theme}
+            onThemeChange={(next) => void changeCampaignTheme(next)}
+            holoPortraits={holoPortraitsEnabled(theme, campaign?.holoPortraits)}
+            onHoloPortraitsChange={campaign ? (enabled) => void changeHoloPortraits(enabled) : undefined}
+            digitalRain={digitalRainEnabled(theme, campaign?.digitalRain)}
+            onDigitalRainChange={campaign ? (enabled) => void changeDigitalRain(enabled) : undefined}
           />
         ) : null}
+        </div>
       </div>
-      {pickingSystem ? (
-        <SystemPicker onPick={(id) => void newCampaign(id)} onCancel={() => setPickingSystem(false)} />
+      {campaignSetup?.step === 'system' ? (
+        <SystemPicker onPick={(id) => void newCampaign(id)} onCancel={() => setCampaignSetup(null)} />
+      ) : null}
+      {campaignSetup?.step === 'theme' ? (
+        <ThemeSetup
+          onPick={(id, options) => void newCampaign(campaignSetup.system, id, options)}
+          onBack={() => setCampaignSetup({ step: 'system' })}
+          onCancel={() => setCampaignSetup(null)}
+        />
       ) : null}
     </div>
     </DiceLogProvider>

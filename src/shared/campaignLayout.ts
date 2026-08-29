@@ -17,7 +17,23 @@ export const SKIP_DIR_NAMES = new Set([
   'additional books'
 ])
 
-export const HIDDEN_FILE_NAMES = new Set(['campaign.json', 'combat.json', 'readme.md'])
+/** Hide local book dumps and scratch asset vaults from the campaign file tree. */
+export function shouldSkipCampaignDir(name: string): boolean {
+  if (SKIP_DIR_NAMES.has(name) || isHiddenCampaignFile(name)) return true
+  const folded = name.toLowerCase().trim()
+  return folded.startsWith('zz_') || folded.startsWith('zz ') || folded.startsWith('adventure book')
+}
+
+export function isTemplatesFolderName(name: string): boolean {
+  return foldFolderName(name) === 'templates'
+}
+
+/** File tree only — a leftover Templates/ folder is still used when creating notes. */
+export function shouldHideFromFileTree(name: string): boolean {
+  return shouldSkipCampaignDir(name) || isTemplatesFolderName(name)
+}
+
+export const HIDDEN_FILE_NAMES = new Set(['campaign.json', 'combat.json', 'audio.json', 'readme.md'])
 
 export const FOLDER_ORDER = [
   'start here',
@@ -31,7 +47,7 @@ export const FOLDER_ORDER = [
   'gear',
   'maps',
   'handouts',
-  'templates',
+  'audio',
   'reference',
   'archive'
 ] as const
@@ -50,7 +66,7 @@ export const STANDARD_LAYOUT: { canonical: string; name: string; extras: string[
   { canonical: 'gear', name: 'Gear', extras: [...GEAR_SECTIONS] },
   { canonical: 'maps', name: 'Maps', extras: ['Art', 'Print'] },
   { canonical: 'handouts', name: 'Handouts', extras: ['Art'] },
-  { canonical: 'templates', name: 'Templates', extras: [] },
+  { canonical: 'audio', name: 'Audio', extras: ['Music', 'Ambience', 'Sfx'] },
   { canonical: 'reference', name: 'Reference', extras: [] },
   { canonical: 'archive', name: 'Archive', extras: [] }
 ]
@@ -72,6 +88,8 @@ const FOLDER_ALIASES: Record<string, string> = {
   'the party': 'party',
   pcs: 'party',
   pc: 'party',
+  'player characters': 'party',
+  'player character': 'party',
   npcs: 'npcs',
   npc: 'npcs',
   'session notes': 'sessions',
@@ -91,7 +109,10 @@ const FOLDER_ALIASES: Record<string, string> = {
   world: 'places',
   setting: 'places',
   factions: 'factions',
-  faction: 'factions'
+  faction: 'factions',
+  audio: 'audio',
+  sounds: 'audio',
+  sound: 'audio'
 }
 
 export function canonicalFolder(name: string): string {
@@ -155,6 +176,10 @@ export function isPlacesFolderName(name: string): boolean {
 
 export function isFactionsFolderName(name: string): boolean {
   return canonicalFolder(name) === 'factions'
+}
+
+export function isAudioFolderName(name: string): boolean {
+  return canonicalFolder(name) === 'audio'
 }
 
 export function isArtFolderName(name: string): boolean {
@@ -244,6 +269,20 @@ export const LIBRARY_FOLDER_NAMES: Record<CampaignLibraryFolder, string> = {
   bestiary: 'Bestiary',
   spells: 'Spells',
   gear: 'Gear'
+}
+
+export function isHoloPortraitPath(path: string): boolean {
+  return (
+    pathHasFolder(path, 'party') ||
+    pathHasFolder(path, 'npcs') ||
+    pathHasFolder(path, 'bestiary') ||
+    pathHasFolder(path, 'gear')
+  )
+}
+
+export function isStartHerePath(path: string): boolean {
+  const root = path.replaceAll('\\', '/').split('/').find(Boolean) ?? ''
+  return canonicalFolder(root) === 'start here'
 }
 
 export function pathHasFolder(

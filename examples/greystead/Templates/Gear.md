@@ -6,18 +6,19 @@
 -->
 # Item Name
 
-> [!infobox]+
-> ![[Item Name.png]]
->
-> ### *Adventuring Gear*
->
-> | | |
-> |---|---|
-> | **Weight** | |
-> | **Cost** | |
-> | **Rarity** | |
-> | **Attunement** | |
-> | **Damage** | |
-> | **Properties** | |
+[!gear]
+![[Item Name.png]]
+
+### *Adventuring Gear*
+
+| | |
+|---|---|
+| **Weight** | |
+| **Cost** | |
+| **Rarity** | |
+| **Attunement** | |
+| **Damage** | |
+| **Properties** | |
+[!/gear]
 
 What it does, or any house-rule notes.

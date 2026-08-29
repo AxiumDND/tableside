@@ -10,21 +10,22 @@ const PF2E_PLAYER = `<!--
 -->
 # *Character Name*
 
-> [!infobox]+
-> ![[Character Name.png]]
->
-> ### *One-line tagline — role at the table*
->
-> | | |
-> |---|---|
-> | **Player** | Name |
-> | **Ancestry** | Human |
-> | **Class** | Fighter 1 |
-> | **Background** |  |
-> | **Role** | Front line |
-> | **Perception** | +7 |
-> | **AC** | 18 |
-> | **HP** | 20 |
+[!pc]
+![[Character Name.png]]
+
+### *One-line tagline — role at the table*
+
+| | |
+|---|---|
+| **Player** | Name |
+| **Ancestry** | Human |
+| **Class** | Fighter 1 |
+| **Background** |  |
+| **Role** | Front line |
+| **Perception** | +7 |
+| **AC** | 18 |
+| **HP** | 20 |
+[!/pc]
 
 \`\`\`statblock
 layout: Basic PF2e Layout
@@ -73,19 +74,20 @@ const PF2E_NPC = `<!--
 -->
 # *NPC Name*
 
-> [!infobox]+
-> ![[NPC Name.png]]
->
-> ### *Who they are in one line*
->
-> | | |
-> |---|---|
-> | **Role** | Patron / informant / obstacle |
-> | **Faction** | [[Faction Name]] |
-> | **Location** | [[Place Name]] |
-> | **Status** | Alive |
-> | **Level** | 1 |
-> | **Perception** | +6 |
+[!place]
+![[NPC Name.png]]
+
+### *Who they are in one line*
+
+| | |
+|---|---|
+| **Role** | Patron / informant / obstacle |
+| **Faction** | [[Faction Name]] |
+| **Location** | [[Place Name]] |
+| **Status** | Alive |
+| **Level** | 1 |
+| **Perception** | +6 |
+[!/place]
 
 \`\`\`statblock
 layout: Basic PF2e Layout
@@ -128,14 +130,15 @@ const PF2E_MONSTER = `<!--
 -->
 # Monster Name
 
-> [!infobox]+
-> ![[Monster Name.png]]
->
-> | | |
-> |---|---|
-> | **Level** | 1 |
-> | **Role** | Pressure / boss / minion |
-> | **Source** | original |
+[!monster]
+![[Monster Name.png]]
+
+| | |
+|---|---|
+| **Level** | 1 |
+| **Role** | Pressure / boss / minion |
+| **Source** | original |
+[!/monster]
 
 \`\`\`statblock
 layout: Basic PF2e Layout
@@ -165,16 +168,17 @@ const PF2E_SPELL = `<!--
 -->
 # Spell Name
 
-> [!infobox]+
-> ![[Spell Name.png]]
->
-> | | |
-> |---|---|
-> | **Rank** | 1 |
-> | **Tradition** | Arcane |
-> | **Actions** | 2 |
-> | **Range** | 30 feet |
-> | **Duration** |  |
+[!spell]
+![[Spell Name.png]]
+
+| | |
+|---|---|
+| **Rank** | 1 |
+| **Tradition** | Arcane |
+| **Actions** | 2 |
+| **Range** | 30 feet |
+| **Duration** |  |
+[!/spell]
 
 *One paragraph: what it does at the table. Write your own text; this pack does not ship Paizo spell entries.*
 
@@ -189,15 +193,16 @@ const PF2E_GEAR = `<!--
 -->
 # Item Name
 
-> [!infobox]+
-> ![[Item Name.png]]
->
-> | | |
-> |---|---|
-> | **Category** | Weapon / armor / gear |
-> | **Price** |  |
-> | **Bulk** | L |
-> | **Traits** |  |
+[!gear]
+![[Item Name.png]]
+
+| | |
+|---|---|
+| **Category** | Weapon / armor / gear |
+| **Price** |  |
+| **Bulk** | L |
+| **Traits** |  |
+[!/gear]
 
 *What it does in play. Original item — not copied from a Paizo book.*
 
@@ -212,16 +217,17 @@ const PF2E_SHOP = `<!--
 -->
 # Shop Name
 
-> [!infobox]+
-> ![[Shop Name.png]]
->
-> ### *What this stall is known for*
->
-> | | |
-> |---|---|
-> | **Keeper** | [[NPC Name]] |
-> | **Place** | [[Place Name]] |
-> | **Hours** | Dawn to dusk |
+[!place]
+![[Shop Name.png]]
+
+### *What this stall is known for*
+
+| | |
+|---|---|
+| **Keeper** | [[NPC Name]] |
+| **Place** | [[Place Name]] |
+| **Hours** | Dawn to dusk |
+[!/place]
 
 ## Wares
 
@@ -238,20 +244,21 @@ const V5_PLAYER = `<!--
 -->
 # *Character Name*
 
-> [!infobox]+
-> ![[Character Name.png]]
->
-> ### *One-line tagline — how they move through the night*
->
-> | | |
-> |---|---|
-> | **Player** | Name |
-> | **Clan** | *(fill your own)* |
-> | **Predator** | *(fill your own)* |
-> | **Role** |  |
-> | **Health** | 7 / 7 |
-> | **Willpower** | 5 / 5 |
-> | **Hunger** | 1 |
+[!pc]
+![[Character Name.png]]
+
+### *One-line tagline — how they move through the night*
+
+| | |
+|---|---|
+| **Player** | Name |
+| **Clan** | *(fill your own)* |
+| **Predator** | *(fill your own)* |
+| **Role** |  |
+| **Health** | 7 / 7 |
+| **Willpower** | 5 / 5 |
+| **Hunger** | 1 |
+[!/pc]
 
 \`\`\`statblock
 layout: Basic V5 Layout
@@ -288,20 +295,21 @@ const V5_NPC = `<!--
 -->
 # *NPC Name*
 
-> [!infobox]+
-> ![[NPC Name.png]]
->
-> ### *Who they are in one line*
->
-> | | |
-> |---|---|
-> | **Role** | Ally / rival / vessel / obstacle |
-> | **Clan** | *(fill your own, or mortal)* |
-> | **Location** | [[Place Name]] |
-> | **Status** | Alive |
-> | **Health** | 5 / 5 |
-> | **Willpower** | 3 / 3 |
-> | **Hunger** | 0 |
+[!place]
+![[NPC Name.png]]
+
+### *Who they are in one line*
+
+| | |
+|---|---|
+| **Role** | Ally / rival / vessel / obstacle |
+| **Clan** | *(fill your own, or mortal)* |
+| **Location** | [[Place Name]] |
+| **Status** | Alive |
+| **Health** | 5 / 5 |
+| **Willpower** | 3 / 3 |
+| **Hunger** | 0 |
+[!/place]
 
 \`\`\`statblock
 layout: Basic V5 Layout
@@ -333,16 +341,17 @@ const V5_MONSTER = `<!--
 -->
 # Monster Name
 
-> [!infobox]+
-> ![[Monster Name.png]]
->
-> | | |
-> |---|---|
-> | **Role** | Rival / hunter / horror |
-> | **Health** | 8 / 8 |
-> | **Willpower** | 4 / 4 |
-> | **Hunger** | 2 |
-> | **Source** | original |
+[!monster]
+![[Monster Name.png]]
+
+| | |
+|---|---|
+| **Role** | Rival / hunter / horror |
+| **Health** | 8 / 8 |
+| **Willpower** | 4 / 4 |
+| **Hunger** | 2 |
+| **Source** | original |
+[!/monster]
 
 \`\`\`statblock
 layout: Basic V5 Layout
@@ -365,14 +374,15 @@ const V5_SPELL = `<!--
 -->
 # Spell Name
 
-> [!infobox]+
-> ![[Spell Name.png]]
->
-> | | |
-> |---|---|
-> | **Type** | Power / ritual / trick |
-> | **Cost** |  |
-> | **Dice** |  |
+[!spell]
+![[Spell Name.png]]
+
+| | |
+|---|---|
+| **Type** | Power / ritual / trick |
+| **Cost** |  |
+| **Dice** |  |
+[!/spell]
 
 *What happens when they use it at the table. Use your own book if you need official wording.*
 
@@ -386,13 +396,14 @@ const V5_GEAR = `<!--
 -->
 # Item Name
 
-> [!infobox]+
-> ![[Item Name.png]]
->
-> | | |
-> |---|---|
-> | **Kind** | Relic / weapon / document / haven gear |
-> | **Who holds it** |  |
+[!gear]
+![[Item Name.png]]
+
+| | |
+|---|---|
+| **Kind** | Relic / weapon / document / haven gear |
+| **Who holds it** |  |
+[!/gear]
 
 *Why it matters tonight.*
 
@@ -406,16 +417,17 @@ const V5_SHOP = `<!--
 -->
 # Shop Name
 
-> [!infobox]+
-> ![[Shop Name.png]]
->
-> ### *What this place is for*
->
-> | | |
-> |---|---|
-> | **Kind** | Haven / Elysium / venue |
-> | **Keeper** | [[NPC Name]] |
-> | **Place** | [[Place Name]] |
+[!place]
+![[Shop Name.png]]
+
+### *What this place is for*
+
+| | |
+|---|---|
+| **Kind** | Haven / Elysium / venue |
+| **Keeper** | [[NPC Name]] |
+| **Place** | [[Place Name]] |
+[!/place]
 
 ## What happens here
 

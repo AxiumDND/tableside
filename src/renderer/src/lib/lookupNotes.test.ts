@@ -67,7 +67,7 @@ describe('recordToCampaignMarkdown', () => {
     expect(markdown).not.toMatch(/^Casting Time:/m)
   })
 
-  it('puts gear stats in an infobox table', () => {
+  it('puts gear stats in a typed sheet header table', () => {
     const markdown = recordToCampaignMarkdown(
       record({
         kind: 'gear',
@@ -80,6 +80,8 @@ describe('recordToCampaignMarkdown', () => {
         }
       })
     )
+    expect(markdown).toContain('[!gear]')
+    expect(markdown).toContain('[!/gear]')
     expect(markdown).toContain('![[Acid.webp]]')
     expect(markdown).toContain('### *Adventuring Gear*')
     expect(markdown).toContain('| **Weight** | 1 lb. |')

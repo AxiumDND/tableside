@@ -1,7 +1,9 @@
 import type { CampaignTreeNode } from '../../../shared/types'
 
 function displayName(name: string): string {
-  return name.replace(/\.(md|markdown|txt|json|png|jpe?g|webp|gif|svg|bmp|pdf)$/i, '').replace(/[-_]/g, ' ')
+  return name
+    .replace(/\.(md|markdown|txt|json|png|jpe?g|webp|gif|svg|bmp|pdf|mp3|ogg|wav|m4a|flac|webm|aac)$/i, '')
+    .replace(/[-_]/g, ' ')
 }
 
 function foldSearch(value: string): string {

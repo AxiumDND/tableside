@@ -1,6 +1,6 @@
 # Markdown and statblocks
 
-Reference for note syntax Tableside understands. For folder layout and game night sheets, see [CAMPAIGN.md](CAMPAIGN.md). For the UI, see [TABLE.md](TABLE.md).
+Reference for note syntax Tableside understands. How to use the app: [GUIDE.md](GUIDE.md). Folder layout: [CAMPAIGN.md](CAMPAIGN.md). Console: [TABLE.md](TABLE.md).
 
 ## Supported files
 
@@ -9,6 +9,7 @@ Reference for note syntax Tableside understands. For folder layout and game nigh
 | `.md`, `.markdown`, `.txt` | Notes (rendered markdown) |
 | `.png` `.jpg` `.jpeg` `.webp` `.gif` `.svg` `.bmp` | Images (preview + Show to players) |
 | `.pdf` | DM-only preview in an iframe |
+| `.mp3` `.ogg` `.wav` `.m4a` `.flac` `.webm` `.aac` | Campaign audio (`Audio/`). Preview in the note pane; play at the table from **Music** |
 
 ## Wikilinks
 
@@ -47,6 +48,8 @@ Obsidian callout form:
 | TYPE | Aliases | Rendering |
 | --- | --- | --- |
 | `readaloud` | `flavor` | Read-aloud card |
+| `scene` | `beat` | Scene card on a game night sheet. Optional `![[art]]` (right-side frame), description, nested `> [!readaloud]` / `> [!gmonly]`, optional secrets/treasure/NPCs/combat, and **At the table** cues (place, map, checks, music, sound, leads to). Copy a whole scene block to add another beat. |
+| `crawl` | `opening` | Opening crawl card. Edit title, far-off line, emblem, crawl music, and crawl on the card (writes back to the note). **Play** (Sci-fi look only) shows a starfield, an original far-off line (`preface:`; `none` skips it), a generic title emblem (or the first `![[image]]`), then a perspective prologue. Optional `music: Audio/Music/…` fades mood out on Play; the crawl track starts half a second before the emblem and runs for 1:32 (longer files fade out there), then resumes mood when that window ends, you Stop, or you Clear. Optional `end: ![[…]]` fades in a closing still when the crawl finishes. Write your own words — Tableside does not include licensed crawl text, logos, or music files. |
 | `gmonly` | `secret` | Collapsible GM-only |
 | `infobox` | — | Sheet header (often with portrait + facts table); not split like other callouts |
 | `tip` `warning` `note` `info` `danger` `success` `example` `abstract` | — | Styled callout cards |
@@ -205,7 +208,7 @@ Facts in that table surface in the sheet chrome. Keep the combat numbers in sync
 
 ## Templates
 
-`Templates/` seeds used by right-click **New …**:
+Right-click **New …** fills a built-in sheet from the campaign’s system pack. A leftover `Templates/` folder is hidden from the file tree but still used when those files are present:
 
 | File (any of) | Creates |
 | --- | --- |
@@ -220,7 +223,7 @@ Facts in that table surface in the sheet chrome. Keep the combat numbers in sync
 | `Shop.md` / `Merchant.md` / `Inn.md` | Shop note (inn, stall, forge, temple) |
 | `Faction.md` | Faction note (guild, church, house, cult) |
 
-**New campaign** writes these from built-in fallbacks if missing. Leading HTML comments (`<!-- … -->`) are stripped when filling a new note from a template.
+Leading HTML comments (`<!-- … -->`) are stripped when filling a new note from a template.
 
 Placeholder text such as `Character Name` / `NPC Name` / `Monster Name` / `Place Name` / `Shop Name` / `Faction Name` is replaced with the name you enter. Game night sheets also replace `{{party}}` with wikilinks to every `Party/` sheet.
 

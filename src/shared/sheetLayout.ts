@@ -1,38 +1,21 @@
+import { afterSheetHeaderIndex } from './sheetBlock'
+
 const STATBLOCK_FENCE = /```statblock\r?\n[\s\S]*?```/i
 const COMBAT_HEADING =
   /\n##[^\n]*(?:Combat|Stat block)[^\n]*\n(?:\s*\*\*Combatants:\*\*[^\n]*\n)?(?:\s*>\s*\[!gmonly\][^\n]*\n(?:>[^\n]*\n)*)?\s*$/i
 
-/** Index just after the title and optional infobox — where the statblock should sit. */
+/** Index just after the title and optional sheet header — where the statblock should sit. */
 export function sheetPreambleEnd(markdown: string): number {
   const text = markdown.replace(/\r/g, '')
   const lines = text.split('\n')
-  let i = 0
-  while (i < lines.length && !lines[i].trim()) i += 1
-  while (i < lines.length && /^<!--/.test(lines[i].trim())) {
-    if (/-->/.test(lines[i])) {
-      i += 1
-      continue
-    }
-    i += 1
-    while (i < lines.length && !/-->/.test(lines[i])) i += 1
-    if (i < lines.length) i += 1
-  }
-  while (i < lines.length && !lines[i].trim()) i += 1
-  if (i < lines.length && /^#\s/.test(lines[i])) i += 1
-  while (i < lines.length && !lines[i].trim()) i += 1
-  if (i < lines.length && /^\s*>?\s*\[!infobox\]/i.test(lines[i])) {
-    i += 1
-    while (i < lines.length && /^>/.test(lines[i])) i += 1
-    while (i < lines.length && !lines[i].trim()) i += 1
-  }
-  const crlf = markdown.includes('\r\n')
+  const i = afterSheetHeaderIndex(lines)
   const rebuilt = lines.slice(0, i).join('\n')
-  if (!crlf) return rebuilt.length
+  if (!markdown.includes('\r\n')) return rebuilt.length
   const nlCount = rebuilt.split('\n').length - 1
   return rebuilt.length + nlCount
 }
 
-/** Move the first `statblock` fence to sit under the title/portrait infobox. */
+/** Move the first `statblock` fence to sit under the title/portrait sheet header. */
 export function liftStatblockToTop(markdown: string): string {
   const match = STATBLOCK_FENCE.exec(markdown)
   if (!match || match.index == null) return markdown

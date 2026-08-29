@@ -10,7 +10,11 @@ import {
   artFolderRelativePath,
   isArtFolderName,
   isGearFolderName,
-  adjacentCampaignFile
+  adjacentCampaignFile,
+  shouldHideFromFileTree,
+  shouldSkipCampaignDir,
+  isStartHerePath,
+  isHoloPortraitPath
 } from './campaignLayout'
 import type { CampaignTreeNode } from './types'
 
@@ -34,10 +38,27 @@ describe('gear folders', () => {
     expect(names).toEqual(['Weapons', 'Armor', 'Equipment', 'Trade Goods', 'Magic Items', 'Art'])
   })
 
+  it('marks party, NPC, beast, and gear sheets for hologram portraits', () => {
+    expect(isHoloPortraitPath('Party/Kay.md')).toBe(true)
+    expect(isHoloPortraitPath('NPCs/Orson.md')).toBe(true)
+    expect(isHoloPortraitPath('Bestiary/Ghoul.md')).toBe(true)
+    expect(isHoloPortraitPath('Gear/Weapons/Longsword.md')).toBe(true)
+    expect(isHoloPortraitPath('Places/Town.md')).toBe(false)
+    expect(isHoloPortraitPath('Maps/Forest.md')).toBe(false)
+  })
+
+  it('treats Start Here aliases as the campaign hub', () => {
+    expect(isStartHerePath('Start Here/Overview.md')).toBe(true)
+    expect(isStartHerePath('Getting Started/Welcome.md')).toBe(true)
+    expect(isStartHerePath('Sessions/Night.md')).toBe(false)
+  })
+
   it('keeps top-level Gear in the standard folder order', () => {
     expect(folderOrderIndex('Start Here')).toBeLessThan(folderOrderIndex('Sessions'))
     expect(folderOrderIndex('Getting Started')).toBe(folderOrderIndex('Start Here'))
     expect(folderOrderIndex('Gear')).toBeLessThan(folderOrderIndex('Maps'))
+    expect(folderOrderIndex('Audio')).toBeLessThan(folderOrderIndex('Reference'))
+    expect(folderMatchesCanonical('Sounds', 'audio')).toBe(true)
     expect(folderOrderIndex('Weapons')).toBe(99)
   })
 })
@@ -85,6 +106,25 @@ describe('Art folders', () => {
     expect(folderUsesArt('Gear')).toBe(false)
     expect(folderUsesArt('Maps/Print')).toBe(false)
     expect(folderUsesArt('Templates')).toBe(false)
+  })
+
+  it('treats Player characters as Party', () => {
+    expect(folderMatchesCanonical('Player characters', 'party')).toBe(true)
+    expect(folderMatchesCanonical('Party', 'party')).toBe(true)
+  })
+
+  it('hides local adventure-book dumps and zz_ scratch folders', () => {
+    expect(shouldSkipCampaignDir('Adventure book Dungeons of Drakkenheim')).toBe(true)
+    expect(shouldSkipCampaignDir('zz_asset-files')).toBe(true)
+    expect(shouldSkipCampaignDir('Places')).toBe(false)
+    expect(shouldSkipCampaignDir('.obsidian')).toBe(true)
+  })
+
+  it('hides Templates from the file tree but still scans it for note seeds', () => {
+    expect(shouldHideFromFileTree('Templates')).toBe(true)
+    expect(shouldHideFromFileTree('templates')).toBe(true)
+    expect(shouldSkipCampaignDir('Templates')).toBe(false)
+    expect(shouldHideFromFileTree('Places')).toBe(false)
   })
 
   it('treats Locations / World as Places', () => {

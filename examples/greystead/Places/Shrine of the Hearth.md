@@ -1,19 +1,21 @@
 # Shrine of the Hearth
 
-> [!infobox]+
-> ![[Shrine of the Hearth.webp]]
->
-> ### *A fire that is supposed to stay clean*
->
-> | | |
-> |---|---|
-> | **Type** | Temple |
-> | **Region** | [[Greystead]] |
-> | **Ruler / faction** | [[Brother Pell]] |
-> | **Mood** | Cold ash, scraped stone |
+[!place]
+![[Shrine of the Hearth.webp]]
 
-> [!readaloud]
-> A single room and a hearth-stone. Someone has scraped a salt ring off the flagstones. Pell stands like he is waiting to be accused.
+### *A fire that is supposed to stay clean*
+
+| | |
+|---|---|
+| **Type** | Temple |
+| **Region** | [[Greystead]] |
+| **Ruler / faction** | [[Brother Pell]] |
+| **Mood** | Cold ash, scraped stone |
+[!/place]
+
+[!readaloud]
+A single room and a hearth-stone. Someone has scraped a salt ring off the flagstones. Pell stands like he is waiting to be accused.
+[!/readaloud]
 
 ## At a glance
 
@@ -21,5 +23,6 @@
 - **Fantastic** — Salt was warding something, or inviting it
 - **Dangerous** — Only if they threaten Pell
 
-> [!gmonly]
-> Pell is innocent. One holy water. The scrape matches the ring in cave E.
+[!gmonly]
+Pell is innocent. One holy water. The scrape matches the ring in cave E.
+[!/gmonly]

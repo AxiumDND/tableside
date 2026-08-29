@@ -238,7 +238,7 @@ export function isNpcSheet(markdown: string, path: string): boolean {
     STATBLOCK_LAYOUT_RE.test(markdown) ||
     pathHasFolder(path, 'npcs') ||
     pathHasFolder(path, 'party') ||
-    /\[!infobox\]/i.test(markdown)
+    /\[!(?:pc|npc|monster|creature|bestiary|player|character|infobox)\]/i.test(markdown)
   )
 }
 
@@ -249,7 +249,7 @@ export function extractHook(markdown: string): string {
   const paras = afterFacts
     .split(/\n\n+/)
     .map((p) => p.trim())
-    .filter((p) => p.length > 40 && !/\[!infobox\]|^#|Aliases|Ancestry|layout:/i.test(p))
+    .filter((p) => p.length > 40 && !/\[!(?:pc|npc|monster|place|shop|faction|gear|spell|infobox)\]|^#|Aliases|Ancestry|layout:/i.test(p))
   return paras[0]?.replace(/\s+/g, ' ') ?? ''
 }
 
@@ -382,14 +382,15 @@ export function parsedToBestiaryMarkdown(
 
   return `# ${name}
 
-> [!infobox]+
-> ![[${name}.webp]]
->
-> | | |
-> |---|---|
-> | **CR** | ${cr} |
-> | **Role** |  |
-> | **Source** | SRD 5.2 |
+[!monster]
+![[${name}.webp]]
+
+| | |
+|---|---|
+| **CR** | ${cr} |
+| **Role** |  |
+| **Source** | SRD 5.2 |
+[!/monster]
 
 \`\`\`statblock
 ${yaml.filter(Boolean).join('\n')}

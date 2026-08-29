@@ -1,60 +1,104 @@
 <!--
-  Game night sheet template — Lazy DM 10-step prep. Right-click Sessions/ → New game night sheet…
+  Game night sheet — Party and Scenes.
+  Right-click Sessions/ → New game night sheet…
   {{party}} is replaced with wikilinks to every Party/ sheet.
-  Combat headings (⚔️ / Combat / Encounter) + Combatants lines feed Add to initiative.
+  {{crawl}} is replaced on Sci-fi campaigns with an Opening crawl sample (Play on the player screen).
+  {{legend}} is replaced on Classic, Light, and Vampire campaigns with an Opening legend sample.
+  Scene blocks: [!scene] Title … [!/scene] — art, what could happen, nested [!readaloud] / [!gmonly], optional NPCs, secrets, treasure, combat, and table cues.
+  Party roster: [!party] … [!/party] wraps PC links and the Focus tonight note.
+  Copy a scene block to add another beat. Use // lines for notes that stay in the editor only.
+  Combat headings inside a scene (⚔️ / Combat / Encounter) + Combatants lines feed Add to initiative.
   party = all PCs. [[Name]] opens a sheet. ![[Art.webp]] then Show to players.
-  Long prose belongs in a separate session note. See docs/RECIPES.md.
+  Long prose belongs in a separate session note. See docs/GUIDE.md and docs/RECIPES.md.
 -->
 # Session Name — Game Night Sheet
 
 *Behind the screen. Prose in [[Session Name]]. Click [[links]] to open sheets. Click art, then **Show to players**.*
 
-> [!abstract] Tonight at a glance
-> Strong start → scenes → **the fight** → fallout.
+[!abstract] Tonight at a glance
+Opening scene → next beats → **the fight** → fallout.
+[!/abstract]
 
-## 1. The characters
+{{crawl}}
 
+{{legend}}
+
+## 1. The Party
+
+[!party]
 {{party}}
 
-- Spotlight tonight:
-- What they want / what they forgot last time:
-
-## 2. Strong start
-
-> [!readaloud]
-> First thing they see, hear, or are dropped into.
-
-- Already in initiative? Map: [[Map Name]]
-
-## 3. Scenes
-
-1. 
-2. 
-3. **the fight**
-4. Fallout
-
-## 4. Secrets and clues
-
-Three things they can find no matter which way they go:
+[!note] Focus tonight
+Soft spots for this session — unfinished business, a promise from last time, or something the table asked for.
 
 - 
 - 
-- 
+[!/note]
+[!/party]
 
-## 5. Locations
+## 2. Scenes
 
-- [[Place Name]] — what they notice, what's fantastic, what's dangerous
+// Copy a whole [!scene] … [!/scene] block to add another beat. Keep the Opening first.
+
+[!scene] Opening — name the beat
+![[Scene art.webp]]
+
+What could happen as they arrive. Who wants what. What tips the next scene.
+
+[!readaloud]
+First thing they see, hear, or are dropped into.
+[!/readaloud]
+
+**At the table** (optional — delete what you don't need):
+- Place: [[Place Name]]
 - Map: [[Map Name]]
-- Set dressing / telegraph:
+- Checks: Perception DC 14 · Investigation DC 12
+- If they miss / flee: …
+- Music: General / Creepy / Combat
+- Sound: rain · door creak
+- Already in initiative?
+- Leads to: next beat / …
+[!/scene]
 
-## 6. NPCs
+[!scene] Scene — name the beat
+![[Scene art.webp]]
 
+What could happen if they go this way — talk, search, chase, or the fight.
+
+[!readaloud]
+Optional spoken text when this beat lands.
+[!/readaloud]
+
+[!readaloud]
+Mid-scene reveal — second read-aloud if the beat shifts.
+[!/readaloud]
+
+[!gmonly] Only you
+Hidden truth, rigged outcome, or NPC tell they must not hear yet.
+[!/gmonly]
+
+**At the table** (optional — delete what you don't need):
+- Place: [[Place Name]]
+- Map: [[Map Name]]
+- Checks: Perception DC 14 · Investigation DC 12
+- If they miss / flee: …
+- Music: General / Creepy / Combat
+- Sound: door creak · thunder
+- Leads to: [[next beat]] / fallout / …
+
+**Secrets and clues in this scene** (optional — delete if none):
+- 
+- 
+
+**Treasure in this scene** (optional — delete if none):
+- Coin / mundane:
+- Magic (attunement?):
+
+**NPCs in this scene** (optional — delete if none):
 - [[NPC Name]] — want / will say / will not say
 - Voice:
 
-## 7. Monsters
-
-Copy the combat block for a second fight. Headings that say *no combat* are skipped.
+**Combat in this scene** (optional — delete if no fight). Headings that say *no combat* are skipped.
 
 ## ⚔️ Combat 1 — name the encounter
 
@@ -67,19 +111,4 @@ Copy the combat block for a second fight. Headings that say *no combat* are skip
 - Telegraph:
 - Target / quarry:
 - Cut if running long:
-
-## 8. Treasure
-
-- Coin / mundane:
-- Magic (attunement?):
-
-## 9. From last time
-
-- Open threads:
-- Promises, debts, unused clues:
-
-## 10. Likely endings
-
-- If they succeed:
-- If they fail or flee:
-- Hook for next session:
+[!/scene]

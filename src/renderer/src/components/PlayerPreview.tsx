@@ -24,7 +24,7 @@ function MonitorList({
             type="button"
             onClick={() => onPick(display.id)}
             className={`mb-1 block w-full truncate rounded px-2 py-1 text-left text-[11px] last:mb-0 ${
-              selected ? 'bg-amber font-semibold text-ink' : 'border border-line hover:border-amber'
+              selected ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
             }`}
           >
             {display.label}
@@ -39,20 +39,24 @@ function MonitorList({
 export default function PlayerPreview({
   state,
   hidden,
+  playerWindowOpen = false,
   displays,
   playerDisplayId,
   onClear,
   onToggle,
   onPickDisplay,
+  onCloseWindow,
   onRefreshDisplays
 }: {
   state: PlayerState
   hidden?: boolean
+  playerWindowOpen?: boolean
   displays: DisplayInfo[]
   playerDisplayId: number | ''
   onClear: () => void
   onToggle: () => void
   onPickDisplay: (displayId: number) => void
+  onCloseWindow?: () => void
   onRefreshDisplays: () => Promise<void>
 }) {
   const [picking, setPicking] = useState(false)
@@ -86,19 +90,39 @@ export default function PlayerPreview({
       <header className="flex items-center justify-between gap-2 px-2 py-1.5">
         <button type="button" onClick={() => void togglePicker()} className="min-w-0 text-left hover:text-amber">
           <div className="text-[10px] uppercase tracking-wider text-muted">Players see</div>
-          <div className="truncate text-xs">{state.imageTitle || 'Nothing showing'}</div>
+          <div className="truncate text-xs">
+            {state.crawl
+              ? state.crawl.title || 'Opening crawl'
+              : state.legend
+                ? state.legend.title || 'Campfire chronicle'
+                : state.gallery
+                  ? state.gallery.title || 'Gallery'
+                  : state.video
+                    ? state.video.title || 'Video'
+                    : state.imageTitle || 'Nothing showing'}
+          </div>
         </button>
         <div className="flex shrink-0 items-center gap-1">
           {hidden ? null : (
             <button
               type="button"
               onClick={onClear}
-              disabled={!state.imageSrc}
+              disabled={!state.imageSrc && !state.crawl && !state.legend && !state.gallery && !state.video}
               className="rounded border border-line px-2 py-0.5 text-[11px] hover:border-amber disabled:text-muted"
             >
               Clear
             </button>
           )}
+          {onCloseWindow ? (
+            <button
+              type="button"
+              onClick={onCloseWindow}
+              className="rounded border border-line px-2 py-0.5 text-[11px] hover:border-amber"
+              title="Close the player window on the other monitor"
+            >
+              Close
+            </button>
+          ) : null}
           <button
             type="button"
             onClick={onToggle}
@@ -131,7 +155,9 @@ export default function PlayerPreview({
               ? 'Player screen waits for a second monitor'
               : picking
                 ? 'Choose a monitor'
-                : 'Click to choose monitor'}
+                : playerWindowOpen
+                  ? 'Click to choose monitor'
+                  : 'Player window closed — click to reopen'}
           </p>
           {picking ? (
             <div className="absolute inset-0 z-10 flex flex-col justify-end rounded bg-ink/95 p-1.5">

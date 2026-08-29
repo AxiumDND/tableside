@@ -1,20 +1,21 @@
 # *Torren Vale*
 
-> [!infobox]+
-> ![[Torren Vale.webp]]
->
-> ### *Ridge-walker · reads mud better than people*
->
-> | | |
-> |---|---|
-> | **Player** | Pregen |
-> | **Species** | Human (Medium) |
-> | **Class** | Ranger 1 |
-> | **Background** | Guide |
-> | **Alignment** | Neutral Good |
-> | **Role** | Wilderness / bow |
-> | **AC** | 14 (Leather) |
-> | **HP** | 12 |
+[!pc]
+![[Torren Vale.webp]]
+
+### *Ridge-walker · reads mud better than people*
+
+| | |
+|---|---|
+| **Player** | Pregen |
+| **Species** | Human (Medium) |
+| **Class** | Ranger 1 |
+| **Background** | Guide |
+| **Alignment** | Neutral Good |
+| **Role** | Wilderness / bow |
+| **AC** | 14 (Leather) |
+| **HP** | 12 |
+[!/pc]
 
 ```statblock
 layout: Basic 5e Layout
@@ -59,8 +60,9 @@ actions:
 - **Skills** — Survival, Perception
 - **Signature tricks** — Tracks the cart; Hunter’s Mark on Vesper
 
-> [!gmonly]
-> He can confirm the flower is cave-only. Hand him that if they skip the room.
+[!gmonly]
+He can confirm the flower is cave-only. Hand him that if they skip the room.
+[!/gmonly]
 
 ## Look & voice
 

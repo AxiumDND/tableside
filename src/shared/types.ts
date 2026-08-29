@@ -104,6 +104,12 @@ export interface CampaignInfo {
   folder: string
   name: string
   system: 'dnd5e' | 'pf2e' | 'v5'
+  /** DM console look for this folder. Unknown ids fall back to classic. */
+  theme: string
+  /** Sci-fi only: hologram overlay on party / NPC / beast / gear art. */
+  holoPortraits?: boolean
+  /** Digital rain only: falling-code wallpaper in the dark wells. */
+  digitalRain?: boolean
   media: MediaItem[]
   sessions: SessionFile[]
   party: Character[]
@@ -159,6 +165,45 @@ export interface PlayerMapView {
   tokens?: PlayerMapToken[]
 }
 
+export interface PlayerCrawl {
+  title?: string
+  body: string
+  startedAt: number
+  logoSrc?: string | null
+  endSrc?: string | null
+  preface?: string | null
+  /** Set when the DM stops early — player view fades out, then clears. */
+  stoppingAt?: number
+}
+
+/** Parchment legend scroll — same payload shape as crawl. */
+export type PlayerLegend = PlayerCrawl
+
+export interface PlayerGallerySlide {
+  src: string
+  label?: string
+}
+
+export interface PlayerGallery {
+  title?: string
+  slides: PlayerGallerySlide[]
+  index: number
+  startedAt: number
+  /** Auto-advance seconds; omit or 0 for manual. */
+  intervalSec?: number | null
+  /** Wrap at ends when advancing. Default true. */
+  loop?: boolean
+  /** Show title caption on the player screen. Default false. */
+  showTitle?: boolean
+}
+
+export interface PlayerVideo {
+  title?: string
+  src: string
+  muted: boolean
+  startedAt: number
+}
+
 export interface PlayerState {
   imageSrc: string | null
   imageTitle: string
@@ -167,6 +212,10 @@ export interface PlayerState {
   showInitiative: boolean
   initiativeRound?: number
   mapView?: PlayerMapView | null
+  crawl?: PlayerCrawl | null
+  legend?: PlayerLegend | null
+  gallery?: PlayerGallery | null
+  video?: PlayerVideo | null
 }
 
 export interface RecentCampaign {
@@ -186,8 +235,9 @@ export interface AppSettings {
   dmBounds?: { x: number; y: number; width: number; height: number }
   lastOpenPath?: string
   lastOpenKind?: string
-  rightPanel?: 'combat' | 'lookup' | 'help' | null
+  rightPanel?: 'combat' | 'lookup' | 'help' | 'music' | null
   showPlayerPreview?: boolean
+  theme?: string
   recentCampaigns?: RecentCampaign[]
   dismissedUpdateVersion?: string
 }
@@ -212,7 +262,11 @@ export const emptyPlayerState = (): PlayerState => ({
   initiative: [],
   showInitiative: false,
   initiativeRound: 0,
-  mapView: null
+  mapView: null,
+  crawl: null,
+  legend: null,
+  gallery: null,
+  video: null
 })
 
 export const emptySettings = (): AppSettings => ({})

@@ -6,23 +6,25 @@
 -->
 # Shop Name
 
-> [!infobox]+
-> ![[Shop Name.png]]
->
-> ### *What they sell in one line*
->
-> | | |
-> |---|---|
-> | **Type** | Tavern / armorer / stables / weapons / store / apothecary |
-> | **Place** | [[Place Name]] |
-> | **Proprietor** | [[NPC Name]] |
-> | **Hours** | |
-> | **Attitude** | Wary / helpful / greedy |
-> | **Standing** | Neutral |
-> | **Map** | [[Map Name]] |
+[!shop]
+![[Shop Name.png]]
 
-> [!readaloud]
-> The room when they walk in.
+### *What they sell in one line*
+
+| | |
+|---|---|
+| **Type** | Tavern / armorer / stables / weapons / store / apothecary |
+| **Place** | [[Place Name]] |
+| **Proprietor** | [[NPC Name]] |
+| **Hours** | |
+| **Attitude** | Wary / helpful / greedy |
+| **Standing** | Neutral |
+| **Map** | [[Map Name]] |
+[!/shop]
+
+[!readaloud]
+The room when they walk in.
+[!/readaloud]
 
 ## Stock
 
@@ -34,5 +36,6 @@
 
 - What they will / will not do
 
-> [!gmonly]
-> Real inventory, stolen goods, who they report to, the adventure hook.
+[!gmonly]
+Real inventory, stolen goods, who they report to, the adventure hook.
+[!/gmonly]

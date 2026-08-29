@@ -202,7 +202,7 @@ function Detail({
           {onAddMonster ? (
             <button
               type="button"
-              className="w-full rounded bg-amber px-3 py-1.5 text-sm font-semibold text-ink"
+              className="w-full rounded bg-amber px-3 py-1.5 text-sm font-semibold text-on-amber"
               onClick={() => onAddMonster(record)}
             >
               Add to combat
@@ -436,7 +436,7 @@ export default function RulesSearch({
               type="button"
               onClick={() => setKind(f.id)}
               className={`rounded-full px-2 py-0.5 text-[11px] ${
-                kind === f.id ? 'bg-amber text-ink' : 'bg-panel-2 text-muted'
+                kind === f.id ? 'bg-amber text-on-amber' : 'bg-panel-2 text-muted'
               }`}
             >
               {f.label}

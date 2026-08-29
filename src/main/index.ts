@@ -1,4 +1,4 @@
-import { app, BrowserWindow, dialog, ipcMain, net, protocol, screen, shell } from 'electron'
+import { app, BrowserWindow, dialog, ipcMain, net, protocol, screen, session, shell } from 'electron'
 import { existsSync, readdirSync } from 'node:fs'
 import { copyFile, cp, mkdir, readdir, readFile, rename, rm, stat, unlink, writeFile } from 'node:fs/promises'
 import { join, normalize, relative, basename, dirname, extname, isAbsolute } from 'node:path'
@@ -17,12 +17,29 @@ import type {
   SessionFile
 } from '../shared/types'
 import { emptyCombat, emptyPlayerState, emptySettings } from '../shared/types'
+import {
+  AUDIO_EXT,
+  applyMixerCommand,
+  buildAudioLibrary,
+  emptyMixerState,
+  mixerPrefsToFile,
+  parseMixerPrefs,
+  type MixerCommand,
+  type MixerPrefs,
+  type MixerState
+} from '../shared/audio'
 import { setupAppUpdater, scheduleLaunchUpdateCheck } from './appUpdater'
 import { mapArtRelativeFolder, setMapFenceImage } from '../shared/mapCreate'
+import {
+  playerOutputScaleMismatch,
+  playerWindowNeedsRebuild,
+  shouldShowPlayerWindow
+} from '../shared/playerWindow'
+import { digitalRainEnabled, holoPortraitsEnabled, parseThemeId, THEME_WINDOW_BACKGROUND } from '../shared/theme'
 import { APP_NAME, APP_VERSION } from '../shared/version'
+import { CRAWL_FADE_OUT_MS } from '../shared/openingCrawl'
 import {
   LIBRARY_FOLDER_NAMES,
-  SKIP_DIR_NAMES,
   STANDARD_LAYOUT,
   artFolderRelativePath,
   canonicalFolder,
@@ -36,6 +53,8 @@ import {
   isPartyFolderName,
   isSessionsFolderName,
   pathHasFolder,
+  shouldHideFromFileTree,
+  shouldSkipCampaignDir,
   type CampaignLibraryFolder
 } from '../shared/campaignLayout'
 import {
@@ -74,14 +93,23 @@ protocol.registerSchemesAsPrivileged([
 ])
 
 app.setName(APP_NAME)
+app.commandLine.appendSwitch('autoplay-policy', 'no-user-gesture-required')
 if (process.platform === 'win32') {
   app.setAppUserModelId('com.tabledm.app')
 }
 
 let dmWindow: BrowserWindow | null = null
 let playerWindow: BrowserWindow | null = null
+let playerWindowWanted = true
+let playerWindowScaleOk = false
+let playerScaleRetries = 0
+let playerWindowWarmup = true
+const programmaticPlayerCloses = new WeakSet<BrowserWindow>()
 let campaignFolder: string | null = null
 let playerState: PlayerState = emptyPlayerState()
+let crawlStopTimer: ReturnType<typeof setTimeout> | null = null
+let legendStopTimer: ReturnType<typeof setTimeout> | null = null
+let mixer: MixerState = emptyMixerState()
 let settings: AppSettings = emptySettings()
 let allowQuit = false
 let boundsTimer: ReturnType<typeof setTimeout> | null = null
@@ -105,7 +133,17 @@ const FILE_MIME: Record<string, string> = {
   '.webp': 'image/webp',
   '.gif': 'image/gif',
   '.svg': 'image/svg+xml',
-  '.bmp': 'image/bmp'
+  '.bmp': 'image/bmp',
+  '.mp3': 'audio/mpeg',
+  '.ogg': 'audio/ogg',
+  '.wav': 'audio/wav',
+  '.m4a': 'audio/mp4',
+  '.flac': 'audio/flac',
+  '.aac': 'audio/aac',
+  '.mp4': 'video/mp4',
+  '.webm': 'video/webm',
+  '.mov': 'video/quicktime',
+  '.m4v': 'video/mp4'
 }
 
 let srdPortraitCache: Map<string, string> | null = null
@@ -250,8 +288,14 @@ async function writeSettings(next: AppSettings): Promise<void> {
   await writeFile(settingsPath(), JSON.stringify(next, null, 2), 'utf8')
 }
 
+function applyDmWindowTheme(theme?: string | null): void {
+  if (!dmWindow || dmWindow.isDestroyed()) return
+  dmWindow.setBackgroundColor(THEME_WINDOW_BACKGROUND[parseThemeId(theme)])
+}
+
 async function patchSettings(partial: AppSettings): Promise<AppSettings> {
   await writeSettings({ ...settings, ...partial })
+  if (partial.theme !== undefined) applyDmWindowTheme(settings.theme)
   return settings
 }
 
@@ -304,10 +348,26 @@ async function removeDroppedAppSamples(): Promise<void> {
   }
 }
 
+async function readSampleRevision(folder: string): Promise<number> {
+  const file = join(folder, 'campaign.json')
+  if (!existsSync(file)) return 0
+  try {
+    const data = JSON.parse(await readFile(file, 'utf8')) as { sampleRevision?: unknown }
+    return typeof data.sampleRevision === 'number' && Number.isFinite(data.sampleRevision)
+      ? Math.floor(data.sampleRevision)
+      : 0
+  } catch {
+    return 0
+  }
+}
+
 async function ensureSampleWorkingCopy(): Promise<string> {
   const source = sampleSourcePath()
   const dest = sampleWorkingPath()
-  if (!existsSync(dest)) {
+  const sourceRevision = await readSampleRevision(source)
+  const destRevision = existsSync(dest) ? await readSampleRevision(dest) : 0
+  if (!existsSync(dest) || destRevision < sourceRevision) {
+    if (existsSync(dest)) await rm(dest, { recursive: true, force: true })
     await mkdir(dirname(dest), { recursive: true })
     await cp(source, dest, { recursive: true })
   }
@@ -342,14 +402,15 @@ function createDmWindow(): void {
     minHeight: 720,
     show: false,
     autoHideMenuBar: true,
-    backgroundColor: '#0e0c0a',
+    backgroundColor: THEME_WINDOW_BACKGROUND[parseThemeId(settings.theme)],
     title: `${APP_NAME} ${APP_VERSION}`,
     icon,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
       contextIsolation: true,
-      plugins: true
+      plugins: true,
+      autoplayPolicy: 'no-user-gesture-required'
     }
   })
   if (process.platform === 'win32') {
@@ -360,7 +421,10 @@ function createDmWindow(): void {
     })
   }
 
-  dmWindow.on('ready-to-show', () => dmWindow?.show())
+  dmWindow.on('ready-to-show', () => {
+    dmWindow?.show()
+    syncPlayerWindow()
+  })
   dmWindow.on('moved', scheduleBoundsSave)
   dmWindow.on('resized', scheduleBoundsSave)
   dmWindow.on('close', (event) => {
@@ -406,67 +470,81 @@ function targetPlayerDisplay(displayId?: number): Electron.Display {
   return displays.find((d) => d.id !== dmId) ?? screen.getPrimaryDisplay()
 }
 
-function fullscreenPlayerOnDisplay(display: Electron.Display): void {
+function currentPlayerDisplay(): Electron.Display | null {
+  if (!playerWindow || playerWindow.isDestroyed()) return null
+  return screen.getDisplayMatching(playerWindow.getBounds())
+}
+
+function applyPlayerOutputScale(): void {
   if (!playerWindow || playerWindow.isDestroyed()) return
+  playerWindow.webContents.setZoomFactor(1)
+}
+
+function playerWindowVisible(): boolean {
+  return Boolean(playerWindow && !playerWindow.isDestroyed() && playerWindow.isVisible())
+}
+
+function broadcastPlayerWindow(): void {
+  dmWindow?.webContents.send('player:window', playerWindowVisible())
+}
+
+function destroyPlayerWindow(resetWarmup = false): void {
   const win = playerWindow
-  const bounds = display.bounds
-  const enter = (): void => {
-    if (win.isDestroyed()) return
-    win.setBounds(bounds)
-    win.setFullScreen(true)
+  if (resetWarmup) {
+    playerWindowWarmup = true
+    playerScaleRetries = 0
   }
-  if (!win.isFullScreen()) {
-    enter()
+  if (!win || win.isDestroyed()) {
+    playerWindow = null
+    playerWindowScaleOk = false
+    broadcastPlayerWindow()
     return
   }
-  const here = screen.getDisplayMatching(win.getBounds())
-  if (here.id === display.id) return
-  const timer = setTimeout(enter, 200)
-  win.once('leave-full-screen', () => {
-    clearTimeout(timer)
-    enter()
-  })
-  win.setFullScreen(false)
+  programmaticPlayerCloses.add(win)
+  playerWindow = null
+  playerWindowScaleOk = false
+  win.destroy()
+  broadcastPlayerWindow()
 }
 
 function hidePlayerWindow(): void {
-  if (!playerWindow || playerWindow.isDestroyed()) return
-  const win = playerWindow
-  const hide = (): void => {
-    if (win.isDestroyed()) return
-    win.hide()
-    win.setSkipTaskbar(true)
-  }
-  if (win.isFullScreen()) {
-    win.once('leave-full-screen', hide)
-    win.setFullScreen(false)
-    setTimeout(hide, 250)
-    return
-  }
-  hide()
+  destroyPlayerWindow(true)
 }
 
-function showPlayerWindow(display?: Electron.Display): void {
+function closePlayerWindow(): void {
+  playerWindowWanted = false
+  hidePlayerWindow()
+}
+
+function showPlayerWindow(display?: Electron.Display, forceRebuild = false): void {
+  playerWindowWanted = true
   if (!hasSecondDisplay()) {
     hidePlayerWindow()
     return
   }
   const target = display ?? targetPlayerDisplay()
-  if (!playerWindow || playerWindow.isDestroyed()) {
-    createPlayerWindow(target)
+  const current = currentPlayerDisplay()
+  if (
+    !forceRebuild &&
+    playerWindowScaleOk &&
+    playerWindow &&
+    !playerWindow.isDestroyed() &&
+    playerWindow.isVisible() &&
+    !playerWindowNeedsRebuild(
+      current ? { id: current.id, scaleFactor: current.scaleFactor } : null,
+      { id: target.id, scaleFactor: target.scaleFactor }
+    )
+  ) {
+    broadcastPlayerWindow()
     return
   }
-  playerWindow.setSkipTaskbar(false)
-  playerWindow.show()
-  fullscreenPlayerOnDisplay(target)
+  destroyPlayerWindow(forceRebuild || !playerWindowScaleOk)
+  createPlayerWindow(target)
 }
 
 function createPlayerWindow(display = targetPlayerDisplay()): void {
   if (!hasSecondDisplay()) return
-  if (playerWindow && !playerWindow.isDestroyed()) {
-    showPlayerWindow(display)
-    return
-  }
+  if (playerWindow && !playerWindow.isDestroyed()) destroyPlayerWindow()
   const bounds = display.bounds
   const icon = appIconPath()
   playerWindow = new BrowserWindow({
@@ -485,24 +563,65 @@ function createPlayerWindow(display = targetPlayerDisplay()): void {
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
-      contextIsolation: true
+      contextIsolation: true,
+      autoplayPolicy: 'no-user-gesture-required'
     }
   })
 
-  playerWindow.on('closed', () => {
-    playerWindow = null
+  const created = playerWindow
+  created.on('closed', () => {
+    if (playerWindow === created) playerWindow = null
+    if (!programmaticPlayerCloses.has(created)) playerWindowWanted = false
+    broadcastPlayerWindow()
   })
-  playerWindow.loadURL(rendererUrl('player'))
   playerWindow.webContents.on('did-finish-load', () => {
+    applyPlayerOutputScale()
     playerWindow?.webContents.send('player:state', playerState)
   })
-  playerWindow.setSkipTaskbar(false)
-  playerWindow.show()
-  fullscreenPlayerOnDisplay(display)
+  playerWindow.once('ready-to-show', () => {
+    if (!playerWindow || playerWindow.isDestroyed()) return
+    if (playerWindowWarmup) {
+      playerWindowWarmup = false
+      destroyPlayerWindow(false)
+      createPlayerWindow(display)
+      return
+    }
+    playerWindow.setBounds(bounds)
+    playerWindow.setSkipTaskbar(false)
+    playerWindow.show()
+    playerWindow.setFullScreen(true)
+    applyPlayerOutputScale()
+    broadcastPlayerWindow()
+    void verifyPlayerOutputScale(created, display)
+  })
+  playerWindow.loadURL(rendererUrl('player'))
+}
+
+async function verifyPlayerOutputScale(win: BrowserWindow, display: Electron.Display): Promise<void> {
+  await new Promise((resolve) => setTimeout(resolve, 80))
+  if (playerWindow !== win || win.isDestroyed()) return
+  let dpr: unknown
+  try {
+    dpr = await win.webContents.executeJavaScript('window.devicePixelRatio')
+  } catch {
+    return
+  }
+  if (typeof dpr === 'number' && !playerOutputScaleMismatch(dpr, display.scaleFactor)) {
+    playerWindowScaleOk = true
+    playerScaleRetries = 0
+    return
+  }
+  if (playerScaleRetries >= 1 || !playerWindowWanted || !hasSecondDisplay()) {
+    playerWindowScaleOk = true
+    return
+  }
+  playerScaleRetries += 1
+  destroyPlayerWindow()
+  createPlayerWindow(display)
 }
 
 function syncPlayerWindow(): void {
-  if (hasSecondDisplay()) showPlayerWindow()
+  if (shouldShowPlayerWindow(hasSecondDisplay(), playerWindowWanted)) showPlayerWindow()
   else hidePlayerWindow()
 }
 
@@ -511,14 +630,70 @@ function sendPlayerState(): void {
   dmWindow?.webContents.send('player:state', playerState)
 }
 
+function sendMixerState(): void {
+  dmWindow?.webContents.send('mixer:state', mixer)
+}
+
+async function listAudioFiles(root: string): Promise<string[]> {
+  const audioRoot = await existingCanonicalDir(root, 'audio')
+  if (!audioRoot) return []
+  const out: string[] = []
+  async function walk(dir: string): Promise<void> {
+    const entries = await readdir(dir, { withFileTypes: true })
+    for (const entry of entries) {
+      if (entry.name.startsWith('.')) continue
+      const full = join(dir, entry.name)
+      if (entry.isDirectory()) await walk(full)
+      else if (AUDIO_EXT.has(extname(entry.name).toLowerCase())) {
+        out.push(toPosix(relative(root, full)))
+      }
+    }
+  }
+  await walk(audioRoot)
+  return out
+}
+
+async function persistMixerPrefs(): Promise<void> {
+  if (!campaignFolder) return
+  await writeJson(join(campaignFolder, 'audio.json'), mixerPrefsToFile(mixer.prefs))
+}
+
+async function refreshMixerLibrary(): Promise<void> {
+  if (!campaignFolder) {
+    mixer = emptyMixerState()
+    return
+  }
+  mixer = applyMixerCommand(mixer, { type: 'set-library', library: buildAudioLibrary(await listAudioFiles(campaignFolder)) })
+}
+
+async function loadMixerForCampaign(folder: string): Promise<void> {
+  const prefs = parseMixerPrefs(await readJson(join(folder, 'audio.json'), {}))
+  mixer = {
+    ...emptyMixerState(),
+    prefs,
+    library: buildAudioLibrary(await listAudioFiles(folder))
+  }
+}
+
+async function runMixer(command: MixerCommand): Promise<MixerState> {
+  mixer = applyMixerCommand(mixer, command)
+  if (command.type === 'set-prefs' || command.type === 'play-music' || command.type === 'play-ambience') {
+    void persistMixerPrefs()
+  }
+  sendMixerState()
+  return mixer
+}
+
 function listDisplays(): DisplayInfo[] {
   const primaryId = screen.getPrimaryDisplay().id
   const dmId = dmDisplayId()
   return screen.getAllDisplays().map((d, index) => {
     const name = d.label?.trim() || `Monitor ${index + 1}`
+    const width = Math.round(d.bounds.width * d.scaleFactor)
+    const height = Math.round(d.bounds.height * d.scaleFactor)
     return {
       id: d.id,
-      label: `${name} · ${d.bounds.width}×${d.bounds.height}`,
+      label: `${name} · ${width}×${height}`,
       bounds: d.bounds,
       primary: d.id === primaryId,
       dm: d.id === dmId
@@ -537,7 +712,14 @@ function watchDisplays(): void {
   }
   screen.on('display-added', replacePlayer)
   screen.on('display-removed', replacePlayer)
-  screen.on('display-metrics-changed', () => broadcastDisplays())
+  screen.on('display-metrics-changed', (_event, changed) => {
+    const current = currentPlayerDisplay()
+    if (current && changed.id === current.id && playerWindowWanted) {
+      destroyPlayerWindow(true)
+      syncPlayerWindow()
+    }
+    broadcastDisplays()
+  })
 }
 
 function safeJoin(root: string, ...parts: string[]): string {
@@ -630,7 +812,7 @@ async function listTree(root: string, dir: string, depth = 0): Promise<CampaignT
   const entries = await readdir(dir, { withFileTypes: true })
   const nodes: CampaignTreeNode[] = []
   for (const entry of entries) {
-    if (SKIP_DIR_NAMES.has(entry.name) || isHiddenCampaignFile(entry.name)) continue
+    if (shouldHideFromFileTree(entry.name)) continue
     const full = join(dir, entry.name)
     const relativePath = relative(root, full).replaceAll('\\', '/')
     if (entry.isDirectory()) {
@@ -685,6 +867,11 @@ async function ensureCampaignLayout(root: string): Promise<void> {
       await ensureDir(join(dir, extra))
       if (item.canonical === 'gear') await ensureDir(join(dir, extra, 'Art'))
     }
+    if (item.canonical === 'audio') {
+      for (const mood of ['Combat', 'Creepy', 'General']) {
+        await ensureDir(join(dir, 'Music', mood))
+      }
+    }
   }
 }
 
@@ -707,7 +894,20 @@ async function packTemplates(root: string): Promise<ReturnType<typeof templatesF
   return templatesFor(await readCampaignSystem(root))
 }
 
-async function seedNewCampaignFiles(root: string, system: SystemId = 'dnd5e'): Promise<void> {
+type CampaignFile = {
+  name?: string
+  system?: string
+  theme?: string
+  holoPortraits?: boolean
+  digitalRain?: boolean
+}
+
+async function seedNewCampaignFiles(
+  root: string,
+  system: SystemId = 'dnd5e',
+  theme?: string,
+  options?: { holoPortraits?: boolean; digitalRain?: boolean }
+): Promise<void> {
   const title = basename(root)
   await migrateRootOverviewToStartHere(root)
   const startHere = (await existingCanonicalDir(root, 'start here')) ?? join(root, 'Start Here')
@@ -717,30 +917,16 @@ async function seedNewCampaignFiles(root: string, system: SystemId = 'dnd5e'): P
     await writeFile(overview, overviewMarkdown(system, title), 'utf8')
   }
   const campaignPath = join(root, 'campaign.json')
-  const prior = existsSync(campaignPath)
-    ? await readJson<{ name?: string; system?: string }>(campaignPath, {})
-    : {}
-  await writeJson(campaignPath, { ...prior, name: prior.name ?? title, system })
-  const stock = templatesFor(system)
-  const templatesDir = (await existingCanonicalDir(root, 'templates')) ?? join(root, 'Templates')
-  await ensureDir(templatesDir)
-  const seeds: { file: string; kind: Exclude<SheetTemplateKind, 'blank'> }[] = [
-    { file: 'Player.md', kind: 'player' },
-    { file: 'NPC.md', kind: 'npc' },
-    { file: 'Monster.md', kind: 'monster' },
-    { file: 'Spell.md', kind: 'spell' },
-    { file: 'Gear.md', kind: 'gear' },
-    { file: 'Game Night Sheet.md', kind: 'nightsheet' },
-    { file: 'Map.md', kind: 'map' },
-    { file: 'Place.md', kind: 'place' },
-    { file: 'Shop.md', kind: 'shop' },
-    { file: 'Faction.md', kind: 'faction' }
-  ]
-  const existing = new Set((await readdir(templatesDir)).map((name) => name.toLowerCase()))
-  for (const seed of seeds) {
-    if (TEMPLATE_FILE_NAMES[seed.kind].some((name) => existing.has(name))) continue
-    await writeFile(join(templatesDir, seed.file), stock[seed.kind], 'utf8')
-  }
+  const prior = existsSync(campaignPath) ? await readJson<CampaignFile>(campaignPath, {}) : {}
+  const nextTheme = parseThemeId(theme ?? prior.theme)
+  await writeJson(campaignPath, {
+    ...prior,
+    name: prior.name ?? title,
+    system,
+    theme: nextTheme,
+    holoPortraits: nextTheme === 'scifi' ? options?.holoPortraits !== false : prior.holoPortraits,
+    digitalRain: nextTheme === 'matrix' ? options?.digitalRain !== false : prior.digitalRain
+  })
   await refreshStockNightSheetTemplate(root)
 }
 
@@ -759,8 +945,8 @@ async function listPartyNoteStems(root: string): Promise<string[]> {
 }
 
 async function refreshStockNightSheetTemplate(root: string): Promise<void> {
-  const templatesDir = (await existingCanonicalDir(root, 'templates')) ?? join(root, 'Templates')
-  await ensureDir(templatesDir)
+  const templatesDir = await existingCanonicalDir(root, 'templates')
+  if (!templatesDir) return
   const entries = await readdir(templatesDir)
   const wanted = new Set(TEMPLATE_FILE_NAMES.nightsheet)
   const matches = entries.filter((name) => wanted.has(name.toLowerCase()))
@@ -774,13 +960,32 @@ async function refreshStockNightSheetTemplate(root: string): Promise<void> {
   const current = await readFile(currentPath, 'utf8')
   const alreadyCurrent =
     current.includes('{{party}}') &&
+    current.includes('{{crawl}}') &&
+    current.includes('{{legend}}') &&
     current.includes('# Session Name — Game Night Sheet') &&
-    !current.includes('What this page does')
+    current.includes('## 1. The Party') &&
+    current.includes('[!party]') &&
+    current.includes('[!scene]') &&
+    !current.includes('What this page does') &&
+    !current.includes('## 4. NPCs') &&
+    !current.includes('## 3. Secrets and clues') &&
+    !current.includes('## 3. From last time') &&
+    !current.includes('## 4. Likely endings') &&
+    current.includes('**At the table**')
   if (!alreadyCurrent) {
     const stock =
       current.includes('{{party}}') ||
       current.includes('Numbers and cues for behind the screen') ||
-      current.includes('Combat 1 — name the encounter')
+      current.includes('Combat 1 — name the encounter') ||
+      current.includes('## 1. The characters') ||
+      current.includes('## 5. Locations') ||
+      current.includes('## 4. NPCs') ||
+      current.includes('## 3. Secrets and clues') ||
+      current.includes('## 4. Treasure') ||
+      current.includes('## 3. From last time') ||
+      current.includes('## 4. Likely endings') ||
+      (current.includes('[!scene]') && !current.includes('**At the table**')) ||
+      (current.includes('## 1. The Party') && !current.includes('[!party]'))
     if (stock) await writeFile(dest, (await packTemplates(root)).nightsheet, 'utf8')
   } else if (currentPath !== dest) {
     await writeFile(dest, current, 'utf8')
@@ -792,14 +997,23 @@ async function refreshStockNightSheetTemplate(root: string): Promise<void> {
     const stock =
       text.includes('{{party}}') ||
       text.includes('Numbers and cues for behind the screen') ||
-      text.includes('Combat 1 — name the encounter')
+      text.includes('Combat 1 — name the encounter') ||
+      text.includes('## 1. The characters') ||
+      text.includes('## 5. Locations') ||
+      text.includes('## 4. NPCs') ||
+      text.includes('## 3. Secrets and clues') ||
+      text.includes('## 4. Treasure') ||
+      text.includes('## 3. From last time') ||
+      text.includes('## 4. Likely endings') ||
+      (text.includes('[!scene]') && !text.includes('**At the table**')) ||
+      (text.includes('## 1. The Party') && !text.includes('[!party]'))
     if (stock) await unlink(extra)
   }
 }
 
 async function refreshStockCreatureTemplates(root: string): Promise<void> {
-  const templatesDir = (await existingCanonicalDir(root, 'templates')) ?? join(root, 'Templates')
-  await ensureDir(templatesDir)
+  const templatesDir = await existingCanonicalDir(root, 'templates')
+  if (!templatesDir) return
   const entries = await readdir(templatesDir)
   const jobs: { kind: 'player' | 'npc' | 'monster' | 'gear' | 'spell' | 'place' | 'shop' | 'faction'; dest: string; stock: string }[] = [
     { kind: 'player', dest: 'Player.md', stock: '# *Character Name*' },
@@ -856,10 +1070,11 @@ async function listSessions(dir: string): Promise<SessionFile[]> {
 
 async function loadCampaign(folder: string): Promise<CampaignInfo> {
   const fallbackName = basename(folder)
-  const campaign = await readJson<{ name?: string; system?: string }>(join(folder, 'campaign.json'), {})
+  const campaign = await readJson<CampaignFile>(join(folder, 'campaign.json'), {})
   const name =
     campaign.name && campaign.name !== 'Untitled campaign' ? campaign.name : fallbackName
   const system = parseSystemId(campaign.system)
+  const theme = parseThemeId(campaign.theme)
   if (campaign.name !== name || campaign.system !== system) {
     await writeJson(join(folder, 'campaign.json'), { ...campaign, name, system })
   }
@@ -873,6 +1088,9 @@ async function loadCampaign(folder: string): Promise<CampaignInfo> {
     folder,
     name,
     system,
+    theme,
+    holoPortraits: holoPortraitsEnabled(theme, campaign.holoPortraits),
+    digitalRain: digitalRainEnabled(theme, campaign.digitalRain),
     media,
     sessions: await listSessions(await findChildDir(folder, isSessionsFolderName, 'Sessions')),
     party: await listJsonCharacters(await findChildDir(folder, isPartyFolderName, 'Party')),
@@ -972,7 +1190,7 @@ async function findTemplateSource(root: string, kind: Exclude<SheetTemplateKind,
     for (const entry of entries) {
       const full = join(dir, entry.name)
       if (entry.isDirectory()) {
-        if (SKIP_DIR_NAMES.has(entry.name)) continue
+        if (shouldSkipCampaignDir(entry.name)) continue
         const found = await walk(full, depth + 1)
         if (found) return found
         continue
@@ -1076,7 +1294,12 @@ async function createCampaignNote(
   if (template !== 'blank') {
     if (template === 'nightsheet') await refreshStockNightSheetTemplate(campaignFolder)
     const extras =
-      template === 'nightsheet' ? { partyStems: await listPartyNoteStems(campaignFolder) } : undefined
+      template === 'nightsheet'
+        ? {
+            partyStems: await listPartyNoteStems(campaignFolder),
+            theme: (await readJson<{ theme?: string }>(join(campaignFolder, 'campaign.json'), {})).theme
+          }
+        : undefined
     body = fillTemplate(await findTemplateSource(campaignFolder, template), template, title, extras)
   }
   if (template === 'map' && mapImage) {
@@ -1155,7 +1378,31 @@ async function addCampaignFiles(
           { name: 'All files', extensions: ['*'] }
         ]
       : [
-          { name: 'Notes and art', extensions: ['md', 'markdown', 'txt', 'png', 'jpg', 'jpeg', 'webp', 'gif', 'pdf'] },
+          {
+            name: 'Notes, art, and audio',
+            extensions: [
+              'md',
+              'markdown',
+              'txt',
+              'png',
+              'jpg',
+              'jpeg',
+              'webp',
+              'gif',
+              'pdf',
+              'mp3',
+              'ogg',
+              'wav',
+              'm4a',
+              'flac',
+              'webm',
+              'aac',
+              'mp4',
+              'mov',
+              'm4v'
+            ]
+          },
+          { name: 'Audio', extensions: ['mp3', 'ogg', 'wav', 'm4a', 'flac', 'webm', 'aac'] },
           { name: 'All files', extensions: ['*'] }
         ]
   })
@@ -1169,6 +1416,8 @@ async function addCampaignFiles(
     await copyFile(source, dest)
     paths.push(toPosix(relative(campaignFolder, dest)))
   }
+  await refreshMixerLibrary()
+  sendMixerState()
   return { campaign: await loadCampaign(campaignFolder), paths }
 }
 
@@ -1183,6 +1432,8 @@ async function deleteCampaignFile(
   const info = await stat(dest)
   if (!info.isFile()) return null
   await unlink(dest)
+  await refreshMixerLibrary()
+  sendMixerState()
   return { campaign: await loadCampaign(campaignFolder), path: toPosix(relative(campaignFolder, dest)) }
 }
 
@@ -1197,7 +1448,9 @@ async function setCampaignFolder(folder: string | null): Promise<CampaignInfo | 
   await patchSettings({ campaignFolder: folder ?? undefined })
   if (!folder) {
     playerState = { ...emptyPlayerState() }
+    mixer = emptyMixerState()
     sendPlayerState()
+    sendMixerState()
     return null
   }
   await prepareCampaignFolder(folder)
@@ -1206,7 +1459,9 @@ async function setCampaignFolder(folder: string | null): Promise<CampaignInfo | 
     ...emptyPlayerState(),
     campaignTitle: info.name
   }
+  await loadMixerForCampaign(folder)
   sendPlayerState()
+  sendMixerState()
   await rememberRecentCampaign(folder, info.name)
   return info
 }
@@ -1221,16 +1476,257 @@ function registerIpc(): void {
         ...playerState,
         imageSrc: payload.src,
         imageTitle: payload.title,
-        mapView: payload.mapView ?? null
+        mapView: payload.mapView ?? null,
+        crawl: null,
+        legend: null,
+        gallery: null,
+        video: null
       }
       sendPlayerState()
-      syncPlayerWindow()
+      showPlayerWindow(undefined, !playerWindowScaleOk)
       return playerState
     }
   )
 
+  ipcMain.handle(
+    'player:show-crawl',
+    (_e, payload: {
+      title?: string
+      body?: string
+      logoSrc?: string | null
+      endSrc?: string | null
+      preface?: string | null
+    }) => {
+    const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
+    const body = typeof payload?.body === 'string' ? payload.body : ''
+    const logoSrc = typeof payload?.logoSrc === 'string' && payload.logoSrc.trim() ? payload.logoSrc.trim() : null
+    const endSrc = typeof payload?.endSrc === 'string' && payload.endSrc.trim() ? payload.endSrc.trim() : null
+    const preface = payload?.preface === null ? null : typeof payload?.preface === 'string' ? payload.preface : undefined
+    playerState = {
+      ...playerState,
+      imageSrc: null,
+      imageTitle: title || 'Opening crawl',
+      mapView: null,
+      crawl: {
+        title: title || undefined,
+        body,
+        logoSrc,
+        endSrc,
+        preface,
+        startedAt: Date.now()
+      },
+      legend: null,
+      gallery: null,
+      video: null
+    }
+    sendPlayerState()
+    showPlayerWindow(undefined, !playerWindowScaleOk)
+    return playerState
+  })
+
+  ipcMain.handle(
+    'player:show-legend',
+    (_e, payload: {
+      title?: string
+      body?: string
+      logoSrc?: string | null
+      endSrc?: string | null
+      preface?: string | null
+    }) => {
+    const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
+    const body = typeof payload?.body === 'string' ? payload.body : ''
+    const logoSrc = typeof payload?.logoSrc === 'string' && payload.logoSrc.trim() ? payload.logoSrc.trim() : null
+    const endSrc = typeof payload?.endSrc === 'string' && payload.endSrc.trim() ? payload.endSrc.trim() : null
+    const preface = payload?.preface === null ? null : typeof payload?.preface === 'string' ? payload.preface : undefined
+    playerState = {
+      ...playerState,
+      imageSrc: null,
+      imageTitle: title || 'Campfire chronicle',
+      mapView: null,
+      crawl: null,
+      legend: {
+        title: title || undefined,
+        body,
+        logoSrc,
+        endSrc,
+        preface,
+        startedAt: Date.now()
+      },
+      gallery: null,
+      video: null
+    }
+    sendPlayerState()
+    showPlayerWindow(undefined, !playerWindowScaleOk)
+    return playerState
+  })
+
   ipcMain.handle('player:clear', () => {
-    playerState = { ...playerState, imageSrc: null, imageTitle: '', mapView: null }
+    if (crawlStopTimer) {
+      clearTimeout(crawlStopTimer)
+      crawlStopTimer = null
+    }
+    if (legendStopTimer) {
+      clearTimeout(legendStopTimer)
+      legendStopTimer = null
+    }
+    playerState = {
+      ...playerState,
+      imageSrc: null,
+      imageTitle: '',
+      mapView: null,
+      crawl: null,
+      legend: null,
+      gallery: null,
+      video: null
+    }
+    sendPlayerState()
+    return playerState
+  })
+
+  ipcMain.handle('player:stop-crawl', () => {
+    const crawl = playerState.crawl
+    if (!crawl || crawl.stoppingAt != null) return playerState
+    if (crawlStopTimer) {
+      clearTimeout(crawlStopTimer)
+      crawlStopTimer = null
+    }
+    playerState = {
+      ...playerState,
+      crawl: { ...crawl, stoppingAt: Date.now() }
+    }
+    sendPlayerState()
+    crawlStopTimer = setTimeout(() => {
+      crawlStopTimer = null
+      if (playerState.crawl?.stoppingAt) {
+        playerState = { ...playerState, crawl: null }
+        sendPlayerState()
+      }
+    }, CRAWL_FADE_OUT_MS)
+    return playerState
+  })
+
+  ipcMain.handle('player:stop-legend', () => {
+    const legend = playerState.legend
+    if (!legend || legend.stoppingAt != null) return playerState
+    if (legendStopTimer) {
+      clearTimeout(legendStopTimer)
+      legendStopTimer = null
+    }
+    playerState = {
+      ...playerState,
+      legend: { ...legend, stoppingAt: Date.now() }
+    }
+    sendPlayerState()
+    legendStopTimer = setTimeout(() => {
+      legendStopTimer = null
+      if (playerState.legend?.stoppingAt) {
+        playerState = { ...playerState, legend: null }
+        sendPlayerState()
+      }
+    }, CRAWL_FADE_OUT_MS)
+    return playerState
+  })
+
+  ipcMain.handle(
+    'player:show-gallery',
+    (
+      _e,
+      payload: {
+        title?: string
+        slides?: { src: string; label?: string }[]
+        intervalSec?: number | null
+        loop?: boolean
+        showTitle?: boolean
+      }
+    ) => {
+      const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
+      const slides = Array.isArray(payload?.slides)
+        ? payload.slides
+            .filter((s) => s && typeof s.src === 'string' && s.src.trim())
+            .map((s) => ({
+              src: s.src.trim(),
+              label: typeof s.label === 'string' && s.label.trim() ? s.label.trim() : undefined
+            }))
+        : []
+      if (slides.length === 0) return playerState
+      const intervalRaw = payload?.intervalSec
+      const intervalSec =
+        typeof intervalRaw === 'number' && Number.isFinite(intervalRaw) && intervalRaw > 0
+          ? Math.min(120, Math.round(intervalRaw))
+          : null
+      const loop = payload?.loop !== false
+      const showTitle = Boolean(payload?.showTitle) && Boolean(title)
+      playerState = {
+        ...playerState,
+        imageSrc: null,
+        imageTitle: title || 'Gallery',
+        mapView: null,
+        crawl: null,
+        legend: null,
+        gallery: {
+          title: title || undefined,
+          slides,
+          index: 0,
+          startedAt: Date.now(),
+          intervalSec,
+          loop,
+          showTitle
+        },
+        video: null
+      }
+      sendPlayerState()
+      showPlayerWindow(undefined, !playerWindowScaleOk)
+      return playerState
+    }
+  )
+
+  ipcMain.handle('player:gallery-set-index', (_e, index: number) => {
+    const gallery = playerState.gallery
+    if (!gallery) return playerState
+    const next = Math.max(0, Math.min(gallery.slides.length - 1, Math.floor(Number(index) || 0)))
+    if (next === gallery.index) return playerState
+    playerState = { ...playerState, gallery: { ...gallery, index: next } }
+    sendPlayerState()
+    return playerState
+  })
+
+  ipcMain.handle('player:stop-gallery', () => {
+    if (!playerState.gallery) return playerState
+    playerState = { ...playerState, gallery: null, imageTitle: '' }
+    sendPlayerState()
+    return playerState
+  })
+
+  ipcMain.handle(
+    'player:show-video',
+    (_e, payload: { title?: string; src?: string; muted?: boolean }) => {
+      const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
+      const src = typeof payload?.src === 'string' ? payload.src.trim() : ''
+      if (!src) return playerState
+      playerState = {
+        ...playerState,
+        imageSrc: null,
+        imageTitle: title || 'Video',
+        mapView: null,
+        crawl: null,
+        legend: null,
+        gallery: null,
+        video: {
+          title: title || undefined,
+          src,
+          muted: Boolean(payload?.muted),
+          startedAt: Date.now()
+        }
+      }
+      sendPlayerState()
+      showPlayerWindow(undefined, !playerWindowScaleOk)
+      return playerState
+    }
+  )
+
+  ipcMain.handle('player:stop-video', () => {
+    if (!playerState.video) return playerState
+    playerState = { ...playerState, video: null, imageTitle: '' }
     sendPlayerState()
     return playerState
   })
@@ -1254,11 +1750,53 @@ function registerIpc(): void {
 
   ipcMain.handle('player:get-state', () => playerState)
 
+  ipcMain.handle('mixer:get', async () => {
+    if (campaignFolder) await refreshMixerLibrary()
+    sendMixerState()
+    return mixer
+  })
+  ipcMain.handle('mixer:play-music', (_e, playlistId: string) =>
+    runMixer({ type: 'play-music', playlistId: String(playlistId ?? '') })
+  )
+  ipcMain.handle('mixer:pause-music', () => runMixer({ type: 'pause-music' }))
+  ipcMain.handle('mixer:skip-music', () => runMixer({ type: 'skip-music' }))
+  ipcMain.handle('mixer:stop-music', () => runMixer({ type: 'stop-music' }))
+  ipcMain.handle('mixer:play-ambience', (_e, playlistId: string) =>
+    runMixer({ type: 'play-ambience', playlistId: String(playlistId ?? '') })
+  )
+  ipcMain.handle('mixer:stop-ambience', () => runMixer({ type: 'stop-ambience' }))
+  ipcMain.handle('mixer:oneshot', (_e, path: string) => runMixer({ type: 'oneshot', path: String(path ?? '') }))
+  ipcMain.handle('mixer:play-crawl-music', (_e, path: string) =>
+    runMixer({ type: 'play-crawl-music', path: String(path ?? '') })
+  )
+  ipcMain.handle('mixer:arm-crawl-music', () => runMixer({ type: 'arm-crawl-music' }))
+  ipcMain.handle('mixer:stop-crawl-music', () => runMixer({ type: 'stop-crawl-music' }))
+  ipcMain.handle('mixer:stop-all', () => runMixer({ type: 'stop-all' }))
+  ipcMain.handle('mixer:set-prefs', (_e, prefs: Partial<MixerPrefs>) =>
+    runMixer({ type: 'set-prefs', prefs: prefs ?? {} })
+  )
+  ipcMain.handle('mixer:ended', (_e, layer: 'music' | 'ambience' | 'crawl') =>
+    runMixer({
+      type: 'ended',
+      layer: layer === 'ambience' ? 'ambience' : layer === 'crawl' ? 'crawl' : 'music'
+    })
+  )
+  ipcMain.handle('mixer:error', (_e, message: string | null) =>
+    runMixer({ type: 'error', message: typeof message === 'string' && message ? message : null })
+  )
+
+  ipcMain.handle('player:window-open', () => playerWindowVisible())
+
+  ipcMain.handle('player:close-window', () => {
+    closePlayerWindow()
+    return playerWindowVisible()
+  })
+
   ipcMain.handle('player:place-on-display', async (_e, displayId: number) => {
     const display = screen.getAllDisplays().find((d) => d.id === displayId)
     if (!display) return listDisplays()
     await patchSettings({ playerDisplayId: displayId })
-    if (hasSecondDisplay()) showPlayerWindow(display)
+    if (hasSecondDisplay()) showPlayerWindow(display, true)
     else hidePlayerWindow()
     return listDisplays()
   })
@@ -1290,16 +1828,54 @@ function registerIpc(): void {
     return setCampaignFolder(folder)
   })
 
-  ipcMain.handle('campaign:new', async (_e, systemId?: string) => {
+  ipcMain.handle(
+    'campaign:new',
+    async (
+      _e,
+      systemId?: string,
+      themeId?: string,
+      options?: { holoPortraits?: boolean; digitalRain?: boolean }
+    ) => {
     const system = parseSystemId(systemId)
+    const theme = parseThemeId(themeId)
     const result = await dialog.showOpenDialog(dmWindow ?? undefined, {
       title: 'New campaign folder',
       properties: ['openDirectory', 'createDirectory']
     })
     if (result.canceled || !result.filePaths[0]) return null
     await ensureCampaignLayout(result.filePaths[0])
-    await seedNewCampaignFiles(result.filePaths[0], system)
+    await seedNewCampaignFiles(result.filePaths[0], system, theme, options)
     return setCampaignFolder(result.filePaths[0])
+  })
+
+  ipcMain.handle('campaign:set-theme', async (_e, themeId?: string) => {
+    if (!campaignFolder) return null
+    const campaignPath = join(campaignFolder, 'campaign.json')
+    const campaign = await readJson<CampaignFile>(campaignPath, {})
+    const theme = parseThemeId(themeId)
+    await writeJson(campaignPath, {
+      ...campaign,
+      theme,
+      ...(theme === 'scifi' ? { holoPortraits: true } : {}),
+      ...(theme === 'matrix' ? { digitalRain: true } : {})
+    })
+    return loadCampaign(campaignFolder)
+  })
+
+  ipcMain.handle('campaign:set-holo-portraits', async (_e, enabled?: boolean) => {
+    if (!campaignFolder) return null
+    const campaignPath = join(campaignFolder, 'campaign.json')
+    const campaign = await readJson<CampaignFile>(campaignPath, {})
+    await writeJson(campaignPath, { ...campaign, holoPortraits: enabled === true })
+    return loadCampaign(campaignFolder)
+  })
+
+  ipcMain.handle('campaign:set-digital-rain', async (_e, enabled?: boolean) => {
+    if (!campaignFolder) return null
+    const campaignPath = join(campaignFolder, 'campaign.json')
+    const campaign = await readJson<CampaignFile>(campaignPath, {})
+    await writeJson(campaignPath, { ...campaign, digitalRain: enabled === true })
+    return loadCampaign(campaignFolder)
   })
 
   ipcMain.handle('campaign:open-sample', async () =>
@@ -1363,6 +1939,26 @@ function registerIpc(): void {
     setNotePortrait(relativePath, image)
   )
 
+  ipcMain.handle(
+    'campaign:copy-art',
+    async (_e, relativePath: string, image: CreateNoteMapImage, name?: string) => {
+      if (!campaignFolder) return null
+      const dest = safeJoin(campaignFolder, relativePath)
+      if (!existsSync(dest)) return null
+      const folder = toPosix(relative(campaignFolder, dirname(dest)))
+      const fallback =
+        image.kind === 'existing'
+          ? basename(image.path)
+          : image.kind === 'import'
+            ? basename(image.filePath)
+            : image.id
+      const title = sanitizeFileName((name || fallback).replace(/\.[^.]+$/, ''))
+      const fileName = await copyImageToArtFolder(folder, title, image)
+      if (!fileName) return null
+      return { campaign: await loadCampaign(campaignFolder), fileName }
+    }
+  )
+
   ipcMain.handle('campaign:duplicate-file', async (_e, relativePath: string, name?: string) =>
     duplicateCampaignFile(relativePath, name)
   )
@@ -1381,6 +1977,10 @@ function registerIpc(): void {
 
 app.whenReady().then(async () => {
   app.setAppUserModelId('com.tabledm.app')
+  session.defaultSession.setPermissionRequestHandler((_contents, _permission, callback) => {
+    callback(true)
+  })
+  session.defaultSession.setPermissionCheckHandler(() => true)
   await migrateLegacyUserData()
   await removeDroppedAppSamples()
   await ensureWotcHome()
@@ -1444,17 +2044,19 @@ app.whenReady().then(async () => {
       allowQuit = true
     }
   })
+  const sampleFolder = await ensureSampleWorkingCopy()
   const existing =
     settings.campaignFolder && existsSync(settings.campaignFolder) ? settings.campaignFolder : null
   if (existing) {
-    campaignFolder = samePath(existing, sampleSourcePath())
-      ? await ensureSampleWorkingCopy()
-      : existing
+    campaignFolder =
+      samePath(existing, sampleSourcePath()) || samePath(existing, sampleFolder)
+        ? sampleFolder
+        : existing
     if (campaignFolder !== settings.campaignFolder) {
       await patchSettings({ campaignFolder })
     }
   } else {
-    campaignFolder = await ensureSampleWorkingCopy()
+    campaignFolder = sampleFolder
     await patchSettings({ campaignFolder })
   }
   if (campaignFolder) {
@@ -1464,10 +2066,10 @@ app.whenReady().then(async () => {
       ...emptyPlayerState(),
       campaignTitle: info.name
     }
+    await loadMixerForCampaign(campaignFolder)
   }
 
   createDmWindow()
-  syncPlayerWindow()
   watchDisplays()
   scheduleLaunchUpdateCheck()
 

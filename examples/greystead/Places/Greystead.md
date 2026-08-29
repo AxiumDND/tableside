@@ -1,20 +1,22 @@
 # Greystead
 
-> [!infobox]+
-> ![[Greystead.webp]]
->
-> ### *A palisade village on a limestone ridge*
->
-> | | |
-> |---|---|
-> | **Type** | Village |
-> | **Region** | The ridge country |
-> | **Ruler / faction** | [[Alden Crowe]] |
-> | **Map** | |
-> | **Mood** | Closed, muddy, watching |
+[!place]
+![[Greystead.webp]]
 
-> [!readaloud]
-> Timber houses, a mill wheel, one inn that still has a fire. The palisade is meant for wolves. Today it feels like it is meant for something else.
+### *A palisade village on a limestone ridge*
+
+| | |
+|---|---|
+| **Type** | Village |
+| **Region** | The ridge country |
+| **Ruler / faction** | [[Alden Crowe]] |
+| **Map** | |
+| **Mood** | Closed, muddy, watching |
+[!/place]
+
+[!readaloud]
+Timber houses, a mill wheel, one inn that still has a fire. The palisade is meant for wolves. Today it feels like it is meant for something else.
+[!/readaloud]
 
 ## At a glance
 
@@ -44,5 +46,6 @@
 - Bandits in the ridge cave
 - Lights on the ridge, and singing
 
-> [!gmonly]
-> Any two clues send them to [[The Ridge Road]]. The bandit story is the costume.
+[!gmonly]
+Any two clues send them to [[The Ridge Road]]. The bandit story is the costume.
+[!/gmonly]

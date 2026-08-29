@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron'
+import type { MixerPrefs, MixerState } from '../shared/audio'
 import type {
   AppFolders,
   AppSettings,
@@ -31,6 +32,13 @@ const api = {
   },
   placePlayerOnDisplay: (displayId: number): Promise<DisplayInfo[]> =>
     ipcRenderer.invoke('player:place-on-display', displayId),
+  closePlayerWindow: (): Promise<boolean> => ipcRenderer.invoke('player:close-window'),
+  getPlayerWindowOpen: (): Promise<boolean> => ipcRenderer.invoke('player:window-open'),
+  onPlayerWindow: (callback: (open: boolean) => void) => {
+    const listener = (_event: unknown, open: boolean) => callback(open)
+    ipcRenderer.on('player:window', listener)
+    return () => ipcRenderer.removeListener('player:window', listener)
+  },
   onDisplaysChanged: (callback: (displays: DisplayInfo[]) => void) => {
     const listener = (_event: unknown, displays: DisplayInfo[]) => callback(displays)
     ipcRenderer.on('app:displays-changed', listener)
@@ -38,6 +46,38 @@ const api = {
   },
   showImage: (src: string, title: string, mapView?: PlayerMapView | null): Promise<PlayerState> =>
     ipcRenderer.invoke('player:show-image', { src, title, mapView: mapView ?? null }),
+  showCrawl: (payload: {
+    title?: string
+    body: string
+    logoSrc?: string | null
+    endSrc?: string | null
+    preface?: string | null
+  }): Promise<PlayerState> => ipcRenderer.invoke('player:show-crawl', payload),
+  stopCrawl: (): Promise<PlayerState> => ipcRenderer.invoke('player:stop-crawl'),
+  showLegend: (payload: {
+    title?: string
+    body: string
+    logoSrc?: string | null
+    endSrc?: string | null
+    preface?: string | null
+  }): Promise<PlayerState> => ipcRenderer.invoke('player:show-legend', payload),
+  stopLegend: (): Promise<PlayerState> => ipcRenderer.invoke('player:stop-legend'),
+  showGallery: (payload: {
+    title?: string
+    slides: { src: string; label?: string }[]
+    intervalSec?: number | null
+    loop?: boolean
+    showTitle?: boolean
+  }): Promise<PlayerState> => ipcRenderer.invoke('player:show-gallery', payload),
+  gallerySetIndex: (index: number): Promise<PlayerState> =>
+    ipcRenderer.invoke('player:gallery-set-index', index),
+  stopGallery: (): Promise<PlayerState> => ipcRenderer.invoke('player:stop-gallery'),
+  showVideo: (payload: {
+    title?: string
+    src: string
+    muted?: boolean
+  }): Promise<PlayerState> => ipcRenderer.invoke('player:show-video', payload),
+  stopVideo: (): Promise<PlayerState> => ipcRenderer.invoke('player:stop-video'),
   clearPlayer: (): Promise<PlayerState> => ipcRenderer.invoke('player:clear'),
   setPlayerInitiative: (payload: {
     entries: PlayerState['initiative']
@@ -45,6 +85,32 @@ const api = {
     round?: number
   }): Promise<PlayerState> => ipcRenderer.invoke('player:set-initiative', payload),
   getPlayerState: (): Promise<PlayerState> => ipcRenderer.invoke('player:get-state'),
+  getMixer: (): Promise<MixerState> => ipcRenderer.invoke('mixer:get'),
+  mixerPlayMusic: (playlistId: string): Promise<MixerState> =>
+    ipcRenderer.invoke('mixer:play-music', playlistId),
+  mixerPauseMusic: (): Promise<MixerState> => ipcRenderer.invoke('mixer:pause-music'),
+  mixerSkipMusic: (): Promise<MixerState> => ipcRenderer.invoke('mixer:skip-music'),
+  mixerStopMusic: (): Promise<MixerState> => ipcRenderer.invoke('mixer:stop-music'),
+  mixerPlayAmbience: (playlistId: string): Promise<MixerState> =>
+    ipcRenderer.invoke('mixer:play-ambience', playlistId),
+  mixerStopAmbience: (): Promise<MixerState> => ipcRenderer.invoke('mixer:stop-ambience'),
+  mixerOneshot: (path: string): Promise<MixerState> => ipcRenderer.invoke('mixer:oneshot', path),
+  mixerPlayCrawlMusic: (path: string): Promise<MixerState> =>
+    ipcRenderer.invoke('mixer:play-crawl-music', path),
+  mixerArmCrawlMusic: (): Promise<MixerState> => ipcRenderer.invoke('mixer:arm-crawl-music'),
+  mixerStopCrawlMusic: (): Promise<MixerState> => ipcRenderer.invoke('mixer:stop-crawl-music'),
+  mixerStopAll: (): Promise<MixerState> => ipcRenderer.invoke('mixer:stop-all'),
+  mixerSetPrefs: (prefs: Partial<MixerPrefs>): Promise<MixerState> =>
+    ipcRenderer.invoke('mixer:set-prefs', prefs),
+  mixerTrackEnded: (layer: 'music' | 'ambience' | 'crawl'): Promise<MixerState> =>
+    ipcRenderer.invoke('mixer:ended', layer),
+  mixerError: (message: string | null): Promise<MixerState> =>
+    ipcRenderer.invoke('mixer:error', message),
+  onMixerState: (callback: (state: MixerState) => void) => {
+    const listener = (_event: unknown, state: MixerState) => callback(state)
+    ipcRenderer.on('mixer:state', listener)
+    return () => ipcRenderer.removeListener('mixer:state', listener)
+  },
   onPlayerState: (callback: (state: PlayerState) => void) => {
     const listener = (_event: unknown, state: PlayerState) => callback(state)
     ipcRenderer.on('player:state', listener)
@@ -53,7 +119,17 @@ const api = {
   pickCampaignFolder: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:pick-folder'),
   openCampaignPath: (folder: string): Promise<CampaignInfo | null> =>
     ipcRenderer.invoke('campaign:open-path', folder),
-  newCampaign: (system?: string): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:new', system),
+  newCampaign: (
+    system?: string,
+    theme?: string,
+    options?: { holoPortraits?: boolean; digitalRain?: boolean }
+  ): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:new', system, theme, options),
+  setCampaignTheme: (theme: string): Promise<CampaignInfo | null> =>
+    ipcRenderer.invoke('campaign:set-theme', theme),
+  setCampaignHoloPortraits: (enabled: boolean): Promise<CampaignInfo | null> =>
+    ipcRenderer.invoke('campaign:set-holo-portraits', enabled),
+  setCampaignDigitalRain: (enabled: boolean): Promise<CampaignInfo | null> =>
+    ipcRenderer.invoke('campaign:set-digital-rain', enabled),
   openSampleCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:open-sample'),
   getCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:get'),
   readFile: (relativePath: string): Promise<string> =>
@@ -76,6 +152,12 @@ const api = {
     image: CreateNoteMapImage
   ): Promise<{ campaign: CampaignInfo; path: string; markdown: string } | null> =>
     ipcRenderer.invoke('campaign:set-portrait', relativePath, image),
+  copyArtToNote: (
+    relativePath: string,
+    image: CreateNoteMapImage,
+    name?: string
+  ): Promise<{ campaign: CampaignInfo; fileName: string } | null> =>
+    ipcRenderer.invoke('campaign:copy-art', relativePath, image, name),
   duplicateFile: (
     relativePath: string,
     name?: string
