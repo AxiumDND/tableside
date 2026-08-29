@@ -23,6 +23,9 @@
     "typecheck:web": "tsc --noEmit -p tsconfig.web.json --composite false",
     "typecheck": "npm run typecheck:node && npm run typecheck:web",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "pretest:e2e": "npm run build",
+    "test:e2e": "playwright test",
     "dist": "node ./node_modules/electron-vite/bin/electron-vite.js build && node ./node_modules/electron-builder/cli.js --win --publish never",
     "fetch-srd": "node scripts/fetch-srd.mjs"
   },
@@ -35,10 +38,15 @@
     "remark-gfm": "^4.0.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.62.1",
     "@tailwindcss/vite": "^4.1.12",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.6",
     "@types/react": "^19.1.12",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.2",
+    "@vitest/coverage-v8": "^3.2.7",
     "electron": "^44.0.0",
     "electron-builder": "^26.15.3",
     "electron-vite": "^4.0.0",
@@ -46,6 +54,7 @@
     "eslint-plugin-react-hooks": "^7.1.1",
     "eslint-plugin-react-refresh": "^0.5.5",
     "globals": "^17.11.0",
+    "jsdom": "^29.1.1",
     "tailwindcss": "^4.1.12",
     "typescript": "^5.9.2",
     "typescript-eslint": "^8.68.0",

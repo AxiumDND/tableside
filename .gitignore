@@ -9,6 +9,9 @@ Thumbs.db
 .env
 .campaign-local
 *.tsbuildinfo
+coverage
+playwright-report
+test-results
 examples/**/combat.json
 examples/bad-blood/
 examples/test/
