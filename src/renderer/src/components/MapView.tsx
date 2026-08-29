@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import type { PlayerMapView } from '../../../shared/types'
-import { campaignFileUrl, portraitForNote, resolveImageRef, type CampaignImage } from '../lib/images'
+import { campaignFileUrl, resolveImageRef, type CampaignImage } from '../lib/images'
 import {
   FIT_CAMERA,
   MAX_ZOOM,
@@ -24,8 +24,6 @@ import {
 } from '../lib/mapFog'
 import {
   TOKEN_SCALE_DEFAULT,
-  TOKEN_SCALE_MAX,
-  TOKEN_SCALE_MIN,
   clampTokenScale,
   creatureSpaceFromMarkdown,
   ensureHeading,
@@ -43,76 +41,27 @@ import {
   type MapPin,
   type MapToken
 } from '../lib/mapNote'
-import {
-  allPartyNotes,
-  bestiaryNotes,
-  npcNotes,
-  sheetDisplayName,
-  type CampaignNote
-} from '../lib/notes'
+import { type CampaignNote } from '../lib/notes'
 import MapStage, { imagePointFromElement } from './MapStage'
 import MapTokenMark from './MapTokenMark'
-
-type MapTool = 'pan' | 'pin' | 'token' | 'fog' | 'reveal'
-type PinAction = 'view' | 'add' | 'edit' | 'delete'
-type PickerTab = 'pc' | 'npc' | 'monster'
-
-interface TokenPick {
-  kind: MapToken['kind']
-  source: string
-  label: string
-  imageSrc: string | null
-  space: CreatureSpace
-}
-
-function liveView(
-  camera: MapCamera,
-  cells: Uint8Array,
-  tokens: MapToken[],
-  images: CampaignImage[],
-  tokenScale: number,
-  dragPos: { id: string; x: number; y: number } | null
-): PlayerMapView {
-  const placed = dragPos
-    ? tokens.map((token) => (token.id === dragPos.id ? { ...token, x: dragPos.x, y: dragPos.y } : token))
-    : tokens
-  return {
-    zoom: camera.zoom,
-    centerX: camera.centerX,
-    centerY: camera.centerY,
-    fog: fogAllClear(cells) ? '' : encodeFog(cells),
-    fogSize: fogSizeOf(cells),
-    tokens: placed.map((token) => toPlayerMapToken(token, images, tokenScale))
-  }
-}
-
-function toolButton(active: boolean): string {
-  return active
-    ? 'rounded bg-amber px-2 py-0.5 font-semibold text-on-amber'
-    : 'rounded border border-line px-2 py-0.5 hover:border-amber'
-}
-
-function primaryTool(tool: MapTool): 'pan' | 'pin' | 'token' | 'fog' {
-  return tool === 'reveal' ? 'fog' : tool
-}
-
-function catalogFromNotes(notes: CampaignNote[], images: CampaignImage[]): Record<PickerTab, TokenPick[]> {
-  const toPick = (note: CampaignNote, kind: MapToken['kind']): TokenPick => {
-    const portrait = portraitForNote(note.relativePath, images)
-    return {
-      kind,
-      source: note.relativePath,
-      label: sheetDisplayName(note.stem),
-      imageSrc: portrait ? campaignFileUrl(portrait) : null,
-      space: 'medium'
-    }
-  }
-  return {
-    pc: allPartyNotes(notes).map((note) => toPick(note, 'pc')),
-    npc: npcNotes(notes).map((note) => toPick(note, 'npc')),
-    monster: bestiaryNotes(notes).map((note) => toPick(note, 'monster'))
-  }
-}
+import {
+  catalogFromNotes,
+  liveView,
+  primaryTool,
+  type MapTool,
+  type PinAction,
+  type PickerTab,
+  type TokenPick
+} from './MapViewHelpers'
+import {
+  MapFogToolbar,
+  MapPanToolbar,
+  MapPinEditorForm,
+  MapPinToolbar,
+  MapPrimaryToolbar,
+  MapTokenPickerPanel,
+  MapTokenToolbar
+} from './MapViewPanels'
 
 export default function MapView({
   markdown,
@@ -597,6 +546,19 @@ export default function MapView({
     persistFog()
   }
 
+  function pickToken(item: TokenPick): void {
+    const space = spaceBySource[item.source] ?? item.space
+    setPendingToken({ ...item, space })
+    if (spaceBySource[item.source]) return
+    void window.tabledm.readFile(item.source).then((text) => {
+      const nextSpace = creatureSpaceFromMarkdown(text)
+      setSpaceBySource((prev) => ({ ...prev, [item.source]: nextSpace }))
+      setPendingToken((prev) =>
+        prev?.source === item.source ? { ...prev, space: nextSpace } : prev
+      )
+    }).catch(() => undefined)
+  }
+
   function onBoardPointerDown(event: ReactPointerEvent<HTMLDivElement>): void {
     if (event.button === 1 || event.altKey || (tool === 'pan' && event.button === 0)) {
       event.preventDefault()
@@ -684,237 +646,65 @@ export default function MapView({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex flex-wrap items-center gap-1.5 border-b border-line px-3 py-1.5 text-[11px] text-muted">
-        <button type="button" onClick={() => selectPrimary('pan')} className={toolButton(primary === 'pan')}>
-          Pan
-        </button>
-        <button type="button" onClick={() => selectPrimary('pin')} className={toolButton(primary === 'pin')}>
-          Pin
-        </button>
-        <button type="button" onClick={() => selectPrimary('token')} className={toolButton(primary === 'token')}>
-          Token
-        </button>
-        <button type="button" onClick={() => selectPrimary('fog')} className={toolButton(primary === 'fog')}>
-          Fog
-        </button>
-      </div>
+      <MapPrimaryToolbar primary={primary} onSelectPrimary={selectPrimary} />
 
       {primary === 'pan' ? (
-        <div className="flex flex-wrap items-center gap-1.5 border-b border-line bg-panel px-3 py-1.5 text-[11px] text-muted">
-          <span>Drag to pan · players see tokens, not pins</span>
-          <label className="flex items-center gap-1.5" title="Scroll also zooms toward the cursor">
-            Zoom
-            <input
-              type="range"
-              min={MIN_ZOOM}
-              max={MAX_ZOOM}
-              step={0.05}
-              value={camera.zoom}
-              onChange={(event) => {
-                const zoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, Number(event.target.value)))
-                setCamera((prev) => ({ ...prev, zoom }))
-              }}
-              className="h-1 w-28 accent-amber"
-            />
-            <span className="w-10 tabular-nums text-parchment">{Math.round(camera.zoom * 100)}%</span>
-          </label>
-          <button
-            type="button"
-            onClick={() => setCamera(FIT_CAMERA)}
-            className="rounded border border-line px-2 py-0.5 hover:border-amber"
-          >
-            Fit
-          </button>
-        </div>
+        <MapPanToolbar
+          zoom={camera.zoom}
+          onZoomChange={(zoom) => setCamera((prev) => ({ ...prev, zoom }))}
+          onFit={() => setCamera(FIT_CAMERA)}
+        />
       ) : null}
 
       {primary === 'pin' ? (
-        <div className="flex flex-wrap items-center gap-1.5 border-b border-line bg-panel px-3 py-1.5 text-[11px] text-muted">
-          <button
-            type="button"
-            onClick={startAddPin}
-            disabled={!canAddPin}
-            title={!canAddPin ? 'Unlock pins to add another' : undefined}
-            className={canAddPin ? toolButton(pinAction === 'add') : 'rounded border border-line px-2 py-0.5 opacity-40'}
-          >
-            Add pin
-          </button>
-          <button
-            type="button"
-            onClick={startEditPin}
-            disabled={!canEditPins}
-            title={!canEditPins ? 'Unlock pins to edit' : undefined}
-            className={canEditPins ? toolButton(pinAction === 'edit') : 'rounded border border-line px-2 py-0.5 opacity-40'}
-          >
-            Edit pin
-          </button>
-          <button
-            type="button"
-            onClick={startDeletePin}
-            disabled={!canEditPins}
-            title={!canEditPins ? 'Unlock pins to delete' : undefined}
-            className={canEditPins ? toolButton(pinAction === 'delete') : 'rounded border border-line px-2 py-0.5 opacity-40'}
-          >
-            Delete pin
-          </button>
-          <button
-            type="button"
-            onClick={togglePinLock}
-            title={pinsLocked ? 'Unlock pins so you can add, edit, or delete' : 'Lock pins so they stay put'}
-            className={toolButton(pinsLocked)}
-          >
-            {pinsLocked ? 'Unlock pins' : 'Lock pins'}
-          </button>
-          <span>
-            {pinsLocked && pinCount > 0
-              ? 'Unlock pins to add, edit, or delete'
-              : pinAction === 'add'
-                ? pinCount === 0
-                  ? 'Click the map to place the first pin'
-                  : 'Click the map to place a pin'
-                : pinAction === 'delete'
-                  ? 'Click a pin to delete it'
-                  : pinAction === 'edit' && selected
-                    ? `Editing ${selected.label}`
-                    : pinAction === 'edit'
-                      ? 'Click a pin to edit it'
-                      : 'Choose add, edit, or delete'}
-          </span>
-        </div>
+        <MapPinToolbar
+          pinAction={pinAction}
+          pinsLocked={pinsLocked}
+          pinCount={pinCount}
+          canAddPin={canAddPin}
+          canEditPins={canEditPins}
+          selected={selected}
+          onStartAddPin={startAddPin}
+          onStartEditPin={startEditPin}
+          onStartDeletePin={startDeletePin}
+          onTogglePinLock={togglePinLock}
+        />
       ) : null}
 
       {primary === 'token' ? (
         <div className="flex flex-col gap-1.5 border-b border-line bg-panel px-3 py-1.5">
-          <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted">
-            <span>{pendingToken ? `Click the map to place ${pendingToken.label}` : 'Pick a creature, then click the map'}</span>
-            <label
-              className="flex items-center gap-1.5"
-              title="Scales every token. Large is 2× Medium, Huge 3×, Gargantuan 4×. Shift+scroll."
-            >
-              Size
-              <input
-                type="range"
-                min={TOKEN_SCALE_MIN}
-                max={TOKEN_SCALE_MAX}
-                step={0.005}
-                value={tokenScale}
-                onChange={(event) => {
-                  const next = clampTokenScale(Number(event.target.value))
-                  setScaleDraft(next)
-                  resizeAllTokens(next)
-                }}
-                className="h-1 w-24 accent-amber"
-              />
-              <span className="w-8 tabular-nums text-parchment">{Math.round(tokenScale * 100)}%</span>
-            </label>
-            {selectedToken ? (
-              <button
-                type="button"
-                onClick={() => deleteToken(selectedToken.id)}
-                className="rounded border border-line px-2 py-0.5 hover:border-blood"
-              >
-                Delete token
-              </button>
-            ) : null}
-            {(['pc', 'npc', 'monster'] as const).map((tab) => (
-              <button
-                key={tab}
-                type="button"
-                onClick={() => setPickerTab(tab)}
-                className={toolButton(pickerTab === tab)}
-              >
-                {tab === 'pc' ? 'Party' : tab === 'npc' ? 'NPCs' : 'Monsters'}
-                <span className="ml-1 tabular-nums opacity-70">{catalog[tab].length}</span>
-              </button>
-            ))}
-            <input
-              value={tokenQuery}
-              onChange={(event) => setTokenQuery(event.target.value)}
-              placeholder="Filter…"
-              className="ml-auto w-36 rounded border border-line bg-ink px-1.5 py-0.5 text-[11px] text-parchment outline-none focus:border-amber"
-            />
-          </div>
-          <div className="flex max-h-20 flex-wrap gap-1 overflow-auto">
-            {filteredPicks.length === 0 ? (
-              <p className="text-[11px] text-muted">
-                {pickerTab === 'pc'
-                  ? 'No Party sheets in this campaign.'
-                  : pickerTab === 'npc'
-                    ? 'No NPC sheets in this campaign.'
-                    : 'No Bestiary sheets in this campaign.'}
-              </p>
-            ) : (
-              filteredPicks.map((item) => (
-                <button
-                  key={item.source}
-                  type="button"
-                  title={item.label}
-                  onClick={() => {
-                    const space = spaceBySource[item.source] ?? item.space
-                    setPendingToken({ ...item, space })
-                    if (spaceBySource[item.source]) return
-                    void window.tabledm.readFile(item.source).then((text) => {
-                      const nextSpace = creatureSpaceFromMarkdown(text)
-                      setSpaceBySource((prev) => ({ ...prev, [item.source]: nextSpace }))
-                      setPendingToken((prev) =>
-                        prev?.source === item.source ? { ...prev, space: nextSpace } : prev
-                      )
-                    }).catch(() => undefined)
-                  }}
-                  className={`flex items-center gap-1.5 rounded-full border py-0.5 pr-2 pl-0.5 text-[11px] ${
-                    pendingToken?.source === item.source
-                      ? 'border-amber bg-amber text-on-amber'
-                      : 'border-line bg-ink text-parchment hover:border-amber'
-                  }`}
-                >
-                  <span className="h-6 w-6 overflow-hidden rounded-full border border-line bg-panel">
-                    {item.imageSrc ? (
-                      <img src={item.imageSrc} alt="" className="h-full w-full object-cover" />
-                    ) : (
-                      <span className="flex h-full w-full items-center justify-center text-[9px] font-semibold">
-                        {item.label.slice(0, 2).toUpperCase()}
-                      </span>
-                    )}
-                  </span>
-                  {item.label}
-                  {item.space !== 'medium' ? (
-                    <span className="opacity-70">{item.space}</span>
-                  ) : null}
-                </button>
-              ))
-            )}
-          </div>
+          <MapTokenToolbar
+            pendingToken={pendingToken}
+            tokenScale={tokenScale}
+            selectedTokenId={selectedTokenId}
+            onTokenScaleChange={(next) => {
+              setScaleDraft(next)
+              resizeAllTokens(next)
+            }}
+            onDeleteToken={deleteToken}
+          />
+          <MapTokenPickerPanel
+            pickerTab={pickerTab}
+            tokenQuery={tokenQuery}
+            catalog={catalog}
+            filteredPicks={filteredPicks}
+            pendingToken={pendingToken}
+            onPickerTabChange={setPickerTab}
+            onTokenQueryChange={setTokenQuery}
+            onPickToken={pickToken}
+          />
         </div>
       ) : null}
 
       {primary === 'fog' ? (
-        <div className="flex flex-wrap items-center gap-1.5 border-b border-line bg-panel px-3 py-1.5 text-[11px] text-muted">
-          <button type="button" onClick={() => setTool('fog')} className={toolButton(tool === 'fog')}>
-            Hide
-          </button>
-          <button type="button" onClick={() => setTool('reveal')} className={toolButton(tool === 'reveal')}>
-            Reveal
-          </button>
-          <label className="flex items-center gap-1.5" title="[ smaller · ] bigger · Shift+scroll">
-            Brush
-            <input
-              type="range"
-              min={BRUSH_MIN}
-              max={BRUSH_MAX}
-              step={1}
-              value={brushSize}
-              onChange={(event) => setBrushSize(Number(event.target.value))}
-              className="h-1 w-24 accent-amber"
-            />
-            <span className="w-3 tabular-nums text-parchment">{brushSize}</span>
-          </label>
-          <button type="button" onClick={coverAll} className="rounded border border-line px-2 py-0.5 hover:border-amber">
-            Cover all
-          </button>
-          <button type="button" onClick={clearFog} className="rounded border border-line px-2 py-0.5 hover:border-amber">
-            Clear fog
-          </button>
-        </div>
+        <MapFogToolbar
+          tool={tool}
+          brushSize={brushSize}
+          onToolChange={setTool}
+          onBrushSizeChange={setBrushSize}
+          onCoverAll={coverAll}
+          onClearFog={clearFog}
+        />
       ) : null}
 
       <div ref={paneRef} className="relative min-h-0 flex-1 bg-ink">
@@ -1084,59 +874,21 @@ export default function MapView({
       </div>
 
       {(placing && draft) || (tool === 'pin' && pinAction === 'edit' && selected) ? (
-        <form
-          className="flex flex-wrap items-end gap-2 border-t border-line bg-panel px-3 py-2"
-          onSubmit={(event) => {
-            event.preventDefault()
+        <MapPinEditorForm
+          placing={placing}
+          draft={draft}
+          label={label}
+          heading={heading}
+          newHeading={newHeading}
+          headings={headings}
+          onLabelChange={setLabel}
+          onHeadingChange={setHeading}
+          onNewHeadingChange={setNewHeading}
+          onSubmit={() => {
             if (placing && draft) addPin()
             else savePin()
           }}
-        >
-          <label className="text-[11px] text-muted">
-            Label
-            <input
-              value={label}
-              onChange={(event) => setLabel(event.target.value)}
-              className="mt-0.5 block w-20 rounded border border-line bg-ink px-1.5 py-1 text-sm outline-none focus:border-amber"
-            />
-          </label>
-          <label className="min-w-40 flex-1 text-[11px] text-muted">
-            Room heading
-            <select
-              value={newHeading || headings.length === 0 ? '__new__' : heading}
-              onChange={(event) => {
-                if (event.target.value === '__new__') {
-                  setNewHeading(newHeading || `Room ${label}`)
-                  return
-                }
-                setNewHeading('')
-                setHeading(event.target.value)
-              }}
-              className="mt-0.5 block w-full rounded border border-line bg-ink px-1.5 py-1 text-sm outline-none focus:border-amber"
-            >
-              {headings.map((name) => (
-                <option key={name} value={name}>
-                  {name}
-                </option>
-              ))}
-              <option value="__new__">New heading…</option>
-            </select>
-          </label>
-          {newHeading || headings.length === 0 ? (
-            <label className="min-w-40 flex-1 text-[11px] text-muted">
-              New heading
-              <input
-                value={newHeading}
-                onChange={(event) => setNewHeading(event.target.value)}
-                placeholder={`Room ${label}`}
-                className="mt-0.5 block w-full rounded border border-line bg-ink px-1.5 py-1 text-sm outline-none focus:border-amber"
-              />
-            </label>
-          ) : null}
-          <button type="submit" className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-on-amber">
-            {placing && draft ? 'Place' : 'Save'}
-          </button>
-        </form>
+        />
       ) : null}
 
       <div className="max-h-[38%] min-h-24 overflow-auto border-t border-line px-3 py-2">

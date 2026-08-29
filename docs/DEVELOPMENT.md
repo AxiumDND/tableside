@@ -123,8 +123,13 @@ Hermetic Electron smoke: `npm run test:e2e` (builds first). The suite sets `TABL
 | Preload bridge (`window.tabledm`) | `src/preload/index.ts` |
 | DM UI shell | `src/renderer/src/windows/DmApp.tsx` |
 | DM player playback orchestration | `src/renderer/src/hooks/usePlayerPlayback.ts` |
+| Session notes panel | `src/renderer/src/components/SessionNotes.tsx` |
+| Session note markdown / callouts | `src/renderer/src/components/SessionNoteMarkdown.tsx` |
+| Map board (state / stage) | `src/renderer/src/components/MapView.tsx` |
+| Map helpers / toolbars | `src/renderer/src/components/MapViewHelpers.ts`, `MapViewPanels.tsx` |
 | Player fullscreen view | `src/renderer/src/windows/PlayerApp.tsx` |
 | Night-sheet / combatant parsing | `src/renderer/src/lib/notes.ts` |
+| Map note / fog / camera | `src/renderer/src/lib/mapNote.ts`, `mapFog.ts`, `mapCamera.ts` |
 | Statblock YAML | `src/renderer/src/lib/statblock.ts` |
 | SRD search index | `src/renderer/src/lib/srd.ts` + `data/srd/` |
 | Book text parse | `src/renderer/src/lib/bookParse.ts`, `src/main/bookLibrary.ts` |
