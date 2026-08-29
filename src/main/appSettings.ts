@@ -93,6 +93,8 @@ export async function patchSettings(partial: AppSettings): Promise<AppSettings> 
 }
 
 export async function migrateLegacyUserData(): Promise<void> {
+  // Hermetic e2e profiles must not inherit a real table-dm install from AppData.
+  if (process.env.TABLESIDE_E2E === '1') return
   const current = app.getPath('userData')
   const legacy = join(app.getPath('appData'), 'table-dm')
   if (samePath(current, legacy)) return

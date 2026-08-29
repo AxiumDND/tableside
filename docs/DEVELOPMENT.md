@@ -18,6 +18,7 @@ Tableside is an Electron + React + TypeScript app built with [electron-vite](htt
 | `npm run dev` | Hot-reload Electron app (DM + player windows) |
 | `npm run build` | Compile main, preload, and renderer into `out/` |
 | `npm test` | Run Vitest unit tests (parsers, combat helpers) |
+| `npm run test:e2e` | Build then Playwright smoke against Electron (`e2e/`). Sets `TABLESIDE_E2E=1` so profiles stay hermetic |
 | `npm start` | Run the built app (`electron .`) |
 | `npm run preview` | electron-vite preview |
 | `npm run dist` | Build + Windows NSIS installer in `dist/` |
@@ -94,6 +95,10 @@ Format and placement of personal PHB/DMG text files: [Additional Books/README.md
 ## CI
 
 [`.github/workflows/build.yml`](../.github/workflows/build.yml) runs `npm ci`, `npm test`, and `npm run build` on `windows-latest` for pushes and pull requests to `main`.
+
+Scripts that shell out to `tsc` / `vitest` / `playwright` use `node ./node_modules/...` so paths with `&` (for example `D&D gaming`) do not break `cmd.exe` on Windows.
+
+Hermetic Electron smoke: `npm run test:e2e` (builds first). The suite sets `TABLESIDE_E2E=1` so `migrateLegacyUserData` does not copy a real `%APPDATA%\table-dm` profile into the temp userData dir.
 
 [`.github/workflows/release.yml`](../.github/workflows/release.yml) builds the Windows NSIS installer and publishes a GitHub Release when you push a `v*` tag (for example `git tag v1.2.0 && git push origin v1.2.0`). The release must include `latest.yml` (and the `.exe`) so installed copies can check for updates.
 
