@@ -55,7 +55,40 @@ export default defineConfig({
     build: {
       // Chromium in Electron supports modulepreload natively, so skip Vite's
       // inline polyfill script — that keeps the CSP free of inline scripts.
-      modulePreload: { polyfill: false }
+      modulePreload: { polyfill: false },
+      rollupOptions: {
+        output: {
+          // Split the renderer into cacheable chunks instead of one ~2.6 MB
+          // bundle: bundled SRD data, the search engine, React, and the rest
+          // of node_modules each get their own file so the browser can cache
+          // and parse them independently.
+          manualChunks(id) {
+            if (id.includes('/src/renderer/src/data/srd/')) return 'srd-data'
+            if (id.includes('node_modules/minisearch')) return 'vendor-search'
+            if (
+              id.includes('node_modules/react/') ||
+              id.includes('node_modules/react-dom/') ||
+              id.includes('node_modules/scheduler/')
+            ) {
+              return 'vendor-react'
+            }
+            if (
+              id.includes('node_modules/react-markdown') ||
+              id.includes('node_modules/remark') ||
+              id.includes('node_modules/micromark') ||
+              id.includes('node_modules/mdast') ||
+              id.includes('node_modules/hast') ||
+              id.includes('node_modules/unified') ||
+              id.includes('node_modules/unist') ||
+              id.includes('node_modules/vfile')
+            ) {
+              return 'vendor-markdown'
+            }
+            if (id.includes('node_modules')) return 'vendor'
+            return undefined
+          }
+        }
+      }
     },
     plugins: [react(), tailwindcss(), cspMetaPlugin()]
   }
