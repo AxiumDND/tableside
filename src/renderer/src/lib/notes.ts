@@ -1,7 +1,7 @@
 import type { CampaignTreeNode } from '../../../shared/types'
 import type { CalloutBlock } from '../../../shared/callouts'
 import { maskFencedCalloutBodies, splitCalloutBlocks } from '../../../shared/callouts'
-import { IMAGE_EXT, type CampaignImage } from './images'
+import { IMAGE_EXT } from './images'
 import { pathHasFolder } from '../../../shared/campaignLayout'
 
 export type { CalloutBlock, CalloutKind } from '../../../shared/callouts'

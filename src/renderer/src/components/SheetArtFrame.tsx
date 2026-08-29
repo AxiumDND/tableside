@@ -59,7 +59,7 @@ export default function SheetArtFrame({
     }
   }
 
-  async function useCampaignArt(relativePath: string): Promise<void> {
+  async function applyCampaignArt(relativePath: string): Promise<void> {
     if (!onSetPortrait || busy || !relativePath) return
     setBusy(true)
     try {
@@ -70,7 +70,7 @@ export default function SheetArtFrame({
     }
   }
 
-  async function useStockArt(id: string): Promise<void> {
+  async function applyStockArt(id: string): Promise<void> {
     if (!onSetPortrait || busy) return
     setBusy(true)
     try {
@@ -124,7 +124,7 @@ export default function SheetArtFrame({
                     type="button"
                     disabled={busy}
                     title={item.title}
-                    onClick={() => void useStockArt(item.id)}
+                    onClick={() => void applyStockArt(item.id)}
                     className="overflow-hidden rounded border border-line text-left hover:border-amber disabled:opacity-50"
                   >
                     <img src={stockArtUrl(item.id)} alt="" className="aspect-video w-full object-cover" />
@@ -148,7 +148,7 @@ export default function SheetArtFrame({
             onChange={(event) => {
               const value = event.target.value
               event.target.value = ''
-              if (value) void useCampaignArt(value)
+              if (value) void applyCampaignArt(value)
             }}
             className="w-full rounded border border-line bg-ink px-1 py-1 text-[11px] text-parchment outline-none focus:border-amber disabled:opacity-50"
           >

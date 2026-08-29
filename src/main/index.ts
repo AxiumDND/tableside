@@ -43,7 +43,6 @@ import {
   LIBRARY_FOLDER_NAMES,
   STANDARD_LAYOUT,
   artFolderRelativePath,
-  canonicalFolder,
   folderMatchesCanonical,
   folderOrderIndex,
   gearSectionIndex,
@@ -407,6 +406,18 @@ function applyWindowSecurity(contents: Electron.WebContents): void {
     event.preventDefault()
     openExternalIfAllowed(navigationUrl)
   })
+}
+
+/**
+ * Open a native file dialog parented to the DM window when it is alive, falling
+ * back to a window-less dialog otherwise. Keeps the call sites type-safe (the
+ * parented overload requires a real BrowserWindow, not `undefined`).
+ */
+function showAppOpenDialog(
+  options: Electron.OpenDialogOptions
+): Promise<Electron.OpenDialogReturnValue> {
+  const parent = dmWindow && !dmWindow.isDestroyed() ? dmWindow : null
+  return parent ? dialog.showOpenDialog(parent, options) : dialog.showOpenDialog(options)
 }
 
 function scheduleBoundsSave(): void {
@@ -1196,7 +1207,8 @@ async function resolveCreateMapImage(
     const rel = toPosix(choice.path).replace(/^\/+/, '')
     return rel || null
   }
-  const source = choice.filePath
+  const source = choice.kind === 'stock' ? findStockArtFile(choice.id) : choice.filePath
+  if (!source) return null
   const ext = extname(source).toLowerCase()
   if (!existsSync(source) || !IMAGE_EXT.has(ext)) return null
   const artRel = mapArtRelativeFolder(noteFolder)
@@ -1395,7 +1407,7 @@ async function addCampaignFiles(
   if (!campaignFolder) return null
   const destRel = mode === 'art' ? artFolderRelativePath(folder) : folder.replaceAll('\\', '/')
   const imagesOnly = mode === 'art' || isArtFolderName(basename(destRel || '.'))
-  const result = await dialog.showOpenDialog(dmWindow ?? undefined, {
+  const result = await showAppOpenDialog({
     title: imagesOnly ? 'Add art' : 'Add files to campaign',
     properties: ['openFile', 'multiSelections'],
     filters: imagesOnly
@@ -1841,7 +1853,7 @@ function registerIpc(): void {
   })
 
   ipcMain.handle('campaign:pick-folder', async () => {
-    const result = await dialog.showOpenDialog(dmWindow ?? undefined, {
+    const result = await showAppOpenDialog({
       title: 'Open campaign folder',
       properties: ['openDirectory', 'createDirectory']
     })
@@ -1864,7 +1876,7 @@ function registerIpc(): void {
     ) => {
     const system = parseSystemId(systemId)
     const theme = parseThemeId(themeId)
-    const result = await dialog.showOpenDialog(dmWindow ?? undefined, {
+    const result = await showAppOpenDialog({
       title: 'New campaign folder',
       properties: ['openDirectory', 'createDirectory']
     })
@@ -1942,7 +1954,7 @@ function registerIpc(): void {
   )
 
   ipcMain.handle('campaign:pick-image', async () => {
-    const result = await dialog.showOpenDialog(dmWindow ?? undefined, {
+    const result = await showAppOpenDialog({
       title: 'Load image',
       properties: ['openFile'],
       filters: [

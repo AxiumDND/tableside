@@ -9,14 +9,14 @@ function scoreLine(block: StatBlockData): { label: string; score: number; mod: n
     ['WIS', 'wisdom'],
     ['CHA', 'charisma']
   ] as const
-  return keys
-    .map(([label, key]) => {
-      const score = block.scores?.[key]
-      if (score == null) return null
-      const mod = block.modifiers?.[key] ?? Math.floor((score - 10) / 2)
-      return { label, score, mod }
-    })
-    .filter((row): row is { label: string; score: number; mod: number } => Boolean(row))
+  const rows: { label: string; score: number; mod: number }[] = []
+  for (const [label, key] of keys) {
+    const score = block.scores?.[key]
+    if (score == null) continue
+    const mod = block.modifiers?.[key] ?? Math.floor((score - 10) / 2)
+    rows.push({ label, score, mod })
+  }
+  return rows
 }
 
 function ActionList({ title, items }: { title: string; items?: { name: string; desc: string }[] }) {

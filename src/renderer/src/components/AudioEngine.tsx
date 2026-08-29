@@ -149,6 +149,10 @@ class LayerPlayer {
       }
       return
     }
+    if (!src) {
+      this.playing = false
+      return
+    }
     if (!srcChanged && this.playing) {
       this.front.volume = this.gain
       return

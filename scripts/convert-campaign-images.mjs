@@ -7,7 +7,7 @@
 import { existsSync, statSync } from 'node:fs'
 import { readdir, readFile, unlink, writeFile } from 'node:fs/promises'
 import { createRequire } from 'node:module'
-import { extname, isAbsolute, join, parse, relative } from 'node:path'
+import { isAbsolute, join, parse, relative } from 'node:path'
 
 const require = createRequire(import.meta.url)
 let sharp

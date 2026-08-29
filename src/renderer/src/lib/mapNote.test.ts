@@ -14,7 +14,6 @@ import {
   replaceMapFence,
   tokenDiameter,
   tokenPortraitPath,
-  TOKEN_SCALE_DEFAULT,
   uniquePinId
 } from './mapNote'
 
@@ -94,7 +93,7 @@ describe('map notes', () => {
     expect(nextPinLabel([])).toBe('A1')
     expect(nextPinLabel([{ id: 'a', x: 0, y: 0, label: 'A1', heading: '' }])).toBe('A2')
     expect(nextPinLabel([{ id: 'p', x: 0, y: 0, label: 'P15', heading: '' }])).toBe('P16')
-    expect(uniquePinId([{ id: 'a', x: 0, y: 0, label: 'A', heading: '' }], 'A')).toBe('a-2')
+    expect(uniquePinId([{ id: 'a' }], 'A')).toBe('a-2')
   })
 
   it('round-trips fog in the map fence', () => {

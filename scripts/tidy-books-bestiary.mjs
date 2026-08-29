@@ -32,8 +32,8 @@ function isArtist(line) {
   ) {
     return false
   }
-  const titled = (word) => /^[A-ZÀ-Ÿ][a-zà-ÿ'’\-]+$/.test(word) || /^[A-Z]\.$/.test(word)
-  const lower = (word) => /^[a-zà-ÿ'’\-]+$/.test(word)
+  const titled = (word) => /^[A-ZÀ-Ÿ][a-zà-ÿ'’-]+$/.test(word) || /^[A-Z]\.$/.test(word)
+  const lower = (word) => /^[a-zà-ÿ'’-]+$/.test(word)
   return words.every((word, i) => titled(word) || (i > 0 && lower(word)))
 }
 

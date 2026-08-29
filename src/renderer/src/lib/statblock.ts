@@ -315,7 +315,7 @@ function parseModMap(text?: string): Record<string, number> {
 function yamlScalar(value: string): string {
   const trimmed = value.trim()
   if (!trimmed) return '""'
-  if (/[:#\[\]{}&*!|>'"%@`]/.test(trimmed) || /\s/.test(trimmed) || /^-/.test(trimmed)) {
+  if (/[:#[\]{}&*!|>'"%@`]/.test(trimmed) || /\s/.test(trimmed) || /^-/.test(trimmed)) {
     return JSON.stringify(trimmed)
   }
   return trimmed

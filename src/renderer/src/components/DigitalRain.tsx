@@ -6,11 +6,14 @@ export default function DigitalRain() {
   const ref = useRef<HTMLCanvasElement>(null)
 
   useEffect(() => {
-    const canvas = ref.current
-    const host = canvas?.parentElement
-    if (!canvas || !host) return
-    const ctx = canvas.getContext('2d')
-    if (!ctx) return
+    const canvasEl = ref.current
+    const hostEl = canvasEl?.parentElement
+    if (!canvasEl || !hostEl) return
+    const context = canvasEl.getContext('2d')
+    if (!context) return
+    const canvas: HTMLCanvasElement = canvasEl
+    const host: HTMLElement = hostEl
+    const ctx: CanvasRenderingContext2D = context
 
     const size = 18
     const trail = 8

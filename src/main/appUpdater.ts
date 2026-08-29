@@ -112,7 +112,8 @@ async function promptLaunchInstall(version: string): Promise<void> {
   send({ kind: 'available', version })
   try {
     const win = getWindow()
-    const result = await dialog.showMessageBox(win && !win.isDestroyed() ? win : undefined, {
+    const parent = win && !win.isDestroyed() ? win : null
+    const options: Electron.MessageBoxOptions = {
       type: 'question',
       title: 'Tableside update',
       message: `Tableside ${version} is available.`,
@@ -121,7 +122,10 @@ async function promptLaunchInstall(version: string): Promise<void> {
       defaultId: 0,
       cancelId: 1,
       noLink: true
-    })
+    }
+    const result = await (parent
+      ? dialog.showMessageBox(parent, options)
+      : dialog.showMessageBox(options))
     if (result.response === 0) {
       startAppUpdate()
       return
