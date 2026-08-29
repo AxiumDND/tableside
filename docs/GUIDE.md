@@ -1,6 +1,6 @@
 # How to use Tableside
 
-Step-by-step for a night at the table. Current release: **1.6.0**.
+Step-by-step for a night at the table. Current release: **1.6.1**.
 
 Tableside is a **local Windows DM console**. Your laptop holds the notes. A second monitor (TV) shows players a clean picture — maps, art, initiative, or a sci-fi opening crawl. There is no account and no internet required once the app is installed.
 
@@ -8,7 +8,7 @@ Deeper reference: [TABLE.md](TABLE.md) (every control), [CAMPAIGN.md](CAMPAIGN.m
 
 ## Install
 
-1. Download **[Tableside-Setup-1.6.0.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
+1. Download **[Tableside-Setup-1.6.1.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
 2. Run it. Per-user install — Start Menu + desktop shortcut. No admin.
 3. If Windows says **Windows protected your PC**, click **More info**, then **Run anyway**. The installer is not code-signed. That is expected.
 4. Open **Tableside**.
