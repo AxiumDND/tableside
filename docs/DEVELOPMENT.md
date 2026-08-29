@@ -64,7 +64,7 @@ docs/             Authoring and contributor docs
 - **DM window** — campaign tree, notes, combat, dice, Lookup
 - **Player window** — fullscreen image (and optional initiative overlay) on the second display when available
 
-Main process entry is `src/main/index.ts` (windows + IPC wiring). Sample campaign copy lives in `src/main/sampleCampaign.ts`; folder load/tree/templates in `src/main/campaignFolder.ts`. Shared campaign folder rules live in `src/shared/campaignLayout.ts`.
+Main process entry is `src/main/index.ts` (windows + IPC wiring). Sample campaign copy lives in `src/main/sampleCampaign.ts`; folder load/tree/templates in `src/main/campaignFolder.ts`; note/file mutations in `src/main/campaignNotes.ts`. Shared campaign folder rules live in `src/shared/campaignLayout.ts`.
 
 ## Campaign I/O
 
@@ -108,6 +108,7 @@ Format and placement of personal PHB/DMG text files: [Additional Books/README.md
 | Window creation, IPC wiring | `src/main/index.ts` |
 | Sample campaign copy / refresh | `src/main/sampleCampaign.ts` |
 | Campaign folder load / tree / templates | `src/main/campaignFolder.ts` |
+| Note create / duplicate / art / delete | `src/main/campaignNotes.ts` |
 | GitHub update check | `src/main/appUpdater.ts` |
 | `tabledm://` media protocol | `src/main/mediaAssets.ts` |
 | Preload bridge (`window.tabledm`) | `src/preload/index.ts` |
