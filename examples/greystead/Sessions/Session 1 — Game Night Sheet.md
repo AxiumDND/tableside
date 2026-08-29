@@ -25,6 +25,7 @@ interval: manual
 
 [!video] Vision at the Pale Well
 mute: true
+![[Sessions/Art/Vision at the Pale Well.mp4]]
 [!/video]
 
 ## 1. The Party
