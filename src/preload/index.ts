@@ -14,184 +14,185 @@ import type { CampaignLibraryFolder } from '../shared/campaignLayout'
 import type { SheetTemplateKind } from '../shared/sheetTemplates'
 import type { BookLibrary } from '../shared/books'
 import type { AppUpdateNotice } from '../shared/appUpdate'
+import { IPC } from '../shared/ipc'
 
 const api = {
-  getDisplays: (): Promise<DisplayInfo[]> => ipcRenderer.invoke('app:displays'),
-  getSettings: (): Promise<AppSettings> => ipcRenderer.invoke('app:get-settings'),
+  getDisplays: (): Promise<DisplayInfo[]> => ipcRenderer.invoke(IPC.appDisplays),
+  getSettings: (): Promise<AppSettings> => ipcRenderer.invoke(IPC.appGetSettings),
   saveSettings: (partial: AppSettings): Promise<AppSettings> =>
-    ipcRenderer.invoke('app:save-settings', partial),
+    ipcRenderer.invoke(IPC.appSaveSettings, partial),
   onWillClose: (callback: () => void | Promise<void>) => {
     const listener = () => {
       void callback()
     }
-    ipcRenderer.on('app:will-close', listener)
-    return () => ipcRenderer.removeListener('app:will-close', listener)
+    ipcRenderer.on(IPC.appWillClose, listener)
+    return () => ipcRenderer.removeListener(IPC.appWillClose, listener)
   },
   confirmClose: (): void => {
-    ipcRenderer.send('app:confirm-close')
+    ipcRenderer.send(IPC.appConfirmClose)
   },
   placePlayerOnDisplay: (displayId: number): Promise<DisplayInfo[]> =>
-    ipcRenderer.invoke('player:place-on-display', displayId),
-  closePlayerWindow: (): Promise<boolean> => ipcRenderer.invoke('player:close-window'),
-  getPlayerWindowOpen: (): Promise<boolean> => ipcRenderer.invoke('player:window-open'),
+    ipcRenderer.invoke(IPC.playerPlaceOnDisplay, displayId),
+  closePlayerWindow: (): Promise<boolean> => ipcRenderer.invoke(IPC.playerCloseWindow),
+  getPlayerWindowOpen: (): Promise<boolean> => ipcRenderer.invoke(IPC.playerWindowOpen),
   onPlayerWindow: (callback: (open: boolean) => void) => {
     const listener = (_event: unknown, open: boolean) => callback(open)
-    ipcRenderer.on('player:window', listener)
-    return () => ipcRenderer.removeListener('player:window', listener)
+    ipcRenderer.on(IPC.playerWindow, listener)
+    return () => ipcRenderer.removeListener(IPC.playerWindow, listener)
   },
   onDisplaysChanged: (callback: (displays: DisplayInfo[]) => void) => {
     const listener = (_event: unknown, displays: DisplayInfo[]) => callback(displays)
-    ipcRenderer.on('app:displays-changed', listener)
-    return () => ipcRenderer.removeListener('app:displays-changed', listener)
+    ipcRenderer.on(IPC.appDisplaysChanged, listener)
+    return () => ipcRenderer.removeListener(IPC.appDisplaysChanged, listener)
   },
   showImage: (src: string, title: string, mapView?: PlayerMapView | null): Promise<PlayerState> =>
-    ipcRenderer.invoke('player:show-image', { src, title, mapView: mapView ?? null }),
+    ipcRenderer.invoke(IPC.playerShowImage, { src, title, mapView: mapView ?? null }),
   showCrawl: (payload: {
     title?: string
     body: string
     logoSrc?: string | null
     endSrc?: string | null
     preface?: string | null
-  }): Promise<PlayerState> => ipcRenderer.invoke('player:show-crawl', payload),
-  stopCrawl: (): Promise<PlayerState> => ipcRenderer.invoke('player:stop-crawl'),
+  }): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerShowCrawl, payload),
+  stopCrawl: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerStopCrawl),
   showLegend: (payload: {
     title?: string
     body: string
     logoSrc?: string | null
     endSrc?: string | null
     preface?: string | null
-  }): Promise<PlayerState> => ipcRenderer.invoke('player:show-legend', payload),
-  stopLegend: (): Promise<PlayerState> => ipcRenderer.invoke('player:stop-legend'),
+  }): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerShowLegend, payload),
+  stopLegend: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerStopLegend),
   showGallery: (payload: {
     title?: string
     slides: { src: string; label?: string }[]
     intervalSec?: number | null
     loop?: boolean
     showTitle?: boolean
-  }): Promise<PlayerState> => ipcRenderer.invoke('player:show-gallery', payload),
+  }): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerShowGallery, payload),
   gallerySetIndex: (index: number): Promise<PlayerState> =>
-    ipcRenderer.invoke('player:gallery-set-index', index),
-  stopGallery: (): Promise<PlayerState> => ipcRenderer.invoke('player:stop-gallery'),
+    ipcRenderer.invoke(IPC.playerGallerySetIndex, index),
+  stopGallery: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerStopGallery),
   showVideo: (payload: {
     title?: string
     src: string
     muted?: boolean
-  }): Promise<PlayerState> => ipcRenderer.invoke('player:show-video', payload),
-  stopVideo: (): Promise<PlayerState> => ipcRenderer.invoke('player:stop-video'),
-  clearPlayer: (): Promise<PlayerState> => ipcRenderer.invoke('player:clear'),
+  }): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerShowVideo, payload),
+  stopVideo: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerStopVideo),
+  clearPlayer: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerClear),
   setPlayerInitiative: (payload: {
     entries: PlayerState['initiative']
     show: boolean
     round?: number
-  }): Promise<PlayerState> => ipcRenderer.invoke('player:set-initiative', payload),
-  getPlayerState: (): Promise<PlayerState> => ipcRenderer.invoke('player:get-state'),
-  getMixer: (): Promise<MixerState> => ipcRenderer.invoke('mixer:get'),
+  }): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerSetInitiative, payload),
+  getPlayerState: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerGetState),
+  getMixer: (): Promise<MixerState> => ipcRenderer.invoke(IPC.mixerGet),
   mixerPlayMusic: (playlistId: string): Promise<MixerState> =>
-    ipcRenderer.invoke('mixer:play-music', playlistId),
-  mixerPauseMusic: (): Promise<MixerState> => ipcRenderer.invoke('mixer:pause-music'),
-  mixerSkipMusic: (): Promise<MixerState> => ipcRenderer.invoke('mixer:skip-music'),
-  mixerStopMusic: (): Promise<MixerState> => ipcRenderer.invoke('mixer:stop-music'),
+    ipcRenderer.invoke(IPC.mixerPlayMusic, playlistId),
+  mixerPauseMusic: (): Promise<MixerState> => ipcRenderer.invoke(IPC.mixerPauseMusic),
+  mixerSkipMusic: (): Promise<MixerState> => ipcRenderer.invoke(IPC.mixerSkipMusic),
+  mixerStopMusic: (): Promise<MixerState> => ipcRenderer.invoke(IPC.mixerStopMusic),
   mixerPlayAmbience: (playlistId: string): Promise<MixerState> =>
-    ipcRenderer.invoke('mixer:play-ambience', playlistId),
-  mixerStopAmbience: (): Promise<MixerState> => ipcRenderer.invoke('mixer:stop-ambience'),
-  mixerOneshot: (path: string): Promise<MixerState> => ipcRenderer.invoke('mixer:oneshot', path),
+    ipcRenderer.invoke(IPC.mixerPlayAmbience, playlistId),
+  mixerStopAmbience: (): Promise<MixerState> => ipcRenderer.invoke(IPC.mixerStopAmbience),
+  mixerOneshot: (path: string): Promise<MixerState> => ipcRenderer.invoke(IPC.mixerOneshot, path),
   mixerPlayCrawlMusic: (path: string): Promise<MixerState> =>
-    ipcRenderer.invoke('mixer:play-crawl-music', path),
-  mixerArmCrawlMusic: (): Promise<MixerState> => ipcRenderer.invoke('mixer:arm-crawl-music'),
-  mixerStopCrawlMusic: (): Promise<MixerState> => ipcRenderer.invoke('mixer:stop-crawl-music'),
-  mixerStopAll: (): Promise<MixerState> => ipcRenderer.invoke('mixer:stop-all'),
+    ipcRenderer.invoke(IPC.mixerPlayCrawlMusic, path),
+  mixerArmCrawlMusic: (): Promise<MixerState> => ipcRenderer.invoke(IPC.mixerArmCrawlMusic),
+  mixerStopCrawlMusic: (): Promise<MixerState> => ipcRenderer.invoke(IPC.mixerStopCrawlMusic),
+  mixerStopAll: (): Promise<MixerState> => ipcRenderer.invoke(IPC.mixerStopAll),
   mixerSetPrefs: (prefs: Partial<MixerPrefs>): Promise<MixerState> =>
-    ipcRenderer.invoke('mixer:set-prefs', prefs),
+    ipcRenderer.invoke(IPC.mixerSetPrefs, prefs),
   mixerTrackEnded: (layer: 'music' | 'ambience' | 'crawl'): Promise<MixerState> =>
-    ipcRenderer.invoke('mixer:ended', layer),
+    ipcRenderer.invoke(IPC.mixerEnded, layer),
   mixerError: (message: string | null): Promise<MixerState> =>
-    ipcRenderer.invoke('mixer:error', message),
+    ipcRenderer.invoke(IPC.mixerError, message),
   onMixerState: (callback: (state: MixerState) => void) => {
     const listener = (_event: unknown, state: MixerState) => callback(state)
-    ipcRenderer.on('mixer:state', listener)
-    return () => ipcRenderer.removeListener('mixer:state', listener)
+    ipcRenderer.on(IPC.mixerState, listener)
+    return () => ipcRenderer.removeListener(IPC.mixerState, listener)
   },
   onPlayerState: (callback: (state: PlayerState) => void) => {
     const listener = (_event: unknown, state: PlayerState) => callback(state)
-    ipcRenderer.on('player:state', listener)
-    return () => ipcRenderer.removeListener('player:state', listener)
+    ipcRenderer.on(IPC.playerState, listener)
+    return () => ipcRenderer.removeListener(IPC.playerState, listener)
   },
-  pickCampaignFolder: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:pick-folder'),
+  pickCampaignFolder: (): Promise<CampaignInfo | null> => ipcRenderer.invoke(IPC.campaignPickFolder),
   openCampaignPath: (folder: string): Promise<CampaignInfo | null> =>
-    ipcRenderer.invoke('campaign:open-path', folder),
+    ipcRenderer.invoke(IPC.campaignOpenPath, folder),
   newCampaign: (
     system?: string,
     theme?: string,
     options?: { holoPortraits?: boolean; digitalRain?: boolean }
-  ): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:new', system, theme, options),
+  ): Promise<CampaignInfo | null> => ipcRenderer.invoke(IPC.campaignNew, system, theme, options),
   setCampaignTheme: (theme: string): Promise<CampaignInfo | null> =>
-    ipcRenderer.invoke('campaign:set-theme', theme),
+    ipcRenderer.invoke(IPC.campaignSetTheme, theme),
   setCampaignHoloPortraits: (enabled: boolean): Promise<CampaignInfo | null> =>
-    ipcRenderer.invoke('campaign:set-holo-portraits', enabled),
+    ipcRenderer.invoke(IPC.campaignSetHoloPortraits, enabled),
   setCampaignDigitalRain: (enabled: boolean): Promise<CampaignInfo | null> =>
-    ipcRenderer.invoke('campaign:set-digital-rain', enabled),
-  openSampleCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:open-sample'),
-  getCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke('campaign:get'),
+    ipcRenderer.invoke(IPC.campaignSetDigitalRain, enabled),
+  openSampleCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke(IPC.campaignOpenSample),
+  getCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke(IPC.campaignGet),
   readFile: (relativePath: string): Promise<string> =>
-    ipcRenderer.invoke('campaign:read-file', relativePath),
+    ipcRenderer.invoke(IPC.campaignReadFile, relativePath),
   saveFile: (relativePath: string, contents: string): Promise<void> =>
-    ipcRenderer.invoke('campaign:save-file', relativePath, contents),
+    ipcRenderer.invoke(IPC.campaignSaveFile, relativePath, contents),
   saveCombat: (combat: CombatState): Promise<CampaignInfo | null> =>
-    ipcRenderer.invoke('campaign:save-combat', combat),
+    ipcRenderer.invoke(IPC.campaignSaveCombat, combat),
   createNote: (
     folder: string,
     name: string,
     template?: SheetTemplateKind,
     mapImage?: CreateNoteMapImage | null
   ): Promise<{ campaign: CampaignInfo; path: string } | null> =>
-    ipcRenderer.invoke('campaign:create-note', folder, name, template, mapImage ?? null),
+    ipcRenderer.invoke(IPC.campaignCreateNote, folder, name, template, mapImage ?? null),
   pickImageFile: (): Promise<{ filePath: string; fileName: string } | null> =>
-    ipcRenderer.invoke('campaign:pick-image'),
+    ipcRenderer.invoke(IPC.campaignPickImage),
   setNotePortrait: (
     relativePath: string,
     image: CreateNoteMapImage
   ): Promise<{ campaign: CampaignInfo; path: string; markdown: string } | null> =>
-    ipcRenderer.invoke('campaign:set-portrait', relativePath, image),
+    ipcRenderer.invoke(IPC.campaignSetPortrait, relativePath, image),
   copyArtToNote: (
     relativePath: string,
     image: CreateNoteMapImage,
     name?: string
   ): Promise<{ campaign: CampaignInfo; fileName: string } | null> =>
-    ipcRenderer.invoke('campaign:copy-art', relativePath, image, name),
+    ipcRenderer.invoke(IPC.campaignCopyArt, relativePath, image, name),
   duplicateFile: (
     relativePath: string,
     name?: string
   ): Promise<{ campaign: CampaignInfo; path: string } | null> =>
-    ipcRenderer.invoke('campaign:duplicate-file', relativePath, name),
+    ipcRenderer.invoke(IPC.campaignDuplicateFile, relativePath, name),
   addFiles: (
     folder: string,
     mode?: 'files' | 'art'
   ): Promise<{ campaign: CampaignInfo; paths: string[] } | null> =>
-    ipcRenderer.invoke('campaign:add-files', folder, mode ?? 'files'),
+    ipcRenderer.invoke(IPC.campaignAddFiles, folder, mode ?? 'files'),
   deleteFile: (
     relativePath: string
   ): Promise<{ campaign: CampaignInfo; path: string } | null> =>
-    ipcRenderer.invoke('campaign:delete-file', relativePath),
+    ipcRenderer.invoke(IPC.campaignDeleteFile, relativePath),
   saveToCampaignLibrary: (
     folder: CampaignLibraryFolder,
     name: string,
     contents: string,
     subfolder?: string | null
   ): Promise<{ campaign: CampaignInfo; path: string; existed: boolean } | null> =>
-    ipcRenderer.invoke('campaign:save-to-library', folder, name, contents, subfolder ?? null),
-  loadBookLibrary: (): Promise<BookLibrary> => ipcRenderer.invoke('books:load'),
-  openBooksFolder: (): Promise<string> => ipcRenderer.invoke('books:open-folder'),
-  getAppFolders: (): Promise<AppFolders> => ipcRenderer.invoke('app:folders'),
+    ipcRenderer.invoke(IPC.campaignSaveToLibrary, folder, name, contents, subfolder ?? null),
+  loadBookLibrary: (): Promise<BookLibrary> => ipcRenderer.invoke(IPC.booksLoad),
+  openBooksFolder: (): Promise<string> => ipcRenderer.invoke(IPC.booksOpenFolder),
+  getAppFolders: (): Promise<AppFolders> => ipcRenderer.invoke(IPC.appFolders),
   openAppFolder: (kind: 'app' | 'userData' | 'books'): Promise<string> =>
-    ipcRenderer.invoke('app:open-folder', kind),
+    ipcRenderer.invoke(IPC.appOpenFolder, kind),
   checkForUpdate: (fromHelp?: boolean): Promise<void> =>
-    ipcRenderer.invoke('app:check-update', fromHelp ?? false),
-  startUpdate: (): Promise<void> => ipcRenderer.invoke('app:start-update'),
-  dismissUpdate: (version: string): Promise<void> => ipcRenderer.invoke('app:dismiss-update', version),
+    ipcRenderer.invoke(IPC.appCheckUpdate, fromHelp ?? false),
+  startUpdate: (): Promise<void> => ipcRenderer.invoke(IPC.appStartUpdate),
+  dismissUpdate: (version: string): Promise<void> => ipcRenderer.invoke(IPC.appDismissUpdate, version),
   onAppUpdate: (callback: (notice: AppUpdateNotice) => void) => {
     const listener = (_event: unknown, notice: AppUpdateNotice) => callback(notice)
-    ipcRenderer.on('app:update', listener)
-    return () => ipcRenderer.removeListener('app:update', listener)
+    ipcRenderer.on(IPC.appUpdate, listener)
+    return () => ipcRenderer.removeListener(IPC.appUpdate, listener)
   }
 }
 

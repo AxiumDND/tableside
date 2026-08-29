@@ -2,6 +2,7 @@ import { app, dialog, ipcMain, type BrowserWindow } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import type { AppUpdateNotice } from '../shared/appUpdate'
 import { APP_VERSION } from '../shared/version'
+import { IPC } from '../shared/ipc'
 
 let getWindow: () => BrowserWindow | null = () => null
 let readDismissed: () => string | undefined = () => undefined
@@ -12,7 +13,7 @@ let helpCheck = false
 let promptingInstall = false
 
 function send(notice: AppUpdateNotice): void {
-  getWindow()?.webContents.send('app:update', notice)
+  getWindow()?.webContents.send(IPC.appUpdate, notice)
 }
 
 function isPackaged(): boolean {
@@ -75,11 +76,11 @@ export function setupAppUpdater(options: {
     }, 400)
   })
 
-  ipcMain.handle('app:check-update', (_e, fromHelp?: boolean) => {
+  ipcMain.handle(IPC.appCheckUpdate, (_e, fromHelp?: boolean) => {
     checkForAppUpdate(Boolean(fromHelp))
   })
-  ipcMain.handle('app:start-update', () => startAppUpdate())
-  ipcMain.handle('app:dismiss-update', (_e, version: string) => {
+  ipcMain.handle(IPC.appStartUpdate, () => startAppUpdate())
+  ipcMain.handle(IPC.appDismissUpdate, (_e, version: string) => {
     if (version) writeDismissed(version)
   })
 }
