@@ -527,8 +527,8 @@ export default function HelpPanel({
               <>
                 In a session or game night sheet, use a heading that includes <Code>Combat</Code>, <Code>Encounter</Code>
                 , or ⚔️. Skip headings that say <Code>no combat</Code>. Right-click Sessions for{' '}
-                <Action>New game night sheet…</Action> — Party links and scene blocks with optional read-aloud, GM-only notes, secrets, treasure, NPCs, combat, and table cues (place, map, checks, music, sound).
-                Copy a <Code>[!scene]…[!/scene]</Code> block to add another beat.
+                <Action>New game night sheet…</Action> — Party roster block and scene blocks with optional read-aloud, GM-only notes, secrets, treasure, NPCs, combat, and table cues (place, map, checks, music, sound).
+                Copy a <Code>[!scene]…[!/scene]</Code> block to add another beat. Wrap PC links in <Code>[!party]…[!/party]</Code>.
               </>,
               <>
                 Add a line like <Code>**Combatants:** [[Vesper]] · [[Cultist]] ×3 · party</Code>

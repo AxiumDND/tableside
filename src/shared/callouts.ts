@@ -9,6 +9,7 @@ export type CalloutKind =
   | 'gallery'
   | 'video'
   | 'scene'
+  | 'party'
   | 'pc'
   | 'npc'
   | 'monster'
@@ -54,6 +55,7 @@ export function calloutKind(type: string): CalloutKind {
   if (folded === 'gallery' || folded === 'slides' || folded === 'sequence') return 'gallery'
   if (folded === 'video' || folded === 'clip' || folded === 'film') return 'video'
   if (folded === 'scene' || folded === 'beat') return 'scene'
+  if (folded === 'party' || folded === 'roster' || folded === 'pcs') return 'party'
   if (folded === 'pc' || folded === 'player' || folded === 'character') return 'pc'
   if (folded === 'npc') return 'npc'
   if (folded === 'monster' || folded === 'creature' || folded === 'bestiary') return 'monster'
@@ -111,6 +113,8 @@ export function canonicalCalloutType(kind: CalloutKind, rawType: string): string
       return 'video'
     case 'scene':
       return 'scene'
+    case 'party':
+      return 'party'
     case 'pc':
       return 'pc'
     case 'npc':

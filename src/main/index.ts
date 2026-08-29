@@ -964,6 +964,7 @@ async function refreshStockNightSheetTemplate(root: string): Promise<void> {
     current.includes('{{legend}}') &&
     current.includes('# Session Name — Game Night Sheet') &&
     current.includes('## 1. The Party') &&
+    current.includes('[!party]') &&
     current.includes('[!scene]') &&
     !current.includes('What this page does') &&
     !current.includes('## 4. NPCs') &&
@@ -983,7 +984,8 @@ async function refreshStockNightSheetTemplate(root: string): Promise<void> {
       current.includes('## 4. Treasure') ||
       current.includes('## 3. From last time') ||
       current.includes('## 4. Likely endings') ||
-      (current.includes('[!scene]') && !current.includes('**At the table**'))
+      (current.includes('[!scene]') && !current.includes('**At the table**')) ||
+      (current.includes('## 1. The Party') && !current.includes('[!party]'))
     if (stock) await writeFile(dest, (await packTemplates(root)).nightsheet, 'utf8')
   } else if (currentPath !== dest) {
     await writeFile(dest, current, 'utf8')
@@ -1003,7 +1005,8 @@ async function refreshStockNightSheetTemplate(root: string): Promise<void> {
       text.includes('## 4. Treasure') ||
       text.includes('## 3. From last time') ||
       text.includes('## 4. Likely endings') ||
-      (text.includes('[!scene]') && !text.includes('**At the table**'))
+      (text.includes('[!scene]') && !text.includes('**At the table**')) ||
+      (text.includes('## 1. The Party') && !text.includes('[!party]'))
     if (stock) await unlink(extra)
   }
 }
@@ -2035,17 +2038,19 @@ app.whenReady().then(async () => {
       allowQuit = true
     }
   })
+  const sampleFolder = await ensureSampleWorkingCopy()
   const existing =
     settings.campaignFolder && existsSync(settings.campaignFolder) ? settings.campaignFolder : null
   if (existing) {
-    campaignFolder = samePath(existing, sampleSourcePath())
-      ? await ensureSampleWorkingCopy()
-      : existing
+    campaignFolder =
+      samePath(existing, sampleSourcePath()) || samePath(existing, sampleFolder)
+        ? sampleFolder
+        : existing
     if (campaignFolder !== settings.campaignFolder) {
       await patchSettings({ campaignFolder })
     }
   } else {
-    campaignFolder = await ensureSampleWorkingCopy()
+    campaignFolder = sampleFolder
     await patchSettings({ campaignFolder })
   }
   if (campaignFolder) {

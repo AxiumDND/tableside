@@ -29,6 +29,7 @@ mute: true
 
 ## 1. The Party
 
+[!party]
 - [[PC — Bren Oak|Bren Oak]]
 - [[PC — Sister Calda|Sister Calda]]
 - [[PC — Quill Venn|Quill Venn]]
@@ -39,6 +40,7 @@ mute: true
 [!note] Focus tonight
 Lira missing since last night. Alden pays **25 gp** now, **25 gp** on return, **10 gp** if they flee. Town swears bandits — it is the Pale Well.
 [!/note]
+[!/party]
 
 ## 2. Scenes
 

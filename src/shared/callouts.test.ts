@@ -69,6 +69,23 @@ describe('fenced callouts', () => {
     expect(scene?.markdown).toContain('More')
   })
 
+  it('parses a party roster block with nested focus note', () => {
+    const md = [
+      '[!party]',
+      '- [[PC — Bren Oak|Bren Oak]]',
+      '',
+      '[!note] Focus tonight',
+      'Soft spots.',
+      '[!/note]',
+      '[!/party]'
+    ].join('\n')
+    const party = splitCalloutBlocks(md).find((p) => p.kind === 'party')
+    expect(party?.markdown).toContain('[[PC — Bren Oak|Bren Oak]]')
+    expect(party?.markdown).toContain('[!note] Focus tonight')
+    const nested = splitCalloutBlocks(party?.markdown ?? '')
+    expect(nested.find((p) => p.kind === 'note')?.title).toBe('Focus tonight')
+  })
+
   it('still parses legacy quoted callouts', () => {
     const crawl = splitCalloutBlocks('> [!crawl] Title\n> Line one.\n').find((p) => p.kind === 'crawl')
     expect(crawl).toMatchObject({ title: 'Title', markdown: 'Line one.' })

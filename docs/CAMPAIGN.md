@@ -160,6 +160,7 @@ Supported image types: `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`, `.bmp`.
 | --- | --- | --- |
 | `readaloud` | `flavor` | Player-facing text to speak |
 | `scene` | `beat` | Scene card — art, what could happen, nested read-aloud, cues. Copy a block to add another beat. |
+| `party` | `roster`, `pcs` | Party roster card on a game night sheet — PC links and Focus tonight. |
 | `crawl` | `opening` | Opening crawl. Play (Sci-fi look only) shows a starfield, a far-off line (`preface:`), a generic emblem (or the first `![[image]]`), then a perspective prologue. Optional `music:` path under `Audio/Music/` overrides the mood playlist while that track plays, then resumes it. Write your own words. |
 | `gmonly` | `secret` | Collapsed GM-only block |
 | `infobox` | — | Sheet header / portrait card |
@@ -198,19 +199,20 @@ You can also **Add to campaign** from Lookup (monster → Bestiary, spell → Sp
 
 ## Game night sheets and combat
 
-A **game night sheet** is a session note with Party focus and scene blocks that hold the night's beats. Right-click **Sessions** → **New game night sheet…** for The Party and Scenes. Existing `Party/` sheets are linked in automatically. New files are named `Session N — Game Night Sheet.md`. Sci-fi campaigns also get an Opening crawl sample — rewrite it, then **Play**.
+A **game night sheet** is a session note with a Party roster block and scene blocks that hold the night's beats. Right-click **Sessions** → **New game night sheet…** for The Party and Scenes. Existing `Party/` sheets are linked in automatically. New files are named `Session N — Game Night Sheet.md`. Sci-fi campaigns also get an Opening crawl sample — rewrite it, then **Play**.
 
-Scene blocks use `> [!scene] Title`. Put optional art with `![[…]]`, a short “what could happen” note, nested `> [!readaloud]` for spoken text, nested `> [!gmonly]` for hidden prep, optional secrets/treasure/NPC bullets/combat, and an **At the table** cue list (place, map, checks, if they miss, music, sound, leads to). Copy a whole scene block to add another beat.
+Wrap PC links in `[!party]…[!/party]` (optional Focus tonight note inside). Scene blocks use `[!scene] Title` … `[!/scene]`. Put optional art with `![[…]]`, a short “what could happen” note, nested `[!readaloud]` for spoken text, nested `[!gmonly]` for hidden prep, optional secrets/treasure/NPC bullets/combat, and an **At the table** cue list (place, map, checks, if they miss, music, sound, leads to). Copy a whole scene block to add another beat.
 
 1. Inside a scene (or at document level on older sheets), use a heading that includes `Combat`, `Encounter`, or ⚔️ (skip headings that say `no combat`).
 2. List combatants with wikilinks to Party / NPCs / Bestiary sheets:
 
 ```markdown
-> [!scene] The door
-> …
-> ## ⚔️ Combat 1 — the door
->
-> **Combatants:** [[Vesper]] · [[Cultist]] ×3 · party
+[!scene] The door
+…
+## ⚔️ Combat 1 — the door
+
+**Combatants:** [[Vesper]] · [[Cultist]] ×3 · party
+[!/scene]
 ```
 
 - `party` adds every PC under `Party/`.

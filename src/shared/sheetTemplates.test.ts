@@ -73,6 +73,7 @@ describe('game night sheet template', () => {
     expect(body).not.toContain('{{party}}')
     expect(body).toContain('**Combatants:** [[Monster Name]] · party')
     expect(body).toContain('## 1. The Party')
+    expect(body).toContain('[!party]')
     expect(body).toContain('[!note] Focus tonight')
     expect(body).toContain('## 2. Scenes')
     expect(body).toContain('[!scene] Opening — name the beat')

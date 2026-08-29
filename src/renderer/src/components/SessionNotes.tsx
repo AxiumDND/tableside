@@ -74,6 +74,7 @@ import StartHereTheme from './StartHereTheme'
 import GmOnly from './GmOnly'
 import MapView from './MapView'
 import ReadAloud from './ReadAloud'
+import PartyCard from './PartyCard'
 import SceneCard from './SceneCard'
 import SheetArtFrame from './SheetArtFrame'
 import ItemSheet from './ItemSheet'
@@ -693,6 +694,23 @@ export default function SessionNotes({
               {part.markdown || ''}
             </Markdown>
           </ReadAloud>
+        )
+      }
+      if (part.kind === 'party') {
+        return (
+          <PartyCard key={key} title={part.title}>
+            {part.markdown.trim()
+              ? renderSectionedMarkdown(
+                  part.markdown,
+                  `${key}-body`,
+                  part.title?.trim() || undefined,
+                  crawlOffset + crawlLocal,
+                  legendOffset + legendLocal,
+                  galleryOffset + galleryLocal,
+                  videoOffset + videoLocal
+                )
+              : null}
+          </PartyCard>
         )
       }
       if (part.kind === 'scene') {

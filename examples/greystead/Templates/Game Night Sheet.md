@@ -5,6 +5,7 @@
   {{crawl}} is replaced on Sci-fi campaigns with an Opening crawl sample (Play on the player screen).
   {{legend}} is replaced on Classic, Light, and Vampire campaigns with an Opening legend sample.
   Scene blocks: [!scene] Title … [!/scene] — art, what could happen, nested [!readaloud] / [!gmonly], optional NPCs, secrets, treasure, combat, and table cues.
+  Party roster: [!party] … [!/party] wraps PC links and the Focus tonight note.
   Copy a scene block to add another beat. Use // lines for notes that stay in the editor only.
   Combat headings inside a scene (⚔️ / Combat / Encounter) + Combatants lines feed Add to initiative.
   party = all PCs. [[Name]] opens a sheet. ![[Art.webp]] then Show to players.
@@ -24,6 +25,7 @@ Opening scene → next beats → **the fight** → fallout.
 
 ## 1. The Party
 
+[!party]
 {{party}}
 
 [!note] Focus tonight
@@ -32,6 +34,7 @@ Soft spots for this session — unfinished business, a promise from last time, o
 - 
 - 
 [!/note]
+[!/party]
 
 ## 2. Scenes
 
