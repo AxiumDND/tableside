@@ -36,6 +36,7 @@ import {
   shouldShowPlayerWindow
 } from '../shared/playerWindow'
 import { digitalRainEnabled, holoPortraitsEnabled, parseThemeId, THEME_WINDOW_BACKGROUND } from '../shared/theme'
+import { isAllowedExternalUrl } from '../shared/externalLinks'
 import { APP_NAME, APP_VERSION } from '../shared/version'
 import { CRAWL_FADE_OUT_MS } from '../shared/openingCrawl'
 import {
@@ -374,11 +375,38 @@ async function ensureSampleWorkingCopy(): Promise<string> {
   return dest
 }
 
-function rendererUrl(hash: string): string {
+function rendererBaseUrl(): string {
   if (process.env.ELECTRON_RENDERER_URL) {
-    return `${process.env.ELECTRON_RENDERER_URL}#/${hash}`
+    return process.env.ELECTRON_RENDERER_URL
   }
-  return `${pathToFileURL(join(__dirname, '../renderer/index.html')).href}#/${hash}`
+  return pathToFileURL(join(__dirname, '../renderer/index.html')).href
+}
+
+function rendererUrl(hash: string): string {
+  return `${rendererBaseUrl()}#/${hash}`
+}
+
+function openExternalIfAllowed(rawUrl: string): void {
+  if (isAllowedExternalUrl(rawUrl)) {
+    void shell.openExternal(rawUrl)
+  }
+}
+
+/**
+ * Harden a window's web contents: open safe links in the OS browser, deny
+ * in-app popups, and block navigation away from the bundled renderer (so a
+ * campaign link can never replace the app frame with arbitrary content).
+ */
+function applyWindowSecurity(contents: Electron.WebContents): void {
+  contents.setWindowOpenHandler((details) => {
+    openExternalIfAllowed(details.url)
+    return { action: 'deny' }
+  })
+  contents.on('will-navigate', (event, navigationUrl) => {
+    if (navigationUrl.startsWith(rendererBaseUrl())) return
+    event.preventDefault()
+    openExternalIfAllowed(navigationUrl)
+  })
 }
 
 function scheduleBoundsSave(): void {
@@ -441,10 +469,7 @@ function createDmWindow(): void {
     dmWindow = null
     playerWindow?.close()
   })
-  dmWindow.webContents.setWindowOpenHandler((details) => {
-    shell.openExternal(details.url)
-    return { action: 'deny' }
-  })
+  applyWindowSecurity(dmWindow.webContents)
   dmWindow.loadURL(rendererUrl('dm'))
 }
 
@@ -569,6 +594,7 @@ function createPlayerWindow(display = targetPlayerDisplay()): void {
   })
 
   const created = playerWindow
+  applyWindowSecurity(created.webContents)
   created.on('closed', () => {
     if (playerWindow === created) playerWindow = null
     if (!programmaticPlayerCloses.has(created)) playerWindowWanted = false
