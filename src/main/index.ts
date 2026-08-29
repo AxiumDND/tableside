@@ -1,18 +1,16 @@
 import { app, BrowserWindow, dialog, ipcMain, protocol, screen, session, shell } from 'electron'
 import { existsSync } from 'node:fs'
-import { copyFile, cp, mkdir, readFile, writeFile } from 'node:fs/promises'
-import { join, normalize, relative, basename, dirname } from 'node:path'
+import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { join, relative, basename, dirname } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import type {
   AppSettings,
   CampaignInfo,
   CombatState,
   CreateNoteMapImage,
-  DisplayInfo,
   PlayerState,
   RecentCampaign
 } from '../shared/types'
-import { emptyPlayerState, emptySettings } from '../shared/types'
 import { type MixerPrefs } from '../shared/audio'
 import { setupAppUpdater, scheduleLaunchUpdateCheck } from './appUpdater'
 import { registerMediaProtocol } from './mediaAssets'
@@ -53,15 +51,38 @@ import {
   runMixer
 } from './campaignMixer'
 import {
-  playerOutputScaleMismatch,
-  playerWindowNeedsRebuild,
-  shouldShowPlayerWindow
-} from '../shared/playerWindow'
+  appFolders,
+  appIconPath,
+  configureAppSettings,
+  getSettings,
+  migrateLegacyUserData,
+  openAppFolder,
+  patchSettings,
+  readSettings,
+  samePath
+} from './appSettings'
+import {
+  clearPlayerMedia,
+  closePlayerWindow,
+  configurePlayerOutput,
+  disposePlayerWindow,
+  getPlayerState,
+  hasSecondDisplay,
+  hidePlayerWindow,
+  listDisplays,
+  playerWindowVisible,
+  resetPlayerState,
+  setPlayerState,
+  showPlayerWindow,
+  stopPlayerCrawl,
+  stopPlayerLegend,
+  syncPlayerWindow,
+  watchDisplays
+} from './playerOutput'
 import { parseThemeId, THEME_WINDOW_BACKGROUND } from '../shared/theme'
 import { isAllowedExternalUrl } from '../shared/externalLinks'
 import { IPC } from '../shared/ipc'
 import { APP_NAME, APP_VERSION } from '../shared/version'
-import { CRAWL_FADE_OUT_MS } from '../shared/openingCrawl'
 import { type CampaignLibraryFolder } from '../shared/campaignLayout'
 import { sanitizeFileName, type SheetTemplateKind } from '../shared/sheetTemplates'
 import { parseSystemId } from '../shared/systemPack'
@@ -87,99 +108,13 @@ if (process.platform === 'win32') {
 }
 
 let dmWindow: BrowserWindow | null = null
-let playerWindow: BrowserWindow | null = null
-let playerWindowWanted = true
-let playerWindowScaleOk = false
-let playerScaleRetries = 0
-let playerWindowWarmup = true
-const programmaticPlayerCloses = new WeakSet<BrowserWindow>()
 let campaignFolder: string | null = null
-let playerState: PlayerState = emptyPlayerState()
-let crawlStopTimer: ReturnType<typeof setTimeout> | null = null
-let legendStopTimer: ReturnType<typeof setTimeout> | null = null
-let settings: AppSettings = emptySettings()
 let allowQuit = false
 let boundsTimer: ReturnType<typeof setTimeout> | null = null
-
-function appIconPath(): string {
-  const ico = app.isPackaged
-    ? join(process.resourcesPath, 'icon.ico')
-    : join(__dirname, '../../resources/icon.ico')
-  const png = app.isPackaged
-    ? join(process.resourcesPath, 'icon.png')
-    : join(__dirname, '../../resources/icon.png')
-  return existsSync(ico) ? ico : png
-}
-
-function appInstallFolder(): string {
-  return app.isPackaged ? dirname(app.getPath('exe')) : app.getAppPath()
-}
-
-async function appFolders(): Promise<{ appFolder: string; userDataFolder: string; booksFolder: string }> {
-  return {
-    appFolder: appInstallFolder(),
-    userDataFolder: app.getPath('userData'),
-    booksFolder: await ensureBooksHome()
-  }
-}
-
-async function openAppFolder(kind: string): Promise<string> {
-  const folders = await appFolders()
-  const folder =
-    kind === 'userData' ? folders.userDataFolder : kind === 'app' ? folders.appFolder : kind === 'books' ? folders.booksFolder : null
-  if (!folder) return ''
-  await shell.openPath(folder)
-  return folder
-}
-
-function settingsPath(): string {
-  return join(app.getPath('userData'), 'settings.json')
-}
-
-async function readSettings(): Promise<AppSettings> {
-  try {
-    return { ...emptySettings(), ...JSON.parse(await readFile(settingsPath(), 'utf8')) }
-  } catch {
-    return emptySettings()
-  }
-}
-
-async function writeSettings(next: AppSettings): Promise<void> {
-  settings = next
-  await mkdir(app.getPath('userData'), { recursive: true })
-  await writeFile(settingsPath(), JSON.stringify(next, null, 2), 'utf8')
-}
 
 function applyDmWindowTheme(theme?: string | null): void {
   if (!dmWindow || dmWindow.isDestroyed()) return
   dmWindow.setBackgroundColor(THEME_WINDOW_BACKGROUND[parseThemeId(theme)])
-}
-
-async function patchSettings(partial: AppSettings): Promise<AppSettings> {
-  await writeSettings({ ...settings, ...partial })
-  if (partial.theme !== undefined) applyDmWindowTheme(settings.theme)
-  return settings
-}
-
-function samePath(a: string, b: string): boolean {
-  return normalize(a).toLowerCase() === normalize(b).toLowerCase()
-}
-
-async function migrateLegacyUserData(): Promise<void> {
-  const current = app.getPath('userData')
-  const legacy = join(app.getPath('appData'), 'table-dm')
-  if (samePath(current, legacy)) return
-  if (existsSync(join(current, 'settings.json'))) return
-  const legacySettings = join(legacy, 'settings.json')
-  const legacyBooks = join(legacy, 'WOTC')
-  if (!existsSync(legacySettings) && !existsSync(legacyBooks)) return
-  await mkdir(current, { recursive: true })
-  if (existsSync(legacySettings)) {
-    await copyFile(legacySettings, join(current, 'settings.json'))
-  }
-  if (existsSync(legacyBooks)) {
-    await cp(legacyBooks, join(current, 'Additional Books'), { recursive: true })
-  }
 }
 
 function rendererBaseUrl(): string {
@@ -238,6 +173,7 @@ function scheduleBoundsSave(): void {
 }
 
 function createDmWindow(): void {
+  const settings = getSettings()
   const bounds = settings.dmBounds
   const icon = appIconPath()
   dmWindow = new BrowserWindow({
@@ -286,236 +222,15 @@ function createDmWindow(): void {
   })
   dmWindow.on('closed', () => {
     dmWindow = null
-    playerWindow?.close()
+    disposePlayerWindow()
   })
   applyWindowSecurity(dmWindow.webContents)
   dmWindow.loadURL(rendererUrl('dm'))
 }
 
-function dmDisplayId(): number {
-  if (dmWindow && !dmWindow.isDestroyed()) {
-    return screen.getDisplayMatching(dmWindow.getBounds()).id
-  }
-  return screen.getPrimaryDisplay().id
-}
-
-function hasSecondDisplay(): boolean {
-  return screen.getAllDisplays().length > 1
-}
-
-function targetPlayerDisplay(displayId?: number): Electron.Display {
-  const displays = screen.getAllDisplays()
-  const wanted = displayId ?? settings.playerDisplayId
-  if (wanted != null) {
-    const match = displays.find((d) => d.id === wanted)
-    if (match) return match
-  }
-  const dmId = dmDisplayId()
-  return displays.find((d) => d.id !== dmId) ?? screen.getPrimaryDisplay()
-}
-
-function currentPlayerDisplay(): Electron.Display | null {
-  if (!playerWindow || playerWindow.isDestroyed()) return null
-  return screen.getDisplayMatching(playerWindow.getBounds())
-}
-
-function applyPlayerOutputScale(): void {
-  if (!playerWindow || playerWindow.isDestroyed()) return
-  playerWindow.webContents.setZoomFactor(1)
-}
-
-function playerWindowVisible(): boolean {
-  return Boolean(playerWindow && !playerWindow.isDestroyed() && playerWindow.isVisible())
-}
-
-function broadcastPlayerWindow(): void {
-  dmWindow?.webContents.send(IPC.playerWindow, playerWindowVisible())
-}
-
-function destroyPlayerWindow(resetWarmup = false): void {
-  const win = playerWindow
-  if (resetWarmup) {
-    playerWindowWarmup = true
-    playerScaleRetries = 0
-  }
-  if (!win || win.isDestroyed()) {
-    playerWindow = null
-    playerWindowScaleOk = false
-    broadcastPlayerWindow()
-    return
-  }
-  programmaticPlayerCloses.add(win)
-  playerWindow = null
-  playerWindowScaleOk = false
-  win.destroy()
-  broadcastPlayerWindow()
-}
-
-function hidePlayerWindow(): void {
-  destroyPlayerWindow(true)
-}
-
-function closePlayerWindow(): void {
-  playerWindowWanted = false
-  hidePlayerWindow()
-}
-
-function showPlayerWindow(display?: Electron.Display, forceRebuild = false): void {
-  playerWindowWanted = true
-  if (!hasSecondDisplay()) {
-    hidePlayerWindow()
-    return
-  }
-  const target = display ?? targetPlayerDisplay()
-  const current = currentPlayerDisplay()
-  if (
-    !forceRebuild &&
-    playerWindowScaleOk &&
-    playerWindow &&
-    !playerWindow.isDestroyed() &&
-    playerWindow.isVisible() &&
-    !playerWindowNeedsRebuild(
-      current ? { id: current.id, scaleFactor: current.scaleFactor } : null,
-      { id: target.id, scaleFactor: target.scaleFactor }
-    )
-  ) {
-    broadcastPlayerWindow()
-    return
-  }
-  destroyPlayerWindow(forceRebuild || !playerWindowScaleOk)
-  createPlayerWindow(target)
-}
-
-function createPlayerWindow(display = targetPlayerDisplay()): void {
-  if (!hasSecondDisplay()) return
-  if (playerWindow && !playerWindow.isDestroyed()) destroyPlayerWindow()
-  const bounds = display.bounds
-  const icon = appIconPath()
-  playerWindow = new BrowserWindow({
-    x: bounds.x,
-    y: bounds.y,
-    width: bounds.width,
-    height: bounds.height,
-    show: false,
-    frame: false,
-    fullscreen: false,
-    fullscreenable: true,
-    autoHideMenuBar: true,
-    backgroundColor: '#050403',
-    title: `${APP_NAME} — Player`,
-    icon,
-    webPreferences: {
-      preload: join(__dirname, '../preload/index.js'),
-      sandbox: false,
-      contextIsolation: true,
-      autoplayPolicy: 'no-user-gesture-required'
-    }
-  })
-
-  const created = playerWindow
-  applyWindowSecurity(created.webContents)
-  created.on('closed', () => {
-    if (playerWindow === created) playerWindow = null
-    if (!programmaticPlayerCloses.has(created)) playerWindowWanted = false
-    broadcastPlayerWindow()
-  })
-  playerWindow.webContents.on('did-finish-load', () => {
-    applyPlayerOutputScale()
-    playerWindow?.webContents.send(IPC.playerState, playerState)
-  })
-  playerWindow.once('ready-to-show', () => {
-    if (!playerWindow || playerWindow.isDestroyed()) return
-    if (playerWindowWarmup) {
-      playerWindowWarmup = false
-      destroyPlayerWindow(false)
-      createPlayerWindow(display)
-      return
-    }
-    playerWindow.setBounds(bounds)
-    playerWindow.setSkipTaskbar(false)
-    playerWindow.show()
-    playerWindow.setFullScreen(true)
-    applyPlayerOutputScale()
-    broadcastPlayerWindow()
-    void verifyPlayerOutputScale(created, display)
-  })
-  playerWindow.loadURL(rendererUrl('player'))
-}
-
-async function verifyPlayerOutputScale(win: BrowserWindow, display: Electron.Display): Promise<void> {
-  await new Promise((resolve) => setTimeout(resolve, 80))
-  if (playerWindow !== win || win.isDestroyed()) return
-  let dpr: unknown
-  try {
-    dpr = await win.webContents.executeJavaScript('window.devicePixelRatio')
-  } catch {
-    return
-  }
-  if (typeof dpr === 'number' && !playerOutputScaleMismatch(dpr, display.scaleFactor)) {
-    playerWindowScaleOk = true
-    playerScaleRetries = 0
-    return
-  }
-  if (playerScaleRetries >= 1 || !playerWindowWanted || !hasSecondDisplay()) {
-    playerWindowScaleOk = true
-    return
-  }
-  playerScaleRetries += 1
-  destroyPlayerWindow()
-  createPlayerWindow(display)
-}
-
-function syncPlayerWindow(): void {
-  if (shouldShowPlayerWindow(hasSecondDisplay(), playerWindowWanted)) showPlayerWindow()
-  else hidePlayerWindow()
-}
-
-function sendPlayerState(): void {
-  playerWindow?.webContents.send(IPC.playerState, playerState)
-  dmWindow?.webContents.send(IPC.playerState, playerState)
-}
-
-function listDisplays(): DisplayInfo[] {
-  const primaryId = screen.getPrimaryDisplay().id
-  const dmId = dmDisplayId()
-  return screen.getAllDisplays().map((d, index) => {
-    const name = d.label?.trim() || `Monitor ${index + 1}`
-    const width = Math.round(d.bounds.width * d.scaleFactor)
-    const height = Math.round(d.bounds.height * d.scaleFactor)
-    return {
-      id: d.id,
-      label: `${name} · ${width}×${height}`,
-      bounds: d.bounds,
-      primary: d.id === primaryId,
-      dm: d.id === dmId
-    }
-  })
-}
-
-function broadcastDisplays(): void {
-  dmWindow?.webContents.send(IPC.appDisplaysChanged, listDisplays())
-}
-
-function watchDisplays(): void {
-  const replacePlayer = (): void => {
-    syncPlayerWindow()
-    broadcastDisplays()
-  }
-  screen.on('display-added', replacePlayer)
-  screen.on('display-removed', replacePlayer)
-  screen.on('display-metrics-changed', (_event, changed) => {
-    const current = currentPlayerDisplay()
-    if (current && changed.id === current.id && playerWindowWanted) {
-      destroyPlayerWindow(true)
-      syncPlayerWindow()
-    }
-    broadcastDisplays()
-  })
-}
-
 async function rememberRecentCampaign(folder: string, name: string): Promise<void> {
   const entry: RecentCampaign = { folder, name }
-  const prior = (settings.recentCampaigns ?? []).filter((item) => !samePath(item.folder, folder))
+  const prior = (getSettings().recentCampaigns ?? []).filter((item) => !samePath(item.folder, folder))
   await patchSettings({ recentCampaigns: [entry, ...prior].slice(0, 8) })
 }
 
@@ -523,20 +238,15 @@ async function setCampaignFolder(folder: string | null): Promise<CampaignInfo | 
   campaignFolder = folder
   await patchSettings({ campaignFolder: folder ?? undefined })
   if (!folder) {
-    playerState = { ...emptyPlayerState() }
+    resetPlayerState()
     resetMixer()
-    sendPlayerState()
     return null
   }
   await prepareCampaignFolder(folder)
   const info = await loadCampaign(folder)
-  playerState = {
-    ...emptyPlayerState(),
-    campaignTitle: info.name
-  }
+  resetPlayerState({ campaignTitle: info.name })
   await loadMixerForCampaign(folder)
   broadcastMixerState()
-  sendPlayerState()
   await rememberRecentCampaign(folder, info.name)
   return info
 }
@@ -547,19 +257,19 @@ function registerIpc(): void {
   ipcMain.handle(
     IPC.playerShowImage,
     (_e, payload: { src: string; title: string; mapView?: PlayerState['mapView'] }) => {
-      playerState = {
-        ...playerState,
-        imageSrc: payload.src,
-        imageTitle: payload.title,
-        mapView: payload.mapView ?? null,
-        crawl: null,
-        legend: null,
-        gallery: null,
-        video: null
-      }
-      sendPlayerState()
-      showPlayerWindow(undefined, !playerWindowScaleOk)
-      return playerState
+      return setPlayerState(
+        {
+          ...getPlayerState(),
+          imageSrc: payload.src,
+          imageTitle: payload.title,
+          mapView: payload.mapView ?? null,
+          crawl: null,
+          legend: null,
+          gallery: null,
+          video: null
+        },
+        { show: true }
+      )
     }
   )
 
@@ -577,26 +287,26 @@ function registerIpc(): void {
     const logoSrc = typeof payload?.logoSrc === 'string' && payload.logoSrc.trim() ? payload.logoSrc.trim() : null
     const endSrc = typeof payload?.endSrc === 'string' && payload.endSrc.trim() ? payload.endSrc.trim() : null
     const preface = payload?.preface === null ? null : typeof payload?.preface === 'string' ? payload.preface : undefined
-    playerState = {
-      ...playerState,
-      imageSrc: null,
-      imageTitle: title || 'Opening crawl',
-      mapView: null,
-      crawl: {
-        title: title || undefined,
-        body,
-        logoSrc,
-        endSrc,
-        preface,
-        startedAt: Date.now()
+    return setPlayerState(
+      {
+        ...getPlayerState(),
+        imageSrc: null,
+        imageTitle: title || 'Opening crawl',
+        mapView: null,
+        crawl: {
+          title: title || undefined,
+          body,
+          logoSrc,
+          endSrc,
+          preface,
+          startedAt: Date.now()
+        },
+        legend: null,
+        gallery: null,
+        video: null
       },
-      legend: null,
-      gallery: null,
-      video: null
-    }
-    sendPlayerState()
-    showPlayerWindow(undefined, !playerWindowScaleOk)
-    return playerState
+      { show: true }
+    )
   })
 
   ipcMain.handle(
@@ -613,94 +323,33 @@ function registerIpc(): void {
     const logoSrc = typeof payload?.logoSrc === 'string' && payload.logoSrc.trim() ? payload.logoSrc.trim() : null
     const endSrc = typeof payload?.endSrc === 'string' && payload.endSrc.trim() ? payload.endSrc.trim() : null
     const preface = payload?.preface === null ? null : typeof payload?.preface === 'string' ? payload.preface : undefined
-    playerState = {
-      ...playerState,
-      imageSrc: null,
-      imageTitle: title || 'Campfire chronicle',
-      mapView: null,
-      crawl: null,
-      legend: {
-        title: title || undefined,
-        body,
-        logoSrc,
-        endSrc,
-        preface,
-        startedAt: Date.now()
+    return setPlayerState(
+      {
+        ...getPlayerState(),
+        imageSrc: null,
+        imageTitle: title || 'Campfire chronicle',
+        mapView: null,
+        crawl: null,
+        legend: {
+          title: title || undefined,
+          body,
+          logoSrc,
+          endSrc,
+          preface,
+          startedAt: Date.now()
+        },
+        gallery: null,
+        video: null
       },
-      gallery: null,
-      video: null
-    }
-    sendPlayerState()
-    showPlayerWindow(undefined, !playerWindowScaleOk)
-    return playerState
+      { show: true }
+    )
   })
 
-  ipcMain.handle(IPC.playerClear, () => {
-    if (crawlStopTimer) {
-      clearTimeout(crawlStopTimer)
-      crawlStopTimer = null
-    }
-    if (legendStopTimer) {
-      clearTimeout(legendStopTimer)
-      legendStopTimer = null
-    }
-    playerState = {
-      ...playerState,
-      imageSrc: null,
-      imageTitle: '',
-      mapView: null,
-      crawl: null,
-      legend: null,
-      gallery: null,
-      video: null
-    }
-    sendPlayerState()
-    return playerState
-  })
+  ipcMain.handle(IPC.playerClear, () => clearPlayerMedia())
 
-  ipcMain.handle(IPC.playerStopCrawl, () => {
-    const crawl = playerState.crawl
-    if (!crawl || crawl.stoppingAt != null) return playerState
-    if (crawlStopTimer) {
-      clearTimeout(crawlStopTimer)
-      crawlStopTimer = null
-    }
-    playerState = {
-      ...playerState,
-      crawl: { ...crawl, stoppingAt: Date.now() }
-    }
-    sendPlayerState()
-    crawlStopTimer = setTimeout(() => {
-      crawlStopTimer = null
-      if (playerState.crawl?.stoppingAt) {
-        playerState = { ...playerState, crawl: null }
-        sendPlayerState()
-      }
-    }, CRAWL_FADE_OUT_MS)
-    return playerState
-  })
+  ipcMain.handle(IPC.playerStopCrawl, () => stopPlayerCrawl())
 
-  ipcMain.handle(IPC.playerStopLegend, () => {
-    const legend = playerState.legend
-    if (!legend || legend.stoppingAt != null) return playerState
-    if (legendStopTimer) {
-      clearTimeout(legendStopTimer)
-      legendStopTimer = null
-    }
-    playerState = {
-      ...playerState,
-      legend: { ...legend, stoppingAt: Date.now() }
-    }
-    sendPlayerState()
-    legendStopTimer = setTimeout(() => {
-      legendStopTimer = null
-      if (playerState.legend?.stoppingAt) {
-        playerState = { ...playerState, legend: null }
-        sendPlayerState()
-      }
-    }, CRAWL_FADE_OUT_MS)
-    return playerState
-  })
+  ipcMain.handle(IPC.playerStopLegend, () => stopPlayerLegend())
 
   ipcMain.handle(
     IPC.playerShowGallery,
@@ -723,7 +372,7 @@ function registerIpc(): void {
               label: typeof s.label === 'string' && s.label.trim() ? s.label.trim() : undefined
             }))
         : []
-      if (slides.length === 0) return playerState
+      if (slides.length === 0) return getPlayerState()
       const intervalRaw = payload?.intervalSec
       const intervalSec =
         typeof intervalRaw === 'number' && Number.isFinite(intervalRaw) && intervalRaw > 0
@@ -731,45 +380,41 @@ function registerIpc(): void {
           : null
       const loop = payload?.loop !== false
       const showTitle = Boolean(payload?.showTitle) && Boolean(title)
-      playerState = {
-        ...playerState,
-        imageSrc: null,
-        imageTitle: title || 'Gallery',
-        mapView: null,
-        crawl: null,
-        legend: null,
-        gallery: {
-          title: title || undefined,
-          slides,
-          index: 0,
-          startedAt: Date.now(),
-          intervalSec,
-          loop,
-          showTitle
+      return setPlayerState(
+        {
+          ...getPlayerState(),
+          imageSrc: null,
+          imageTitle: title || 'Gallery',
+          mapView: null,
+          crawl: null,
+          legend: null,
+          gallery: {
+            title: title || undefined,
+            slides,
+            index: 0,
+            startedAt: Date.now(),
+            intervalSec,
+            loop,
+            showTitle
+          },
+          video: null
         },
-        video: null
-      }
-      sendPlayerState()
-      showPlayerWindow(undefined, !playerWindowScaleOk)
-      return playerState
+        { show: true }
+      )
     }
   )
 
   ipcMain.handle(IPC.playerGallerySetIndex, (_e, index: number) => {
-    const gallery = playerState.gallery
-    if (!gallery) return playerState
+    const gallery = getPlayerState().gallery
+    if (!gallery) return getPlayerState()
     const next = Math.max(0, Math.min(gallery.slides.length - 1, Math.floor(Number(index) || 0)))
-    if (next === gallery.index) return playerState
-    playerState = { ...playerState, gallery: { ...gallery, index: next } }
-    sendPlayerState()
-    return playerState
+    if (next === gallery.index) return getPlayerState()
+    return setPlayerState({ ...getPlayerState(), gallery: { ...gallery, index: next } })
   })
 
   ipcMain.handle(IPC.playerStopGallery, () => {
-    if (!playerState.gallery) return playerState
-    playerState = { ...playerState, gallery: null, imageTitle: '' }
-    sendPlayerState()
-    return playerState
+    if (!getPlayerState().gallery) return getPlayerState()
+    return setPlayerState({ ...getPlayerState(), gallery: null, imageTitle: '' })
   })
 
   ipcMain.handle(
@@ -777,33 +422,31 @@ function registerIpc(): void {
     (_e, payload: { title?: string; src?: string; muted?: boolean }) => {
       const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
       const src = typeof payload?.src === 'string' ? payload.src.trim() : ''
-      if (!src) return playerState
-      playerState = {
-        ...playerState,
-        imageSrc: null,
-        imageTitle: title || 'Video',
-        mapView: null,
-        crawl: null,
-        legend: null,
-        gallery: null,
-        video: {
-          title: title || undefined,
-          src,
-          muted: Boolean(payload?.muted),
-          startedAt: Date.now()
-        }
-      }
-      sendPlayerState()
-      showPlayerWindow(undefined, !playerWindowScaleOk)
-      return playerState
+      if (!src) return getPlayerState()
+      return setPlayerState(
+        {
+          ...getPlayerState(),
+          imageSrc: null,
+          imageTitle: title || 'Video',
+          mapView: null,
+          crawl: null,
+          legend: null,
+          gallery: null,
+          video: {
+            title: title || undefined,
+            src,
+            muted: Boolean(payload?.muted),
+            startedAt: Date.now()
+          }
+        },
+        { show: true }
+      )
     }
   )
 
   ipcMain.handle(IPC.playerStopVideo, () => {
-    if (!playerState.video) return playerState
-    playerState = { ...playerState, video: null, imageTitle: '' }
-    sendPlayerState()
-    return playerState
+    if (!getPlayerState().video) return getPlayerState()
+    return setPlayerState({ ...getPlayerState(), video: null, imageTitle: '' })
   })
 
   ipcMain.handle(
@@ -812,18 +455,16 @@ function registerIpc(): void {
       _e,
       payload: { entries: PlayerState['initiative']; show: boolean; round?: number }
     ) => {
-      playerState = {
-        ...playerState,
+      return setPlayerState({
+        ...getPlayerState(),
         initiative: payload.entries ?? [],
         showInitiative: Boolean(payload.show),
         initiativeRound: Number(payload.round ?? 0)
-      }
-      sendPlayerState()
-      return playerState
+      })
     }
   )
 
-  ipcMain.handle(IPC.playerGetState, () => playerState)
+  ipcMain.handle(IPC.playerGetState, () => getPlayerState())
 
   ipcMain.handle(IPC.mixerGet, async () => {
     if (campaignFolder) await refreshMixerLibrary()
@@ -876,7 +517,7 @@ function registerIpc(): void {
     return listDisplays()
   })
 
-  ipcMain.handle(IPC.appGetSettings, () => settings)
+  ipcMain.handle(IPC.appGetSettings, () => getSettings())
 
   ipcMain.handle(IPC.appSaveSettings, (_e, partial: AppSettings) => patchSettings(partial ?? {}))
 
@@ -1062,6 +703,18 @@ app.whenReady().then(async () => {
 
   registerMediaProtocol({ getCampaignFolder: () => campaignFolder, safeJoin })
 
+  configureAppSettings({
+    onThemeChanged: (theme) => applyDmWindowTheme(theme)
+  })
+
+  configurePlayerOutput({
+    getDmWindow: () => dmWindow,
+    getPreferredDisplayId: () => getSettings().playerDisplayId,
+    appIconPath,
+    playerPageUrl: () => rendererUrl('player'),
+    applyWindowSecurity
+  })
+
   configureCampaignMixer({
     getCampaignFolder: () => campaignFolder,
     onStateChanged: (state) => {
@@ -1081,14 +734,14 @@ app.whenReady().then(async () => {
 
   registerIpc()
 
-  settings = await readSettings()
+  const settings = await readSettings()
   const recents = (settings.recentCampaigns ?? []).filter((item) => !isDroppedAppSample(item.folder))
   if (recents.length !== (settings.recentCampaigns ?? []).length) {
     await patchSettings({ recentCampaigns: recents })
   }
   setupAppUpdater({
     getWindow: () => dmWindow,
-    readDismissed: () => settings.dismissedUpdateVersion,
+    readDismissed: () => getSettings().dismissedUpdateVersion,
     writeDismissed: (version) => {
       void patchSettings({ dismissedUpdateVersion: version })
     },
@@ -1114,10 +767,7 @@ app.whenReady().then(async () => {
   if (campaignFolder) {
     await prepareCampaignFolder(campaignFolder)
     const info = await loadCampaign(campaignFolder)
-    playerState = {
-      ...emptyPlayerState(),
-      campaignTitle: info.name
-    }
+    resetPlayerState({ campaignTitle: info.name })
     await loadMixerForCampaign(campaignFolder)
   }
 
