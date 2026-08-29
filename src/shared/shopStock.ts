@@ -122,12 +122,12 @@ export function shopServicesList(services: string[]): string {
   return services.map((line) => `- ${line}`).join('\n')
 }
 
+/** End of a ## section: next heading, or a callout (legacy quote or fenced). */
+const SECTION_END = String.raw`\r?\n## |\r?\n>\s*\[!|\r?\n\[!`
+
 function replaceHeadingSection(markdown: string, heading: string, body: string): string {
   const escaped = heading.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-  const re = new RegExp(
-    `^## ${escaped}[^\\n]*\\r?\\n(?:(?!\\r?\\n## |\\r?\\n>\\s*\\[!)[\\s\\S])*`,
-    'm'
-  )
+  const re = new RegExp(`^## ${escaped}[^\\n]*\\r?\\n(?:(?!${SECTION_END})[\\s\\S])*`, 'm')
   const block = `## ${heading}\n\n${body.trim()}\n`
   if (re.test(markdown)) return markdown.replace(re, block)
   return `${markdown.trimEnd()}\n\n${block}`
@@ -136,13 +136,15 @@ function replaceHeadingSection(markdown: string, heading: string, body: string):
 export function setShopTypeFields(markdown: string, catalog: ShopCatalog, replaceTagline = false): string {
   let body = markdown.replace(/(\|\s*\*\*Type\*\*\s*\|\s*)([^|]*)(\|)/i, `$1${catalog.title} $3`)
   if (replaceTagline) {
-    body = body.replace(/^>\s*###\s+\*.+\*\s*$/m, `> ### *${catalog.tagline}*`)
+    body = body.replace(/^(>\s*)?###\s+\*.+\*\s*$/m, (_match, quote: string | undefined) => {
+      return `${quote ?? ''}### *${catalog.tagline}*`
+    })
   }
   return body
 }
 
 function shouldReplaceTagline(markdown: string, catalog: ShopCatalog): boolean {
-  const heading = /^>\s*###\s+\*(.+)\*\s*$/m.exec(markdown)
+  const heading = /^(?:>\s*)?###\s+\*(.+)\*\s*$/m.exec(markdown)
   if (!heading) return false
   const text = heading[1].trim()
   if (/what they sell in one line/i.test(text)) return true
@@ -165,7 +167,7 @@ function parseTableRow(line: string): string[] | null {
 }
 
 export function parseShopStock(markdown: string): ShopStockOffer[] {
-  const match = markdown.match(/^## Stock[^\n]*\r?\n((?:(?!\r?\n## |\r?\n>\s*\[!)[\s\S])*)/m)
+  const match = markdown.match(new RegExp(`^## Stock[^\\n]*\\r?\\n((?:(?!${SECTION_END})[\\s\\S])*)`, 'm'))
   if (!match) return []
   const rows: ShopStockOffer[] = []
   for (const line of match[1].split('\n')) {
@@ -192,7 +194,7 @@ export function applyShopStock(markdown: string, stock: ShopStockOffer[]): strin
 
 export function stripShopStockSection(markdown: string): string {
   return markdown
-    .replace(/^## Stock[^\n]*\r?\n(?:(?!\r?\n## |\r?\n>\s*\[!)[\s\S])*/m, '')
+    .replace(new RegExp(`^## Stock[^\\n]*\\r?\\n(?:(?!${SECTION_END})[\\s\\S])*`, 'm'), '')
     .replace(/\n{3,}/g, '\n\n')
     .trim()
 }
