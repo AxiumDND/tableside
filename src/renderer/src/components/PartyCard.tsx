@@ -14,15 +14,15 @@ function PartyMark() {
 export default function PartyCard({ title, children }: { title?: string; children: ReactNode }) {
   return (
     <section className="party-card my-5">
-      <div className="relative rounded-md border border-ink/15 bg-panel-2 px-4 pb-4 pt-5">
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-1 rounded-l-md bg-ink/40" />
+      <div className="relative rounded-md border border-amber/30 bg-panel-2 px-4 pb-4 pt-5">
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-1 rounded-l-md bg-amber-dim" />
         <div className="absolute -top-3 left-3 flex items-center gap-1.5 bg-panel px-2">
-          <span className="text-ink/70">
+          <span className="text-amber-dim">
             <PartyMark />
           </span>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-ink/70">Party</span>
+          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber-dim">Party</span>
           {title ? (
-            <span className="max-w-[18rem] truncate font-display text-[13px] font-normal text-ink">{title}</span>
+            <span className="max-w-[18rem] truncate font-display text-[13px] font-normal text-amber">{title}</span>
           ) : null}
         </div>
         <div className="party-card-body space-y-3 pl-2">{children}</div>
