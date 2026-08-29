@@ -1,7 +1,7 @@
 import { app, BrowserWindow, dialog, ipcMain, protocol, screen, session, shell } from 'electron'
 import { existsSync } from 'node:fs'
-import { copyFile, cp, mkdir, readdir, readFile, writeFile } from 'node:fs/promises'
-import { join, normalize, relative, basename, dirname, extname } from 'node:path'
+import { copyFile, cp, mkdir, readFile, writeFile } from 'node:fs/promises'
+import { join, normalize, relative, basename, dirname } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import type {
   AppSettings,
@@ -13,17 +13,7 @@ import type {
   RecentCampaign
 } from '../shared/types'
 import { emptyPlayerState, emptySettings } from '../shared/types'
-import {
-  AUDIO_EXT,
-  applyMixerCommand,
-  buildAudioLibrary,
-  emptyMixerState,
-  mixerPrefsToFile,
-  parseMixerPrefs,
-  type MixerCommand,
-  type MixerPrefs,
-  type MixerState
-} from '../shared/audio'
+import { type MixerPrefs } from '../shared/audio'
 import { setupAppUpdater, scheduleLaunchUpdateCheck } from './appUpdater'
 import { registerMediaProtocol } from './mediaAssets'
 import {
@@ -35,7 +25,6 @@ import {
 import {
   type CampaignFile,
   ensureCampaignLayout,
-  existingCanonicalDir,
   loadCampaign,
   prepareCampaignFolder,
   readJson,
@@ -54,6 +43,15 @@ import {
   saveToCampaignLibrary,
   setNotePortrait
 } from './campaignNotes'
+import {
+  broadcastMixerState,
+  configureCampaignMixer,
+  getMixerState,
+  loadMixerForCampaign,
+  refreshMixerLibrary,
+  resetMixer,
+  runMixer
+} from './campaignMixer'
 import {
   playerOutputScaleMismatch,
   playerWindowNeedsRebuild,
@@ -99,7 +97,6 @@ let campaignFolder: string | null = null
 let playerState: PlayerState = emptyPlayerState()
 let crawlStopTimer: ReturnType<typeof setTimeout> | null = null
 let legendStopTimer: ReturnType<typeof setTimeout> | null = null
-let mixer: MixerState = emptyMixerState()
 let settings: AppSettings = emptySettings()
 let allowQuit = false
 let boundsTimer: ReturnType<typeof setTimeout> | null = null
@@ -478,60 +475,6 @@ function sendPlayerState(): void {
   dmWindow?.webContents.send(IPC.playerState, playerState)
 }
 
-function sendMixerState(): void {
-  dmWindow?.webContents.send(IPC.mixerState, mixer)
-}
-
-async function listAudioFiles(root: string): Promise<string[]> {
-  const audioRoot = await existingCanonicalDir(root, 'audio')
-  if (!audioRoot) return []
-  const out: string[] = []
-  async function walk(dir: string): Promise<void> {
-    const entries = await readdir(dir, { withFileTypes: true })
-    for (const entry of entries) {
-      if (entry.name.startsWith('.')) continue
-      const full = join(dir, entry.name)
-      if (entry.isDirectory()) await walk(full)
-      else if (AUDIO_EXT.has(extname(entry.name).toLowerCase())) {
-        out.push(toPosix(relative(root, full)))
-      }
-    }
-  }
-  await walk(audioRoot)
-  return out
-}
-
-async function persistMixerPrefs(): Promise<void> {
-  if (!campaignFolder) return
-  await writeJson(join(campaignFolder, 'audio.json'), mixerPrefsToFile(mixer.prefs))
-}
-
-async function refreshMixerLibrary(): Promise<void> {
-  if (!campaignFolder) {
-    mixer = emptyMixerState()
-    return
-  }
-  mixer = applyMixerCommand(mixer, { type: 'set-library', library: buildAudioLibrary(await listAudioFiles(campaignFolder)) })
-}
-
-async function loadMixerForCampaign(folder: string): Promise<void> {
-  const prefs = parseMixerPrefs(await readJson(join(folder, 'audio.json'), {}))
-  mixer = {
-    ...emptyMixerState(),
-    prefs,
-    library: buildAudioLibrary(await listAudioFiles(folder))
-  }
-}
-
-async function runMixer(command: MixerCommand): Promise<MixerState> {
-  mixer = applyMixerCommand(mixer, command)
-  if (command.type === 'set-prefs' || command.type === 'play-music' || command.type === 'play-ambience') {
-    void persistMixerPrefs()
-  }
-  sendMixerState()
-  return mixer
-}
-
 function listDisplays(): DisplayInfo[] {
   const primaryId = screen.getPrimaryDisplay().id
   const dmId = dmDisplayId()
@@ -581,9 +524,8 @@ async function setCampaignFolder(folder: string | null): Promise<CampaignInfo | 
   await patchSettings({ campaignFolder: folder ?? undefined })
   if (!folder) {
     playerState = { ...emptyPlayerState() }
-    mixer = emptyMixerState()
+    resetMixer()
     sendPlayerState()
-    sendMixerState()
     return null
   }
   await prepareCampaignFolder(folder)
@@ -593,8 +535,8 @@ async function setCampaignFolder(folder: string | null): Promise<CampaignInfo | 
     campaignTitle: info.name
   }
   await loadMixerForCampaign(folder)
+  broadcastMixerState()
   sendPlayerState()
-  sendMixerState()
   await rememberRecentCampaign(folder, info.name)
   return info
 }
@@ -885,8 +827,8 @@ function registerIpc(): void {
 
   ipcMain.handle(IPC.mixerGet, async () => {
     if (campaignFolder) await refreshMixerLibrary()
-    sendMixerState()
-    return mixer
+    broadcastMixerState()
+    return getMixerState()
   })
   ipcMain.handle(IPC.mixerPlayMusic, (_e, playlistId: string) =>
     runMixer({ type: 'play-music', playlistId: String(playlistId ?? '') })
@@ -1120,13 +1062,20 @@ app.whenReady().then(async () => {
 
   registerMediaProtocol({ getCampaignFolder: () => campaignFolder, safeJoin })
 
+  configureCampaignMixer({
+    getCampaignFolder: () => campaignFolder,
+    onStateChanged: (state) => {
+      dmWindow?.webContents.send(IPC.mixerState, state)
+    }
+  })
+
   configureCampaignNotes({
     getCampaignFolder: () => campaignFolder,
     samePath,
     openFiles: (options) => showAppOpenDialog(options),
     onCampaignFilesChanged: async () => {
       await refreshMixerLibrary()
-      sendMixerState()
+      broadcastMixerState()
     }
   })
 
