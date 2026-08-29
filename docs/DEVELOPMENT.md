@@ -116,6 +116,7 @@ Format and placement of personal PHB/DMG text files: [Additional Books/README.md
 | `tabledm://` media protocol | `src/main/mediaAssets.ts` |
 | Preload bridge (`window.tabledm`) | `src/preload/index.ts` |
 | DM UI shell | `src/renderer/src/windows/DmApp.tsx` |
+| DM player playback orchestration | `src/renderer/src/hooks/usePlayerPlayback.ts` |
 | Player fullscreen view | `src/renderer/src/windows/PlayerApp.tsx` |
 | Night-sheet / combatant parsing | `src/renderer/src/lib/notes.ts` |
 | Statblock YAML | `src/renderer/src/lib/statblock.ts` |
