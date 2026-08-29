@@ -151,13 +151,15 @@ Pins/tokens/fog can be added in the app. Do not invent pin coordinates unless yo
 
 ## Game night / combat
 
-A heading matching `combat`, `encounter`, or `⚔` (and not `no combat`) feeds initiative.
+Prefer a fenced combat block (nestable in `[!scene]`). Aliases: `encounter`, `fight`. Skip titles that say `no combat`.
 
 ```markdown
-## ⚔️ Combat 1 — Rat's Nest door
-
+[!combat] Combat 1 — Rat's Nest door
 **Combatants:** [[Ratling]] ×4 · [[Oscar-Yoren]] · party
+[!/combat]
 ```
+
+Legacy headings matching `combat`, `encounter`, or `⚔` (and not `no combat`) still feed initiative.
 
 `party` = every `Party/` sheet except `*roster*`. Separators: `·` `|` `,` `;`. Counts: `×2` / `x2`.
 

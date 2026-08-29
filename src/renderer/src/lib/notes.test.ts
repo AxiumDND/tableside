@@ -70,6 +70,35 @@ describe('night sheet parsing', () => {
     expect(encounters[0].combatants.find((c) => c.name === 'Wolf')?.count).toBe(2)
   })
 
+  it('parses a fenced combat block nested in a scene', () => {
+    const md = [
+      '[!scene] The mill fight',
+      '[!combat] Combat 1 — the mill',
+      '**Combatants:** [[Wolf]] ×2 · party',
+      '[!/combat]',
+      '[!/scene]',
+      ''
+    ].join('\n')
+    const encounters = parseNightEncounters(md, 'Sessions/Night.md', notes)
+    expect(encounters).toHaveLength(1)
+    expect(encounters[0].heading).toBe('Combat 1 — the mill')
+    expect(encounters[0].includeParty).toBe(true)
+    expect(encounters[0].combatants.find((c) => c.name === 'Wolf')?.count).toBe(2)
+  })
+
+  it('parses a top-level combat block', () => {
+    const md = [
+      '[!combat] Ambush',
+      '**Combatants:** [[Hale]] · party',
+      '[!/combat]',
+      ''
+    ].join('\n')
+    const encounters = parseNightEncounters(md, 'Sessions/Night.md', notes)
+    expect(encounters).toHaveLength(1)
+    expect(encounters[0].heading).toBe('Ambush')
+    expect(encounters[0].combatants.map((c) => c.name)).toContain('Hale')
+  })
+
   it('parses combat inside a legacy quoted scene block', () => {
     const md = [
       '## 2. Scenes',

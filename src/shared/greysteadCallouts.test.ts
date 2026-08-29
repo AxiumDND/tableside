@@ -34,5 +34,7 @@ describe('greystead callout formatting', () => {
     expect(night).toContain('[!party]')
     expect(night).toContain('[!/party]')
     expect(night).toContain('[!scene]')
+    expect(night).toContain('[!combat]')
+    expect(night).toContain('[!/combat]')
   })
 })

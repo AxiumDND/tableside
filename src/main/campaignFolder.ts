@@ -272,6 +272,7 @@ export async function refreshStockNightSheetTemplate(root: string): Promise<void
     current.includes('## 1. The Party') &&
     current.includes('[!party]') &&
     current.includes('[!scene]') &&
+    current.includes('[!combat]') &&
     !current.includes('What this page does') &&
     !current.includes('## 4. NPCs') &&
     !current.includes('## 3. Secrets and clues') &&
@@ -283,6 +284,8 @@ export async function refreshStockNightSheetTemplate(root: string): Promise<void
       current.includes('{{party}}') ||
       current.includes('Numbers and cues for behind the screen') ||
       current.includes('Combat 1 — name the encounter') ||
+      current.includes('## ⚔️ Combat 1') ||
+      current.includes('**Combat in this scene**') ||
       current.includes('## 1. The characters') ||
       current.includes('## 5. Locations') ||
       current.includes('## 4. NPCs') ||
@@ -291,6 +294,7 @@ export async function refreshStockNightSheetTemplate(root: string): Promise<void
       current.includes('## 3. From last time') ||
       current.includes('## 4. Likely endings') ||
       (current.includes('[!scene]') && !current.includes('**At the table**')) ||
+      (current.includes('[!scene]') && !current.includes('[!combat]')) ||
       (current.includes('## 1. The Party') && !current.includes('[!party]'))
     if (stock) await writeFile(dest, (await packTemplates(root)).nightsheet, 'utf8')
   } else if (currentPath !== dest) {

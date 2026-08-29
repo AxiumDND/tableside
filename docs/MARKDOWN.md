@@ -48,7 +48,8 @@ Obsidian callout form:
 | TYPE | Aliases | Rendering |
 | --- | --- | --- |
 | `readaloud` | `flavor` | Read-aloud card |
-| `scene` | `beat` | Scene card on a game night sheet. Optional `![[art]]` (right-side frame), description, nested `> [!readaloud]` / `> [!gmonly]`, optional secrets/treasure/NPCs/combat, and **At the table** cues (place, map, checks, music, sound, leads to). Copy a whole scene block to add another beat. |
+| `scene` | `beat` | Scene card on a game night sheet. Optional `![[art]]` (right-side frame), description, nested `readaloud` / `gmonly` / `combat`, optional secrets/treasure/NPCs, and **At the table** cues (place, map, checks, music, sound, leads to). Copy a whole scene block to add another beat. |
+| `combat` | `encounter`, `fight` | Combat card with **Add to initiative**. Nest inside a `scene` or place at document level. Title names the fight; body holds `**Combatants:**` plus telegraph / stat notes. |
 | `crawl` | `opening` | Opening crawl card. Edit title, far-off line, emblem, crawl music, and crawl on the card (writes back to the note). **Play** (Sci-fi look only) shows a starfield, an original far-off line (`preface:`; `none` skips it), a generic title emblem (or the first `![[image]]`), then a perspective prologue. Optional `music: Audio/Music/…` fades mood out on Play; the crawl track starts half a second before the emblem and runs for 1:32 (longer files fade out there), then resumes mood when that window ends, you Stop, or you Clear. Optional `end: ![[…]]` fades in a closing still when the crawl finishes. Write your own words — Tableside does not include licensed crawl text, logos, or music files. |
 | `gmonly` | `secret` | Collapsible GM-only |
 | `infobox` | — | Sheet header (often with portrait + facts table); not split like other callouts |
@@ -59,7 +60,17 @@ Trailing `+` / `-` on the type (Obsidian fold) is accepted; fold state is not pe
 
 ## Combat sections
 
-A `#` or `##` heading counts as combat if it matches `/combat|encounter|⚔/i` and does **not** match `/no combat/i`.
+Prefer a fenced combat block (nestable in a scene):
+
+```markdown
+[!combat] Combat 1 — the door
+**Combatants:** [[Vesper]] · [[Cultist]] ×3 · party
+[!/combat]
+```
+
+Aliases: `encounter`, `fight`. Skip titles that say `no combat`.
+
+Legacy: a `#` or `##` heading still counts as combat if it matches `/combat|encounter|⚔/i` and does **not** match `/no combat/i`.
 
 Preferred combatant line:
 

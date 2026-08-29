@@ -142,10 +142,7 @@ The track climbs through wet stone and thorn. Wind off the limestone. Ahead, a c
 - Sound: wind · wet stone
 - Leads to: [[Pale Well Caves]]
 
-**Combat in this scene:**
-
-## ⚔️ Combat 1 — Ridge lookouts
-
+[!combat] Combat 1 — Ridge lookouts
 **Combatants:** [[Cultist]] ×2 · party
 
 | | |
@@ -155,6 +152,7 @@ The track climbs through wet stone and thorn. Wind off the limestone. Ahead, a c
 - Telegraph: grey hems under bandit coats
 - They fold at half. One talks: *“Not bandits. The well. She’s already below.”*
 - Search [[Kell]]: [[Note — Kell's Orders]]. **Show it.**
+[!/combat]
 
 **Treasure in this scene:**
 - [[Note — Kell's Orders]] on a lookout
@@ -231,10 +229,7 @@ A round chamber. A stone bowl set in the floor like a well-mouth, full of still 
 - [[Vesper]] — wants the well open / will finish the chant / will not beg
 - [[Lira Crowe]] — *“Do not break the bowl.”*
 
-**Combat in this scene:**
-
-## ⚔️ Combat 2 — the Pale Well
-
+[!combat] Combat 2 — the Pale Well
 **Combatants:** [[Vesper]] · [[Cultist]] ×3 · party
 
 | | |
@@ -245,6 +240,7 @@ A round chamber. A stone bowl set in the floor like a well-mouth, full of still 
 
 - Telegraph each chant round (*water brightens / ring hums / last word*)
 - Search Vesper / bowl: [[Hymn — The Nine Mouths]]. **Show it.**
+[!/combat]
 
 **Treasure in this scene:**
 - [[Hymn — The Nine Mouths]] on Vesper or in the bowl

@@ -201,19 +201,22 @@ You can also **Add to campaign** from Lookup (monster → Bestiary, spell → Sp
 
 A **game night sheet** is a session note with a Party roster block and scene blocks that hold the night's beats. Right-click **Sessions** → **New game night sheet…** for The Party and Scenes. Existing `Party/` sheets are linked in automatically. New files are named `Session N — Game Night Sheet.md`. Sci-fi campaigns also get an Opening crawl sample — rewrite it, then **Play**.
 
-Wrap PC links in `[!party]…[!/party]` (optional Focus tonight note inside). Scene blocks use `[!scene] Title` … `[!/scene]`. Put optional art with `![[…]]`, a short “what could happen” note, nested `[!readaloud]` for spoken text, nested `[!gmonly]` for hidden prep, optional secrets/treasure/NPC bullets/combat, and an **At the table** cue list (place, map, checks, if they miss, music, sound, leads to). Copy a whole scene block to add another beat.
+Wrap PC links in `[!party]…[!/party]` (optional Focus tonight note inside). Scene blocks use `[!scene] Title` … `[!/scene]`. Put optional art with `![[…]]`, a short “what could happen” note, nested `[!readaloud]` for spoken text, nested `[!gmonly]` for hidden prep, nested `[!combat]` for fights, optional secrets/treasure/NPC bullets, and an **At the table** cue list (place, map, checks, if they miss, music, sound, leads to). Copy a whole scene block to add another beat.
 
-1. Inside a scene (or at document level on older sheets), use a heading that includes `Combat`, `Encounter`, or ⚔️ (skip headings that say `no combat`).
-2. List combatants with wikilinks to Party / NPCs / Bestiary sheets:
+1. Prefer a combat block inside a scene (or at document level). Aliases: `encounter`, `fight`.
 
 ```markdown
 [!scene] The door
 …
-## ⚔️ Combat 1 — the door
-
+[!combat] Combat 1 — the door
 **Combatants:** [[Vesper]] · [[Cultist]] ×3 · party
+[!/combat]
 [!/scene]
 ```
+
+Legacy: a `#` / `##` heading that includes `Combat`, `Encounter`, or ⚔️ (skip headings that say `no combat`) still works the same way.
+
+2. List combatants with wikilinks to Party / NPCs / Bestiary sheets:
 
 - `party` adds every PC under `Party/`.
 - `×2` / `x2` adds multiple copies of that sheet.

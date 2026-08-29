@@ -12,11 +12,13 @@ function CrossedSwords() {
 }
 
 export default function CombatCard({
+  title,
   adding,
   onAdd,
   missing = [],
   children
 }: {
+  title?: string
   adding?: boolean
   onAdd?: () => void
   missing?: string[]
@@ -26,11 +28,14 @@ export default function CombatCard({
     <section className="combat-card my-4">
       <div className="relative rounded-md border border-blood/45 bg-panel-2 px-4 pb-3 pt-4">
         <div className="pointer-events-none absolute inset-y-0 left-0 w-1 rounded-l-md bg-blood" />
-        <div className="absolute -top-3 left-3 flex items-center gap-1.5 bg-panel px-2">
-          <span className="text-blood">
+        <div className="absolute -top-3 left-3 flex max-w-[calc(100%-8rem)] items-center gap-1.5 bg-panel px-2">
+          <span className="shrink-0 text-blood">
             <CrossedSwords />
           </span>
-          <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-blood">Combat</span>
+          <span className="shrink-0 text-[10px] font-semibold uppercase tracking-[0.22em] text-blood">Combat</span>
+          {title?.trim() ? (
+            <span className="truncate text-[12px] font-semibold text-parchment">{title.trim()}</span>
+          ) : null}
         </div>
         {onAdd ? (
           <div className="absolute -top-3 right-3 bg-panel pl-2">

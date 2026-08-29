@@ -686,7 +686,8 @@ export default function SessionNotes({
     crawlOffset = 0,
     legendOffset = 0,
     galleryOffset = 0,
-    videoOffset = 0
+    videoOffset = 0,
+    encounterScope?: string
   ) {
     const rawCrawls = splitCalloutBlocks(markdown).filter((block) => block.kind === 'crawl')
     const rawLegends = splitCalloutBlocks(markdown).filter((block) => block.kind === 'legend')
@@ -705,6 +706,45 @@ export default function SessionNotes({
               {part.markdown || ''}
             </Markdown>
           </ReadAloud>
+        )
+      }
+      if (part.kind === 'combat') {
+        const heading = part.title?.trim() || 'Combat'
+        const sectionId = encounterSectionId(heading, encounterScope)
+        const encounter = encounters.find((item) => item.id === sectionId)
+        const { card, rest } = splitCombatCardContent(
+          part.markdown.trim() ? `## ${heading}\n${part.markdown}` : `## ${heading}`
+        )
+        // Card markdown already has a synthetic ## heading for roster split; show title in chrome instead.
+        const cardBody = card.replace(/^#{1,2}\s+[^\n]+\n?/, '')
+        return (
+          <div key={key}>
+            <CombatCard
+              title={heading}
+              adding={Boolean(encounter && addingId === encounter.id)}
+              onAdd={encounter && onAddEncounter ? () => void addEncounter(encounter) : undefined}
+              missing={missingCombatantTokens(part.markdown, path, noteIndex)}
+            >
+              {cardBody.trim() ? (
+                <Markdown remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform} components={markdownComponents}>
+                  {cardBody}
+                </Markdown>
+              ) : null}
+            </CombatCard>
+            {rest.trim() ? (
+              <div className="markdown-body">
+                {renderMarkdown(
+                  rest,
+                  `${key}-rest`,
+                  crawlOffset + crawlLocal,
+                  legendOffset + legendLocal,
+                  galleryOffset + galleryLocal,
+                  videoOffset + videoLocal,
+                  encounterScope
+                )}
+              </div>
+            ) : null}
+          </div>
         )
       }
       if (part.kind === 'party') {
@@ -985,7 +1025,8 @@ export default function SessionNotes({
               crawlOff,
               legendOff,
               galleryOff,
-              videoOff
+              videoOff,
+              encounterScope
             )}
           </div>
         )
@@ -999,11 +1040,20 @@ export default function SessionNotes({
       return (
         <div key={key}>
           <CombatCard
+            title={section.heading}
             adding={Boolean(encounter && addingId === encounter.id)}
             onAdd={encounter && onAddEncounter ? () => void addEncounter(encounter) : undefined}
             missing={missingCombatantTokens(section.markdown, path, noteIndex)}
           >
-            {renderMarkdown(card, `${key}-card`, crawlOff, legendOff, galleryOff, videoOff)}
+            {renderMarkdown(
+              card.replace(/^#{1,2}\s+[^\n]+\n?/, ''),
+              `${key}-card`,
+              crawlOff,
+              legendOff,
+              galleryOff,
+              videoOff,
+              encounterScope
+            )}
           </CombatCard>
           {rest.trim() ? (
             <div className="markdown-body">
@@ -1013,7 +1063,8 @@ export default function SessionNotes({
                 crawlOff + cardCrawls,
                 legendOff + cardLegends,
                 galleryOff + cardGalleries,
-                videoOff + cardVideos
+                videoOff + cardVideos,
+                encounterScope
               )}
             </div>
           ) : null}
@@ -1071,11 +1122,12 @@ export default function SessionNotes({
       return (
         <div key={key}>
           <CombatCard
+            title={section.heading}
             adding={Boolean(encounter && addingId === encounter.id)}
             onAdd={encounter && onAddEncounter ? () => void addEncounter(encounter) : undefined}
             missing={missingCombatantTokens(section.markdown, path, noteIndex)}
           >
-            {renderMarkdown(card, `${key}-card`, crawlOff, legendOff, galleryOff, videoOff)}
+            {renderMarkdown(card.replace(/^#{1,2}\s+[^\n]+\n?/, ''), `${key}-card`, crawlOff, legendOff, galleryOff, videoOff)}
           </CombatCard>
           {rest.trim() ? (
             <div className="markdown-body">

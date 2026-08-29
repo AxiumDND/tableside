@@ -1,32 +1,21 @@
-<!--
-  Game night sheet — Party and Scenes.
-  Right-click Sessions/ → New game night sheet…
-  {{party}} is replaced with wikilinks to every Party/ sheet.
-  {{crawl}} is replaced on Sci-fi campaigns with an Opening crawl sample (Play on the player screen).
-  {{legend}} is replaced on Classic, Light, and Vampire campaigns with an Opening legend sample.
-  Scene blocks: [!scene] Title … [!/scene] — art, what could happen, nested [!readaloud] / [!gmonly] / [!combat], optional NPCs, secrets, treasure, and table cues.
-  Party roster: [!party] … [!/party] wraps PC links and the Focus tonight note.
-  Copy a scene block to add another beat. Use // lines for notes that stay in the editor only.
-  Combat blocks: [!combat] Title … [!/combat] (nest in a scene or at document level). Legacy ## Combat / Encounter / ⚔️ headings still work.
-  party = all PCs. [[Name]] opens a sheet. ![[Art.webp]] then Show to players.
-  Long prose belongs in a separate session note. See docs/GUIDE.md and docs/RECIPES.md.
--->
-# Session Name — Game Night Sheet
+# ugk — Game Night Sheet
 
-*Behind the screen. Prose in [[Session Name]]. Click [[links]] to open sheets. Click art, then **Show to players**.*
+*Behind the screen. Prose in [[ugk]]. Click [[links]] to open sheets. Click art, then **Show to players**.*
 
 [!abstract] Tonight at a glance
 Opening scene → next beats → **the fight** → fallout.
 [!/abstract]
 
-{{crawl}}
 
-{{legend}}
 
 ## 1. The Party
 
-[!party]
-{{party}}
+- [[PC — Bren Oak|Bren Oak]]
+- [[PC — Ilya Song|Ilya Song]]
+- [[PC — Nessa Pike|Nessa Pike]]
+- [[PC — Quill Venn|Quill Venn]]
+- [[PC — Sister Calda|Sister Calda]]
+- [[PC — Torren Vale|Torren Vale]]
 
 [!note] Focus tonight
 Soft spots for this session — unfinished business, a promise from last time, or something the table asked for.
@@ -34,7 +23,6 @@ Soft spots for this session — unfinished business, a promise from last time, o
 - 
 - 
 [!/note]
-[!/party]
 
 ## 2. Scenes
 
@@ -98,7 +86,10 @@ Hidden truth, rigged outcome, or NPC tell they must not hear yet.
 - [[NPC Name]] — want / will say / will not say
 - Voice:
 
-[!combat] Combat 1 — name the encounter
+**Combat in this scene** (optional — delete if no fight). Headings that say *no combat* are skipped.
+
+## ⚔️ Combat 1 — name the encounter
+
 **Combatants:** [[Monster Name]] · party
 
 | | |
@@ -108,5 +99,4 @@ Hidden truth, rigged outcome, or NPC tell they must not hear yet.
 - Telegraph:
 - Target / quarry:
 - Cut if running long:
-[!/combat]
 [!/scene]

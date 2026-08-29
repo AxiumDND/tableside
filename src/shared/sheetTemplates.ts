@@ -255,10 +255,10 @@ const NIGHTSHEET = `<!--
   {{party}} is replaced with wikilinks to every Party/ sheet.
   {{crawl}} is replaced on Sci-fi campaigns with an Opening crawl sample (Play on the player screen).
   {{legend}} is replaced on Classic, Light, and Vampire campaigns with an Opening legend sample.
-  Scene blocks: [!scene] Title … [!/scene] — art, what could happen, nested [!readaloud] / [!gmonly], optional NPCs, secrets, treasure, combat, and table cues.
+  Scene blocks: [!scene] Title … [!/scene] — art, what could happen, nested [!readaloud] / [!gmonly] / [!combat], optional NPCs, secrets, treasure, and table cues.
   Party roster: [!party] … [!/party] wraps PC links and the Focus tonight note.
   Copy a scene block to add another beat. Use // lines for notes that stay in the editor only.
-  Combat headings inside a scene (⚔️ / Combat / Encounter) + Combatants lines feed Add to initiative.
+  Combat blocks: [!combat] Title … [!/combat] (nest in a scene or at document level). Legacy ## Combat / Encounter / ⚔️ headings still work.
   party = all PCs. [[Name]] opens a sheet. ![[Art.webp]] then Show to players.
   Long prose belongs in a separate session note. See docs/GUIDE.md and docs/RECIPES.md.
 -->
@@ -349,10 +349,7 @@ Hidden truth, rigged outcome, or NPC tell they must not hear yet.
 - [[NPC Name]] — want / will say / will not say
 - Voice:
 
-**Combat in this scene** (optional — delete if no fight). Headings that say *no combat* are skipped.
-
-## ⚔️ Combat 1 — name the encounter
-
+[!combat] Combat 1 — name the encounter
 **Combatants:** [[Monster Name]] · party
 
 | | |
@@ -362,6 +359,7 @@ Hidden truth, rigged outcome, or NPC tell they must not hear yet.
 - Telegraph:
 - Target / quarry:
 - Cut if running long:
+[!/combat]
 [!/scene]
 `
 

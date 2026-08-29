@@ -74,15 +74,16 @@ Large and Huge tokens stay 2× / 3× a Medium token.
 Prep on a **game night sheet** (right-click **Sessions/** → **New game night sheet…**):
 
 1. **The Party** — a `[!party]` block with linked PC sheets plus a **Focus tonight** note.
-2. **Scenes** — Opening scene block, then more `[!scene]` blocks (copy one to add a beat). Each can have art, read-aloud, GM-only notes, optional secrets/treasure/NPCs/combat, and **At the table** cues (place, map, checks, music, sound, leads to).
-3. Combatants for a fight **inside the scene block** that needs it:
+2. **Scenes** — Opening scene block, then more `[!scene]` blocks (copy one to add a beat). Each can have art, read-aloud, GM-only notes, optional secrets/treasure/NPCs, nested `[!combat]` fights, and **At the table** cues (place, map, checks, music, sound, leads to).
+3. Combatants for a fight **inside a `[!combat]` block** nested in the scene (or at document level):
 
 ```markdown
-> [!scene] The door
-> …
-> ## ⚔️ Combat 1 — the door
->
-> **Combatants:** [[Vesper]] · [[Cultist]] ×3 · party
+[!scene] The door
+…
+[!combat] Combat 1 — the door
+**Combatants:** [[Vesper]] · [[Cultist]] ×3 · party
+[!/combat]
+[!/scene]
 ```
 
 At the table:

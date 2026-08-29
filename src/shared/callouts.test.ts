@@ -46,6 +46,24 @@ describe('fenced callouts', () => {
     expect(nested.find((p) => p.kind === 'readaloud')?.markdown).toBe('Rain hammers the shutters.')
   })
 
+  it('parses nested combat inside a scene', () => {
+    const md = [
+      '[!scene] Ridge',
+      '[!combat] Combat 1 — lookouts',
+      '**Combatants:** [[Cultist]] ×2 · party',
+      '[!/combat]',
+      '[!/scene]'
+    ].join('\n')
+    const scene = splitCalloutBlocks(md).find((p) => p.kind === 'scene')
+    expect(scene?.title).toBe('Ridge')
+    const nested = splitCalloutBlocks(scene?.markdown ?? '')
+    expect(nested.find((p) => p.kind === 'combat')).toMatchObject({
+      kind: 'combat',
+      title: 'Combat 1 — lookouts',
+      markdown: '**Combatants:** [[Cultist]] ×2 · party'
+    })
+  })
+
   it('closes innermost with [!end]', () => {
     const md = ['[!scene] A', '[!readaloud]', 'Hi', '[!end]', 'After', '[!/scene]'].join('\n')
     const scene = splitCalloutBlocks(md).find((p) => p.kind === 'scene')

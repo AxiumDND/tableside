@@ -411,15 +411,41 @@ export function parseNightEncounters(
   notes: CampaignNote[]
 ): NightEncounter[] {
   const encounters: NightEncounter[] = []
-  for (const section of splitEncounterSections(maskFencedCalloutBodies(markdown))) {
-    const encounter = encounterFromSection(section, notePath, notes)
-    if (encounter) encounters.push(encounter)
+  const seen = new Set<string>()
+  const push = (encounter: NightEncounter | null): void => {
+    if (!encounter || seen.has(encounter.id)) return
+    seen.add(encounter.id)
+    encounters.push(encounter)
   }
+
+  const fromCombatCallout = (
+    part: { title?: string; markdown: string },
+    scope?: string
+  ): NightEncounter | null => {
+    const heading = part.title?.trim() || 'Combat'
+    if (/no combat/i.test(heading)) return null
+    return encounterFromSection({ heading, body: part.markdown }, notePath, notes, scope)
+  }
+
+  // Document-level ## Combat headings (bodies of fenced callouts blanked so scene/combat
+  // interiors are not double-counted).
+  for (const section of splitEncounterSections(maskFencedCalloutBodies(markdown))) {
+    push(encounterFromSection(section, notePath, notes))
+  }
+
   for (const part of splitCalloutBlocks(markdown)) {
+    if (part.kind === 'combat') {
+      push(fromCombatCallout(part))
+      continue
+    }
     if (part.kind !== 'scene' || !part.title?.trim()) continue
-    for (const section of splitEncounterSections(part.markdown)) {
-      const encounter = encounterFromSection(section, notePath, notes, part.title.trim())
-      if (encounter) encounters.push(encounter)
+    const scope = part.title.trim()
+    for (const nested of splitCalloutBlocks(part.markdown)) {
+      if (nested.kind === 'combat') push(fromCombatCallout(nested, scope))
+    }
+    // Legacy ## Combat headings still allowed inside scenes.
+    for (const section of splitEncounterSections(maskFencedCalloutBodies(part.markdown))) {
+      push(encounterFromSection(section, notePath, notes, scope))
     }
   }
   return encounters

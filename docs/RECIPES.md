@@ -12,25 +12,25 @@ Prep combatants in Markdown once; load them at the table in one click.
 
 1. Create sheets under `Party/`, `NPCs/`, and `Bestiary/` (right-click the folder, or save from Lookup).
 2. Each combatant sheet needs a fenced `statblock` with at least `name`, `hp`, and `ac`.
-3. In a session or night-sheet note, add a combat section:
+3. In a session or night-sheet note, add a combat block (nest inside a scene when the fight belongs to that beat):
 
 ```markdown
-## ⚔️ Combat 1 — the door
-
+[!combat] Combat 1 — the door
 **Combatants:** [[Vesper]] · [[Cultist]] ×3 · party
+[!/combat]
 ```
 
 Rules of thumb:
 
 | Piece | Meaning |
 | --- | --- |
-| Heading with `Combat`, `Encounter`, or ⚔️ | Marks an encounter card |
+| `[!combat]` / `[!encounter]` / `[!fight]` | Marks an encounter card (legacy: heading with `Combat`, `Encounter`, or ⚔️) |
 | `[[Sheet Name]]` | Must match a Party / NPCs / Bestiary note stem |
 | `×2` / `x2` | Duplicate that sheet in initiative |
 | `party` | Add every PC under `Party/` |
 | Separators | `·` `\|` `,` `;` |
 
-Skip headings that say `no combat`.
+Skip titles/headings that say `no combat`.
 
 A short **game night sheet** is enough for Party focus, scene beats, and combatant lines; longer campaigns can keep prose in `Session N.md`. Greystead runs from **Session 1 — Game Night Sheet** with prose in **Session 1**. **New game night sheet…** starts from the Party + Scenes template and links existing Party files.
 
