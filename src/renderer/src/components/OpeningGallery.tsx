@@ -5,6 +5,7 @@ export default function OpeningGallery({ gallery }: { gallery: PlayerGallery }) 
   const slide = gallery.slides[gallery.index]
   const [visible, setVisible] = useState(true)
   const [shownSrc, setShownSrc] = useState(slide?.src ?? '')
+  const showTitle = Boolean(gallery.showTitle && gallery.title?.trim())
 
   useEffect(() => {
     const next = gallery.slides[gallery.index]?.src ?? ''
@@ -33,20 +34,11 @@ export default function OpeningGallery({ gallery }: { gallery: PlayerGallery }) 
         alt=""
         className={`opening-gallery-slide${visible ? ' is-in' : ' is-out'}`}
       />
-      {gallery.title ? (
+      {showTitle ? (
         <div className="opening-gallery-caption">
           <span>{gallery.title}</span>
-          <span className="opening-gallery-count">
-            {gallery.index + 1} / {gallery.slides.length}
-          </span>
         </div>
-      ) : (
-        <div className="opening-gallery-caption opening-gallery-caption-only">
-          <span className="opening-gallery-count">
-            {gallery.index + 1} / {gallery.slides.length}
-          </span>
-        </div>
-      )}
+      ) : null}
     </div>
   )
 }

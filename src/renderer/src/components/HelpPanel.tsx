@@ -361,8 +361,10 @@ export default function HelpPanel({
           <p>
             Put <Code>[!gallery] Title</Code> … <Code>[!/gallery]</Code> (or <Code>slides</Code> / <Code>sequence</Code>)
             with image embeds inside. <Action>Play</Action> shows them on the player screen; <Action>Prev</Action> /{' '}
-            <Action>Next</Action> advance manually. Optional <Code>interval: 8s</Code> auto-advances. Works on every
-            campaign look.
+            <Action>Next</Action> advance manually. Optional <Code>interval: 8s</Code> auto-advances. Loop defaults on;
+            set <Code>loop: false</Code> or untick to stop at the end. Title stays off the player unless you tick{' '}
+            <Action>Show title on player</Action> (<Code>showTitle: true</Code>). Slide counts stay on the DM card only.
+            Works on every campaign look.
           </p>
           <Sub>Video</Sub>
           <p>

@@ -489,7 +489,9 @@ export default function DmApp() {
     title: string | undefined,
     slides: { src: string; label?: string }[],
     imageRefs: string[],
-    intervalSec?: number | null
+    intervalSec?: number | null,
+    loop = true,
+    showTitle = false
   ): Promise<void> {
     playerLiveRef.current = false
     clearCrawlMusicTimer()
@@ -502,7 +504,9 @@ export default function DmApp() {
     const state = await window.tabledm.showGallery({
       title,
       slides,
-      intervalSec: intervalSec && intervalSec > 0 ? intervalSec : null
+      intervalSec: intervalSec && intervalSec > 0 ? intervalSec : null,
+      loop,
+      showTitle
     })
     setPlayer(state)
     const sec = intervalSec && intervalSec > 0 ? intervalSec : null
@@ -514,7 +518,12 @@ export default function DmApp() {
             clearGalleryAdvanceTimer()
             return
           }
-          if (g.index >= g.slides.length - 1) {
+          const last = g.slides.length - 1
+          if (g.index >= last) {
+            if (g.loop !== false) {
+              void window.tabledm.gallerySetIndex(0).then(setPlayer)
+              return
+            }
             clearGalleryAdvanceTimer()
             return
           }
@@ -526,13 +535,23 @@ export default function DmApp() {
 
   async function galleryPrev(): Promise<void> {
     const g = player.gallery
-    if (!g || g.index <= 0) return
+    if (!g || g.slides.length === 0) return
+    if (g.index <= 0) {
+      if (g.loop === false) return
+      setPlayer(await window.tabledm.gallerySetIndex(g.slides.length - 1))
+      return
+    }
     setPlayer(await window.tabledm.gallerySetIndex(g.index - 1))
   }
 
   async function galleryNext(): Promise<void> {
     const g = player.gallery
-    if (!g || g.index >= g.slides.length - 1) return
+    if (!g || g.slides.length === 0) return
+    if (g.index >= g.slides.length - 1) {
+      if (g.loop === false) return
+      setPlayer(await window.tabledm.gallerySetIndex(0))
+      return
+    }
     setPlayer(await window.tabledm.gallerySetIndex(g.index + 1))
   }
 
@@ -1009,8 +1028,8 @@ export default function DmApp() {
           onStopLegend={() => void stopLegend()}
           activeLegend={activeLegend}
           playerLegend={player.legend}
-          onPlayGallery={(title, slides, imageRefs, intervalSec) =>
-            void playGallery(title, slides, imageRefs, intervalSec)
+          onPlayGallery={(title, slides, imageRefs, intervalSec, loop, showTitle) =>
+            void playGallery(title, slides, imageRefs, intervalSec, loop, showTitle)
           }
           onStopGallery={() => void stopGallery()}
           onGalleryPrev={() => void galleryPrev()}

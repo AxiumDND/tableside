@@ -191,6 +191,10 @@ export interface PlayerGallery {
   startedAt: number
   /** Auto-advance seconds; omit or 0 for manual. */
   intervalSec?: number | null
+  /** Wrap at ends when advancing. Default true. */
+  loop?: boolean
+  /** Show title caption on the player screen. Default false. */
+  showTitle?: boolean
 }
 
 export interface PlayerVideo {

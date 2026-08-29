@@ -1635,6 +1635,8 @@ function registerIpc(): void {
         title?: string
         slides?: { src: string; label?: string }[]
         intervalSec?: number | null
+        loop?: boolean
+        showTitle?: boolean
       }
     ) => {
       const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
@@ -1652,6 +1654,8 @@ function registerIpc(): void {
         typeof intervalRaw === 'number' && Number.isFinite(intervalRaw) && intervalRaw > 0
           ? Math.min(120, Math.round(intervalRaw))
           : null
+      const loop = payload?.loop !== false
+      const showTitle = Boolean(payload?.showTitle) && Boolean(title)
       playerState = {
         ...playerState,
         imageSrc: null,
@@ -1664,7 +1668,9 @@ function registerIpc(): void {
           slides,
           index: 0,
           startedAt: Date.now(),
-          intervalSec
+          intervalSec,
+          loop,
+          showTitle
         },
         video: null
       }

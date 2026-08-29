@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import {
   galleryImageRefs,
   galleryIntervalSec,
+  galleryLoops,
+  galleryShowTitle,
   replaceNthGalleryCallout,
   serializeGalleryCallout
 } from './playerGallery'
@@ -23,15 +25,48 @@ describe('galleryIntervalSec', () => {
   })
 })
 
+describe('galleryLoops', () => {
+  it('defaults on and reads loop line', () => {
+    expect(galleryLoops('![[A.png]]')).toBe(true)
+    expect(galleryLoops('loop: true\n![[A.png]]')).toBe(true)
+    expect(galleryLoops('loop: false\n![[A.png]]')).toBe(false)
+    expect(galleryLoops('repeat: off\n![[A.png]]')).toBe(false)
+  })
+})
+
+describe('galleryShowTitle', () => {
+  it('defaults off and reads showTitle line', () => {
+    expect(galleryShowTitle('![[A.png]]')).toBe(false)
+    expect(galleryShowTitle('showTitle: true\n![[A.png]]')).toBe(true)
+    expect(galleryShowTitle('show-title: yes\n![[A.png]]')).toBe(true)
+    expect(galleryShowTitle('showTitle: false\n![[A.png]]')).toBe(false)
+  })
+})
+
 describe('gallery callout rewrite', () => {
-  it('serializes title, interval, and images', () => {
+  it('serializes title, interval, flags, and images', () => {
     expect(
       serializeGalleryCallout({
         title: 'Faces',
         intervalSec: 8,
+        loop: true,
+        showTitle: false,
         imageRefs: ['Marta.webp', 'Alden.webp']
       })
     ).toBe(['[!gallery] Faces', 'interval: 8s', '![[Marta.webp]]', '![[Alden.webp]]', '[!/gallery]'].join('\n'))
+    expect(
+      serializeGalleryCallout({
+        title: 'Faces',
+        intervalSec: null,
+        loop: false,
+        showTitle: true,
+        imageRefs: ['A.png']
+      })
+    ).toBe(
+      ['[!gallery] Faces', 'interval: manual', 'loop: false', 'showTitle: true', '![[A.png]]', '[!/gallery]'].join(
+        '\n'
+      )
+    )
   })
 
   it('replaces the first gallery block', () => {
@@ -39,6 +74,8 @@ describe('gallery callout rewrite', () => {
     const next = replaceNthGalleryCallout(src, 0, {
       title: 'New',
       intervalSec: null,
+      loop: true,
+      showTitle: false,
       imageRefs: ['B.png', 'C.png']
     })
     expect(next).toContain('[!gallery] New')

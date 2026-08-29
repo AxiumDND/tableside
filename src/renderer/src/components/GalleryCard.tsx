@@ -4,6 +4,8 @@ import type { CampaignImage } from '../lib/images'
 type GalleryFields = {
   title: string
   intervalSec: number | null
+  loop: boolean
+  showTitle: boolean
   imageRefs: string[]
 }
 
@@ -17,6 +19,8 @@ const INTERVAL_OPTIONS: { label: string; value: number | null }[] = [
 export default function GalleryCard({
   title,
   intervalSec,
+  loop,
+  showTitle,
   imageRefs,
   images,
   imageUrls,
@@ -32,6 +36,8 @@ export default function GalleryCard({
 }: {
   title?: string
   intervalSec: number | null
+  loop: boolean
+  showTitle: boolean
   imageRefs: string[]
   images: CampaignImage[]
   imageUrls: (string | null)[]
@@ -47,22 +53,30 @@ export default function GalleryCard({
 }) {
   const [titleValue, setTitleValue] = useState(title ?? '')
   const [intervalValue, setIntervalValue] = useState<number | null>(intervalSec)
+  const [loopValue, setLoopValue] = useState(loop)
+  const [showTitleValue, setShowTitleValue] = useState(showTitle)
   const [refs, setRefs] = useState(imageRefs)
 
   useEffect(() => {
     setTitleValue(title ?? '')
     setIntervalValue(intervalSec)
+    setLoopValue(loop)
+    setShowTitleValue(showTitle)
     setRefs(imageRefs)
-  }, [title, intervalSec, imageRefs])
+  }, [title, intervalSec, loop, showTitle, imageRefs])
 
   function commit(partial?: {
     title?: string
     intervalSec?: number | null
+    loop?: boolean
+    showTitle?: boolean
     imageRefs?: string[]
   }): void {
     onChange({
       title: partial?.title ?? titleValue,
       intervalSec: partial && 'intervalSec' in partial ? partial.intervalSec ?? null : intervalValue,
+      loop: partial && 'loop' in partial ? Boolean(partial.loop) : loopValue,
+      showTitle: partial && 'showTitle' in partial ? Boolean(partial.showTitle) : showTitleValue,
       imageRefs: partial?.imageRefs ?? refs
     })
   }
@@ -92,12 +106,15 @@ export default function GalleryCard({
   const fields = (): GalleryFields => ({
     title: titleValue,
     intervalSec: intervalValue,
+    loop: loopValue,
+    showTitle: showTitleValue,
     imageRefs: refs
   })
 
   const canPlay = refs.length > 0
-  const atStart = (slideIndex ?? 0) <= 0
-  const atEnd = (slideIndex ?? 0) >= Math.max(0, (slideCount ?? refs.length) - 1)
+  const total = slideCount ?? refs.length
+  const atStart = !loopValue && (slideIndex ?? 0) <= 0
+  const atEnd = !loopValue && (slideIndex ?? 0) >= Math.max(0, total - 1)
 
   return (
     <section className="player-gallery-card my-5">
@@ -137,6 +154,36 @@ export default function GalleryCard({
               ))}
             </select>
           </label>
+          <div className="flex flex-wrap gap-x-4 gap-y-2">
+            <label className="inline-flex items-center gap-2 text-[12px] text-parchment">
+              <input
+                type="checkbox"
+                checked={loopValue}
+                disabled={disabled || galleryActive}
+                onChange={(event) => {
+                  const next = event.target.checked
+                  setLoopValue(next)
+                  commit({ loop: next })
+                }}
+                className="accent-[var(--color-amber)]"
+              />
+              Loop slides
+            </label>
+            <label className="inline-flex items-center gap-2 text-[12px] text-parchment">
+              <input
+                type="checkbox"
+                checked={showTitleValue}
+                disabled={disabled || galleryActive || !titleValue.trim()}
+                onChange={(event) => {
+                  const next = event.target.checked
+                  setShowTitleValue(next)
+                  commit({ showTitle: next })
+                }}
+                className="accent-[var(--color-amber)]"
+              />
+              Show title on player
+            </label>
+          </div>
           <div>
             <span className="text-[10px] uppercase tracking-wider text-muted">Slides ({refs.length})</span>
             <ul className="mt-1 space-y-1.5">
@@ -217,7 +264,7 @@ export default function GalleryCard({
                 Next
               </button>
               <span className="text-[11px] text-muted">
-                {(slideIndex ?? 0) + 1} / {slideCount ?? refs.length}
+                {(slideIndex ?? 0) + 1} / {total}
               </span>
               <button
                 type="button"

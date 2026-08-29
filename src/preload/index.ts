@@ -66,6 +66,8 @@ const api = {
     title?: string
     slides: { src: string; label?: string }[]
     intervalSec?: number | null
+    loop?: boolean
+    showTitle?: boolean
   }): Promise<PlayerState> => ipcRenderer.invoke('player:show-gallery', payload),
   gallerySetIndex: (index: number): Promise<PlayerState> =>
     ipcRenderer.invoke('player:gallery-set-index', index),

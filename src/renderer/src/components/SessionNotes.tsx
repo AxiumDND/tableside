@@ -23,6 +23,8 @@ import {
 import {
   galleryImageRefs,
   galleryIntervalSec,
+  galleryLoops,
+  galleryShowTitle,
   replaceNthGalleryCallout,
   type GalleryCalloutFields
 } from '../../../shared/playerGallery'
@@ -208,7 +210,9 @@ export default function SessionNotes({
     title: string | undefined,
     slides: { src: string; label?: string }[],
     imageRefs: string[],
-    intervalSec?: number | null
+    intervalSec?: number | null,
+    loop?: boolean,
+    showTitle?: boolean
   ) => void
   onStopGallery?: () => void
   onGalleryPrev?: () => void
@@ -461,7 +465,14 @@ export default function SessionNotes({
       })
       .filter((s): s is { src: string; label: string } => Boolean(s))
     if (slides.length === 0) return
-    onPlayGallery?.(fields.title || undefined, slides, fields.imageRefs, fields.intervalSec)
+    onPlayGallery?.(
+      fields.title || undefined,
+      slides,
+      fields.imageRefs,
+      fields.intervalSec,
+      fields.loop,
+      fields.showTitle
+    )
   }
 
   async function persistVideo(index: number, fields: VideoCalloutFields): Promise<void> {
@@ -849,6 +860,8 @@ export default function SessionNotes({
             key={key}
             title={raw.title}
             intervalSec={intervalSec}
+            loop={galleryLoops(raw.markdown)}
+            showTitle={galleryShowTitle(raw.markdown)}
             imageRefs={refs}
             images={images}
             imageUrls={urls}

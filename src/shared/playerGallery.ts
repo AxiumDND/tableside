@@ -3,6 +3,8 @@
 import { replaceNthCallout, serializeFencedCallout } from './callouts'
 
 const INTERVAL_LINE = /^(?:interval|auto|delay|seconds)\s*:\s*(.*)$/i
+const LOOP_LINE = /^(?:loop|repeat|cycle)\s*:\s*(.*)$/i
+const SHOW_TITLE_LINE = /^(?:show[-_]?title|title[-_]?on[-_]?player|player[-_]?title)\s*:\s*(.*)$/i
 
 function stripWikiPath(value: string): string {
   const trimmed = value.trim()
@@ -11,6 +13,14 @@ function stripWikiPath(value: string): string {
   const md = /^!\[[^\]]*\]\(\s*<?([^>\s)]+)/.exec(trimmed)
   if (md?.[1]) return md[1].trim()
   return trimmed.replace(/^\[\[|\]\]$/g, '').trim()
+}
+
+function parseBoolFlag(raw: string, defaultValue: boolean): boolean {
+  const value = raw.trim().toLowerCase()
+  if (!value) return defaultValue
+  if (/^(0|false|no|off|never|manual|skip|-)$/i.test(value)) return false
+  if (/^(1|true|yes|on|always|loop|repeat)$/i.test(value)) return true
+  return defaultValue
 }
 
 /** All image embeds in gallery markdown, in order. */
@@ -49,9 +59,33 @@ export function galleryIntervalSec(markdown: string): number | null {
   return Math.min(120, Math.max(1, Math.round(num)))
 }
 
+/** Loop slides when advancing. Default true when the line is omitted. */
+export function galleryLoops(markdown: string): boolean {
+  const match = markdown
+    .replace(/\r/g, '')
+    .split('\n')
+    .map((line) => LOOP_LINE.exec(line.trim()))
+    .find((item): item is RegExpExecArray => Boolean(item))
+  if (!match) return true
+  return parseBoolFlag(match[1] ?? '', true)
+}
+
+/** Show gallery title on the player screen. Default false when omitted. */
+export function galleryShowTitle(markdown: string): boolean {
+  const match = markdown
+    .replace(/\r/g, '')
+    .split('\n')
+    .map((line) => SHOW_TITLE_LINE.exec(line.trim()))
+    .find((item): item is RegExpExecArray => Boolean(item))
+  if (!match) return false
+  return parseBoolFlag(match[1] ?? '', false)
+}
+
 export interface GalleryCalloutFields {
   title?: string
   intervalSec: number | null
+  loop: boolean
+  showTitle: boolean
   imageRefs: string[]
 }
 
@@ -63,6 +97,8 @@ export function serializeGalleryCallout(fields: GalleryCalloutFields): string {
   } else {
     body.push(`interval: ${fields.intervalSec}s`)
   }
+  if (!fields.loop) body.push('loop: false')
+  if (fields.showTitle) body.push('showTitle: true')
   for (const ref of fields.imageRefs) {
     const clean = ref.trim().replace(/^!\[\[|\]\]$/g, '')
     if (clean) body.push(`![[${clean}]]`)
@@ -82,15 +118,19 @@ export function parseGalleryFields(title: string | undefined, markdown: string):
   return {
     title,
     intervalSec: galleryIntervalSec(markdown),
+    loop: galleryLoops(markdown),
+    showTitle: galleryShowTitle(markdown),
     imageRefs: galleryImageRefs(markdown)
   }
 }
 
-/** Drop interval lines (for any future plain-text use). */
+/** Drop field lines and embeds (for any future plain-text use). */
 export function galleryPlainBody(markdown: string): string {
   return markdown
     .replace(/\r/g, '')
     .replace(/^(?:interval|auto|delay|seconds)\s*:.*$/gim, '')
+    .replace(/^(?:loop|repeat|cycle)\s*:.*$/gim, '')
+    .replace(/^(?:show[-_]?title|title[-_]?on[-_]?player|player[-_]?title)\s*:.*$/gim, '')
     .replace(/!\[\[[^\]]*\]\]/g, '')
     .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
     .trim()
