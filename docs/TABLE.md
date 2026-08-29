@@ -104,7 +104,7 @@ Offline MiniSearch over the **open campaign’s system pack**. D&D 5e uses the b
 - Filter chips narrow the category.
 - Monster results can **Add to combat**. On 5e, Lookup shows the bundled D&D-fantasy default portrait when one exists. Spells show the emblem for their school of magic. Weapons and gear show still-life item art the same way.
 - With a campaign open, **Add to Bestiary / Spells / Gear** writes a campaign markdown note (skipped if a same-named note already exists). Adding a 5e monster also copies its default portrait into `Bestiary/Art/` if the campaign does not already have one.
-- Optional WOTC files add chips like PHB 2024 / PHB Gear / DMG Items / Ravenloft / MM2024 on **5e campaigns only** — [WOTC/README.md](../WOTC/README.md). Use **Open WOTC folder** in Lookup to jump to the writable location.
+- Optional book files add chips like PHB 2024 / PHB Gear / DMG Items / Ravenloft / MM2024 on **5e campaigns only** — [Additional Books/README.md](../Additional%20Books/README.md). Use the **Additional books** link in Lookup to jump to the writable location.
 
 Step-by-step save flow: [RECIPES.md](RECIPES.md#lookup--campaign-note).
 

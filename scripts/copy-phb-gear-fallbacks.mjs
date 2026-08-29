@@ -15,7 +15,7 @@ const dest = 'resources/srd-items'
 const files = readdirSync(dest).filter((name) => /\.(webp|png)$/i.test(name))
 const have = new Map(files.map((name) => [fold(name), name]))
 
-const text = readFileSync('WOTC/Players Handbook 2024 Equipment.md', 'utf8')
+const text = readFileSync('Additional Books/Players Handbook 2024 Equipment.md', 'utf8')
 const records = []
 for (const block of text.replace(/\r\n/g, '\n').split(/^## /m).slice(1)) {
   const lines = block.split('\n').map((line) => line.trim())

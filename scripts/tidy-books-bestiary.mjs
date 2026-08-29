@@ -2,8 +2,8 @@ import { readFileSync, writeFileSync, unlinkSync, existsSync } from 'node:fs'
 import { basename, extname } from 'node:path'
 
 const args = process.argv.slice(2).filter((arg) => !arg.startsWith('--'))
-const src = args[0] ?? 'WOTC/Ravenloft horrors within Beastry.txt'
-const dest = args[1] ?? 'WOTC/Ravenloft Horrors Bestiary.md'
+const src = args[0] ?? 'Additional Books/Ravenloft horrors within Beastry.txt'
+const dest = args[1] ?? 'Additional Books/Ravenloft Horrors Bestiary.md'
 const removeSrc = process.argv.includes('--remove-src')
 const bookTitle = basename(dest, extname(dest))
 

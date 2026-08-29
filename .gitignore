@@ -14,9 +14,7 @@ examples/bad-blood/
 examples/test/
 examples/test 2/
 examples/Pathfinder test/
-/WOTC/*
-!/WOTC/README.md
+/Additional Books/*
+!/Additional Books/README.md
 resources/local-portraits/
-/WOTC Files/
-/WOTC FIles/
 /Dungeons of Drakkenheim/

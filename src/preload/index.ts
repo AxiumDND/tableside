@@ -12,7 +12,7 @@ import type {
 } from '../shared/types'
 import type { CampaignLibraryFolder } from '../shared/campaignLayout'
 import type { SheetTemplateKind } from '../shared/sheetTemplates'
-import type { WotcLibrary } from '../shared/wotc'
+import type { BookLibrary } from '../shared/books'
 import type { AppUpdateNotice } from '../shared/appUpdate'
 
 const api = {
@@ -179,8 +179,8 @@ const api = {
     subfolder?: string | null
   ): Promise<{ campaign: CampaignInfo; path: string; existed: boolean } | null> =>
     ipcRenderer.invoke('campaign:save-to-library', folder, name, contents, subfolder ?? null),
-  loadWotcLibrary: (): Promise<WotcLibrary> => ipcRenderer.invoke('wotc:load'),
-  openWotcFolder: (): Promise<string> => ipcRenderer.invoke('wotc:open-folder'),
+  loadBookLibrary: (): Promise<BookLibrary> => ipcRenderer.invoke('books:load'),
+  openBooksFolder: (): Promise<string> => ipcRenderer.invoke('books:open-folder'),
   getAppFolders: (): Promise<AppFolders> => ipcRenderer.invoke('app:folders'),
   openAppFolder: (kind: 'app' | 'userData' | 'books'): Promise<string> =>
     ipcRenderer.invoke('app:open-folder', kind),

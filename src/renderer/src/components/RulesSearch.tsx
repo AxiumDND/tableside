@@ -8,7 +8,7 @@ import {
   type SrdRecord
 } from '../lib/srd'
 import { activateSystemLookup, packLookupRecords } from '../lib/systemLookup'
-import { extraSourcesFromRecords, parseWotcFiles } from '../lib/wotcParse'
+import { extraSourcesFromRecords, parseBookFiles } from '../lib/bookParse'
 import { libraryFolderFor } from '../lib/lookupNotes'
 import { srdItemUrl, srdPortraitUrl, srdSchoolUrl } from '../lib/images'
 import { LIBRARY_FOLDER_NAMES } from '../../../shared/campaignLayout'
@@ -364,7 +364,7 @@ export default function RulesSearch({
   const [extraSources, setExtraSources] = useState<
     { id: string; label: string; kind: SrdKind; count: number }[]
   >([])
-  const [wotcFolder, setWotcFolder] = useState('')
+  const [booksFolder, setBooksFolder] = useState('')
 
   useEffect(() => {
     setSaveStatus(null)
@@ -375,17 +375,17 @@ export default function RulesSearch({
     activateSystemLookup(system)
     setKind('all')
     setSelected(null)
-    if (!pack.wotcLookup) {
+    if (!pack.bookLookup) {
       setExtraSources([])
       return
     }
-    void window.tabledm.loadWotcLibrary().then((library) => {
-      const records = parseWotcFiles(library.files)
+    void window.tabledm.loadBookLibrary().then((library) => {
+      const records = parseBookFiles(library.files)
       setExtraRecords(records)
       setExtraSources(extraSourcesFromRecords(records))
-      setWotcFolder(library.folder)
+      setBooksFolder(library.folder)
     })
-  }, [system, pack.wotcLookup])
+  }, [system, pack.bookLookup])
 
   const results = useMemo(() => searchSrd(query, kind), [query, kind, extraSources])
   const filters = useMemo(
@@ -508,15 +508,15 @@ export default function RulesSearch({
       </div>
 
       <div className="border-t border-line px-3 py-2 text-[10px] leading-snug text-muted">
-        {pack.wotcLookup ? (
+        {pack.bookLookup ? (
           extraSources.length === 0 ? (
             <p className="mb-1">
               Add your own book text in Additional books to unlock extra lookup.{' '}
               <button
                 type="button"
                 className="text-amber hover:underline"
-                onClick={() => void window.tabledm.openWotcFolder()}
-                title={wotcFolder || 'Open Additional books'}
+                onClick={() => void window.tabledm.openBooksFolder()}
+                title={booksFolder || 'Open Additional books'}
               >
                 Open Additional books
               </button>
@@ -527,7 +527,7 @@ export default function RulesSearch({
               <button
                 type="button"
                 className="text-amber hover:underline"
-                onClick={() => void window.tabledm.openWotcFolder()}
+                onClick={() => void window.tabledm.openBooksFolder()}
               >
                 Open folder
               </button>

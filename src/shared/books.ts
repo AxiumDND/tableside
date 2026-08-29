@@ -1,14 +1,14 @@
-export interface WotcFile {
+export interface BookFile {
   name: string
   text: string
 }
 
-export interface WotcLibrary {
+export interface BookLibrary {
   folder: string
-  files: WotcFile[]
+  files: BookFile[]
 }
 
-export const WOTC_README = `Additional books
+export const BOOKS_README = `Additional books
 ================
 
 Drop your own book text here. Tableside does not ship Player's Handbook,
@@ -31,9 +31,9 @@ Use .md or .txt. The filename tells Lookup what it is:
 
 Also scanned (same filename rules):
 - This folder (%APPDATA%\\Tableside\\Additional Books)
-- Older builds: %APPDATA%\\Tableside\\WOTC or %APPDATA%\\table-dm\\WOTC
-- An Additional Books or WOTC folder next to Tableside.exe
-- The project WOTC/ folder when running from source
+- Book folders from older builds are migrated here automatically
+- An Additional Books folder next to Tableside.exe
+- The project Additional Books/ folder when running from source
 
 Restart Lookup (close and open the panel, or restart the app) after adding files.
 
@@ -226,5 +226,5 @@ TROUBLESHOOTING
 - No chip: fix the filename keywords, then close and reopen Lookup.
 - Chip but no hits: use ## headings per entry; save as UTF-8 .md/.txt.
 - Wrong chip: avoid mixing Spell and Equipment in the same filename.
-- Full guide with examples: see WOTC/README.md in the Tableside repo.
+- Full guide with examples: see "Additional Books/README.md" in the Tableside repo.
 `

@@ -54,13 +54,13 @@ Example in the Sample campaign: `examples/greystead/Sessions/Session 1 — Game 
 
 ## Lookup → campaign note
 
-Copy bundled SRD (or optional WOTC) text into the campaign folder so you can edit and wikilink it.
+Copy bundled SRD (or optional book) text into the campaign folder so you can edit and wikilink it.
 
 ### Steps
 
 1. Open a campaign (**Open**, **New**, or **Sample**).
 2. Open **Lookup**.
-3. Search — use chips (Conditions, Spells, Monsters, Weapons, …). Optional WOTC files add PHB / Gear / DMG chips.
+3. Search — use chips (Conditions, Spells, Monsters, Weapons, …). Optional book files add PHB / Gear / DMG chips.
 4. Open a result:
    - **Monster** → **Add to Bestiary** (and/or **Add to combat** for this fight only)
    - **Spell** → **Add to Spells**
@@ -84,9 +84,9 @@ Saving needs an open campaign. Conditions and pure rules entries do not get an A
 2. Add `**Combatants:** [[Name]] · party` on tonight’s game night sheet.
 3. Or add from Combat’s Bestiary list / Lookup **Add to combat** without a game night sheet.
 
-### Optional WOTC text
+### Optional book text
 
-Lookup stays SRD-only until you add personal book dumps. Format and filenames: [WOTC/README.md](../WOTC/README.md). Open the writable folder from Lookup when you need it.
+Lookup stays SRD-only until you add personal book dumps. Format and filenames: [Additional Books/README.md](../Additional%20Books/README.md). Open the writable folder from Lookup when you need it.
 
 ## Music mixer
 

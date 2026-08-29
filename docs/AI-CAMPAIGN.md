@@ -52,7 +52,7 @@ Archive/             transcripts, old drafts, YouTube text
 
 **Aliases** (treated as the canonical folder): `Player characters` / `PCs` / `The Party` → Party; `Locations` / `World` / `Setting` → Places; `Session Notes` → Sessions; `Assets` → Maps; `Getting Started` → Start Here.
 
-**Skip** (not shown): `.obsidian`, `.git`, `WOTC`, `Additional Books`, folders starting `zz_` or `Adventure book`.
+**Skip** (not shown): `.obsidian`, `.git`, `Additional Books`, folders starting `zz_` or `Adventure book`.
 
 **Nesting:** stay flat unless a town has many sites (`Places/Emberwood.md` + `Places/Emberwood/The Grey Mare.md`).
 

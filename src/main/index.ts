@@ -77,7 +77,7 @@ import {
   resolveShopCatalog,
   setShopTypeFields
 } from '../shared/shopStock'
-import { ensureWotcHome, loadWotcLibrary, openWotcFolder } from './wotcLibrary'
+import { ensureBooksHome, loadBookLibrary, openBooksFolder } from './bookLibrary'
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -257,7 +257,7 @@ async function appFolders(): Promise<{ appFolder: string; userDataFolder: string
   return {
     appFolder: appInstallFolder(),
     userDataFolder: app.getPath('userData'),
-    booksFolder: await ensureWotcHome()
+    booksFolder: await ensureBooksHome()
   }
 }
 
@@ -309,14 +309,14 @@ async function migrateLegacyUserData(): Promise<void> {
   if (samePath(current, legacy)) return
   if (existsSync(join(current, 'settings.json'))) return
   const legacySettings = join(legacy, 'settings.json')
-  const legacyWotc = join(legacy, 'WOTC')
-  if (!existsSync(legacySettings) && !existsSync(legacyWotc)) return
+  const legacyBooks = join(legacy, 'WOTC')
+  if (!existsSync(legacySettings) && !existsSync(legacyBooks)) return
   await mkdir(current, { recursive: true })
   if (existsSync(legacySettings)) {
     await copyFile(legacySettings, join(current, 'settings.json'))
   }
-  if (existsSync(legacyWotc)) {
-    await cp(legacyWotc, join(current, 'Additional Books'), { recursive: true })
+  if (existsSync(legacyBooks)) {
+    await cp(legacyBooks, join(current, 'Additional Books'), { recursive: true })
   }
 }
 
@@ -1971,8 +1971,8 @@ function registerIpc(): void {
     deleteCampaignFile(relativePath)
   )
 
-  ipcMain.handle('wotc:load', () => loadWotcLibrary())
-  ipcMain.handle('wotc:open-folder', () => openWotcFolder())
+  ipcMain.handle('books:load', () => loadBookLibrary())
+  ipcMain.handle('books:open-folder', () => openBooksFolder())
 }
 
 app.whenReady().then(async () => {
@@ -1983,7 +1983,7 @@ app.whenReady().then(async () => {
   session.defaultSession.setPermissionCheckHandler(() => true)
   await migrateLegacyUserData()
   await removeDroppedAppSamples()
-  await ensureWotcHome()
+  await ensureBooksHome()
 
   protocol.handle('tabledm', async (request) => {
     try {

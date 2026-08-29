@@ -30,7 +30,7 @@ If you downloaded from this GitHub repo’s Releases page, that is the official 
 
 Uninstall from Windows Settings. Campaign folders on disk and `%APPDATA%\Tableside` stay put.
 
-Older builds used `%APPDATA%\table-dm`. First launch copies settings and optional WOTC files from there if they exist.
+Older builds used `%APPDATA%\table-dm`. First launch copies settings and optional book files from there if they exist.
 
 ## Who made this
 
@@ -61,7 +61,7 @@ Short version:
 - Music mixer: one mood playlist (Play / Pause / Skip / Stop, in order or shuffle), one ambience bed, soundboard — your files, your output device
 - Sci-fi opening crawl (`> [!crawl]`) — write your own words; Play sends a starfield crawl to the TV
 - Offline Lookup for the open campaign’s system pack (5e SRD; PF2e original core; V5 original procedures)
-- Optional extra 5e lookup from your own WOTC text files in `WOTC/`
+- Optional extra 5e lookup from your own book text files in `Additional Books/`
 - Add a monster, spell, or gear item from Lookup into the campaign folder
 - Places, shops, factions, dice tray, in-app **Help & settings**, file search (`Ctrl+F`), table hotkeys
 - Installed copies check GitHub at launch and ask to install if a newer release exists
@@ -100,7 +100,7 @@ The bundled sample is **[examples/greystead](examples/greystead)**. Tableside co
 | [docs/CAMPAIGN.md](docs/CAMPAIGN.md) | DMs — folder layout, game night sheets, combatants, audio, images |
 | [docs/AI-CAMPAIGN.md](docs/AI-CAMPAIGN.md) | Agents — convert a vault into Tableside folders and sheets |
 | [docs/MARKDOWN.md](docs/MARKDOWN.md) | DMs — wikilinks, callouts, `statblock` fields |
-| [WOTC/README.md](WOTC/README.md) | Optional PHB / DMG lookup file formats |
+| [Additional Books/README.md](Additional%20Books/README.md) | Optional PHB / DMG lookup file formats |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Contributors — scripts, architecture, CI |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Pull request expectations |
 | [ATTRIBUTION.md](ATTRIBUTION.md) | SRD / Open5e licensing |
@@ -128,7 +128,7 @@ Archive/          recaps and old drafts
 
 How to use it: **[docs/GUIDE.md](docs/GUIDE.md)**. Full authoring: **[docs/CAMPAIGN.md](docs/CAMPAIGN.md)**. Console reference: **[docs/TABLE.md](docs/TABLE.md)**. Step recipes: **[docs/RECIPES.md](docs/RECIPES.md)** (also in the app **Help** panel). Markdown/`statblock` reference: **[docs/MARKDOWN.md](docs/MARKDOWN.md)**.
 
-Book text for Lookup is **not** part of a campaign and is **not** shipped. On a **D&D 5e** campaign, put Player’s Handbook and Dungeon Master’s Guide exports in the app `WOTC/` folder (or `%APPDATA%\Tableside\WOTC`). When those files are present, Lookup grows extra filters and searches that text. The SRD stays available either way. Filenames must contain `Spell`, `Equipment`, or `Magic Item` — details in [WOTC/README.md](WOTC/README.md). Pathfinder 2e and Vampire 5th campaigns do not load WOTC dumps.
+Book text for Lookup is **not** part of a campaign and is **not** shipped. On a **D&D 5e** campaign, put Player’s Handbook and Dungeon Master’s Guide exports in the app `Additional Books/` folder (or `%APPDATA%\Tableside\Additional Books`). When those files are present, Lookup grows extra filters and searches that text. The SRD stays available either way. Filenames must contain `Spell`, `Equipment`, or `Magic Item` — details in [Additional Books/README.md](Additional%20Books/README.md). Pathfinder 2e and Vampire 5th campaigns do not load book dumps.
 
 ## Attribution
 

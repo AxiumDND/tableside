@@ -1,6 +1,6 @@
-# WOTC lookup files
+# Additional Books lookup files
 
-Drop your own book text here. Tableside does **not** ship Player’s Handbook, Dungeon Master’s Guide, or other Wizards books.
+Drop your own book text here. Tableside does **not** ship the Player’s Handbook, Dungeon Master’s Guide, or other publisher books.
 
 When this folder has files Lookup can read, extra filter chips appear (PHB 2024, PHB Gear, DMG Items) and search includes that text. SRD 5.2.1 stays available either way.
 
@@ -17,9 +17,10 @@ Use `.md` or `.txt`. The filename tells Lookup what it is:
 
 Also scanned (same rules):
 
-- This project folder: `WOTC/`
-- Installed app: `%APPDATA%\Tableside\WOTC`
-- A `WOTC` folder next to `Tableside.exe`
+- This project folder: `Additional Books/`
+- Installed app: `%APPDATA%\Tableside\Additional Books`
+- An `Additional Books` folder next to `Tableside.exe`
+- Book folders from older builds are migrated here automatically
 
 Restart Lookup (close and open the panel, or restart the app) after adding files.
 
@@ -188,11 +189,11 @@ Hollow Step. The husk ignores difficult terrain made of rubble.
 Grasp. Melee Attack Roll: +3, reach 5 ft. Hit: 5 (1d6+2) Necrotic damage.
 ```
 
-A messy D&D Beyond paste as `.txt` can be tidied with `node scripts/tidy-wotc-bestiary.mjs --remove-src` (pass the source path if it is not the Ravenloft dump).
+A messy D&D Beyond paste as `.txt` can be tidied with `node scripts/tidy-books-bestiary.mjs --remove-src` (pass the source path if it is not the Ravenloft dump).
 
 ## Checklist
 
-1. Save as `.md` in this folder (or `%APPDATA%\Tableside\WOTC`).
+1. Save as `.md` in this folder (or `%APPDATA%\Tableside\Additional Books`).
 2. Put **Spell**, **Equipment**, **Magic Item**, or **Bestiary** / **Ravenloft** in the filename.
 3. One `##` heading per entry.
 4. Field names match the examples above, including the colon.
@@ -206,8 +207,8 @@ A messy D&D Beyond paste as `.txt` can be tidied with `node scripts/tidy-wotc-be
 | Chip appears, search empty | Entries need `## Name` headings (or the looser spell dump format). Confirm the file is `.md` / `.txt` and UTF-8. |
 | Wrong chip | Rename the file so only the intended keyword matches (avoid putting both `Spell` and `Equipment` in one name). |
 | Edits not picked up | Close and reopen Lookup after saving. The app reads the folder when the panel loads. |
-| Cannot find the folder | In Lookup, use the control that opens the WOTC folder; installed builds prefer `%APPDATA%\Tableside\WOTC`. |
+| Cannot find the folder | In Lookup, use the control that opens the Additional Books folder; installed builds prefer `%APPDATA%\Tableside\Additional Books`. |
 
-Do **not** commit copyrighted PHB/DMG text into the git repo. This `WOTC/` directory is for local files only; `.gitignore` may still track the README — keep book dumps untracked or outside the repo.
+Do **not** commit copyrighted PHB/DMG text into the git repo. This `Additional Books/` directory is for local files only; `.gitignore` may still track the README — keep book dumps untracked or outside the repo.
 
 More on Lookup at the table: [docs/TABLE.md](../docs/TABLE.md#lookup-panel).

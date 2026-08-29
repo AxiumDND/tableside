@@ -10,7 +10,7 @@ import {
 } from './notes'
 import { isNpcSheet, parseStatblockYaml } from './statblock'
 import { abilityMod, extractRolls, formatMod } from './dice'
-import { parseWotcFiles } from './wotcParse'
+import { parseBookFiles } from './bookParse'
 
 const notes: CampaignNote[] = [
   { relativePath: 'Party/PC — Mira.md', name: 'PC — Mira.md', stem: 'PC — Mira' },
@@ -246,9 +246,9 @@ describe('dice helpers', () => {
   })
 })
 
-describe('wotc parse', () => {
-  it('parses a WOTC bestiary file as monsters', () => {
-    const records = parseWotcFiles([
+describe('book parse', () => {
+  it('parses a book bestiary file as monsters', () => {
+    const records = parseBookFiles([
       {
         name: 'Campaign Bestiary.md',
         text: `# Campaign Bestiary
@@ -301,13 +301,13 @@ Grasp. Melee Attack Roll: +3, reach 5 ft. Hit: 5 (1d6+2) Necrotic damage.
   it('parses local book dumps when present without asserting official names or stats', async () => {
     const { existsSync, readdirSync, readFileSync } = await import('node:fs')
     const { join } = await import('node:path')
-    const folder = join(process.cwd(), 'WOTC')
+    const folder = join(process.cwd(), 'Additional Books')
     if (!existsSync(folder)) return
     const files = readdirSync(folder).filter(
       (name) => /\.md$/i.test(name) && /bestiary|monster manual|ravenloft/i.test(name)
     )
     if (files.length === 0) return
-    const records = parseWotcFiles(
+    const records = parseBookFiles(
       files.map((name) => ({ name, text: readFileSync(join(folder, name), 'utf8') }))
     )
     expect(records.length).toBeGreaterThan(0)
@@ -318,7 +318,7 @@ Grasp. Melee Attack Roll: +3, reach 5 ft. Hit: 5 (1d6+2) Necrotic damage.
   })
 
   it('collapses Monster Manual letter files onto one Lookup source', () => {
-    const records = parseWotcFiles([
+    const records = parseBookFiles([
       {
         name: 'Monster Manual A.md',
         text: `# Campaign Bestiary A

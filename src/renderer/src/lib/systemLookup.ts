@@ -61,5 +61,5 @@ export function activateSystemLookup(system?: string | null): void {
   const id = parseSystemId(system)
   const pack = getSystemPack(id)
   setCoreRecords(packLookupRecords(id))
-  if (!pack.wotcLookup) setExtraRecords([])
+  if (!pack.bookLookup) setExtraRecords([])
 }

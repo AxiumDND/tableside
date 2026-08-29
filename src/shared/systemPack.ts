@@ -52,7 +52,7 @@ export interface SystemPack {
   combat: CombatProfile
   statblockLayout: string
   shopsEnabled: boolean
-  wotcLookup: boolean
+  bookLookup: boolean
   sampleCampaign: boolean
 }
 
@@ -133,7 +133,7 @@ export const SYSTEM_PACKS: Record<SystemId, SystemPack> = {
     combat: DND5E_COMBAT,
     statblockLayout: 'Basic 5e Layout',
     shopsEnabled: true,
-    wotcLookup: true,
+    bookLookup: true,
     sampleCampaign: true
   },
   pf2e: {
@@ -157,7 +157,7 @@ export const SYSTEM_PACKS: Record<SystemId, SystemPack> = {
     combat: PF2E_COMBAT,
     statblockLayout: 'Basic PF2e Layout',
     shopsEnabled: false,
-    wotcLookup: false,
+    bookLookup: false,
     sampleCampaign: false
   },
   v5: {
@@ -182,7 +182,7 @@ export const SYSTEM_PACKS: Record<SystemId, SystemPack> = {
     combat: V5_COMBAT,
     statblockLayout: 'Basic V5 Layout',
     shopsEnabled: false,
-    wotcLookup: false,
+    bookLookup: false,
     sampleCampaign: false
   }
 }

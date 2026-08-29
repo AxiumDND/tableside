@@ -20,7 +20,7 @@ function sourceIdFromName(fileName: string): string {
   const stem = fileName.replace(/\.[^.]+$/, '')
   if (/monster\s*manual|\bmm\b/i.test(stem)) return 'monster-manual'
   if (/ravenloft/i.test(stem)) return 'ravenloft'
-  return slug(stem) || 'wotc'
+  return slug(stem) || 'book'
 }
 
 function sourceLabelFromName(fileName: string): string {
@@ -31,7 +31,7 @@ function sourceLabelFromName(fileName: string): string {
   if (/ravenloft/i.test(stem)) return 'Ravenloft'
   if (/monster\s*manual|\bmm\b/i.test(stem)) return 'MM2024'
   if (/bestiary|beastry/i.test(stem)) return 'Bestiary'
-  return stem.replace(/\s+/g, ' ').trim() || 'WOTC'
+  return stem.replace(/\s+/g, ' ').trim() || 'Book'
 }
 
 function isTypeLine(line: string): boolean {
@@ -241,7 +241,7 @@ function monsterSummary(fields: Record<string, string>, size: string, type: stri
     .join(' · ')
 }
 
-export function parseWotcBestiary(text: string, fileName: string): SrdRecord[] {
+export function parseBookBestiary(text: string, fileName: string): SrdRecord[] {
   const source = sourceIdFromName(fileName)
   const sourceLabel = sourceLabelFromName(fileName)
   const blocks = text.replace(/\r\n/g, '\n').split(/^## /m).slice(1)
@@ -551,12 +551,12 @@ function parseGenericBook(text: string, fileName: string): SrdRecord[] {
   return records
 }
 
-export function parseWotcFiles(files: { name: string; text: string }[]): SrdRecord[] {
+export function parseBookFiles(files: { name: string; text: string }[]): SrdRecord[] {
   const records: SrdRecord[] = []
   const seen = new Set<string>()
   for (const file of files) {
     const parsed = looksLikeBestiary(file.name, file.text)
-      ? parseWotcBestiary(file.text, file.name)
+      ? parseBookBestiary(file.text, file.name)
       : looksLikeSpellList(file.name, file.text)
         ? parsePhbSpellList(file.text, file.name)
         : looksLikeEquipment(file.name, file.text)

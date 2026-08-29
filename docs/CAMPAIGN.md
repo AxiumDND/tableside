@@ -9,7 +9,7 @@ Also read:
 - [RECIPES.md](RECIPES.md) — game night sheet → initiative, Lookup → campaign note, music, crawl (also in-app **Help**)
 - [MARKDOWN.md](MARKDOWN.md) — wikilinks, callouts, `statblock` field reference
 - [AI-CAMPAIGN.md](AI-CAMPAIGN.md) — short spec for an AI converting a vault into this layout
-- [WOTC/README.md](../WOTC/README.md) — optional book text for Lookup
+- [Additional Books/README.md](../Additional%20Books/README.md) — optional book text for Lookup
 
 ## Folder layout
 
@@ -76,9 +76,9 @@ Archive/          recaps, transcripts, old drafts
 | `Sounds`, `Sound` | Audio |
 | `Z Archive` | Archive |
 
-Skipped directories (not shown / not scanned as notes): `.obsidian`, `.git`, `node_modules`, `WOTC`, `out`, `dist`, and similar. A leftover `Templates/` folder is hidden from the file tree; right-click **New …** still uses those files if they exist, otherwise the system pack sheets.
+Skipped directories (not shown / not scanned as notes): `.obsidian`, `.git`, `node_modules`, `Additional Books`, `out`, `dist`, and similar. A leftover `Templates/` folder is hidden from the file tree; right-click **New …** still uses those files if they exist, otherwise the system pack sheets.
 
-Book text for Lookup is **not** part of a campaign. Put PHB / DMG exports in the app `WOTC/` folder.
+Book text for Lookup is **not** part of a campaign. Put PHB / DMG exports in the app `Additional Books/` folder.
 
 ## Creating notes in the app
 
@@ -244,7 +244,7 @@ HP edits stay on the DM console; the overlay never shows numbers. Step-by-step U
 3. Click a map or portrait → **Show to players**.
 4. When a fight starts, add the encounter (or combatants) → roll / enter initiative → advance turns.
 5. **Music** plays files from `Audio/Music`, `Audio/Ambience`, and `Audio/Sfx`.
-6. Use **Lookup** for conditions, spells, monsters, and weapons (SRD bundled; optional WOTC files extend it).
+6. Use **Lookup** for conditions, spells, monsters, and weapons (SRD bundled; optional book files extend it).
 
 How-to: [GUIDE.md](GUIDE.md). Console reference: [TABLE.md](TABLE.md).
 

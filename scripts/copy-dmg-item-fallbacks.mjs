@@ -2,7 +2,7 @@ import { copyFileSync, existsSync, readdirSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 
 const dest = 'resources/srd-items'
-const text = readFileSync('WOTC/Dungeon Masters Guide 2024 Magic Items.md', 'utf8')
+const text = readFileSync('Additional Books/Dungeon Masters Guide 2024 Magic Items.md', 'utf8')
 const records = []
 for (const block of text.replace(/\r\n/g, '\n').split(/^## /m).slice(1)) {
   const lines = block.split('\n').map((line) => line.trim())

@@ -6,7 +6,7 @@ Thanks for helping with Tableside.
 
 1. Read [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) for setup, scripts, and where code lives.
 2. Skim [docs/CAMPAIGN.md](docs/CAMPAIGN.md), [docs/MARKDOWN.md](docs/MARKDOWN.md), [docs/TABLE.md](docs/TABLE.md), and [docs/RECIPES.md](docs/RECIPES.md) if your change touches notes, combatants, images, Lookup, or folder names — authors rely on those contracts. Keep the in-app **Help** panel (`HelpPanel.tsx`) aligned with RECIPES when those flows change.
-3. Keep WOTC book text out of the repo. Document formats in [WOTC/README.md](WOTC/README.md) only.
+3. Keep book text out of the repo. Document formats in [Additional Books/README.md](Additional%20Books/README.md) only.
 
 ## Pull requests
 
@@ -26,6 +26,6 @@ Thanks for helping with Tableside.
 | [docs/CAMPAIGN.md](docs/CAMPAIGN.md) | Campaign folder contract |
 | [docs/MARKDOWN.md](docs/MARKDOWN.md) | Note / statblock syntax |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Contributor / architecture notes |
-| [WOTC/README.md](WOTC/README.md) | Optional book-text Lookup files |
+| [Additional Books/README.md](Additional%20Books/README.md) | Optional book-text Lookup files |
 
 Built-in sheet bodies live in `src/shared/sheetTemplates.ts`. Greystead may still keep a hidden `Templates/` copy; the file tree does not show that folder.

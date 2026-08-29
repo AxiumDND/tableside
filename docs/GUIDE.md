@@ -156,7 +156,7 @@ Other looks still show the card so the note stays readable. Play stays disabled 
 
 Filter chips narrow the category. From a result you can **Add to combat** (monsters) or **Add to Bestiary / Spells / Gear** (writes a campaign note you can edit and wikilink). On 5e, adding a monster also copies its default portrait into `Bestiary/Art/` if you do not already have one.
 
-Optional PHB / DMG text dumps go in the app `WOTC/` folder — not in the campaign. Details: [WOTC/README.md](../WOTC/README.md). Use **Open WOTC folder** in Lookup.
+Optional PHB / DMG text dumps go in the app `Additional Books/` folder — not in the campaign. Details: [Additional Books/README.md](../Additional%20Books/README.md). Use the **Additional books** link in Lookup.
 
 ### 8. Roll dice
 
