@@ -1,5 +1,6 @@
 /** Parchment legend scroll — original user text only. Reuses crawl music timing. */
 
+import { replaceNthCallout, serializeFencedCallout } from './callouts'
 import {
   CRAWL_FADE_OUT_MS,
   CRAWL_MUSIC_LEAD_MS,
@@ -9,15 +10,16 @@ import {
 } from './openingCrawl'
 
 /** Sample body written into new Classic / Light / Vampire game night sheets. */
-export const NIGHTSHEET_LEGEND_SAMPLE = `> [!legend] The Pale Well
-> preface: In the year the ridge road failed, when Greystead still trusted its walls.
-> It is a quiet season in the uplands. Grain waits at the mill. The watch argues over bandits on the ridge.
->
-> A girl named Lira vanishes on the night the well runs cold. The mayor's purse is already on the table, and the town swears it was thieves.
->
-> In the caves beneath the pale stone, something older keeps its count. If the rite is not stopped, the ridge will not hold another winter.
->
-> A handful of travelers still answer the call. They have one night to learn what the well wants, and reach the caves before the dark closes.`
+export const NIGHTSHEET_LEGEND_SAMPLE = `[!legend] The Pale Well
+preface: In the year the ridge road failed, when Greystead still trusted its walls.
+It is a quiet season in the uplands. Grain waits at the mill. The watch argues over bandits on the ridge.
+
+A girl named Lira vanishes on the night the well runs cold. The mayor's purse is already on the table, and the town swears it was thieves.
+
+In the caves beneath the pale stone, something older keeps its count. If the rite is not stopped, the ridge will not hold another winter.
+
+A handful of travelers still answer the call. They have one night to learn what the well wants, and reach the caves before the dark closes.
+[!/legend]`
 
 export const LEGEND_PREFACE_DEFAULT =
   'In the reign of forgotten kings,\nwhen the roads still led to wonder.'
@@ -133,51 +135,29 @@ export interface LegendCalloutFields {
 
 export function serializeLegendCallout(fields: LegendCalloutFields): string {
   const title = fields.title?.trim()
-  const lines = [`> [!legend]${title ? ` ${title}` : ''}`]
-  if (fields.preface == null) lines.push('> preface: none')
-  else lines.push(`> preface: ${fields.preface.replace(/\r/g, '').replace(/\n+/g, ' ').trim()}`)
+  const body: string[] = []
+  if (fields.preface == null) body.push('preface: none')
+  else body.push(`preface: ${fields.preface.replace(/\r/g, '').replace(/\n+/g, ' ').trim()}`)
   if (fields.musicRef?.trim()) {
-    lines.push(`> music: ${fields.musicRef.trim().replace(/^\[\[|\]\]$/g, '')}`)
+    body.push(`music: ${fields.musicRef.trim().replace(/^\[\[|\]\]$/g, '')}`)
   }
   if (fields.logoRef?.trim()) {
     const ref = fields.logoRef.trim().replace(/^!\[\[|\]\]$/g, '')
-    lines.push(`> ![[${ref}]]`)
+    body.push(`![[${ref}]]`)
   }
   if (fields.endImageRef?.trim()) {
     const ref = fields.endImageRef.trim().replace(/^!\[\[|\]\]$/g, '')
-    lines.push(`> end: ![[${ref}]]`)
+    body.push(`end: ![[${ref}]]`)
   }
-  const body = fields.body.replace(/\r/g, '').trim()
-  if (body) {
-    lines.push('>')
-    for (const line of body.split('\n')) {
-      lines.push(line.trim() === '' ? '>' : `> ${line}`)
-    }
+  const text = fields.body.replace(/\r/g, '').trim()
+  if (text) {
+    body.push('')
+    body.push(...text.split('\n'))
   }
-  return lines.join('\n')
+  return serializeFencedCallout('legend', title, body)
 }
-
-const LEGEND_START = /^>\s*\[!(?:legend|tale|chronicle)\][+-]?\s*(.*)$/i
 
 /** Replace the nth legend/tale/chronicle callout in a note. */
 export function replaceNthLegendCallout(source: string, index: number, fields: LegendCalloutFields): string {
-  const lines = source.replace(/\r/g, '').split('\n')
-  let i = 0
-  let seen = 0
-  while (i < lines.length) {
-    if (!LEGEND_START.test(lines[i] ?? '')) {
-      i += 1
-      continue
-    }
-    const from = i
-    i += 1
-    while (i < lines.length && /^>/.test(lines[i] ?? '')) i += 1
-    if (seen === index) {
-      const next = serializeLegendCallout(fields).split('\n')
-      const out = [...lines.slice(0, from), ...next, ...lines.slice(i)].join('\n')
-      return source.endsWith('\n') && !out.endsWith('\n') ? `${out}\n` : out
-    }
-    seen += 1
-  }
-  return source
+  return replaceNthCallout(source, ['legend', 'tale', 'chronicle'], index, serializeLegendCallout(fields))
 }

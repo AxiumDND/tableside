@@ -39,7 +39,7 @@ describe('video callout rewrite', () => {
         muted: true,
         videoRef: 'Art/Intro.mp4'
       })
-    ).toBe(['> [!video] Opening', '> mute: true', '> ![[Art/Intro.mp4]]'].join('\n'))
+    ).toBe(['[!video] Opening', 'mute: true', '![[Art/Intro.mp4]]', '[!/video]'].join('\n'))
   })
 
   it('replaces the first video block', () => {
@@ -49,8 +49,9 @@ describe('video callout rewrite', () => {
       muted: false,
       videoRef: 'B.mp4'
     })
-    expect(next).toContain('> [!video] New')
-    expect(next).toContain('> ![[B.mp4]]')
+    expect(next).toContain('[!video] New')
+    expect(next).toContain('![[B.mp4]]')
+    expect(next).toContain('[!/video]')
     expect(next).not.toContain('Old')
   })
 })

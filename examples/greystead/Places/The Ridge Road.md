@@ -1,19 +1,21 @@
 # The Ridge Road
 
-> [!infobox]+
-> ![[The Ridge Road.webp]]
->
-> ### *Up, not down*
->
-> | | |
-> |---|---|
-> | **Type** | Wilderness |
-> | **Region** | Above [[Greystead]] |
-> | **Map** | [[Pale Well Caves]] |
-> | **Mood** | Thorn, wet limestone |
+[!place]
+![[The Ridge Road.webp]]
 
-> [!readaloud]
-> The track climbs. A cave mouth is boarded like a bandit hole — and the boards are new.
+### *Up, not down*
+
+| | |
+|---|---|
+| **Type** | Wilderness |
+| **Region** | Above [[Greystead]] |
+| **Map** | [[Pale Well Caves]] |
+| **Mood** | Thorn, wet limestone |
+[!/place]
+
+[!readaloud]
+The track climbs. A cave mouth is boarded like a bandit hole — and the boards are new.
+[!/readaloud]
 
 ## At a glance
 
@@ -21,5 +23,6 @@
 - **Fantastic** — A drone on the wind if they listen
 - **Dangerous** — Two lookouts, or a wolf
 
-> [!gmonly]
-> Combat 1 here. Then the map.
+[!gmonly]
+Combat 1 here. Then the map.
+[!/gmonly]

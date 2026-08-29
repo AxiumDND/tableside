@@ -81,15 +81,16 @@ describe('legend callout rewrite', () => {
       })
     ).toBe(
       [
-        '> [!legend] The Pale Well',
-        '> preface: In the year the ridge road failed.',
-        '> music: Audio/Music/Crawl/Fanfare.mp3',
-        '> ![[Sigil.png]]',
-        '> end: ![[Art/Pale Well.webp]]',
-        '>',
-        '> It is a quiet season.',
-        '>',
-        '> The well runs cold.'
+        '[!legend] The Pale Well',
+        'preface: In the year the ridge road failed.',
+        'music: Audio/Music/Crawl/Fanfare.mp3',
+        '![[Sigil.png]]',
+        'end: ![[Art/Pale Well.webp]]',
+        '',
+        'It is a quiet season.',
+        '',
+        'The well runs cold.',
+        '[!/legend]'
       ].join('\n')
     )
   })
@@ -104,11 +105,12 @@ describe('legend callout rewrite', () => {
       musicRef: null,
       body: 'The well runs cold.'
     })
-    expect(next).toContain('> [!legend] New')
-    expect(next).toContain('> preface: When the ridge road failed.')
-    expect(next).toContain('> The well runs cold.')
+    expect(next).toContain('[!legend] New')
+    expect(next).toContain('preface: When the ridge road failed.')
+    expect(next).toContain('The well runs cold.')
+    expect(next).toContain('[!/legend]')
     expect(next).toContain('## 1. The Party')
-    expect(next).not.toContain('> [!legend] Old')
+    expect(next).not.toContain('[!legend] Old')
   })
 })
 

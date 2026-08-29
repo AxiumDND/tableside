@@ -1,20 +1,21 @@
 # *Sister Calda*
 
-> [!infobox]+
-> ![[Sister Calda.webp]]
->
-> ### *Hearth-cleric · keeps people on their feet*
->
-> | | |
-> |---|---|
-> | **Player** | Pregen |
-> | **Species** | Human (Medium) |
-> | **Class** | Cleric 1 — Life |
-> | **Background** | Acolyte |
-> | **Alignment** | Lawful Good |
-> | **Role** | Heal / support |
-> | **AC** | 16 (Scale Mail, Shield) |
-> | **HP** | 9 |
+[!pc]
+![[Sister Calda.webp]]
+
+### *Hearth-cleric · keeps people on their feet*
+
+| | |
+|---|---|
+| **Player** | Pregen |
+| **Species** | Human (Medium) |
+| **Class** | Cleric 1 — Life |
+| **Background** | Acolyte |
+| **Alignment** | Lawful Good |
+| **Role** | Heal / support |
+| **AC** | 16 (Scale Mail, Shield) |
+| **HP** | 9 |
+[!/pc]
 
 ```statblock
 layout: Basic 5e Layout
@@ -58,8 +59,9 @@ actions:
 - **Skills** — Insight, Medicine
 - **Signature tricks** — Bless on the first fight; Cure Wounds on whoever drops
 
-> [!gmonly]
-> She will not smash the bowl. If someone else does, she knows something went wrong.
+[!gmonly]
+She will not smash the bowl. If someone else does, she knows something went wrong.
+[!/gmonly]
 
 ## Look & voice
 

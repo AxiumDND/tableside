@@ -1,6 +1,16 @@
 import type { CampaignTreeNode } from '../../../shared/types'
+import type { CalloutBlock } from '../../../shared/callouts'
+import { maskFencedCalloutBodies, splitCalloutBlocks } from '../../../shared/callouts'
 import { IMAGE_EXT, type CampaignImage } from './images'
 import { pathHasFolder } from '../../../shared/campaignLayout'
+
+export type { CalloutBlock, CalloutKind } from '../../../shared/callouts'
+export {
+  calloutKind,
+  serializeFencedCallout,
+  splitCalloutBlocks,
+  stripAuthorComments
+} from '../../../shared/callouts'
 
 export interface CampaignNote {
   relativePath: string
@@ -293,97 +303,6 @@ export function splitCombatCardContent(markdown: string): { card: string; rest: 
   return { card, rest }
 }
 
-const CALLOUT_START = /^>\s*\[!(?!infobox)([a-z][\w-]*)\][+-]?\s*(.*)$/i
-
-export type CalloutKind =
-  | 'prose'
-  | 'readaloud'
-  | 'gmonly'
-  | 'crawl'
-  | 'legend'
-  | 'gallery'
-  | 'video'
-  | 'scene'
-  | 'tip'
-  | 'warning'
-  | 'example'
-  | 'abstract'
-  | 'note'
-  | 'danger'
-  | 'success'
-  | 'info'
-  | 'other'
-
-export interface CalloutBlock {
-  kind: CalloutKind
-  type?: string
-  markdown: string
-  title?: string
-}
-
-function calloutKind(type: string): CalloutKind {
-  const folded = type.toLowerCase()
-  if (/^read[-_]?aloud$/.test(folded) || folded === 'flavor') return 'readaloud'
-  if (/^gm[-_]?only$/.test(folded) || folded === 'secret') return 'gmonly'
-  if (folded === 'crawl' || folded === 'opening') return 'crawl'
-  if (folded === 'legend' || folded === 'tale' || folded === 'chronicle') return 'legend'
-  if (folded === 'gallery' || folded === 'slides' || folded === 'sequence') return 'gallery'
-  if (folded === 'video' || folded === 'clip' || folded === 'film') return 'video'
-  if (folded === 'scene' || folded === 'beat') return 'scene'
-  if (
-    folded === 'tip' ||
-    folded === 'warning' ||
-    folded === 'example' ||
-    folded === 'abstract' ||
-    folded === 'note' ||
-    folded === 'danger' ||
-    folded === 'success' ||
-    folded === 'info'
-  ) {
-    return folded
-  }
-  return 'other'
-}
-
-export function splitCalloutBlocks(markdown: string): CalloutBlock[] {
-  const lines = markdown.replace(/\r/g, '').split('\n')
-  const out: CalloutBlock[] = []
-  let buf: string[] = []
-  let i = 0
-
-  const flushProse = (): void => {
-    if (buf.length === 0) return
-    out.push({ kind: 'prose', markdown: buf.join('\n') })
-    buf = []
-  }
-
-  while (i < lines.length) {
-    const start = CALLOUT_START.exec(lines[i])
-    if (!start) {
-      buf.push(lines[i])
-      i += 1
-      continue
-    }
-    const kind = calloutKind(start[1])
-    flushProse()
-    const title = start[2].trim()
-    const body: string[] = []
-    i += 1
-    while (i < lines.length && /^>/.test(lines[i])) {
-      body.push(lines[i].replace(/^>\s?/, ''))
-      i += 1
-    }
-    out.push({
-      kind,
-      type: start[1].toLowerCase(),
-      title: title || undefined,
-      markdown: body.join('\n').replace(/^\n+|\n+$/g, '')
-    })
-  }
-  flushProse()
-  return out
-}
-
 export function splitReadAloudBlocks(markdown: string): CalloutBlock[] {
   return splitCalloutBlocks(markdown)
 }
@@ -492,7 +411,7 @@ export function parseNightEncounters(
   notes: CampaignNote[]
 ): NightEncounter[] {
   const encounters: NightEncounter[] = []
-  for (const section of splitEncounterSections(markdown)) {
+  for (const section of splitEncounterSections(maskFencedCalloutBodies(markdown))) {
     const encounter = encounterFromSection(section, notePath, notes)
     if (encounter) encounters.push(encounter)
   }

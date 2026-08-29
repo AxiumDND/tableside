@@ -5,17 +5,18 @@
 -->
 # Spell Name
 
-> [!infobox]+
-> ![[Evocation.webp]]
->
-> ### *Level 1 Evocation (Wizard)*
->
-> | | |
-> |---|---|
-> | **Casting Time** | Action |
-> | **Range** | 60 feet |
-> | **Components** | V, S |
-> | **Duration** | Instantaneous |
+[!spell]
+![[Evocation.webp]]
+
+### *Level 1 Evocation (Wizard)*
+
+| | |
+|---|---|
+| **Casting Time** | Action |
+| **Range** | 60 feet |
+| **Components** | V, S |
+| **Duration** | Instantaneous |
+[!/spell]
 
 What the spell does at the table.
 

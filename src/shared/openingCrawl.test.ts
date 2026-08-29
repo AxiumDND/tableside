@@ -93,15 +93,16 @@ describe('crawl callout rewrite', () => {
       })
     ).toBe(
       [
-        '> [!crawl] The Siege of Kestrel',
-        '> preface: In an age before memory, beyond the rim of charted stars.',
-        '> music: Audio/Music/Crawl/Fanfare.mp3',
-        '> ![[Fleet Mark.png]]',
-        '> end: ![[Art/Planet.png]]',
-        '>',
-        '> It is a time of unrest.',
-        '>',
-        '> The outer colonies have gone silent.'
+        '[!crawl] The Siege of Kestrel',
+        'preface: In an age before memory, beyond the rim of charted stars.',
+        'music: Audio/Music/Crawl/Fanfare.mp3',
+        '![[Fleet Mark.png]]',
+        'end: ![[Art/Planet.png]]',
+        '',
+        'It is a time of unrest.',
+        '',
+        'The outer colonies have gone silent.',
+        '[!/crawl]'
       ].join('\n')
     )
   })
@@ -116,11 +117,12 @@ describe('crawl callout rewrite', () => {
       musicRef: null,
       body: 'A courier leaves the docks.'
     })
-    expect(next).toContain('> [!crawl] New')
-    expect(next).toContain('> preface: Past the last mapped sun.')
-    expect(next).toContain('> A courier leaves the docks.')
+    expect(next).toContain('[!crawl] New')
+    expect(next).toContain('preface: Past the last mapped sun.')
+    expect(next).toContain('A courier leaves the docks.')
+    expect(next).toContain('[!/crawl]')
     expect(next).toContain('## 1. The characters')
-    expect(next).not.toContain('> [!crawl] Old')
+    expect(next).not.toContain('[!crawl] Old')
   })
 })
 

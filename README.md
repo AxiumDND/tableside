@@ -4,13 +4,13 @@ A local Windows app for running **in-person** tabletop games. Your laptop is the
 
 This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table.
 
-**New campaign** asks which system pack to use: **D&D 5e** (bundled SRD 5.2.1), **Pathfinder 2e** (small original core), or **Vampire 5th Edition** (Health / Willpower / Hunger tracker and original table procedures). Existing folders without a `system` field keep working as D&D 5e. Sample is still the 5e Greystead one-shot. Current release: **1.5.0**.
+**New campaign** asks which system pack to use: **D&D 5e** (bundled SRD 5.2.1), **Pathfinder 2e** (small original core), or **Vampire 5th Edition** (Health / Willpower / Hunger tracker and original table procedures). Existing folders without a `system` field keep working as D&D 5e. Sample is still the 5e Greystead one-shot. Current release: **1.6.0**.
 
 Tableside is a table app. It is not an official Wizards, Paizo, or Paradox product.
 
 ## Install (Windows)
 
-**[Download the latest installer](https://github.com/AxiumDND/tableside/releases/latest)** — look for `Tableside-Setup-1.5.0.exe`. No account, no admin.
+**[Download the latest installer](https://github.com/AxiumDND/tableside/releases/latest)** — look for `Tableside-Setup-1.6.0.exe`. No account, no admin.
 
 1. Run the installer. It is a per-user install: Start Menu + desktop shortcuts. You can pick the folder.
 2. Open **Tableside** from the Start Menu.
@@ -84,7 +84,7 @@ npm start
 npm run dist
 ```
 
-Writes `dist/Tableside-Setup-1.5.0.exe`. Pushing a `v1.5.0` tag builds that file and attaches it to the [GitHub Release](https://github.com/AxiumDND/tableside/releases/latest).
+Writes `dist/Tableside-Setup-1.6.0.exe`. Pushing a `v1.6.0` tag builds that file and attaches it to the [GitHub Release](https://github.com/AxiumDND/tableside/releases/latest).
 
 `npm run fetch-srd` is only needed if you want to refresh the bundled SRD snapshot from the [Open5e API](https://api.open5e.com/) (`srd-2024`).
 

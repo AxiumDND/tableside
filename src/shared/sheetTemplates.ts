@@ -22,21 +22,22 @@ const PLAYER = `<!--
 -->
 # *Character Name*
 
-> [!infobox]+
-> ![[Character Name.png]]
->
-> ### *One-line tagline — role at the table*
->
-> | | |
-> |---|---|
-> | **Player** | Name |
-> | **Species** | Human |
-> | **Class** | Fighter 5 |
-> | **Background** | Soldier |
-> | **Alignment** | Neutral Good |
-> | **Role** | Front line |
-> | **AC** | 18 |
-> | **HP** | 44 |
+[!pc]
+![[Character Name.png]]
+
+### *One-line tagline — role at the table*
+
+| | |
+|---|---|
+| **Player** | Name |
+| **Species** | Human |
+| **Class** | Fighter 5 |
+| **Background** | Soldier |
+| **Alignment** | Neutral Good |
+| **Role** | Front line |
+| **AC** | 18 |
+| **HP** | 44 |
+[!/pc]
 
 \`\`\`statblock
 layout: Basic 5e Layout
@@ -70,8 +71,9 @@ actions:
 - **Skills** — 
 - **Signature tricks** — 
 
-> [!gmonly]
-> How this kit bends the session. Secret hooks. What to flag if they forget a feature.
+[!gmonly]
+How this kit bends the session. Secret hooks. What to flag if they forget a feature.
+[!/gmonly]
 
 ## Look & voice
 
@@ -91,18 +93,19 @@ const NPC = `<!--
 -->
 # *NPC Name*
 
-> [!infobox]+
-> ![[NPC Name.png]]
->
-> ### *Who they are in one line*
->
-> | | |
-> |---|---|
-> | **Role** | Patron / informant / obstacle |
-> | **Faction** | [[Faction Name]] |
-> | **Location** | [[Place Name]] |
-> | **Status** | Alive |
-> | **CR** | 2 |
+[!npc]
+![[NPC Name.png]]
+
+### *Who they are in one line*
+
+| | |
+|---|---|
+| **Role** | Patron / informant / obstacle |
+| **Faction** | [[Faction Name]] |
+| **Location** | [[Place Name]] |
+| **Status** | Alive |
+| **CR** | 2 |
+[!/npc]
 
 \`\`\`statblock
 layout: Basic 5e Layout
@@ -131,11 +134,13 @@ actions:
 - **Manner** — 
 - **Quotes** — *"…"*
 
-> [!readaloud]
-> A line to speak when they first appear.
+[!readaloud]
+A line to speak when they first appear.
+[!/readaloud]
 
-> [!gmonly]
-> The truth. What they want. What they will not say.
+[!gmonly]
+The truth. What they want. What they will not say.
+[!/gmonly]
 
 ## Notes
 
@@ -149,14 +154,15 @@ const MONSTER = `<!--
 -->
 # Monster Name
 
-> [!infobox]+
-> ![[Monster Name.png]]
->
-> | | |
-> |---|---|
-> | **CR** | 1 |
-> | **Role** | Pressure / boss / minion |
-> | **Source** | MM / custom |
+[!monster]
+![[Monster Name.png]]
+
+| | |
+|---|---|
+| **CR** | 1 |
+| **Role** | Pressure / boss / minion |
+| **Source** | MM / custom |
+[!/monster]
 
 \`\`\`statblock
 layout: Basic 5e Layout
@@ -187,8 +193,9 @@ actions:
 
 Where it appears. What to telegraph. When to cut it if the fight runs long.
 
-> [!gmonly]
-> Tuning: add or drop HP, skip a recharge, or have it flee.
+[!gmonly]
+Tuning: add or drop HP, skip a recharge, or have it flee.
+[!/gmonly]
 `
 
 const SPELL = `<!--
@@ -198,17 +205,18 @@ const SPELL = `<!--
 -->
 # Spell Name
 
-> [!infobox]+
-> ![[Evocation.webp]]
->
-> ### *Level 1 Evocation (Wizard)*
->
-> | | |
-> |---|---|
-> | **Casting Time** | Action |
-> | **Range** | 60 feet |
-> | **Components** | V, S |
-> | **Duration** | Instantaneous |
+[!spell]
+![[Evocation.webp]]
+
+### *Level 1 Evocation (Wizard)*
+
+| | |
+|---|---|
+| **Casting Time** | Action |
+| **Range** | 60 feet |
+| **Components** | V, S |
+| **Duration** | Instantaneous |
+[!/spell]
 
 What the spell does at the table.
 
@@ -223,19 +231,20 @@ const GEAR = `<!--
 -->
 # Item Name
 
-> [!infobox]+
-> ![[Item Name.png]]
->
-> ### *Adventuring Gear*
->
-> | | |
-> |---|---|
-> | **Weight** | |
-> | **Cost** | |
-> | **Rarity** | |
-> | **Attunement** | |
-> | **Damage** | |
-> | **Properties** | |
+[!gear]
+![[Item Name.png]]
+
+### *Adventuring Gear*
+
+| | |
+|---|---|
+| **Weight** | |
+| **Cost** | |
+| **Rarity** | |
+| **Attunement** | |
+| **Damage** | |
+| **Properties** | |
+[!/gear]
 
 What it does, or any house-rule notes.
 `
@@ -246,8 +255,8 @@ const NIGHTSHEET = `<!--
   {{party}} is replaced with wikilinks to every Party/ sheet.
   {{crawl}} is replaced on Sci-fi campaigns with an Opening crawl sample (Play on the player screen).
   {{legend}} is replaced on Classic, Light, and Vampire campaigns with an Opening legend sample.
-  Scene blocks: > [!scene] Title — art, what could happen, nested > [!readaloud] / > [!gmonly], optional NPCs, secrets, treasure, combat, and table cues.
-  Copy a scene block to add another beat.
+  Scene blocks: [!scene] Title … [!/scene] — art, what could happen, nested [!readaloud] / [!gmonly], optional NPCs, secrets, treasure, combat, and table cues.
+  Copy a scene block to add another beat. Use // lines for notes that stay in the editor only.
   Combat headings inside a scene (⚔️ / Combat / Encounter) + Combatants lines feed Add to initiative.
   party = all PCs. [[Name]] opens a sheet. ![[Art.webp]] then Show to players.
   Long prose belongs in a separate session note. See docs/GUIDE.md and docs/RECIPES.md.
@@ -256,8 +265,9 @@ const NIGHTSHEET = `<!--
 
 *Behind the screen. Prose in [[Session Name]]. Click [[links]] to open sheets. Click art, then **Show to players**.*
 
-> [!abstract] Tonight at a glance
-> Opening scene → next beats → **the fight** → fallout.
+[!abstract] Tonight at a glance
+Opening scene → next beats → **the fight** → fallout.
+[!/abstract]
 
 {{crawl}}
 
@@ -267,82 +277,89 @@ const NIGHTSHEET = `<!--
 
 {{party}}
 
-> [!note] Focus tonight
-> Soft spots for this session — unfinished business, a promise from last time, or something the table asked for.
->
-> - 
-> - 
+[!note] Focus tonight
+Soft spots for this session — unfinished business, a promise from last time, or something the table asked for.
+
+- 
+- 
+[!/note]
 
 ## 2. Scenes
 
-Copy a whole \`[!scene]\` block to add another beat. Keep the **Opening** first.
+// Copy a whole [!scene] … [!/scene] block to add another beat. Keep the Opening first.
 
-> [!scene] Opening — name the beat
-> ![[Scene art.webp]]
->
-> What could happen as they arrive. Who wants what. What tips the next scene.
->
-> > [!readaloud]
-> > First thing they see, hear, or are dropped into.
->
-> **At the table** (optional — delete what you don't need):
-> - Place: [[Place Name]]
-> - Map: [[Map Name]]
-> - Checks: Perception DC 14 · Investigation DC 12
-> - If they miss / flee: …
-> - Music: General / Creepy / Combat
-> - Sound: rain · door creak
-> - Already in initiative?
-> - Leads to: next beat / …
+[!scene] Opening — name the beat
+![[Scene art.webp]]
 
-> [!scene] Scene — name the beat
-> ![[Scene art.webp]]
->
-> What could happen if they go this way — talk, search, chase, or the fight.
->
-> > [!readaloud]
-> > Optional spoken text when this beat lands.
->
-> > [!readaloud]
-> > Mid-scene reveal — second read-aloud if the beat shifts.
->
-> > [!gmonly] Only you
-> > Hidden truth, rigged outcome, or NPC tell they must not hear yet.
->
-> **At the table** (optional — delete what you don't need):
-> - Place: [[Place Name]]
-> - Map: [[Map Name]]
-> - Checks: Perception DC 14 · Investigation DC 12
-> - If they miss / flee: …
-> - Music: General / Creepy / Combat
-> - Sound: door creak · thunder
-> - Leads to: [[next beat]] / fallout / …
->
-> **Secrets and clues in this scene** (optional — delete if none):
-> - 
-> - 
->
-> **Treasure in this scene** (optional — delete if none):
-> - Coin / mundane:
-> - Magic (attunement?):
->
-> **NPCs in this scene** (optional — delete if none):
-> - [[NPC Name]] — want / will say / will not say
-> - Voice:
->
-> **Combat in this scene** (optional — delete if no fight). Headings that say *no combat* are skipped.
->
-> ## ⚔️ Combat 1 — name the encounter
->
-> **Combatants:** [[Monster Name]] · party
->
-> | | |
-> |---|---|
-> | **Monster Name** | AC · HP · key attacks |
->
-> - Telegraph:
-> - Target / quarry:
-> - Cut if running long:
+What could happen as they arrive. Who wants what. What tips the next scene.
+
+[!readaloud]
+First thing they see, hear, or are dropped into.
+[!/readaloud]
+
+**At the table** (optional — delete what you don't need):
+- Place: [[Place Name]]
+- Map: [[Map Name]]
+- Checks: Perception DC 14 · Investigation DC 12
+- If they miss / flee: …
+- Music: General / Creepy / Combat
+- Sound: rain · door creak
+- Already in initiative?
+- Leads to: next beat / …
+[!/scene]
+
+[!scene] Scene — name the beat
+![[Scene art.webp]]
+
+What could happen if they go this way — talk, search, chase, or the fight.
+
+[!readaloud]
+Optional spoken text when this beat lands.
+[!/readaloud]
+
+[!readaloud]
+Mid-scene reveal — second read-aloud if the beat shifts.
+[!/readaloud]
+
+[!gmonly] Only you
+Hidden truth, rigged outcome, or NPC tell they must not hear yet.
+[!/gmonly]
+
+**At the table** (optional — delete what you don't need):
+- Place: [[Place Name]]
+- Map: [[Map Name]]
+- Checks: Perception DC 14 · Investigation DC 12
+- If they miss / flee: …
+- Music: General / Creepy / Combat
+- Sound: door creak · thunder
+- Leads to: [[next beat]] / fallout / …
+
+**Secrets and clues in this scene** (optional — delete if none):
+- 
+- 
+
+**Treasure in this scene** (optional — delete if none):
+- Coin / mundane:
+- Magic (attunement?):
+
+**NPCs in this scene** (optional — delete if none):
+- [[NPC Name]] — want / will say / will not say
+- Voice:
+
+**Combat in this scene** (optional — delete if no fight). Headings that say *no combat* are skipped.
+
+## ⚔️ Combat 1 — name the encounter
+
+**Combatants:** [[Monster Name]] · party
+
+| | |
+|---|---|
+| **Monster Name** | AC · HP · key attacks |
+
+- Telegraph:
+- Target / quarry:
+- Cut if running long:
+[!/scene]
 `
 
 const MAP = `<!--
@@ -374,21 +391,23 @@ const PLACE = `<!--
 -->
 # Place Name
 
-> [!infobox]+
-> ![[Place Name.png]]
->
-> ### *What this place is in one line*
->
-> | | |
-> |---|---|
-> | **Type** | Settlement / site / wilderness / dungeon |
-> | **Region** | |
-> | **Ruler / faction** | [[Faction Name]] |
-> | **Map** | [[Map Name]] |
-> | **Mood** | |
+[!place]
+![[Place Name.png]]
 
-> [!readaloud]
-> First thing they see, hear, and smell.
+### *What this place is in one line*
+
+| | |
+|---|---|
+| **Type** | Settlement / site / wilderness / dungeon |
+| **Region** | |
+| **Ruler / faction** | [[Faction Name]] |
+| **Map** | [[Map Name]] |
+| **Mood** | |
+[!/place]
+
+[!readaloud]
+First thing they see, hear, and smell.
+[!/readaloud]
 
 ## At a glance
 
@@ -408,8 +427,9 @@ const PLACE = `<!--
 
 - 
 
-> [!gmonly]
-> Truth, timers, what happens if they stay, leave, or pick a fight.
+[!gmonly]
+Truth, timers, what happens if they stay, leave, or pick a fight.
+[!/gmonly]
 `
 
 const SHOP = `<!--
@@ -420,23 +440,25 @@ const SHOP = `<!--
 -->
 # Shop Name
 
-> [!infobox]+
-> ![[Shop Name.png]]
->
-> ### *What they sell in one line*
->
-> | | |
-> |---|---|
-> | **Type** | Tavern / armorer / stables / weapons / store / apothecary |
-> | **Place** | [[Place Name]] |
-> | **Proprietor** | [[NPC Name]] |
-> | **Hours** | |
-> | **Attitude** | Wary / helpful / greedy |
-> | **Standing** | Neutral |
-> | **Map** | [[Map Name]] |
+[!shop]
+![[Shop Name.png]]
 
-> [!readaloud]
-> The room when they walk in.
+### *What they sell in one line*
+
+| | |
+|---|---|
+| **Type** | Tavern / armorer / stables / weapons / store / apothecary |
+| **Place** | [[Place Name]] |
+| **Proprietor** | [[NPC Name]] |
+| **Hours** | |
+| **Attitude** | Wary / helpful / greedy |
+| **Standing** | Neutral |
+| **Map** | [[Map Name]] |
+[!/shop]
+
+[!readaloud]
+The room when they walk in.
+[!/readaloud]
 
 ## Stock
 
@@ -448,8 +470,9 @@ const SHOP = `<!--
 
 - What they will / will not do
 
-> [!gmonly]
-> Real inventory, stolen goods, who they report to, the adventure hook.
+[!gmonly]
+Real inventory, stolen goods, who they report to, the adventure hook.
+[!/gmonly]
 `
 
 const FACTION = `<!--
@@ -460,17 +483,18 @@ const FACTION = `<!--
 -->
 # Faction Name
 
-> [!infobox]+
-> ![[Faction Name.png]]
->
-> ### *What they want in one line*
->
-> | | |
-> |---|---|
-> | **Type** | Guild / church / house / cult |
-> | **Leader** | [[NPC Name]] |
-> | **HQ** | [[Place Name]] |
-> | **Attitude** | Unknown / friendly / hostile |
+[!faction]
+![[Faction Name.png]]
+
+### *What they want in one line*
+
+| | |
+|---|---|
+| **Type** | Guild / church / house / cult |
+| **Leader** | [[NPC Name]] |
+| **HQ** | [[Place Name]] |
+| **Attitude** | Unknown / friendly / hostile |
+[!/faction]
 
 ## Goals
 
@@ -486,8 +510,9 @@ const FACTION = `<!--
 
 How they work: favors, coin, threats, faith.
 
-> [!gmonly]
-> Secrets, timers, what happens if the party joins, crosses, or ignores them.
+[!gmonly]
+Secrets, timers, what happens if the party joins, crosses, or ignores them.
+[!/gmonly]
 `
 
 export const FALLBACK_TEMPLATES: Record<Exclude<SheetTemplateKind, 'blank'>, string> = {

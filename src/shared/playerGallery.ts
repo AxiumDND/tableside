@@ -1,5 +1,7 @@
 /** Image gallery callout — sequence of stills on the player screen. */
 
+import { replaceNthCallout, serializeFencedCallout } from './callouts'
+
 const INTERVAL_LINE = /^(?:interval|auto|delay|seconds)\s*:\s*(.*)$/i
 
 function stripWikiPath(value: string): string {
@@ -55,45 +57,25 @@ export interface GalleryCalloutFields {
 
 export function serializeGalleryCallout(fields: GalleryCalloutFields): string {
   const title = fields.title?.trim()
-  const lines = [`> [!gallery]${title ? ` ${title}` : ''}`]
+  const body: string[] = []
   if (fields.intervalSec == null || fields.intervalSec <= 0) {
-    lines.push('> interval: manual')
+    body.push('interval: manual')
   } else {
-    lines.push(`> interval: ${fields.intervalSec}s`)
+    body.push(`interval: ${fields.intervalSec}s`)
   }
   for (const ref of fields.imageRefs) {
     const clean = ref.trim().replace(/^!\[\[|\]\]$/g, '')
-    if (clean) lines.push(`> ![[${clean}]]`)
+    if (clean) body.push(`![[${clean}]]`)
   }
-  return lines.join('\n')
+  return serializeFencedCallout('gallery', title, body)
 }
-
-const GALLERY_START = /^>\s*\[!(?:gallery|slides|sequence)\][+-]?\s*(.*)$/i
 
 export function replaceNthGalleryCallout(
   source: string,
   index: number,
   fields: GalleryCalloutFields
 ): string {
-  const lines = source.replace(/\r/g, '').split('\n')
-  let i = 0
-  let seen = 0
-  while (i < lines.length) {
-    if (!GALLERY_START.test(lines[i] ?? '')) {
-      i += 1
-      continue
-    }
-    const from = i
-    i += 1
-    while (i < lines.length && /^>/.test(lines[i] ?? '')) i += 1
-    if (seen === index) {
-      const next = serializeGalleryCallout(fields).split('\n')
-      const out = [...lines.slice(0, from), ...next, ...lines.slice(i)].join('\n')
-      return source.endsWith('\n') && !out.endsWith('\n') ? `${out}\n` : out
-    }
-    seen += 1
-  }
-  return source
+  return replaceNthCallout(source, ['gallery', 'slides', 'sequence'], index, serializeGalleryCallout(fields))
 }
 
 export function parseGalleryFields(title: string | undefined, markdown: string): GalleryCalloutFields {

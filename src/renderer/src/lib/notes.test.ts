@@ -54,7 +54,23 @@ describe('night sheet parsing', () => {
     expect(missingCombatantTokens(md, 'Sessions/Night.md', notes)).toEqual([])
   })
 
-  it('parses combat inside a scene block', () => {
+  it('parses combat inside a fenced scene block', () => {
+    const md = [
+      '## 2. Scenes',
+      '',
+      '[!scene] The mill fight',
+      '## ⚔️ Combat 1 — the mill',
+      '**Combatants:** [[Wolf]] ×2 · party',
+      '[!/scene]',
+      ''
+    ].join('\n')
+    const encounters = parseNightEncounters(md, 'Sessions/Night.md', notes)
+    expect(encounters).toHaveLength(1)
+    expect(encounters[0].heading).toBe('⚔️ Combat 1 — the mill')
+    expect(encounters[0].combatants.find((c) => c.name === 'Wolf')?.count).toBe(2)
+  })
+
+  it('parses combat inside a legacy quoted scene block', () => {
     const md = [
       '## 2. Scenes',
       '',
@@ -66,7 +82,6 @@ describe('night sheet parsing', () => {
     const encounters = parseNightEncounters(md, 'Sessions/Night.md', notes)
     expect(encounters).toHaveLength(1)
     expect(encounters[0].heading).toBe('⚔️ Combat 1 — the mill')
-    expect(encounters[0].combatants.find((c) => c.name === 'Wolf')?.count).toBe(2)
   })
 })
 

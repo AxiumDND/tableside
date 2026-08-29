@@ -1,20 +1,21 @@
 # *Quill Venn*
 
-> [!infobox]+
-> ![[Quill Venn.webp]]
->
-> ### *Ink-stained gnome · the problem is a puzzle*
->
-> | | |
-> |---|---|
-> | **Player** | Pregen |
-> | **Species** | Gnome (Small) |
-> | **Class** | Wizard 1 |
-> | **Background** | Sage |
-> | **Alignment** | Neutral |
-> | **Role** | Control / blaster |
-> | **AC** | 12 (15 with Mage Armor) |
-> | **HP** | 7 |
+[!pc]
+![[Quill Venn.webp]]
+
+### *Ink-stained gnome · the problem is a puzzle*
+
+| | |
+|---|---|
+| **Player** | Pregen |
+| **Species** | Gnome (Small) |
+| **Class** | Wizard 1 |
+| **Background** | Sage |
+| **Alignment** | Neutral |
+| **Role** | Control / blaster |
+| **AC** | 12 (15 with Mage Armor) |
+| **HP** | 7 |
+[!/pc]
 
 ```statblock
 layout: Basic 5e Layout
@@ -58,8 +59,9 @@ actions:
 - **Skills** — Arcana, Investigation
 - **Signature tricks** — Sleep on the lookouts; Shield if they swing at him
 
-> [!gmonly]
-> He can read the circle: break salt, not stone. Hand that to the table if they stall.
+[!gmonly]
+He can read the circle: break salt, not stone. Hand that to the table if they stall.
+[!/gmonly]
 
 ## Look & voice
 

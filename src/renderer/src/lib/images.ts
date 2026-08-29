@@ -231,13 +231,16 @@ function expandWikiTargets(markdown: string, notePath: string, images: CampaignI
   })
 }
 
+import { stripAuthorComments } from '../../../shared/callouts'
+
 export function prepareNoteMarkdown(
   markdown: string,
   notePath: string,
   images: CampaignImage[],
   options?: { injectPortrait?: boolean }
 ): string {
-  let text = expandHtmlImages(markdown, notePath, images)
+  let text = stripAuthorComments(markdown)
+  text = expandHtmlImages(text, notePath, images)
   text = expandWikiTargets(text, notePath, images)
 
   if (options?.injectPortrait === false) return text

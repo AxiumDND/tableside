@@ -1,20 +1,21 @@
 # *Nessa Pike*
 
-> [!infobox]+
-> ![[Nessa Pike.webp]]
->
-> ### *Halfling with light feet · already in the room*
->
-> | | |
-> |---|---|
-> | **Player** | Pregen |
-> | **Species** | Halfling (Small) |
-> | **Class** | Rogue 1 |
-> | **Background** | Criminal |
-> | **Alignment** | Chaotic Good |
-> | **Role** | Scout / sneak |
-> | **AC** | 14 (Leather) |
-> | **HP** | 9 |
+[!pc]
+![[Nessa Pike.webp]]
+
+### *Halfling with light feet · already in the room*
+
+| | |
+|---|---|
+| **Player** | Pregen |
+| **Species** | Halfling (Small) |
+| **Class** | Rogue 1 |
+| **Background** | Criminal |
+| **Alignment** | Chaotic Good |
+| **Role** | Scout / sneak |
+| **AC** | 14 (Leather) |
+| **HP** | 9 |
+[!/pc]
 
 ```statblock
 layout: Basic 5e Layout
@@ -57,8 +58,9 @@ actions:
 - **Skills** — Stealth (expertise)
 - **Signature tricks** — Scout A and B; sneak the first lookout
 
-> [!gmonly]
-> She finds the trip-line if anyone can. Let her be right.
+[!gmonly]
+She finds the trip-line if anyone can. Let her be right.
+[!/gmonly]
 
 ## Look & voice
 

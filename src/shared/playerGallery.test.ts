@@ -31,9 +31,7 @@ describe('gallery callout rewrite', () => {
         intervalSec: 8,
         imageRefs: ['Marta.webp', 'Alden.webp']
       })
-    ).toBe(
-      ['> [!gallery] Faces', '> interval: 8s', '> ![[Marta.webp]]', '> ![[Alden.webp]]'].join('\n')
-    )
+    ).toBe(['[!gallery] Faces', 'interval: 8s', '![[Marta.webp]]', '![[Alden.webp]]', '[!/gallery]'].join('\n'))
   })
 
   it('replaces the first gallery block', () => {
@@ -43,9 +41,10 @@ describe('gallery callout rewrite', () => {
       intervalSec: null,
       imageRefs: ['B.png', 'C.png']
     })
-    expect(next).toContain('> [!gallery] New')
-    expect(next).toContain('> ![[B.png]]')
+    expect(next).toContain('[!gallery] New')
+    expect(next).toContain('![[B.png]]')
+    expect(next).toContain('[!/gallery]')
     expect(next).toContain('## Next')
-    expect(next).not.toContain('> [!gallery] Old')
+    expect(next).not.toContain('[!gallery] Old')
   })
 })

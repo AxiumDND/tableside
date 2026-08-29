@@ -1,17 +1,20 @@
 /** Perspective title crawl — original user text only. No licensed copy or fonts. User may attach their own crawl music. */
 
+import { replaceNthCallout, serializeFencedCallout } from './callouts'
+
 /** Sample body written into new Sci-fi game night sheets. Rewrite it for the table. */
-export const NIGHTSHEET_CRAWL_SAMPLE = `> [!crawl] The Siege of Kestrel
-> preface: In an age before memory, beyond the rim of charted stars.
-> It is a time of unrest. Relay stations along the outer belt have gone dark, and no courier has returned from the ice docks in a month.
->
-> A single packet-ship breaks the silence. It carries a last warning, sealed under a dead captain’s mark, and a chart that names Kestrel as the next world to fall.
->
-> On the home docks, house banners still fly. Grain ships wait in queue. The watch argues over whose fleet will sail, while the yards burn through the last of the ready hulls.
->
-> In the deep, the siege engines are already moving. If Kestrel’s orbital ring is taken, the inner worlds will have no shield and no time.
->
-> A handful of crews still answer the call. They have one night to steal the packet, learn who sold the belt, and reach the ring before the dark closes.`
+export const NIGHTSHEET_CRAWL_SAMPLE = `[!crawl] The Siege of Kestrel
+preface: In an age before memory, beyond the rim of charted stars.
+It is a time of unrest. Relay stations along the outer belt have gone dark, and no courier has returned from the ice docks in a month.
+
+A single packet-ship breaks the silence. It carries a last warning, sealed under a dead captain’s mark, and a chart that names Kestrel as the next world to fall.
+
+On the home docks, house banners still fly. Grain ships wait in queue. The watch argues over whose fleet will sail, while the yards burn through the last of the ready hulls.
+
+In the deep, the siege engines are already moving. If Kestrel’s orbital ring is taken, the inner worlds will have no shield and no time.
+
+A handful of crews still answer the call. They have one night to steal the packet, learn who sold the belt, and reach the ring before the dark closes.
+[!/crawl]`
 
 /** Original far-off line. Do not ship licensed crawl copy. */
 export const CRAWL_PREFACE_DEFAULT = 'In an age before memory,\nbeyond the rim of charted stars.'
@@ -139,53 +142,31 @@ export interface CrawlCalloutFields {
 
 export function serializeCrawlCallout(fields: CrawlCalloutFields): string {
   const title = fields.title?.trim()
-  const lines = [`> [!crawl]${title ? ` ${title}` : ''}`]
-  if (fields.preface == null) lines.push('> preface: none')
-  else lines.push(`> preface: ${fields.preface.replace(/\r/g, '').replace(/\n+/g, ' ').trim()}`)
+  const body: string[] = []
+  if (fields.preface == null) body.push('preface: none')
+  else body.push(`preface: ${fields.preface.replace(/\r/g, '').replace(/\n+/g, ' ').trim()}`)
   if (fields.musicRef?.trim()) {
-    lines.push(`> music: ${fields.musicRef.trim().replace(/^\[\[|\]\]$/g, '')}`)
+    body.push(`music: ${fields.musicRef.trim().replace(/^\[\[|\]\]$/g, '')}`)
   }
   if (fields.logoRef?.trim()) {
     const ref = fields.logoRef.trim().replace(/^!\[\[|\]\]$/g, '')
-    lines.push(`> ![[${ref}]]`)
+    body.push(`![[${ref}]]`)
   }
   if (fields.endImageRef?.trim()) {
     const ref = fields.endImageRef.trim().replace(/^!\[\[|\]\]$/g, '')
-    lines.push(`> end: ![[${ref}]]`)
+    body.push(`end: ![[${ref}]]`)
   }
-  const body = fields.body.replace(/\r/g, '').trim()
-  if (body) {
-    lines.push('>')
-    for (const line of body.split('\n')) {
-      lines.push(line.trim() === '' ? '>' : `> ${line}`)
-    }
+  const text = fields.body.replace(/\r/g, '').trim()
+  if (text) {
+    body.push('')
+    body.push(...text.split('\n'))
   }
-  return lines.join('\n')
+  return serializeFencedCallout('crawl', title, body)
 }
-
-const CRAWL_START = /^>\s*\[!(?:crawl|opening)\][+-]?\s*(.*)$/i
 
 /** Replace the nth crawl/opening callout in a note. */
 export function replaceNthCrawlCallout(source: string, index: number, fields: CrawlCalloutFields): string {
-  const lines = source.replace(/\r/g, '').split('\n')
-  let i = 0
-  let seen = 0
-  while (i < lines.length) {
-    if (!CRAWL_START.test(lines[i] ?? '')) {
-      i += 1
-      continue
-    }
-    const from = i
-    i += 1
-    while (i < lines.length && /^>/.test(lines[i] ?? '')) i += 1
-    if (seen === index) {
-      const next = serializeCrawlCallout(fields).split('\n')
-      const out = [...lines.slice(0, from), ...next, ...lines.slice(i)].join('\n')
-      return source.endsWith('\n') && !out.endsWith('\n') ? `${out}\n` : out
-    }
-    seen += 1
-  }
-  return source
+  return replaceNthCallout(source, ['crawl', 'opening'], index, serializeCrawlCallout(fields))
 }
 
 /** Scroll time synced to crawl music (1:32 from audio start), then the picture fades to black. */

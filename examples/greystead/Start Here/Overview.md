@@ -37,5 +37,6 @@ Open **[[Session 1 — Game Night Sheet]]** to run the night. **[[Session 1]]** 
 - [[Scrap — Millhollow Is Wet]] — false camp
 - [[Hymn — The Nine Mouths]] — on Vesper
 
-> [!gmonly]
-> Founding-blood. The Crowe line. Nine mouths; tonight was meant to be three. If the bowl is smashed or the chant finishes, Greystead is marked. The papers point to **Millhollow** and a Warden on the valley road. See **[[Session 1 — Game Night Sheet]]** endings and [[Handouts]].
+[!gmonly]
+Founding-blood. The Crowe line. Nine mouths; tonight was meant to be three. If the bowl is smashed or the chant finishes, Greystead is marked. The papers point to **Millhollow** and a Warden on the valley road. See **[[Session 1 — Game Night Sheet]]** endings and [[Handouts]].
+[!/gmonly]

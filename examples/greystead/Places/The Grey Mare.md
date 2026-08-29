@@ -1,22 +1,24 @@
 # The Grey Mare
 
-> [!infobox]+
-> ![[The Grey Mare.webp]]
->
-> ### *Warm ale, a common room, and a fire that never quite dies.*
->
-> | | |
-> |---|---|
-> | **Type** | Tavern |
-> | **Place** | [[Greystead]] |
-> | **Proprietor** | [[Marta Fenn]] |
-> | **Hours** | Dawn to last call |
-> | **Attitude** | Helpful |
-> | **Standing** | Neutral |
-> | **Map** | |
+[!shop]
+![[The Grey Mare.webp]]
 
-> [!readaloud]
-> Smoke, wet wool, and stew. Marta already has bowls down. The mayor’s purse is on the corner table.
+### *Warm ale, a common room, and a fire that never quite dies.*
+
+| | |
+|---|---|
+| **Type** | Tavern |
+| **Place** | [[Greystead]] |
+| **Proprietor** | [[Marta Fenn]] |
+| **Hours** | Dawn to last call |
+| **Attitude** | Helpful |
+| **Standing** | Neutral |
+| **Map** | |
+[!/shop]
+
+[!readaloud]
+Smoke, wet wool, and stew. Marta already has bowls down. The mayor’s purse is on the corner table.
+[!/readaloud]
 
 ## Stock
 
@@ -39,5 +41,6 @@
 - A message left for someone who drinks here
 - Wake them at dawn
 
-> [!gmonly]
-> Lira left angry after last call. Grey-cloak, clipped silver. Old Tam by the fire. This is the hire scene.
+[!gmonly]
+Lira left angry after last call. Grey-cloak, clipped silver. Old Tam by the fire. This is the hire scene.
+[!/gmonly]

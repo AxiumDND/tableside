@@ -1,15 +1,15 @@
 # *Hobb*
 
-> [!infobox]+
->
-> ### *Watch sergeant · one man and a spear*
->
-> | | |
-> |---|---|
-> | **Role** | Obstacle / help |
-> | **Location** | [[Greystead]] |
-> | **Status** | Alive |
-> | **CR** | 1/8 |
+[!npc]
+### *Watch sergeant · one man and a spear*
+
+| | |
+|---|---|
+| **Role** | Obstacle / help |
+| **Location** | [[Greystead]] |
+| **Status** | Alive |
+| **CR** | 1/8 |
+[!/npc]
 
 ```statblock
 layout: Basic 5e Layout
@@ -32,5 +32,6 @@ actions:
 
 *He believes the bandit story because it is easier. He will walk them to the palisade gate. He will not enter the cave.*
 
-> [!gmonly]
-> Guard stats. Useful if someone wants a town fight — they should not.
+[!gmonly]
+Guard stats. Useful if someone wants a town fight — they should not.
+[!/gmonly]

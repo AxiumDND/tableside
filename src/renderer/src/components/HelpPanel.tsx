@@ -328,10 +328,17 @@ export default function HelpPanel({
             PDFs open here for you only — they are not sent to the player screen. Export or screenshot maps you want
             them to see, or keep images under <Code>Maps/Art/</Code>.
           </p>
+          <Sub>Blocks</Sub>
+          <p>
+            Special blocks use fences: <Code>[!scene] Title</Code> … <Code>[!/scene]</Code> (or <Code>[!end]</Code> for
+            the innermost open block). Nest freely — blank lines are fine. Old quote-style <Code>{'> [!scene]'}</Code>{' '}
+            notes still open. Whole-line <Code>//</Code> comments and <Code>{'<!-- … -->'}</Code> stay in the editor
+            only; they never show in the reader.
+          </p>
           <Sub>Opening crawl (Sci-fi)</Sub>
           <p>
-            Put <Code>{'> [!crawl] Title'}</Code> (or <Code>opening</Code>) in any note, then write the prologue under
-            it. Edit the title, far-off line, emblem, crawl music, and crawl on the card. Optional <Code>preface:</Code> in the note
+            Put <Code>[!crawl] Title</Code> … <Code>[!/crawl]</Code> (or <Code>opening</Code>) in any note, then write the
+            prologue inside. Edit the title, far-off line, emblem, crawl music, and crawl on the card. Optional <Code>preface:</Code> in the note
             also works (<Code>none</Code> skips it). <Code>![[your-mark.png]]</Code> replaces the generic emblem. Optional{' '}
             <Code>end: ![[planet.png]]</Code> (or <Action>End image</Action> on the card) fades in when the crawl finishes.
             Optional{' '}
@@ -344,23 +351,24 @@ export default function HelpPanel({
           </p>
           <Sub>Opening legend (Classic, Light, Vampire)</Sub>
           <p>
-            Put <Code>{'> [!legend] Title'}</Code> (or <Code>tale</Code> / <Code>chronicle</Code>) in any note for a
-            campfire chronicle on the player screen — embers, a glowing seal, then the tale rising like a tapestry. Same
-            fields as the crawl card: <Code>preface:</Code>, herald sigil, <Code>music:</Code>, optional <Code>end:</Code>{' '}
-            still, and body text. <Action>Play</Action> is on when the campaign look is Classic, Light, or Vampire. Mood
+            Put <Code>[!legend] Title</Code> … <Code>[!/legend]</Code> (or <Code>tale</Code> / <Code>chronicle</Code>)
+            in any note for a campfire chronicle on the player screen — embers, a glowing seal, then the tale rising like a
+            tapestry. Same fields as the crawl card: <Code>preface:</Code>, herald sigil, <Code>music:</Code>, optional{' '}
+            <Code>end:</Code> still, and body text. <Action>Play</Action> is on when the campaign look is Classic, Light, or Vampire. Mood
             and music timing match the Sci-fi crawl (1:32 sync). <Action>Stop</Action> fades to black and resumes mood.
           </p>
           <Sub>Gallery</Sub>
           <p>
-            Put <Code>{'> [!gallery] Title'}</Code> (or <Code>slides</Code> / <Code>sequence</Code>) with image embeds
-            underneath. <Action>Play</Action> shows them on the player screen; <Action>Prev</Action> / <Action>Next</Action>{' '}
-            advance manually. Optional <Code>interval: 8s</Code> auto-advances. Works on every campaign look.
+            Put <Code>[!gallery] Title</Code> … <Code>[!/gallery]</Code> (or <Code>slides</Code> / <Code>sequence</Code>)
+            with image embeds inside. <Action>Play</Action> shows them on the player screen; <Action>Prev</Action> /{' '}
+            <Action>Next</Action> advance manually. Optional <Code>interval: 8s</Code> auto-advances. Works on every
+            campaign look.
           </p>
           <Sub>Video</Sub>
           <p>
-            Put <Code>{'> [!video] Title'}</Code> (or <Code>clip</Code> / <Code>film</Code>) with a local{' '}
-            <Code>![[clip.mp4]]</Code> (mp4 / webm / mov). <Action>Play</Action> sends it to the player screen. Optional{' '}
-            <Code>mute: true</Code> keeps mood music; otherwise mood fades while the clip has sound.
+            Put <Code>[!video] Title</Code> … <Code>[!/video]</Code> (or <Code>clip</Code> / <Code>film</Code>) with a
+            local <Code>![[clip.mp4]]</Code> (mp4 / webm / mov). <Action>Play</Action> sends it to the player screen.
+            Optional <Code>mute: true</Code> keeps mood music; otherwise mood fades while the clip has sound.
           </p>
         </Section>
 
@@ -472,14 +480,22 @@ export default function HelpPanel({
               </>,
               <>
                 <Code>[[Note Name]]</Code> opens another note. Images in the note stay clickable for Show to players.{' '}
-                <Code>{'> [!crawl]'}</Code> is an Opening crawl card.
+                <Code>[!crawl]…[!/crawl]</Code> is an Opening crawl card.
               </>,
               <>
-                <Code>{'> [!legend]'}</Code> is an Opening legend card (Classic, Light, Vampire).
+                <Code>[!legend]…[!/legend]</Code> is an Opening legend card (Classic, Light, Vampire).
               </>,
               <>
-                <Code>{'> [!gallery]'}</Code> is an image sequence on the player screen;{' '}
-                <Code>{'> [!video]'}</Code> plays a local clip.
+                <Code>[!gallery]…[!/gallery]</Code> is an image sequence on the player screen;{' '}
+                <Code>[!video]…[!/video]</Code> plays a local clip.
+              </>,
+              <>
+                <Code>[!pc]</Code> / <Code>[!npc]</Code> / <Code>[!monster]</Code> (and place, shop, faction, gear,
+                spell) are sheet headers — portrait and facts for the sheet view. Close with <Code>[!/pc]</Code> etc.
+              </>,
+              <>
+                <Code>[!scene]…[!/scene]</Code> wraps a beat (nested read-aloud / GM-only allowed). <Code>//</Code> line
+                comments are editor-only.
               </>,
               <>
                 Party / NPC / Bestiary sheets with a <Code>statblock</Code> fence open in sheet view: portrait and
@@ -512,7 +528,7 @@ export default function HelpPanel({
                 In a session or game night sheet, use a heading that includes <Code>Combat</Code>, <Code>Encounter</Code>
                 , or ⚔️. Skip headings that say <Code>no combat</Code>. Right-click Sessions for{' '}
                 <Action>New game night sheet…</Action> — Party links and scene blocks with optional read-aloud, GM-only notes, secrets, treasure, NPCs, combat, and table cues (place, map, checks, music, sound).
-                Copy a <Code>[!scene]</Code> block to add another beat.
+                Copy a <Code>[!scene]…[!/scene]</Code> block to add another beat.
               </>,
               <>
                 Add a line like <Code>**Combatants:** [[Vesper]] · [[Cultist]] ×3 · party</Code>

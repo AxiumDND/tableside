@@ -11,5 +11,6 @@ Click the picture, then **Show to players**. Full text is on each note if the ta
 
 Do not explain the Warden. Do not name the other two towns unless they ask. The next night is **Millhollow** if they follow the paper.
 
-> [!gmonly]
-> If they miss a search, [[Ril]] found the hymn in the straw, or [[Brother Pell]] found a scrap of it on the shrine after the salt was scraped. Kell’s note must reach them if they fight the lookouts — put it in his coat.
+[!gmonly]
+If they miss a search, [[Ril]] found the hymn in the straw, or [[Brother Pell]] found a scrap of it on the shrine after the salt was scraped. Kell’s note must reach them if they fight the lookouts — put it in his coat.
+[!/gmonly]

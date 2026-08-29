@@ -1,15 +1,15 @@
 # *Joss*
 
-> [!infobox]+
->
-> ### *Local tough · paid to stay home*
->
-> | | |
-> |---|---|
-> | **Role** | Red herring |
-> | **Location** | [[Greystead]] |
-> | **Status** | Alive |
-> | **CR** | 1/8 |
+[!npc]
+### *Local tough · paid to stay home*
+
+| | |
+|---|---|
+| **Role** | Red herring |
+| **Location** | [[Greystead]] |
+| **Status** | Alive |
+| **CR** | 1/8 |
+[!/npc]
 
 ```statblock
 layout: Basic 5e Layout
@@ -32,5 +32,6 @@ actions:
 
 *Robbed a tinker last month with [[Pellick]]. Did not take Lira. Took 8 sp from a grey-cloak to stay off the ridge.*
 
-> [!gmonly]
-> Bandit stats. Folds if intimidated or paid. Points at the ridge if they let him live. The 8 sp is **clipped**, each stamped with a shallow bowl. Same coin as [[Note — Kell's Orders]].
+[!gmonly]
+Bandit stats. Folds if intimidated or paid. Points at the ridge if they let him live. The 8 sp is **clipped**, each stamped with a shallow bowl. Same coin as [[Note — Kell's Orders]].
+[!/gmonly]

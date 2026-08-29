@@ -2,8 +2,9 @@
 
 *Prose and reference. Run tonight from **[[Session 1 — Game Night Sheet]]**. Click a picture, then **Show to players**. Map: [[Pale Well Caves]]. Papers: [[Handouts]].*
 
-> [!abstract] Tonight
-> Hire in [[The Grey Mare]] → any **two** clues in [[Greystead]] → [[The Ridge Road]] → [[Pale Well Caves]] → **stop the rite or break it**. Next hook is Millhollow, not a sermon.
+[!abstract] Tonight
+Hire in [[The Grey Mare]] → any **two** clues in [[Greystead]] → [[The Ridge Road]] → [[Pale Well Caves]] → **stop the rite or break it**. Next hook is Millhollow, not a sermon.
+[!/abstract]
 
 **Show order:** ![[The Grey Mare.webp]] → ![[Alden Crowe.webp]] → ![[Lira Crowe.webp]] → ![[Letter — Come After Last Call.png]] → ![[The Ridge Road.webp]] → ![[Note — Kell's Orders.png]] → ![[Pale Well Caves.webp]] → ![[Scrap — Millhollow Is Wet.png]] → ![[Vesper.webp]] → ![[Hymn — The Nine Mouths.png]]
 

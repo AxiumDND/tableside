@@ -1,20 +1,21 @@
 # *Bren Oak*
 
-> [!infobox]+
-> ![[Bren Oak.webp]]
->
-> ### *The hired sword · stands in the door*
->
-> | | |
-> |---|---|
-> | **Player** | Pregen |
-> | **Species** | Human (Medium) |
-> | **Class** | Fighter 1 |
-> | **Background** | Soldier |
-> | **Alignment** | Neutral Good |
-> | **Role** | Front line |
-> | **AC** | 16 (Chain Mail) |
-> | **HP** | 12 |
+[!pc]
+![[Bren Oak.webp]]
+
+### *The hired sword · stands in the door*
+
+| | |
+|---|---|
+| **Player** | Pregen |
+| **Species** | Human (Medium) |
+| **Class** | Fighter 1 |
+| **Background** | Soldier |
+| **Alignment** | Neutral Good |
+| **Role** | Front line |
+| **AC** | 16 (Chain Mail) |
+| **HP** | 12 |
+[!/pc]
 
 ```statblock
 layout: Basic 5e Layout
@@ -56,8 +57,9 @@ actions:
 - **Skills** — Athletics, Perception
 - **Signature tricks** — Second Wind; stands in doorways
 
-> [!gmonly]
-> Give him the first lookout to drop. If Lira is in danger, he will cover her without being asked.
+[!gmonly]
+Give him the first lookout to drop. If Lira is in danger, he will cover her without being asked.
+[!/gmonly]
 
 ## Look & voice
 

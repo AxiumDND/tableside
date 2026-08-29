@@ -1,5 +1,7 @@
 /** Video clip callout — local campaign video on the player screen. */
 
+import { replaceNthCallout, serializeFencedCallout } from './callouts'
+
 const MUTE_LINE = /^(?:mute|muted|silent)\s*:\s*(.*)$/i
 const VIDEO_LINE = /^(?:video|clip|file)\s*:\s*(.*)$/i
 
@@ -72,41 +74,21 @@ export interface VideoCalloutFields {
 
 export function serializeVideoCallout(fields: VideoCalloutFields): string {
   const title = fields.title?.trim()
-  const lines = [`> [!video]${title ? ` ${title}` : ''}`]
-  if (fields.muted) lines.push('> mute: true')
+  const body: string[] = []
+  if (fields.muted) body.push('mute: true')
   if (fields.videoRef?.trim()) {
     const ref = fields.videoRef.trim().replace(/^!\[\[|\]\]$/g, '')
-    lines.push(`> ![[${ref}]]`)
+    body.push(`![[${ref}]]`)
   }
-  return lines.join('\n')
+  return serializeFencedCallout('video', title, body)
 }
-
-const VIDEO_START = /^>\s*\[!(?:video|clip|film)\][+-]?\s*(.*)$/i
 
 export function replaceNthVideoCallout(
   source: string,
   index: number,
   fields: VideoCalloutFields
 ): string {
-  const lines = source.replace(/\r/g, '').split('\n')
-  let i = 0
-  let seen = 0
-  while (i < lines.length) {
-    if (!VIDEO_START.test(lines[i] ?? '')) {
-      i += 1
-      continue
-    }
-    const from = i
-    i += 1
-    while (i < lines.length && /^>/.test(lines[i] ?? '')) i += 1
-    if (seen === index) {
-      const next = serializeVideoCallout(fields).split('\n')
-      const out = [...lines.slice(0, from), ...next, ...lines.slice(i)].join('\n')
-      return source.endsWith('\n') && !out.endsWith('\n') ? `${out}\n` : out
-    }
-    seen += 1
-  }
-  return source
+  return replaceNthCallout(source, ['video', 'clip', 'film'], index, serializeVideoCallout(fields))
 }
 
 export function parseVideoFields(title: string | undefined, markdown: string): VideoCalloutFields {

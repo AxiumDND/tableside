@@ -46,14 +46,16 @@ describe('creature sheet templates', () => {
 })
 
 describe('item sheet templates', () => {
-  it('puts gear and spell stats in an infobox table', () => {
+  it('puts gear and spell stats in a typed sheet header table', () => {
     const gear = fillTemplate(FALLBACK_TEMPLATES.gear, 'gear', 'Acid')
-    expect(gear).toContain('[!infobox]')
+    expect(gear).toContain('[!gear]')
+    expect(gear).toContain('[!/gear]')
     expect(gear).toContain('![[Acid.png]]')
     expect(gear).toContain('| **Weight** |')
     expect(gear).toContain('| **Cost** |')
     const spell = fillTemplate(FALLBACK_TEMPLATES.spell, 'spell', 'Fireball')
-    expect(spell).toContain('[!infobox]')
+    expect(spell).toContain('[!spell]')
+    expect(spell).toContain('[!/spell]')
     expect(spell).toContain('| **Casting Time** |')
     expect(spell).toContain('| **Range** |')
   })
