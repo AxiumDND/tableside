@@ -110,7 +110,7 @@ describe('legend callout rewrite', () => {
 
 describe('legend timing', () => {
   it('holds mist briefly then scrolls the body for the full sync window', () => {
-    expect(LEGEND_HOLD_MS).toBe(1200)
+    expect(LEGEND_HOLD_MS).toBe(2000)
     expect(legendMusicStartDelayMs()).toBe(LEGEND_HOLD_MS - CRAWL_MUSIC_LEAD_MS)
     expect(legendMusicStartDelayMs(null)).toBe(LEGEND_HOLD_MS - CRAWL_MUSIC_LEAD_MS)
     expect(LEGEND_SYNC_MS).toBe(92_000)

@@ -1026,7 +1026,7 @@ body,
 
 @keyframes opening-legend-rise {
   from {
-    transform: translateY(72%);
+    transform: translateY(32%);
   }
   to {
     transform: translateY(-95%);

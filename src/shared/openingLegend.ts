@@ -104,8 +104,8 @@ export function legendPlainText(markdown: string): string {
     .trim()
 }
 
-/** Brief mist hold before the scroll rises. */
-export const LEGEND_HOLD_MS = 1200
+/** Mist hold before the scroll rises (~2s). */
+export const LEGEND_HOLD_MS = 2000
 /** @deprecated Opening line no longer plays; kept for older imports. */
 export const LEGEND_PREFACE_MS = 0
 /** @deprecated Herald / sigil no longer plays; kept for older imports. */
