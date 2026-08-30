@@ -7,7 +7,6 @@ Hire in [[The Grey Mare]] → any **two** clues in [[Greystead]] → [[The Ridge
 [!/abstract]
 
 [!legend] The Pale Well
-preface: In the year the ridge road failed, when Greystead still trusted its walls.
 It is a quiet season in the uplands. Grain waits at the mill. The watch argues over bandits on the ridge.
 
 A girl named Lira vanishes on the night the well runs cold. The mayor's purse is already on the table, and the town swears it was thieves.

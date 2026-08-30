@@ -151,16 +151,34 @@ function applyWindowSecurity(contents: Electron.WebContents): void {
   })
 }
 
+/** Prefer the open campaign folder so pickers reopen where the DM already is. */
+function campaignDialogDefaultPath(): string | undefined {
+  const candidates = [
+    campaignFolder,
+    getSettings().campaignFolder,
+    getSettings().recentCampaigns?.[0]?.folder
+  ]
+  for (const folder of candidates) {
+    if (folder && existsSync(folder)) return folder
+  }
+  return undefined
+}
+
 /**
  * Open a native file dialog parented to the DM window when it is alive, falling
  * back to a window-less dialog otherwise. Keeps the call sites type-safe (the
  * parented overload requires a real BrowserWindow, not `undefined`).
+ * When `defaultPath` is omitted, starts in the current campaign folder.
  */
 function showAppOpenDialog(
   options: Electron.OpenDialogOptions
 ): Promise<Electron.OpenDialogReturnValue> {
   const parent = dmWindow && !dmWindow.isDestroyed() ? dmWindow : null
-  return parent ? dialog.showOpenDialog(parent, options) : dialog.showOpenDialog(options)
+  const withDefault: Electron.OpenDialogOptions = {
+    ...options,
+    defaultPath: options.defaultPath ?? campaignDialogDefaultPath()
+  }
+  return parent ? dialog.showOpenDialog(parent, withDefault) : dialog.showOpenDialog(withDefault)
 }
 
 function scheduleBoundsSave(): void {

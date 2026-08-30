@@ -11,7 +11,6 @@ import {
 
 /** Sample body written into new Classic / Light / Vampire game night sheets. */
 export const NIGHTSHEET_LEGEND_SAMPLE = `[!legend] The Pale Well
-preface: In the year the ridge road failed, when Greystead still trusted its walls.
 It is a quiet season in the uplands. Grain waits at the mill. The watch argues over bandits on the ridge.
 
 A girl named Lira vanishes on the night the well runs cold. The mayor's purse is already on the table, and the town swears it was thieves.
@@ -21,6 +20,7 @@ In the caves beneath the pale stone, something older keeps its count. If the rit
 A handful of travelers still answer the call. They have one night to learn what the well wants, and reach the caves before the dark closes.
 [!/legend]`
 
+/** Kept for older notes / crawl-style fields; the player chronicle no longer shows an opening line. */
 export const LEGEND_PREFACE_DEFAULT =
   'In the reign of forgotten kings,\nwhen the roads still led to wonder.'
 
@@ -54,7 +54,7 @@ export function legendPreface(markdown: string): string | null {
     .split('\n')
     .map((line) => PREFACE_LINE.exec(line.trim()))
     .find((item): item is RegExpExecArray => Boolean(item))
-  if (!match) return LEGEND_PREFACE_DEFAULT
+  if (!match) return null
   const value = (match[1] ?? '').trim()
   if (!value || /^(none|-|off|skip)$/i.test(value)) return null
   return value.replace(/\\n/g, '\n')
@@ -104,20 +104,19 @@ export function legendPlainText(markdown: string): string {
     .trim()
 }
 
-export const LEGEND_HOLD_MS = 1500
-/** Opening line on parchment before the herald. */
-export const LEGEND_PREFACE_MS = 6000
-/** Sigil / herald frame before the body. */
-export const LEGEND_HERALD_MS = 2500
+/** Brief mist hold before the scroll rises. */
+export const LEGEND_HOLD_MS = 1200
+/** @deprecated Opening line no longer plays; kept for older imports. */
+export const LEGEND_PREFACE_MS = 0
+/** @deprecated Herald / sigil no longer plays; kept for older imports. */
+export const LEGEND_HERALD_MS = 0
 
-export function legendMusicStartDelayMs(preface: string | null | undefined): number {
-  const line = preface === undefined ? LEGEND_PREFACE_DEFAULT : preface
-  const prefaceMs = line ? LEGEND_PREFACE_MS : 0
-  return Math.max(0, LEGEND_HOLD_MS + prefaceMs - CRAWL_MUSIC_LEAD_MS)
+export function legendMusicStartDelayMs(_preface?: string | null): number {
+  return Math.max(0, LEGEND_HOLD_MS - CRAWL_MUSIC_LEAD_MS)
 }
 
 export function legendBodyDurationMs(): number {
-  return Math.max(0, CRAWL_SYNC_MS - CRAWL_MUSIC_LEAD_MS - LEGEND_HERALD_MS)
+  return Math.max(0, CRAWL_SYNC_MS - CRAWL_MUSIC_LEAD_MS)
 }
 
 export function legendDurationMs(_title?: string | undefined, _body?: string): number {
@@ -136,8 +135,9 @@ export interface LegendCalloutFields {
 export function serializeLegendCallout(fields: LegendCalloutFields): string {
   const title = fields.title?.trim()
   const body: string[] = []
-  if (fields.preface == null) body.push('preface: none')
-  else body.push(`preface: ${fields.preface.replace(/\r/g, '').replace(/\n+/g, ' ').trim()}`)
+  if (fields.preface?.trim()) {
+    body.push(`preface: ${fields.preface.replace(/\r/g, '').replace(/\n+/g, ' ').trim()}`)
+  }
   if (fields.musicRef?.trim()) {
     body.push(`music: ${fields.musicRef.trim().replace(/^\[\[|\]\]$/g, '')}`)
   }

@@ -352,10 +352,10 @@ export default function HelpPanel({
           <Sub>Opening legend (Classic, Light, Vampire)</Sub>
           <p>
             Put <Code>[!legend] Title</Code> … <Code>[!/legend]</Code> (or <Code>tale</Code> / <Code>chronicle</Code>)
-            in any note for a campfire chronicle on the player screen — embers, a glowing seal, then the tale rising like a
-            tapestry. Same fields as the crawl card: <Code>preface:</Code>, herald sigil, <Code>music:</Code>, optional{' '}
-            <Code>end:</Code> still, and body text. <Action>Play</Action> is on when the campaign look is Classic, Light, or Vampire. Mood
-            and music timing match the Sci-fi crawl (1:32 sync). <Action>Stop</Action> fades to black and resumes mood.
+            in any note for a campfire chronicle on the player screen — cold mist and smoke, then the tale scrolling up.
+            Edit title (DM label), body, optional <Code>music:</Code>, and optional <Code>end:</Code> still on the card.
+            No herald or opening line. <Action>Play</Action> is on when the campaign look is Classic, Light, or Vampire.
+            Mood and music timing match the Sci-fi crawl (1:32 sync). <Action>Stop</Action> fades to black and resumes mood.
           </p>
           <Sub>Gallery</Sub>
           <p>
