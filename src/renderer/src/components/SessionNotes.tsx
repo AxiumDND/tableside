@@ -335,6 +335,10 @@ export default function SessionNotes({
     return () => {
       alive = false
     }
+    // Reload + reset editing state only when the open note (path/kind) changes.
+    // The reset helpers are recreated each render; listing them would reload the
+    // note on every render and make editing impossible.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path, kind])
 
   const sequenceCards = useOpeningSequenceCards({

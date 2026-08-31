@@ -171,7 +171,7 @@ export default function DmApp() {
         restoreOpen(remembered, node ? fileKind(node) : 'note')
       }
     }
-  }, [openPath, restoreOpen])
+  }, [openPath, restoreOpen, setPlayer])
 
   useEffect(() => {
     if (digitalRainEnabled(theme, campaign?.digitalRain)) {
@@ -200,7 +200,7 @@ export default function DmApp() {
       stopUpdate()
       stopDisplays()
     }
-  }, [refresh])
+  }, [refresh, setPlayer])
 
   function applyConsoleTheme(next: ThemeId): void {
     setTheme(next)

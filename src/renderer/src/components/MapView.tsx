@@ -183,6 +183,9 @@ export default function MapView({
     setSelectedTokenId(null)
     setPinAction('view')
     setScaleDraft(null)
+    // Re-seed fog and reset the view only when the open map (path/image) changes.
+    // Including data.fog / data.fogSize here would wipe fog mid-paint on every edit.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path, data?.image])
 
   useEffect(() => {

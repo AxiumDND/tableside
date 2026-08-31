@@ -68,13 +68,15 @@ export default function PlayerView({
     })
   }, [incoming, state.mapView])
 
+  const lastLayerId = layers.at(-1)?.id
+  const layerCount = layers.length
   useEffect(() => {
-    if (layers.length <= 1) return
+    if (layerCount <= 1) return
     const t = window.setTimeout(() => {
       setLayers((prev) => prev.slice(-1))
     }, FADE_MS)
     return () => clearTimeout(t)
-  }, [layers.at(-1)?.id])
+  }, [lastLayerId, layerCount])
 
   useEffect(() => {
     const next = state.handout
