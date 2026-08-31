@@ -9,19 +9,7 @@ import {
   zoomCameraAt,
   type MapCamera
 } from '../lib/mapCamera'
-import {
-  BRUSH_DEFAULT,
-  BRUSH_MAX,
-  BRUSH_MIN,
-  DEFAULT_FOG_SIZE,
-  brushRadius,
-  createFog,
-  decodeFog,
-  encodeFog,
-  fogAllClear,
-  fogSizeOf,
-  paintFogDisk
-} from '../lib/mapFog'
+import { useMapFog } from '../hooks/useMapFog'
 import {
   TOKEN_SCALE_DEFAULT,
   clampTokenScale,
@@ -94,25 +82,18 @@ export default function MapView({
   const [label, setLabel] = useState('')
   const [heading, setHeading] = useState('')
   const [newHeading, setNewHeading] = useState('')
-  const [fogTick, setFogTick] = useState(0)
-  const [brushSize, setBrushSize] = useState(BRUSH_DEFAULT)
-  const [brushPos, setBrushPos] = useState<{ x: number; y: number } | null>(null)
   const [dragPos, setDragPos] = useState<{ id: string; x: number; y: number } | null>(null)
   const [pendingToken, setPendingToken] = useState<TokenPick | null>(null)
   const [pickerTab, setPickerTab] = useState<PickerTab>('pc')
   const [tokenQuery, setTokenQuery] = useState('')
   const [spaceBySource, setSpaceBySource] = useState<Record<string, CreatureSpace>>({})
   const [scaleDraft, setScaleDraft] = useState<number | null>(null)
-  const fogRef = useRef<Uint8Array>(createFog(data?.fogSize || DEFAULT_FOG_SIZE, 0))
   const cameraRef = useRef(camera)
   const toolRef = useRef(tool)
-  const brushSizeRef = useRef(brushSize)
   const panRef = useRef<{ x: number; y: number } | null>(null)
-  const paintRef = useRef<0 | 1 | null>(null)
   const pinDrag = useRef<{ id: string; moved: boolean } | null>(null)
   const tokenDrag = useRef<{ id: string; moved: boolean } | null>(null)
   const dragPosRef = useRef<{ id: string; x: number; y: number } | null>(null)
-  const fogSaveTimer = useRef<number | null>(null)
   const liveTimer = useRef<number | null>(null)
   const onLiveViewRef = useRef(onLiveView)
   const onChangeRef = useRef(onChange)
@@ -127,7 +108,6 @@ export default function MapView({
 
   cameraRef.current = camera
   toolRef.current = tool
-  brushSizeRef.current = brushSize
   onLiveViewRef.current = onLiveView
   onChangeRef.current = onChange
   dataRef.current = data
@@ -135,6 +115,10 @@ export default function MapView({
   imagesRef.current = images
   markdownRef.current = markdown
   scaleDraftRef.current = scaleDraft
+
+  const fog = useMapFog({ getZoom: () => cameraRef.current.zoom, onCommit: () => persistFog() })
+  const fogApiRef = useRef(fog)
+  fogApiRef.current = fog
 
   const headings = useMemo(() => mapHeadings(markdown), [markdown])
   const selected = data?.pins.find((pin) => pin.id === selectedId) ?? null
@@ -162,7 +146,7 @@ export default function MapView({
         imagePath,
         liveView(
           cameraRef.current,
-          fogRef.current,
+          fog.fogRef.current,
           dataRef.current?.tokens ?? [],
           imagesRef.current,
           scaleDraftRef.current ?? dataRef.current?.tokenScale ?? TOKEN_SCALE_DEFAULT,
@@ -170,12 +154,10 @@ export default function MapView({
         )
       )
     })
-  }, [imagePath])
+  }, [imagePath, fog.fogRef])
 
   useEffect(() => {
-    const size = data?.fogSize || DEFAULT_FOG_SIZE
-    fogRef.current = data?.fog ? decodeFog(data.fog, size) : createFog(size, 0)
-    setFogTick((n) => n + 1)
+    fog.reset(data)
     setCamera(FIT_CAMERA)
     setTool('pan')
     setDraft(null)
@@ -190,7 +172,7 @@ export default function MapView({
 
   useEffect(() => {
     emitLive()
-  }, [camera, fogTick, emitLive, data?.tokens, data?.tokenScale, dragPos, scaleDraft])
+  }, [camera, fog.fogTick, emitLive, data?.tokens, data?.tokenScale, dragPos, scaleDraft])
 
   useEffect(() => {
     if (selectedTokenId && data?.tokens.some((token) => token.id === selectedTokenId)) return
@@ -269,8 +251,7 @@ export default function MapView({
         event.shiftKey &&
         (toolRef.current === 'fog' || toolRef.current === 'reveal')
       ) {
-        const delta = event.deltaY < 0 ? 1 : -1
-        setBrushSize((size) => Math.min(BRUSH_MAX, Math.max(BRUSH_MIN, size + delta)))
+        fogApiRef.current.bumpBrush(event.deltaY < 0 ? 1 : -1)
         return
       }
       if (event.shiftKey && (toolRef.current === 'token' || (dataRef.current?.tokens.length ?? 0) > 0)) {
@@ -288,8 +269,7 @@ export default function MapView({
             tokens: current.tokens ?? [],
             tokenScale: next,
             pinsLocked: current.pinsLocked ?? true,
-            fog: fogAllClear(fogRef.current) ? '' : encodeFog(fogRef.current),
-            fogSize: fogSizeOf(fogRef.current)
+            ...fogApiRef.current.fields()
           })
         )
         return
@@ -321,24 +301,11 @@ export default function MapView({
   }, [])
 
   useEffect(() => {
-    const onKey = (event: KeyboardEvent): void => {
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return
-      if (event.key !== '[' && event.key !== ']') return
-      event.preventDefault()
-      const delta = event.key === ']' ? 1 : -1
-      setBrushSize((size) => Math.min(BRUSH_MAX, Math.max(BRUSH_MIN, size + delta)))
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [])
-
-  useEffect(() => {
-    if (tool !== 'fog' && tool !== 'reveal' && tool !== 'token') setBrushPos(null)
+    if (tool !== 'fog' && tool !== 'reveal' && tool !== 'token') fogApiRef.current.setBrushPos(null)
   }, [tool])
 
   useEffect(() => {
     return () => {
-      if (fogSaveTimer.current) window.clearTimeout(fogSaveTimer.current)
       if (tokenScaleTimer.current) window.clearTimeout(tokenScaleTimer.current)
       if (liveTimer.current) window.cancelAnimationFrame(liveTimer.current)
     }
@@ -350,7 +317,6 @@ export default function MapView({
 
   function withCurrentFog(partial: Partial<MapNoteData>): MapNoteData {
     const current = dataRef.current
-    const cells = fogRef.current
     return {
       image: current?.image ?? '',
       pins: current?.pins ?? [],
@@ -358,8 +324,7 @@ export default function MapView({
       tokenScale: current?.tokenScale ?? TOKEN_SCALE_DEFAULT,
       pinsLocked: current?.pinsLocked ?? true,
       ...partial,
-      fog: fogAllClear(cells) ? '' : encodeFog(cells),
-      fogSize: fogSizeOf(cells)
+      ...fogApiRef.current.fields()
     }
   }
 
@@ -368,21 +333,8 @@ export default function MapView({
     commit(withCurrentFog({}))
   }
 
-  function scheduleFogSave(): void {
-    if (fogSaveTimer.current) window.clearTimeout(fogSaveTimer.current)
-    fogSaveTimer.current = window.setTimeout(() => persistFog(), 400)
-  }
-
   function pointFromEvent(event: { clientX: number; clientY: number }): { x: number; y: number } | null {
     return imagePointFromElement(contentRef.current, event.clientX, event.clientY)
-  }
-
-  function stampFog(point: { x: number; y: number }, value: 0 | 1): void {
-    const radius = brushRadius(cameraRef.current.zoom, brushSizeRef.current)
-    if (paintFogDisk(fogRef.current, point.x, point.y, radius, value)) {
-      setFogTick((n) => n + 1)
-      scheduleFogSave()
-    }
   }
 
   function startAddPin(): void {
@@ -537,18 +489,6 @@ export default function MapView({
     }, 150)
   }
 
-  function coverAll(): void {
-    fogRef.current = createFog(fogSizeOf(fogRef.current), 1)
-    setFogTick((n) => n + 1)
-    persistFog()
-  }
-
-  function clearFog(): void {
-    fogRef.current = createFog(fogSizeOf(fogRef.current), 0)
-    setFogTick((n) => n + 1)
-    persistFog()
-  }
-
   function pickToken(item: TokenPick): void {
     const space = spaceBySource[item.source] ?? item.space
     setPendingToken({ ...item, space })
@@ -573,15 +513,15 @@ export default function MapView({
       event.preventDefault()
       const point = pointFromEvent(event)
       if (!point) return
-      setBrushPos(point)
-      paintRef.current = tool === 'fog' ? 1 : 0
+      fog.setBrushPos(point)
+      fog.paintRef.current = tool === 'fog' ? 1 : 0
       event.currentTarget.setPointerCapture(event.pointerId)
-      stampFog(point, paintRef.current)
+      fog.stamp(point, fog.paintRef.current)
       return
     }
     if (tool === 'token' && event.button === 0) {
       const point = pointFromEvent(event)
-      if (point) setBrushPos(point)
+      if (point) fog.setBrushPos(point)
       if (point && pendingToken) addToken(point)
       return
     }
@@ -596,7 +536,7 @@ export default function MapView({
   function onBoardPointerMove(event: ReactPointerEvent<HTMLDivElement>): void {
     if (tool === 'fog' || tool === 'reveal' || (tool === 'token' && pendingToken)) {
       const hover = pointFromEvent(event)
-      if (hover) setBrushPos(hover)
+      if (hover) fog.setBrushPos(hover)
     }
     if (panRef.current) {
       const dx = event.clientX - panRef.current.x
@@ -611,21 +551,21 @@ export default function MapView({
       )
       return
     }
-    if (paintRef.current === null) return
+    if (fog.paintRef.current === null) return
     const point = pointFromEvent(event)
-    if (point) stampFog(point, paintRef.current)
+    if (point) fog.stamp(point, fog.paintRef.current)
   }
 
   function onBoardPointerUp(): void {
     panRef.current = null
-    if (paintRef.current !== null) {
-      paintRef.current = null
+    if (fog.paintRef.current !== null) {
+      fog.paintRef.current = null
       persistFog()
     }
   }
 
   function onBoardPointerLeave(): void {
-    if (paintRef.current === null) setBrushPos(null)
+    if (fog.paintRef.current === null) fog.setBrushPos(null)
     onBoardPointerUp()
   }
 
@@ -702,11 +642,11 @@ export default function MapView({
       {primary === 'fog' ? (
         <MapFogToolbar
           tool={tool}
-          brushSize={brushSize}
+          brushSize={fog.brushSize}
           onToolChange={setTool}
-          onBrushSizeChange={setBrushSize}
-          onCoverAll={coverAll}
-          onClearFog={clearFog}
+          onBrushSizeChange={fog.setBrushSize}
+          onCoverAll={fog.coverAll}
+          onClearFog={fog.clearFog}
         />
       ) : null}
 
@@ -716,8 +656,8 @@ export default function MapView({
             <MapStage
               src={campaignFileUrl(imagePath)}
               camera={camera}
-              fogCells={fogRef.current}
-              fogTick={fogTick}
+              fogCells={fog.fogRef.current}
+              fogTick={fog.fogTick}
               fogOpacity={0.72}
               cursor={cursor}
               viewportRef={viewportRef}
@@ -765,12 +705,12 @@ export default function MapView({
                   />
                 )
               })}
-              {tool === 'token' && pendingToken && brushPos ? (
+              {tool === 'token' && pendingToken && fog.brushPos ? (
                 <MapTokenMark
                   token={{
                     id: 'ghost',
-                    x: brushPos.x,
-                    y: brushPos.y,
+                    x: fog.brushPos.x,
+                    y: fog.brushPos.y,
                     size: tokenDiameter(tokenScale, pendingToken.space),
                     label: pendingToken.label,
                     kind: pendingToken.kind,
@@ -853,14 +793,14 @@ export default function MapView({
                   {label || '+'}
                 </span>
               ) : null}
-              {(tool === 'fog' || tool === 'reveal') && brushPos ? (
+              {(tool === 'fog' || tool === 'reveal') && fog.brushPos ? (
                 <span
                   className="pointer-events-none absolute z-20 rounded-full border border-amber bg-amber/10"
                   style={{
-                    left: `${brushPos.x * 100}%`,
-                    top: `${brushPos.y * 100}%`,
-                    width: `${brushRadius(camera.zoom, brushSize) * 2 * 100}%`,
-                    height: `${brushRadius(camera.zoom, brushSize) * 2 * 100}%`,
+                    left: `${fog.brushPos.x * 100}%`,
+                    top: `${fog.brushPos.y * 100}%`,
+                    width: `${fog.brushRadiusAt(camera.zoom) * 2 * 100}%`,
+                    height: `${fog.brushRadiusAt(camera.zoom) * 2 * 100}%`,
                     transform: 'translate(-50%, -50%)'
                   }}
                 />
