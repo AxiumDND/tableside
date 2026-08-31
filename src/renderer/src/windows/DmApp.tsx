@@ -48,12 +48,12 @@ import {
 import { libraryFolderFor, recordToCampaignMarkdown, gearSubfolderFor } from '../lib/lookupNotes'
 import { monsterToStatBlock, type SrdRecord } from '../lib/srd'
 import { extractStatblock, fallbackStatblock, parsedToStatBlock, type ParsedStatblock } from '../lib/statblock'
-import { APP_NAME, APP_VERSION } from '../../../shared/version'
 import type { AppUpdateNotice } from '../../../shared/appUpdate'
-import appIcon from '../assets/icon.png'
 import UpdateBanner from '../components/UpdateBanner'
+import DmHeader from '../components/DmHeader'
 import { adjacentCampaignFile, canonicalFolder } from '../../../shared/campaignLayout'
 import { usePlayerPlayback } from '../hooks/usePlayerPlayback'
+import { useConsoleHotkeys } from '../hooks/useConsoleHotkeys'
 
 const SIDE_PANEL_WIDTH = 'w-[400px]'
 
@@ -575,141 +575,40 @@ export default function DmApp() {
     })
   }
 
-  useEffect(() => {
-    const typing = (target: EventTarget | null): boolean =>
-      target instanceof HTMLElement &&
-      (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
-
-    const onKey = (e: KeyboardEvent): void => {
-      if (typing(e.target)) return
-      if (e.altKey && e.key === 'ArrowLeft') {
-        e.preventDefault()
-        goBack()
-        return
-      }
-      if (e.altKey && e.key === 'ArrowRight') {
-        e.preventDefault()
-        goNextFile()
-        return
-      }
-      if (!(e.altKey && !e.ctrlKey && !e.metaKey)) return
-      const key = e.key.toLowerCase()
-      if (key === 's') {
-        e.preventDefault()
-        void showSelectedToPlayers(selectedImage, openPath, openKind, { mode: 'art' })
-        return
-      }
-      if (key === 'i') {
-        e.preventDefault()
-        void showSelectedToPlayers(selectedImage, openPath, openKind, {
-          mode: 'handout',
-          includeSecrets: e.shiftKey
-        })
-        return
-      }
-      if (key === 'x') {
-        e.preventDefault()
-        void clearPlayer()
-        return
-      }
-      if (key === 't') {
-        e.preventDefault()
-        const live = campaign?.combat
-        if (!live || live.combatants.length === 0) return
-        changeRightPanel('combat')
-        void saveCombat(advanceCombatTurn(live))
-      }
+  useConsoleHotkeys({
+    onBack: goBack,
+    onNext: goNextFile,
+    onShowArt: () => void showSelectedToPlayers(selectedImage, openPath, openKind, { mode: 'art' }),
+    onShowHandout: (includeSecrets) =>
+      void showSelectedToPlayers(selectedImage, openPath, openKind, { mode: 'handout', includeSecrets }),
+    onClearPlayer: () => void clearPlayer(),
+    onAdvanceTurn: () => {
+      const live = campaign?.combat
+      if (!live || live.combatants.length === 0) return
+      changeRightPanel('combat')
+      void saveCombat(advanceCombatTurn(live))
     }
-    const onMouse = (e: MouseEvent): void => {
-      if (e.button === 3) {
-        e.preventDefault()
-        goBack()
-        return
-      }
-      if (e.button === 4) {
-        e.preventDefault()
-        goNextFile()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    window.addEventListener('mouseup', onMouse)
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      window.removeEventListener('mouseup', onMouse)
-    }
-  }, [history, openPath, openKind, campaign, selectedImage])
+  })
 
   return (
     <DiceLogProvider>
     <AudioEngine state={mixer} onClock={setMixerClock} />
     <div className="flex h-full flex-col bg-ink text-parchment">
-      <header className="flex items-center gap-3 border-b border-line bg-panel px-4 py-2">
-        <div>
-          <div className="flex items-center gap-2">
-            <img src={appIcon} alt="" className="h-7 w-7 rounded-sm" />
-            <div className="flex items-baseline gap-2">
-              <div className="font-display text-xl leading-none text-amber">{APP_NAME}</div>
-              <div className="text-[11px] font-semibold tracking-wide text-amber-dim">v{APP_VERSION}</div>
-            </div>
-          </div>
-          <div className="text-[11px] text-muted">
-            {campaign ? `${getSystemPack(campaign.system).shortLabel} · second-monitor player view` : 'Table tool · second-monitor player view'}
-          </div>
-        </div>
-        <div className="ml-4 min-w-0 flex-1">
-          <div className="truncate text-sm">{campaign?.name ?? 'No campaign open'}</div>
-          <div className="truncate text-[11px] text-muted">{campaign?.folder ?? 'Choose a folder to begin'}</div>
-        </div>
-        <button type="button" onClick={() => void newCampaign()} className="rounded border border-line px-3 py-1 text-sm hover:border-amber">
-          New campaign
-        </button>
-        <button type="button" onClick={openFolder} className="rounded border border-line px-3 py-1 text-sm hover:border-amber">
-          Open campaign
-        </button>
-        <button
-          type="button"
-          onClick={() => changeRightPanel((open) => (open === 'lookup' ? null : 'lookup'))}
-          className={`rounded px-3 py-1 text-sm ${
-            rightPanel === 'lookup' ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
-          }`}
-        >
-          Lookup
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            changeRightPanel((open) => (open === 'combat' ? null : 'combat'))
-          }}
-          className={`rounded px-3 py-1 text-sm ${
-            rightPanel === 'combat' ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
-          }`}
-        >
-          Combat
-          {combat.combatants.length > 0 ? ` (${combat.combatants.length})` : ''}
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            changeRightPanel((open) => (open === 'music' ? null : 'music'))
-            void window.tabledm.getMixer().then(setMixer)
-          }}
-          className={`rounded px-3 py-1 text-sm ${
-            rightPanel === 'music' ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
-          }`}
-        >
-          Music
-          {mixerIsActive(mixer) ? ' ·' : ''}
-        </button>
-        <button
-          type="button"
-          onClick={() => changeRightPanel((open) => (open === 'help' ? null : 'help'))}
-          className={`rounded px-3 py-1 text-sm ${
-            rightPanel === 'help' ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
-          }`}
-        >
-          Help & settings
-        </button>
-      </header>
+      <DmHeader
+        campaign={campaign}
+        rightPanel={rightPanel}
+        combatCount={combat.combatants.length}
+        mixerActive={mixerIsActive(mixer)}
+        onNewCampaign={() => void newCampaign()}
+        onOpenCampaign={openFolder}
+        onToggleLookup={() => changeRightPanel((open) => (open === 'lookup' ? null : 'lookup'))}
+        onToggleCombat={() => changeRightPanel((open) => (open === 'combat' ? null : 'combat'))}
+        onToggleMusic={() => {
+          changeRightPanel((open) => (open === 'music' ? null : 'music'))
+          void window.tabledm.getMixer().then(setMixer)
+        }}
+        onToggleHelp={() => changeRightPanel((open) => (open === 'help' ? null : 'help'))}
+      />
       <div>
       <UpdateBanner
         notice={updateNotice}
