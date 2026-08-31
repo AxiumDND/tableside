@@ -32,6 +32,7 @@ import { useOpeningSequenceCards } from '../hooks/useOpeningSequenceCards'
 import { useNoteBlockEditing } from '../hooks/useNoteBlockEditing'
 import { useShopStock } from '../hooks/useShopStock'
 import { useNoteAutosave } from '../hooks/useNoteAutosave'
+import { useNoteEditSession } from '../hooks/useNoteEditSession'
 import type { FileKind } from './CampaignFiles'
 import { looksLikeShopNote } from '../../../shared/shopStock'
 import { buildBlockIndex } from '../../../shared/blockIndex'
@@ -209,10 +210,8 @@ export default function SessionNotes({
   const [markdown, setMarkdown] = useState('')
   const [original, setOriginal] = useState('')
   const [character, setCharacter] = useState<Character | null>(null)
-  const [editing, setEditing] = useState(false)
   const [addingId, setAddingId] = useState<string | null>(null)
   const [saveError, setSaveError] = useState('')
-  const [confirmDiscard, setConfirmDiscard] = useState(false)
   const [showLinks, setShowLinks] = useState(false)
   const editorRef = useRef<HTMLTextAreaElement | null>(null)
   const markdownRef = useRef('')
@@ -220,6 +219,36 @@ export default function SessionNotes({
   const pathRef = useRef(path)
   markdownRef.current = markdown
   originalRef.current = original
+
+  const { commitSave, flushOpenNote } = useNoteAutosave({
+    markdownRef,
+    originalRef,
+    pathRef,
+    setOriginal,
+    setSaveError,
+    onCampaignChange,
+    onOpenNote
+  })
+  const {
+    editing,
+    setEditing,
+    confirmDiscard,
+    setConfirmDiscard,
+    save,
+    discardEdits,
+    requestCloseEditor,
+    resetEditSession
+  } = useNoteEditSession({
+    path,
+    markdown,
+    original,
+    setMarkdown,
+    setOriginal,
+    setSaveError,
+    commitSave,
+    editorRef
+  })
+
   const dirty = markdown !== original
   const noteIndex = notes ?? flattenNotes([])
   const rendered = useMemo(() => {
@@ -269,25 +298,14 @@ export default function SessionNotes({
     persistMarkdown: (next) => persistShopMarkdown(next)
   })
 
-  const { commitSave, flushOpenNote } = useNoteAutosave({
-    markdownRef,
-    originalRef,
-    pathRef,
-    setOriginal,
-    setSaveError,
-    onCampaignChange,
-    onOpenNote
-  })
-
   useEffect(() => {
     const prevPath = pathRef.current
     if (prevPath && prevPath !== path) {
       void flushOpenNote(prevPath)
     }
     pathRef.current = path
-    setEditing(false)
+    resetEditSession()
     resetBlockEditing()
-    setConfirmDiscard(false)
     setSaveError('')
     setShowLinks(false)
     setCharacter(null)
@@ -318,58 +336,6 @@ export default function SessionNotes({
       alive = false
     }
   }, [path, kind])
-
-  useEffect(() => {
-    if (editing) editorRef.current?.focus()
-  }, [editing])
-
-  useEffect(() => {
-    if (!editing) return
-    const onKey = (e: KeyboardEvent): void => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-        e.preventDefault()
-        void save()
-      }
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        requestCloseEditor()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [editing, markdown, path])
-
-  async function save(): Promise<void> {
-    if (!path) return
-    try {
-      const savedPath = await commitSave(path, markdown)
-      if (!savedPath) {
-        setSaveError('Could not save this file.')
-        return
-      }
-      setOriginal(markdown)
-      setSaveError('')
-      setEditing(false)
-      setConfirmDiscard(false)
-    } catch {
-      setSaveError('Could not save this file.')
-    }
-  }
-
-  function discardEdits(): void {
-    setMarkdown(original)
-    setEditing(false)
-    setConfirmDiscard(false)
-    setSaveError('')
-  }
-
-  function requestCloseEditor(): void {
-    if (markdown !== original) {
-      setConfirmDiscard(true)
-      return
-    }
-    setEditing(false)
-  }
 
   const sequenceCards = useOpeningSequenceCards({
     path,
