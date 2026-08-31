@@ -5,7 +5,7 @@ import {
   type MapPin
 } from '../lib/mapNote'
 import { BRUSH_MAX, BRUSH_MIN } from '../lib/mapFog'
-import { MAX_ZOOM, MIN_ZOOM, type MapCamera } from '../lib/mapCamera'
+import { MAX_ZOOM, MIN_ZOOM } from '../lib/mapCamera'
 import { toolButton, type MapTool, type PinAction, type PickerTab, type TokenPick } from './MapViewHelpers'
 
 export function MapPrimaryToolbar({

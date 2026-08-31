@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, protocol, screen, session, shell } from 'electron'
 import { existsSync } from 'node:fs'
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
+import { readFile, writeFile } from 'node:fs/promises'
 import { join, relative, basename, dirname } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import type {
