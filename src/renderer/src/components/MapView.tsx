@@ -10,6 +10,7 @@ import {
   type MapCamera
 } from '../lib/mapCamera'
 import { useMapFog } from '../hooks/useMapFog'
+import { useCreatureSpaces } from '../hooks/useCreatureSpaces'
 import {
   TOKEN_SCALE_DEFAULT,
   clampTokenScale,
@@ -24,7 +25,6 @@ import {
   tokenDiameter,
   toPlayerMapToken,
   uniquePinId,
-  type CreatureSpace,
   type MapNoteData,
   type MapPin,
   type MapToken
@@ -86,7 +86,6 @@ export default function MapView({
   const [pendingToken, setPendingToken] = useState<TokenPick | null>(null)
   const [pickerTab, setPickerTab] = useState<PickerTab>('pc')
   const [tokenQuery, setTokenQuery] = useState('')
-  const [spaceBySource, setSpaceBySource] = useState<Record<string, CreatureSpace>>({})
   const [scaleDraft, setScaleDraft] = useState<number | null>(null)
   const cameraRef = useRef(camera)
   const toolRef = useRef(tool)
@@ -119,6 +118,15 @@ export default function MapView({
   const fog = useMapFog({ getZoom: () => cameraRef.current.zoom, onCommit: () => persistFog() })
   const fogApiRef = useRef(fog)
   fogApiRef.current = fog
+
+  const { spaceBySource, setSpaceBySource } = useCreatureSpaces({
+    path,
+    tool,
+    dataRef,
+    catalogRef,
+    persistTokenSpaces: (tokens) =>
+      onChangeRef.current(replaceMapFence(markdownRef.current, withCurrentFog({ tokens })))
+  })
 
   const headings = useMemo(() => mapHeadings(markdown), [markdown])
   const selected = data?.pins.find((pin) => pin.id === selectedId) ?? null
@@ -184,63 +192,6 @@ export default function MapView({
     if (selectedTokenId && data?.tokens.some((token) => token.id === selectedTokenId)) return
     setSelectedTokenId(null)
   }, [data, selectedTokenId])
-
-  useEffect(() => {
-    let cancelled = false
-    async function syncSpaces(): Promise<void> {
-      const current = dataRef.current
-      if (!current?.tokens.length) return
-      const found: Record<string, CreatureSpace> = {}
-      for (const token of current.tokens) {
-        if (!token.source) continue
-        try {
-          const text = await window.tabledm.readFile(token.source)
-          found[token.source] = creatureSpaceFromMarkdown(text)
-        } catch {
-          /* keep stored space */
-        }
-      }
-      if (cancelled) return
-      if (Object.keys(found).length) setSpaceBySource((prev) => ({ ...prev, ...found }))
-      const latest = dataRef.current
-      if (!latest) return
-      const next = latest.tokens.map((token) => {
-        const space = found[token.source]
-        return space && space !== token.space ? { ...token, space } : token
-      })
-      if (next.some((token, i) => token.space !== latest.tokens[i].space)) {
-        onChangeRef.current(replaceMapFence(markdownRef.current, withCurrentFog({ tokens: next })))
-      }
-    }
-    void syncSpaces()
-    return () => {
-      cancelled = true
-    }
-  }, [path])
-
-  useEffect(() => {
-    if (tool !== 'token') return
-    let cancelled = false
-    async function loadCatalogSpaces(): Promise<void> {
-      const items = [...catalogRef.current.pc, ...catalogRef.current.npc, ...catalogRef.current.monster]
-      const found: Record<string, CreatureSpace> = {}
-      await Promise.all(
-        items.map(async (item) => {
-          try {
-            const text = await window.tabledm.readFile(item.source)
-            found[item.source] = creatureSpaceFromMarkdown(text)
-          } catch {
-            found[item.source] = 'medium'
-          }
-        })
-      )
-      if (!cancelled) setSpaceBySource((prev) => ({ ...prev, ...found }))
-    }
-    void loadCatalogSpaces()
-    return () => {
-      cancelled = true
-    }
-  }, [tool])
 
   useEffect(() => {
     const pane = paneRef.current
