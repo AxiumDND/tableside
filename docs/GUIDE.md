@@ -8,7 +8,7 @@ Deeper reference: [TABLE.md](TABLE.md) (every control), [CAMPAIGN.md](CAMPAIGN.m
 
 ## Install
 
-1. Download **[Tableside-Setup-1.7.4.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
+1. Download **[Tableside-Setup-1.7.5.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
 2. Run it. Per-user install — Start Menu + desktop shortcut. No admin.
 3. If Windows says **Windows protected your PC**, click **More info**, then **Run anyway**. The installer is not code-signed. That is expected.
 4. Open **Tableside**.
