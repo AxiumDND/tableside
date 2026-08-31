@@ -203,7 +203,7 @@ export default function ItemSheet({
 
   useEffect(() => {
     if (selectValue && onSelectImage) onSelectImage(selectValue)
-  }, [selectValue])
+  }, [selectValue, onSelectImage])
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-5 pb-6">

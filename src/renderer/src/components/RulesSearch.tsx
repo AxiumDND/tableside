@@ -387,6 +387,10 @@ export default function RulesSearch({
     })
   }, [system, pack.bookLookup])
 
+  // searchSrd reads the module-level extra-records registry populated when the
+  // book library loads; extraSources changes at that moment, so it is kept as a
+  // dependency to re-run the search and surface newly-registered book records.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const results = useMemo(() => searchSrd(query, kind), [query, kind, extraSources])
   const filters = useMemo(
     () => [
