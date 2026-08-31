@@ -65,4 +65,42 @@ describe('CombatTracker', () => {
     expect(next.combatants).toHaveLength(1)
     expect(next.combatants[0]).toMatchObject({ name: 'Dire Wolf', initiative: 15 })
   })
+
+  it('keeps the bestiary list collapsed until shown', async () => {
+    const user = userEvent.setup()
+    const onAddBestiary = vi.fn()
+    render(
+      <CombatTracker
+        combat={makeCombat([])}
+        bestiary={[{ path: 'Bestiary/Goblin.md', name: 'Goblin' }]}
+        onAddBestiary={onAddBestiary}
+        onChange={() => {}}
+      />
+    )
+
+    expect(screen.queryByRole('button', { name: /goblin/i })).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: /bestiary/i }))
+    await user.click(screen.getByRole('button', { name: /goblin/i }))
+
+    expect(onAddBestiary).toHaveBeenCalledWith('Bestiary/Goblin.md')
+  })
+
+  it('opens a damage/heal window from the HP total', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    const combat = makeCombat([combatant({ id: 'a', name: 'Goblin Scout', hp: 10, maxHp: 10 })])
+    render(<CombatTracker combat={combat} onChange={onChange} />)
+
+    expect(screen.queryByRole('button', { name: 'Damage' })).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: /goblin scout hp 10 of 10/i }))
+    await user.type(screen.getByLabelText(/goblin scout hp amount/i), '4')
+    await user.click(screen.getByRole('button', { name: 'Damage' }))
+
+    expect(onChange).toHaveBeenCalled()
+    const next = onChange.mock.calls.at(-1)![0] as CombatState
+    expect(next.combatants[0].hp).toBe(6)
+    expect(screen.queryByRole('button', { name: 'Damage' })).toBeNull()
+  })
 })

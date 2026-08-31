@@ -34,6 +34,9 @@ export default function CombatTracker({
   const profile = combatProfileFor(system)
   const [draft, setDraft] = useState({ name: '', initiative: '', hp: '', ac: '', willpower: '', hunger: '' })
   const [beastQuery, setBeastQuery] = useState('')
+  const [bestiaryOpen, setBestiaryOpen] = useState(false)
+  const [hpEdit, setHpEdit] = useState<Combatant | null>(null)
+  const [hpAmount, setHpAmount] = useState('')
   const [lastRoll, setLastRoll] = useState('')
   const [viewedId, setViewedId] = useState<string | null>(null)
   const [confirmClear, setConfirmClear] = useState(false)
@@ -52,18 +55,22 @@ export default function CombatTracker({
     const q = beastQuery.trim().toLowerCase()
     return q ? bestiary.filter((b) => b.name.toLowerCase().includes(q)) : bestiary
   }, [bestiary, beastQuery])
+  const hpEditLive = hpEdit
+    ? (combat.combatants.find((c) => c.id === hpEdit.id) ?? hpEdit)
+    : null
 
   useEffect(() => {
-    if (!confirmClear && !confirmRemove) return
+    if (!confirmClear && !confirmRemove && !hpEdit) return
     const onKey = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') {
         setConfirmClear(false)
         setConfirmRemove(null)
+        setHpEdit(null)
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [confirmClear, confirmRemove])
+  }, [confirmClear, confirmRemove, hpEdit])
 
   function update(partial: Partial<CombatState>): void {
     onChange({ ...combat, ...partial })
@@ -133,6 +140,8 @@ export default function CombatTracker({
   function clearCombat(): void {
     setLastRoll('')
     setViewedId(null)
+    setHpEdit(null)
+    setHpAmount('')
     setConfirmClear(false)
     setConfirmRemove(null)
     update({ combatants: [], activeId: null, round: 0, showOrderToPlayers: false })
@@ -141,10 +150,33 @@ export default function CombatTracker({
   function removeCombatant(id: string): void {
     setConfirmRemove(null)
     if (viewedId === id) setViewedId(null)
+    if (hpEdit?.id === id) {
+      setHpEdit(null)
+      setHpAmount('')
+    }
     update({
       combatants: combat.combatants.filter((x) => x.id !== id),
       activeId: combat.activeId === id ? null : combat.activeId
     })
+  }
+
+  function openHpEdit(c: Combatant): void {
+    setHpEdit(c)
+    setHpAmount('')
+  }
+
+  function applyHpChange(direction: 'damage' | 'heal'): void {
+    if (!hpEdit) return
+    const amount = Math.floor(Number(hpAmount))
+    if (!Number.isFinite(amount) || amount <= 0) return
+    const live = combat.combatants.find((c) => c.id === hpEdit.id) ?? hpEdit
+    const nextHp =
+      direction === 'damage'
+        ? Math.max(0, live.hp - amount)
+        : Math.min(live.maxHp, live.hp + amount)
+    patchCombatant(live.id, { hp: nextHp })
+    setHpEdit(null)
+    setHpAmount('')
   }
 
   return (
@@ -307,14 +339,16 @@ export default function CombatTracker({
                     ) : null}
                   </button>
                   {profile.showAc ? <span className="text-xs text-muted">{profile.acLabel} {c.ac}</span> : null}
-                  <button type="button" onClick={() => patchCombatant(c.id, { hp: Math.max(0, c.hp - 1) })}>
-                    −
-                  </button>
-                  <span className={`w-12 text-center text-sm ${ratio <= 0.3 ? 'text-blood' : ''}`} title={profile.hpLabel}>
+                  <button
+                    type="button"
+                    onClick={() => openHpEdit(c)}
+                    className={`w-12 shrink-0 rounded border border-transparent px-0.5 text-center text-sm hover:border-amber ${
+                      ratio <= 0.3 ? 'text-blood' : ''
+                    }`}
+                    title={`Adjust ${profile.hpLabel}`}
+                    aria-label={`${c.name} ${profile.hpLabel} ${c.hp} of ${c.maxHp}`}
+                  >
                     {c.hp}/{c.maxHp}
-                  </span>
-                  <button type="button" onClick={() => patchCombatant(c.id, { hp: Math.min(c.maxHp, c.hp + 1) })}>
-                    +
                   </button>
                   {profile.showWillpower ? (
                     <>
@@ -396,32 +430,49 @@ export default function CombatTracker({
           ) : null}
           {bestiary.length > 0 ? (
             <div className="mt-3">
-              <h3 className="text-xs uppercase tracking-wider text-muted">Bestiary</h3>
-              {bestiary.length > 8 ? (
-                <input
-                  value={beastQuery}
-                  onChange={(e) => setBeastQuery(e.target.value)}
-                  placeholder="Filter creatures…"
-                  className="mt-1 w-full rounded border border-line bg-panel-2 px-2 py-1 text-xs"
-                />
+              <button
+                type="button"
+                aria-expanded={bestiaryOpen}
+                onClick={() => setBestiaryOpen((open) => !open)}
+                className="flex w-full items-center justify-between text-left"
+              >
+                <h3 className="text-xs uppercase tracking-wider text-muted">
+                  Bestiary
+                  <span className="ml-1.5 font-normal normal-case tracking-normal">
+                    ({bestiary.length})
+                  </span>
+                </h3>
+                <span className="text-[11px] text-muted">{bestiaryOpen ? 'Hide' : 'Show'}</span>
+              </button>
+              {bestiaryOpen ? (
+                <>
+                  {bestiary.length > 8 ? (
+                    <input
+                      value={beastQuery}
+                      onChange={(e) => setBeastQuery(e.target.value)}
+                      placeholder="Filter creatures…"
+                      className="mt-1 w-full rounded border border-line bg-panel-2 px-2 py-1 text-xs"
+                    />
+                  ) : null}
+                  <ul className="mt-1 max-h-40 overflow-auto">
+                    {beasts.map((beast) => (
+                      <li key={beast.path}>
+                        <button
+                          type="button"
+                          onClick={() => onAddBestiary?.(beast.path)}
+                          className="flex w-full items-center justify-between border-b border-line/50 px-1 py-1.5 text-left text-sm hover:text-amber"
+                        >
+                          <span className="truncate">{beast.name}</span>
+                          <span className="text-[11px] text-muted">Add</span>
+                        </button>
+                      </li>
+                    ))}
+                    {beasts.length === 0 ? (
+                      <li className="py-2 text-xs text-muted">No matching creatures</li>
+                    ) : null}
+                  </ul>
+                </>
               ) : null}
-              <ul className="mt-1 max-h-40 overflow-auto">
-                {beasts.map((beast) => (
-                  <li key={beast.path}>
-                    <button
-                      type="button"
-                      onClick={() => onAddBestiary?.(beast.path)}
-                      className="flex w-full items-center justify-between border-b border-line/50 px-1 py-1.5 text-left text-sm hover:text-amber"
-                    >
-                      <span className="truncate">{beast.name}</span>
-                      <span className="text-[11px] text-muted">Add</span>
-                    </button>
-                  </li>
-                ))}
-                {beasts.length === 0 ? (
-                  <li className="py-2 text-xs text-muted">No matching creatures</li>
-                ) : null}
-              </ul>
             </div>
           ) : null}
         </div>
@@ -487,6 +538,76 @@ export default function CombatTracker({
           </div>
         ) : null}
       </div>
+
+      {hpEditLive ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 p-4"
+          onClick={() => {
+            setHpEdit(null)
+            setHpAmount('')
+          }}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="hp-edit-title"
+            className="w-full max-w-sm rounded border border-line bg-panel p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="hp-edit-title" className="font-display text-lg text-amber">
+              {hpEditLive.name}
+            </h3>
+            <p className="mt-1 text-sm text-muted">
+              {profile.hpLabel} {hpEditLive.hp}/{hpEditLive.maxHp}
+            </p>
+            <label className="mt-3 block text-xs text-muted">
+              Amount
+              <input
+                autoFocus
+                type="number"
+                min={0}
+                inputMode="numeric"
+                value={hpAmount}
+                onChange={(e) => setHpAmount(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    applyHpChange(e.shiftKey ? 'heal' : 'damage')
+                  }
+                }}
+                aria-label={`${hpEditLive.name} ${profile.hpLabel} amount`}
+                className="mt-1 w-full rounded border border-line bg-ink px-3 py-2 text-center text-lg"
+              />
+            </label>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setHpEdit(null)
+                  setHpAmount('')
+                }}
+                className="rounded border border-line px-3 py-1.5 text-sm hover:border-amber"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => applyHpChange('damage')}
+                className="rounded border border-blood/60 px-3 py-1.5 text-sm font-semibold text-blood hover:bg-blood/15"
+              >
+                Damage
+              </button>
+              <button
+                type="button"
+                onClick={() => applyHpChange('heal')}
+                className="rounded bg-amber px-3 py-1.5 text-sm font-semibold text-on-amber"
+              >
+                Heal
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
 
       {confirmClear ? (
         <div

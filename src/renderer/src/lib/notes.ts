@@ -61,9 +61,21 @@ export function sheetDisplayName(pathOrStem: string): string {
   return base.replace(/^pc\s*[—–-]\s*/i, '').trim()
 }
 
+/** Initiative label for PCs — first name only (drop surname, class, and other fluff). */
+export function pcCombatName(pathOrStemOrName: string): string {
+  const display = sheetDisplayName(pathOrStemOrName)
+  if (!display) return ''
+  // "Torren Vale, Human Ranger" / "Torren Vale — Ranger 1" → "Torren Vale"
+  const core = display.split(/[,;|]|\s+[—–-]\s+/)[0]?.trim() || display
+  const first = core.split(/\s+/).find(Boolean) ?? core
+  return first
+}
+
 export function combatantLabel(kind: EncounterCombatantRef['kind'], stem: string, blockName: string): string {
+  if (kind === 'pc') {
+    return pcCombatName(stem) || pcCombatName(blockName) || sheetDisplayName(stem) || blockName.trim()
+  }
   const sheet = sheetDisplayName(stem)
-  if (kind === 'pc') return blockName.trim() || sheet
   return sheet || blockName.trim()
 }
 

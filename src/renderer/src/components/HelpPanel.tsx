@@ -317,7 +317,8 @@ export default function HelpPanel({
                 lives under Settings (also on <Code>Start Here</Code>). DM-only — the player TV stays black.
               </>,
               <>
-                Left: <strong>Players see</strong> preview, file tree, dice tray. Hide the preview if you need height.
+                Left: <strong>Players see</strong> preview, file tree, dice tray — open by default; <Action>Hide</Action>{' '}
+                collapses it. Hide the preview if you need height inside the sidebar.
               </>,
               <>Center: the open note, image, or PDF.</>,
               <>Right: Combat, Music, Lookup, or this panel — one at a time.</>

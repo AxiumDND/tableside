@@ -41,6 +41,7 @@ import {
   bestiaryNotes,
   flattenNotes,
   partyNotes,
+  pcCombatName,
   sameCombatantName,
   sheetDisplayName
 } from '../lib/notes'
@@ -124,6 +125,7 @@ export default function DmApp() {
   const [history, setHistory] = useState<{ path: string; kind: FileKind }[]>([])
   const [playerDisplayId, setPlayerDisplayId] = useState<number | ''>('')
   const [showPlayerPreview, setShowPlayerPreview] = useState(true)
+  const [showLeftSidebar, setShowLeftSidebar] = useState(true)
   const [theme, setTheme] = useState<ThemeId>('classic')
   const [playerWindowOpen, setPlayerWindowOpen] = useState(false)
   const [recentCampaigns, setRecentCampaigns] = useState<RecentCampaign[]>([])
@@ -154,6 +156,7 @@ export default function DmApp() {
         : (screens.find((d) => !d.dm)?.id ?? screens[0]?.id ?? '')
     )
     setShowPlayerPreview(prefs.showPlayerPreview !== false)
+    setShowLeftSidebar(prefs.showLeftSidebar !== false)
     const nextTheme = resolveConsoleTheme(info?.theme, prefs.theme)
     setTheme(nextTheme)
     applyThemeToDocument(nextTheme)
@@ -359,7 +362,7 @@ export default function DmApp() {
         block: parsed,
         kind: 'pc',
         sourceId: pc.relativePath,
-        name: sheetDisplayName(pc.relativePath)
+        name: pcCombatName(pc.relativePath)
       })
       seen.add(parsed.name.toLowerCase())
     }
@@ -381,7 +384,7 @@ export default function DmApp() {
         },
         kind: 'pc',
         sourceId: pc.id,
-        name: pc.name
+        name: pcCombatName(pc.name)
       })
     }
     return items
@@ -714,61 +717,91 @@ export default function DmApp() {
 
       <div className="relative flex min-h-0 flex-1">
         {digitalRainEnabled(theme, campaign?.digitalRain) ? <DigitalRain /> : null}
-        <div className="relative z-[1] flex w-64 shrink-0 flex-col border-r border-line">
-          <PlayerPreview
-            state={player}
-            hidden={!showPlayerPreview}
-            playerWindowOpen={playerWindowOpen}
-            displays={displays}
-            playerDisplayId={playerDisplayId}
-            onClear={() => void clearPlayer()}
-            onCloseWindow={() => {
-              void window.tabledm.closePlayerWindow().then(setPlayerWindowOpen)
-            }}
-            onPickDisplay={(id) => {
-              setPlayerDisplayId(id)
-              void window.tabledm.placePlayerOnDisplay(id).then((screens) => {
-                setDisplays(screens)
-                void window.tabledm.getPlayerWindowOpen().then(setPlayerWindowOpen)
-              })
-            }}
-            onRefreshDisplays={async () => {
-              setDisplays(await window.tabledm.getDisplays())
-            }}
-            onToggle={() => {
-              setShowPlayerPreview((open) => {
-                const next = !open
-                void window.tabledm.saveSettings({ showPlayerPreview: next })
-                return next
-              })
-            }}
-          />
-          {campaign ? (
-            <CampaignFiles
-              tree={campaign.tree}
-              campaignName={campaign.name}
-              selected={openPath}
-              onOpen={(node) => void openTreeFile(node)}
-              onTreeChange={(info, path) => {
-                setCampaign(info)
-                setHistory((stack) => stack.filter((item) => findTreeNode(info.tree, item.path)))
-                if (path === '') {
-                  setOpenPath('')
-                  setOpenKind('note')
-                  setSelectedImage(null)
-                  void window.tabledm.saveSettings({ lastOpenPath: undefined, lastOpenKind: undefined })
-                  return
-                }
-                if (!path) return
-                const node = findTreeNode(info.tree, path)
-                navigateTo(path, node ? fileKind(node) : 'note')
+        {showLeftSidebar ? (
+          <div className="relative z-[1] flex w-64 shrink-0 flex-col border-r border-line">
+            <div className="flex items-center justify-between border-b border-line px-2 py-1">
+              <span className="text-[10px] uppercase tracking-wider text-muted">Sidebar</span>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowLeftSidebar(false)
+                  void window.tabledm.saveSettings({ showLeftSidebar: false })
+                }}
+                className="text-[11px] text-muted hover:text-amber"
+              >
+                Hide
+              </button>
+            </div>
+            <PlayerPreview
+              state={player}
+              hidden={!showPlayerPreview}
+              playerWindowOpen={playerWindowOpen}
+              displays={displays}
+              playerDisplayId={playerDisplayId}
+              onClear={() => void clearPlayer()}
+              onCloseWindow={() => {
+                void window.tabledm.closePlayerWindow().then(setPlayerWindowOpen)
+              }}
+              onPickDisplay={(id) => {
+                setPlayerDisplayId(id)
+                void window.tabledm.placePlayerOnDisplay(id).then((screens) => {
+                  setDisplays(screens)
+                  void window.tabledm.getPlayerWindowOpen().then(setPlayerWindowOpen)
+                })
+              }}
+              onRefreshDisplays={async () => {
+                setDisplays(await window.tabledm.getDisplays())
+              }}
+              onToggle={() => {
+                setShowPlayerPreview((open) => {
+                  const next = !open
+                  void window.tabledm.saveSettings({ showPlayerPreview: next })
+                  return next
+                })
               }}
             />
-          ) : (
-            <div className="matrix-rain-well flex-1 px-3 py-4 text-xs text-muted">Open a campaign to see files.</div>
-          )}
-          <DiceTray />
-        </div>
+            {campaign ? (
+              <CampaignFiles
+                tree={campaign.tree}
+                campaignName={campaign.name}
+                selected={openPath}
+                onOpen={(node) => void openTreeFile(node)}
+                onTreeChange={(info, path) => {
+                  setCampaign(info)
+                  setHistory((stack) => stack.filter((item) => findTreeNode(info.tree, item.path)))
+                  if (path === '') {
+                    setOpenPath('')
+                    setOpenKind('note')
+                    setSelectedImage(null)
+                    void window.tabledm.saveSettings({ lastOpenPath: undefined, lastOpenKind: undefined })
+                    return
+                  }
+                  if (!path) return
+                  const node = findTreeNode(info.tree, path)
+                  navigateTo(path, node ? fileKind(node) : 'note')
+                }}
+              />
+            ) : (
+              <div className="matrix-rain-well flex-1 px-3 py-4 text-xs text-muted">Open a campaign to see files.</div>
+            )}
+            <DiceTray />
+          </div>
+        ) : (
+          <div className="relative z-[1] flex w-9 shrink-0 flex-col items-center border-r border-line py-2">
+            <button
+              type="button"
+              onClick={() => {
+                setShowLeftSidebar(true)
+                void window.tabledm.saveSettings({ showLeftSidebar: true })
+              }}
+              className="rounded border border-line px-1 py-2 text-[11px] hover:border-amber"
+              style={{ writingMode: 'vertical-rl' }}
+              title="Show sidebar"
+            >
+              Show sidebar
+            </button>
+          </div>
+        )}
         <div className="relative z-[1] flex min-h-0 min-w-0 flex-1">
         <SessionNotes
           path={openPath}

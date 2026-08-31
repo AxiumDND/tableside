@@ -247,6 +247,8 @@ export interface AppSettings {
   lastOpenKind?: string
   rightPanel?: 'combat' | 'lookup' | 'help' | 'music' | null
   showPlayerPreview?: boolean
+  /** Left column (preview, files, dice). Default open. */
+  showLeftSidebar?: boolean
   theme?: string
   recentCampaigns?: RecentCampaign[]
   dismissedUpdateVersion?: string

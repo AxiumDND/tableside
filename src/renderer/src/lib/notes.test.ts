@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import {
+  combatantLabel,
   isCombatHeading,
   missingCombatantTokens,
   npcNotes,
   parseNightEncounters,
+  pcCombatName,
   splitCalloutBlocks,
   splitLeadingSceneArt,
   type CampaignNote
@@ -17,6 +19,21 @@ const notes: CampaignNote[] = [
   { relativePath: 'Bestiary/Wolf.md', name: 'Wolf.md', stem: 'Wolf' },
   { relativePath: 'NPCs/Hale.md', name: 'Hale.md', stem: 'Hale' }
 ]
+
+describe('pc combat names', () => {
+  it('uses the first name for initiative labels', () => {
+    expect(pcCombatName('Party/PC — Torren Vale.md')).toBe('Torren')
+    expect(pcCombatName('PC — Sister Calda')).toBe('Sister')
+    expect(pcCombatName('Torren Vale, Human Ranger')).toBe('Torren')
+    expect(pcCombatName('Nessa Pike — Rogue 1')).toBe('Nessa')
+    expect(pcCombatName('Mira')).toBe('Mira')
+  })
+
+  it('labels PC combatants with the first name from the sheet stem', () => {
+    expect(combatantLabel('pc', 'PC — Torren Vale', 'Torren Vale, Human Ranger 1')).toBe('Torren')
+    expect(combatantLabel('monster', 'Wolf', 'Dire Wolf')).toBe('Wolf')
+  })
+})
 
 describe('night sheet parsing', () => {
   it('detects combat headings', () => {
