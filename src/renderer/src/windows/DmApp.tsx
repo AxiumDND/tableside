@@ -1,12 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type {
-  CampaignInfo,
-  CampaignTreeNode,
-  CombatState,
-  Combatant,
-  DisplayInfo,
-  RecentCampaign
-} from '../../../shared/types'
+import type { CampaignInfo, CampaignTreeNode, DisplayInfo, RecentCampaign } from '../../../shared/types'
 import { emptyMixerClock, emptyMixerState, mixerIsActive } from '../../../shared/audio'
 import { emptyCombat } from '../../../shared/types'
 import {
@@ -14,15 +7,10 @@ import {
   digitalRainEnabled,
   holoPortraitsEnabled,
   resolveConsoleTheme,
-  type ThemeId,
-  type ThemeOptions
+  type ThemeId
 } from '../../../shared/theme'
-import { getSystemPack, type SystemId } from '../../../shared/systemPack'
-import CampaignFiles, {
-  campaignFileUrl,
-  fileKind,
-  type FileKind
-} from '../components/CampaignFiles'
+import { getSystemPack } from '../../../shared/systemPack'
+import CampaignFiles, { campaignFileUrl, fileKind } from '../components/CampaignFiles'
 import AudioEngine from '../components/AudioEngine'
 import CombatTracker from '../components/CombatTracker'
 import MusicPanel from '../components/MusicPanel'
@@ -30,30 +18,24 @@ import DiceTray, { DiceLogProvider } from '../components/DiceTray'
 import HelpPanel from '../components/HelpPanel'
 import PlayerPreview from '../components/PlayerPreview'
 import RulesSearch from '../components/RulesSearch'
-import SessionNotes, { type EncounterAddItem } from '../components/SessionNotes'
+import SessionNotes from '../components/SessionNotes'
 import SystemPicker from '../components/SystemPicker'
 import ThemeSetup from '../components/ThemeSetup'
 import DigitalRain from '../components/DigitalRain'
-import { combatToPlayerInitiative, combatProfileFor, advanceCombatTurn, rollInitiativeFor } from '../lib/combat'
-import { flattenImages, flattenVideos, imageTitle, isImagePath, isPdfPath } from '../lib/images'
-import {
-  allPartyNotes,
-  bestiaryNotes,
-  flattenNotes,
-  partyNotes,
-  pcCombatName,
-  sameCombatantName,
-  sheetDisplayName
-} from '../lib/notes'
+import { combatToPlayerInitiative, combatProfileFor, advanceCombatTurn } from '../lib/combat'
+import { flattenImages, flattenVideos, imageTitle } from '../lib/images'
+import { allPartyNotes, bestiaryNotes, flattenNotes, sheetDisplayName } from '../lib/notes'
 import { libraryFolderFor, recordToCampaignMarkdown, gearSubfolderFor } from '../lib/lookupNotes'
-import { monsterToStatBlock, type SrdRecord } from '../lib/srd'
-import { extractStatblock, fallbackStatblock, parsedToStatBlock, type ParsedStatblock } from '../lib/statblock'
-import { APP_NAME, APP_VERSION } from '../../../shared/version'
+import type { SrdRecord } from '../lib/srd'
 import type { AppUpdateNotice } from '../../../shared/appUpdate'
-import appIcon from '../assets/icon.png'
 import UpdateBanner from '../components/UpdateBanner'
+import DmHeader from '../components/DmHeader'
 import { adjacentCampaignFile, canonicalFolder } from '../../../shared/campaignLayout'
 import { usePlayerPlayback } from '../hooks/usePlayerPlayback'
+import { useConsoleHotkeys } from '../hooks/useConsoleHotkeys'
+import { useCombatActions } from '../hooks/useCombatActions'
+import { useCampaignOpen } from '../hooks/useCampaignOpen'
+import { useCampaignNavigation } from '../hooks/useCampaignNavigation'
 
 const SIDE_PANEL_WIDTH = 'w-[400px]'
 
@@ -119,19 +101,28 @@ export default function DmApp() {
   const [mixerClock, setMixerClock] = useState(() => emptyMixerClock())
   const [displays, setDisplays] = useState<DisplayInfo[]>([])
   const [rightPanel, setRightPanel] = useState<'combat' | 'lookup' | 'help' | 'music' | null>(null)
-  const [openPath, setOpenPath] = useState('')
-  const [openKind, setOpenKind] = useState<FileKind>('note')
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const [history, setHistory] = useState<{ path: string; kind: FileKind }[]>([])
+  const {
+    openPath,
+    openKind,
+    selectedImage,
+    history,
+    setSelectedImage,
+    navigateTo,
+    goBack,
+    goNextFile,
+    openNote,
+    openTreeFile,
+    resetNavigation,
+    restoreOpen,
+    clearOpen,
+    pruneHistory
+  } = useCampaignNavigation(campaign)
   const [playerDisplayId, setPlayerDisplayId] = useState<number | ''>('')
   const [showPlayerPreview, setShowPlayerPreview] = useState(true)
   const [showLeftSidebar, setShowLeftSidebar] = useState(true)
   const [theme, setTheme] = useState<ThemeId>('classic')
   const [playerWindowOpen, setPlayerWindowOpen] = useState(false)
   const [recentCampaigns, setRecentCampaigns] = useState<RecentCampaign[]>([])
-  const [campaignSetup, setCampaignSetup] = useState<null | { step: 'system' } | { step: 'theme'; system: SystemId }>(
-    null
-  )
   const [updateNotice, setUpdateNotice] = useState<AppUpdateNotice | null>(null)
   const skipRestoredCombatShow = useRef(true)
 
@@ -177,11 +168,10 @@ export default function DmApp() {
           : firstNote(info.tree)
       if (remembered) {
         const node = findTreeNode(info.tree, remembered)
-        setOpenPath(remembered)
-        setOpenKind(node ? fileKind(node) : 'note')
+        restoreOpen(remembered, node ? fileKind(node) : 'note')
       }
     }
-  }, [openPath])
+  }, [openPath, restoreOpen])
 
   useEffect(() => {
     if (digitalRainEnabled(theme, campaign?.digitalRain)) {
@@ -221,43 +211,21 @@ export default function DmApp() {
   function applyCampaign(info: CampaignInfo | null, appTheme?: string | null): void {
     setCampaign(info)
     applyConsoleTheme(resolveConsoleTheme(info?.theme, appTheme))
-    const note = info ? firstNote(info.tree) : ''
-    setOpenPath(note)
-    setOpenKind('note')
-    setSelectedImage(null)
-    setHistory([])
+    resetNavigation(info ? firstNote(info.tree) : '')
     skipRestoredCombatShow.current = true
     void clearPlayer()
-    void window.tabledm.saveSettings({
-      lastOpenPath: note || undefined,
-      lastOpenKind: note ? 'note' : undefined
-    })
   }
 
-  async function openFolder(): Promise<void> {
-    const info = await window.tabledm.pickCampaignFolder()
-    applyCampaign(info)
+  const syncAfterOpen = useCallback(async (): Promise<void> => {
     setPlayer(await window.tabledm.getPlayerState())
     setMixer(await window.tabledm.getMixer())
     setRecentCampaigns((await window.tabledm.getSettings()).recentCampaigns ?? [])
-  }
+  }, [setPlayer])
 
-  async function newCampaign(system?: SystemId, themeId?: ThemeId, options?: ThemeOptions): Promise<void> {
-    if (!system) {
-      setCampaignSetup({ step: 'system' })
-      return
-    }
-    if (!themeId) {
-      setCampaignSetup({ step: 'theme', system })
-      return
-    }
-    setCampaignSetup(null)
-    const info = await window.tabledm.newCampaign(system, themeId, options)
-    applyCampaign(info, themeId)
-    setPlayer(await window.tabledm.getPlayerState())
-    setMixer(await window.tabledm.getMixer())
-    setRecentCampaigns((await window.tabledm.getSettings()).recentCampaigns ?? [])
-  }
+  const { campaignSetup, setCampaignSetup, openFolder, newCampaign, openSample, openRecent } = useCampaignOpen({
+    applyCampaign,
+    syncAfterOpen
+  })
 
   async function changeCampaignTheme(next: ThemeId): Promise<void> {
     applyConsoleTheme(next)
@@ -284,133 +252,13 @@ export default function DmApp() {
     if (updated) setCampaign(updated)
   }
 
-  async function openSample(): Promise<void> {
-    const info = await window.tabledm.openSampleCampaign()
-    applyCampaign(info)
-    setPlayer(await window.tabledm.getPlayerState())
-    setMixer(await window.tabledm.getMixer())
-    setRecentCampaigns((await window.tabledm.getSettings()).recentCampaigns ?? [])
-  }
-
-  async function openRecent(folder: string): Promise<void> {
-    const info = await window.tabledm.openCampaignPath(folder)
-    applyCampaign(info)
-    setPlayer(await window.tabledm.getPlayerState())
-    setMixer(await window.tabledm.getMixer())
-    const prefs = await window.tabledm.getSettings()
-    setRecentCampaigns(prefs.recentCampaigns ?? [])
-  }
-
-  function navigateTo(path: string, kind: FileKind): void {
-    if (!path || path === openPath) {
-      setOpenKind(kind)
-      setSelectedImage(kind === 'image' ? path : null)
-      return
-    }
-    if (openPath) {
-      setHistory((stack) => [...stack, { path: openPath, kind: openKind }].slice(-40))
-    }
-    setOpenPath(path)
-    setOpenKind(kind)
-    setSelectedImage(kind === 'image' ? path : null)
-    void window.tabledm.saveSettings({ lastOpenPath: path, lastOpenKind: kind })
-  }
-
-  function goBack(): void {
-    if (history.length === 0) return
-    const prev = history[history.length - 1]
-    setHistory((stack) => stack.slice(0, -1))
-    setOpenPath(prev.path)
-    setOpenKind(prev.kind)
-    setSelectedImage(prev.kind === 'image' ? prev.path : null)
-    void window.tabledm.saveSettings({ lastOpenPath: prev.path, lastOpenKind: prev.kind })
-  }
-
-  function showFile(path: string, kind: FileKind): void {
-    setOpenPath(path)
-    setOpenKind(kind)
-    setSelectedImage(kind === 'image' ? path : null)
-    void window.tabledm.saveSettings({ lastOpenPath: path, lastOpenKind: kind })
-  }
-
-  function goNextFile(): void {
-    if (!campaign) return
-    const next = adjacentCampaignFile(campaign.tree, openPath, 1)
-    if (!next) return
-    showFile(next.relativePath, fileKind(next))
-  }
-
-  async function openTreeFile(node: CampaignTreeNode): Promise<void> {
-    navigateTo(node.relativePath, fileKind(node))
-  }
-
-  async function saveCombat(next: CombatState): Promise<void> {
-    const info = await window.tabledm.saveCombat(next)
-    if (info) setCampaign(info)
-  }
-
-  const loadPartyItems = useCallback(async (): Promise<EncounterAddItem[]> => {
-    if (!campaign) return []
-    const notes = flattenNotes(campaign.tree)
-    const from = openPath || firstNote(campaign.tree)
-    const items: EncounterAddItem[] = []
-    const seen = new Set<string>()
-    for (const pc of partyNotes(from, notes)) {
-      const text = await window.tabledm.readFile(pc.relativePath)
-      const parsed = extractStatblock(text)?.block ?? fallbackStatblock(pc.relativePath, text)
-      items.push({
-        block: parsed,
-        kind: 'pc',
-        sourceId: pc.relativePath,
-        name: pcCombatName(pc.relativePath)
-      })
-      seen.add(parsed.name.toLowerCase())
-    }
-    for (const pc of campaign.party) {
-      if (seen.has(pc.name.toLowerCase())) continue
-      items.push({
-        block: {
-          name: pc.name,
-          ac: String(pc.ac),
-          hp: pc.maxHp,
-          stats: [10, 10, 10, 10, 10, 10],
-          saves: {},
-          skills: {},
-          traits: [],
-          actions: [],
-          bonusActions: [],
-          reactions: [],
-          legendary: []
-        },
-        kind: 'pc',
-        sourceId: pc.id,
-        name: pcCombatName(pc.name)
-      })
-    }
-    return items
-  }, [campaign, openPath])
-
-  function addMonster(record: SrdRecord): void {
-    const block = monsterToStatBlock(record.data)
-    const hp = Number(block.hp ?? 10)
-    const willpower =
-      typeof record.data.willpower === 'number' ? record.data.willpower : undefined
-    const hunger = typeof record.data.hunger === 'number' ? record.data.hunger : undefined
-    void addEncounterItems([], {
-      id: crypto.randomUUID(),
-      name: block.name,
-      kind: 'monster',
-      initiative: 0,
-      hp,
-      maxHp: hp,
-      ac: Number(block.ac ?? 10),
-      willpower,
-      maxWillpower: willpower,
-      hunger,
-      statBlock: block,
-      sourceId: record.id
+  const { saveCombat, addMonster, addNpcFromSheet, addPartyToCombat, addBestiaryToCombat, addEncounterItems } =
+    useCombatActions({
+      campaign,
+      setCampaign,
+      getPartyFromNote: () => openPath || firstNote(campaign?.tree ?? []),
+      onOpenCombatPanel: () => changeRightPanel('combat')
     })
-  }
 
   async function saveLookupToCampaign(record: SrdRecord): Promise<'added' | 'exists' | void> {
     const folder = libraryFolderFor(record)
@@ -454,100 +302,6 @@ export default function DmApp() {
     return result.existed ? 'exists' : 'added'
   }
 
-  function addNpcFromSheet(block: ParsedStatblock, notePath?: string): void {
-    const sourceId = notePath || `sheet:${block.name}`
-    const name = notePath ? sheetDisplayName(notePath) : block.name
-    void addEncounterItems([{ block, kind: 'npc', sourceId, name }])
-  }
-
-  function nextCopyName(base: string, existing: Combatant[]): string {
-    if (!existing.some((c) => c.name === base)) return base
-    let n = 2
-    while (existing.some((c) => c.name === `${base} ${n}`)) n += 1
-    return `${base} ${n}`
-  }
-
-  function addPartyToCombat(): void {
-    void addEncounterItems([])
-  }
-
-  async function addBestiaryToCombat(notePath: string): Promise<void> {
-    const text = await window.tabledm.readFile(notePath)
-    const parsed = extractStatblock(text)?.block ?? fallbackStatblock(notePath, text)
-    const live = campaign?.combat ?? emptyCombat()
-    const name = nextCopyName(sheetDisplayName(notePath), live.combatants)
-    await addEncounterItems(
-      [{ block: parsed, kind: 'monster', sourceId: `${notePath}#${name}`, name }],
-      undefined,
-      false
-    )
-  }
-
-  async function addEncounterItems(
-    items: EncounterAddItem[],
-    extra?: Combatant,
-    includeParty = true
-  ): Promise<void> {
-    const party = includeParty ? await loadPartyItems() : []
-    const combined = [...party, ...items]
-    const combat = campaign?.combat ?? emptyCombat()
-    const next = [...combat.combatants]
-    let added = 0
-    for (const item of combined) {
-      const existing =
-        item.kind === 'monster'
-          ? next.find((c) => c.sourceId && item.sourceId && c.sourceId === item.sourceId)
-          : next.find(
-              (c) =>
-                (c.sourceId && item.sourceId && c.sourceId === item.sourceId) ||
-                sameCombatantName(c.name, item.name)
-            )
-      if (existing) {
-        if (existing.name !== item.name) {
-          existing.name = item.name
-          added += 1
-        }
-        continue
-      }
-      const statBlock = parsedToStatBlock(item.block)
-      next.push({
-        id: crypto.randomUUID(),
-        name: item.name,
-        kind: item.kind,
-        initiative: 0,
-        hp: statBlock.hp ?? 10,
-        maxHp: statBlock.hp ?? 10,
-        ac: statBlock.ac ?? 10,
-        willpower: item.block.willpower,
-        maxWillpower: item.block.maxWillpower ?? item.block.willpower,
-        hunger: item.block.hunger,
-        sourceId: item.sourceId,
-        statBlock
-      })
-      added += 1
-    }
-    if (extra && !next.some((c) => c.sourceId === extra.sourceId || c.id === extra.id)) {
-      next.push(extra)
-      added += 1
-    }
-    if (added > 0) {
-      const withInit = rollInitiativeFor(next, 'unrolled-npcs')
-      await saveCombat({
-        ...combat,
-        combatants: withInit,
-        activeId: combat.activeId
-      })
-    }
-    changeRightPanel('combat')
-  }
-
-  function openNote(notePath: string): void {
-    navigateTo(
-      notePath,
-      isImagePath(notePath) ? 'image' : isPdfPath(notePath) ? 'pdf' : 'note'
-    )
-  }
-
   const combat = campaign?.combat ?? emptyCombat()
   const nextFile = campaign ? adjacentCampaignFile(campaign.tree, openPath, 1) : null
 
@@ -575,141 +329,40 @@ export default function DmApp() {
     })
   }
 
-  useEffect(() => {
-    const typing = (target: EventTarget | null): boolean =>
-      target instanceof HTMLElement &&
-      (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)
-
-    const onKey = (e: KeyboardEvent): void => {
-      if (typing(e.target)) return
-      if (e.altKey && e.key === 'ArrowLeft') {
-        e.preventDefault()
-        goBack()
-        return
-      }
-      if (e.altKey && e.key === 'ArrowRight') {
-        e.preventDefault()
-        goNextFile()
-        return
-      }
-      if (!(e.altKey && !e.ctrlKey && !e.metaKey)) return
-      const key = e.key.toLowerCase()
-      if (key === 's') {
-        e.preventDefault()
-        void showSelectedToPlayers(selectedImage, openPath, openKind, { mode: 'art' })
-        return
-      }
-      if (key === 'i') {
-        e.preventDefault()
-        void showSelectedToPlayers(selectedImage, openPath, openKind, {
-          mode: 'handout',
-          includeSecrets: e.shiftKey
-        })
-        return
-      }
-      if (key === 'x') {
-        e.preventDefault()
-        void clearPlayer()
-        return
-      }
-      if (key === 't') {
-        e.preventDefault()
-        const live = campaign?.combat
-        if (!live || live.combatants.length === 0) return
-        changeRightPanel('combat')
-        void saveCombat(advanceCombatTurn(live))
-      }
+  useConsoleHotkeys({
+    onBack: goBack,
+    onNext: goNextFile,
+    onShowArt: () => void showSelectedToPlayers(selectedImage, openPath, openKind, { mode: 'art' }),
+    onShowHandout: (includeSecrets) =>
+      void showSelectedToPlayers(selectedImage, openPath, openKind, { mode: 'handout', includeSecrets }),
+    onClearPlayer: () => void clearPlayer(),
+    onAdvanceTurn: () => {
+      const live = campaign?.combat
+      if (!live || live.combatants.length === 0) return
+      changeRightPanel('combat')
+      void saveCombat(advanceCombatTurn(live))
     }
-    const onMouse = (e: MouseEvent): void => {
-      if (e.button === 3) {
-        e.preventDefault()
-        goBack()
-        return
-      }
-      if (e.button === 4) {
-        e.preventDefault()
-        goNextFile()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    window.addEventListener('mouseup', onMouse)
-    return () => {
-      window.removeEventListener('keydown', onKey)
-      window.removeEventListener('mouseup', onMouse)
-    }
-  }, [history, openPath, openKind, campaign, selectedImage])
+  })
 
   return (
     <DiceLogProvider>
     <AudioEngine state={mixer} onClock={setMixerClock} />
     <div className="flex h-full flex-col bg-ink text-parchment">
-      <header className="flex items-center gap-3 border-b border-line bg-panel px-4 py-2">
-        <div>
-          <div className="flex items-center gap-2">
-            <img src={appIcon} alt="" className="h-7 w-7 rounded-sm" />
-            <div className="flex items-baseline gap-2">
-              <div className="font-display text-xl leading-none text-amber">{APP_NAME}</div>
-              <div className="text-[11px] font-semibold tracking-wide text-amber-dim">v{APP_VERSION}</div>
-            </div>
-          </div>
-          <div className="text-[11px] text-muted">
-            {campaign ? `${getSystemPack(campaign.system).shortLabel} · second-monitor player view` : 'Table tool · second-monitor player view'}
-          </div>
-        </div>
-        <div className="ml-4 min-w-0 flex-1">
-          <div className="truncate text-sm">{campaign?.name ?? 'No campaign open'}</div>
-          <div className="truncate text-[11px] text-muted">{campaign?.folder ?? 'Choose a folder to begin'}</div>
-        </div>
-        <button type="button" onClick={() => void newCampaign()} className="rounded border border-line px-3 py-1 text-sm hover:border-amber">
-          New campaign
-        </button>
-        <button type="button" onClick={openFolder} className="rounded border border-line px-3 py-1 text-sm hover:border-amber">
-          Open campaign
-        </button>
-        <button
-          type="button"
-          onClick={() => changeRightPanel((open) => (open === 'lookup' ? null : 'lookup'))}
-          className={`rounded px-3 py-1 text-sm ${
-            rightPanel === 'lookup' ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
-          }`}
-        >
-          Lookup
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            changeRightPanel((open) => (open === 'combat' ? null : 'combat'))
-          }}
-          className={`rounded px-3 py-1 text-sm ${
-            rightPanel === 'combat' ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
-          }`}
-        >
-          Combat
-          {combat.combatants.length > 0 ? ` (${combat.combatants.length})` : ''}
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            changeRightPanel((open) => (open === 'music' ? null : 'music'))
-            void window.tabledm.getMixer().then(setMixer)
-          }}
-          className={`rounded px-3 py-1 text-sm ${
-            rightPanel === 'music' ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
-          }`}
-        >
-          Music
-          {mixerIsActive(mixer) ? ' ·' : ''}
-        </button>
-        <button
-          type="button"
-          onClick={() => changeRightPanel((open) => (open === 'help' ? null : 'help'))}
-          className={`rounded px-3 py-1 text-sm ${
-            rightPanel === 'help' ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
-          }`}
-        >
-          Help & settings
-        </button>
-      </header>
+      <DmHeader
+        campaign={campaign}
+        rightPanel={rightPanel}
+        combatCount={combat.combatants.length}
+        mixerActive={mixerIsActive(mixer)}
+        onNewCampaign={() => void newCampaign()}
+        onOpenCampaign={openFolder}
+        onToggleLookup={() => changeRightPanel((open) => (open === 'lookup' ? null : 'lookup'))}
+        onToggleCombat={() => changeRightPanel((open) => (open === 'combat' ? null : 'combat'))}
+        onToggleMusic={() => {
+          changeRightPanel((open) => (open === 'music' ? null : 'music'))
+          void window.tabledm.getMixer().then(setMixer)
+        }}
+        onToggleHelp={() => changeRightPanel((open) => (open === 'help' ? null : 'help'))}
+      />
       <div>
       <UpdateBanner
         notice={updateNotice}
@@ -776,12 +429,9 @@ export default function DmApp() {
                 onOpen={(node) => void openTreeFile(node)}
                 onTreeChange={(info, path) => {
                   setCampaign(info)
-                  setHistory((stack) => stack.filter((item) => findTreeNode(info.tree, item.path)))
+                  pruneHistory((p) => Boolean(findTreeNode(info.tree, p)))
                   if (path === '') {
-                    setOpenPath('')
-                    setOpenKind('note')
-                    setSelectedImage(null)
-                    void window.tabledm.saveSettings({ lastOpenPath: undefined, lastOpenKind: undefined })
+                    clearOpen()
                     return
                   }
                   if (!path) return
