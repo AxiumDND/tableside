@@ -7,10 +7,9 @@ import {
   digitalRainEnabled,
   holoPortraitsEnabled,
   resolveConsoleTheme,
-  type ThemeId,
-  type ThemeOptions
+  type ThemeId
 } from '../../../shared/theme'
-import { getSystemPack, type SystemId } from '../../../shared/systemPack'
+import { getSystemPack } from '../../../shared/systemPack'
 import CampaignFiles, {
   campaignFileUrl,
   fileKind,
@@ -39,6 +38,7 @@ import { adjacentCampaignFile, canonicalFolder } from '../../../shared/campaignL
 import { usePlayerPlayback } from '../hooks/usePlayerPlayback'
 import { useConsoleHotkeys } from '../hooks/useConsoleHotkeys'
 import { useCombatActions } from '../hooks/useCombatActions'
+import { useCampaignOpen } from '../hooks/useCampaignOpen'
 
 const SIDE_PANEL_WIDTH = 'w-[400px]'
 
@@ -114,9 +114,6 @@ export default function DmApp() {
   const [theme, setTheme] = useState<ThemeId>('classic')
   const [playerWindowOpen, setPlayerWindowOpen] = useState(false)
   const [recentCampaigns, setRecentCampaigns] = useState<RecentCampaign[]>([])
-  const [campaignSetup, setCampaignSetup] = useState<null | { step: 'system' } | { step: 'theme'; system: SystemId }>(
-    null
-  )
   const [updateNotice, setUpdateNotice] = useState<AppUpdateNotice | null>(null)
   const skipRestoredCombatShow = useRef(true)
 
@@ -219,30 +216,16 @@ export default function DmApp() {
     })
   }
 
-  async function openFolder(): Promise<void> {
-    const info = await window.tabledm.pickCampaignFolder()
-    applyCampaign(info)
+  const syncAfterOpen = useCallback(async (): Promise<void> => {
     setPlayer(await window.tabledm.getPlayerState())
     setMixer(await window.tabledm.getMixer())
     setRecentCampaigns((await window.tabledm.getSettings()).recentCampaigns ?? [])
-  }
+  }, [setPlayer])
 
-  async function newCampaign(system?: SystemId, themeId?: ThemeId, options?: ThemeOptions): Promise<void> {
-    if (!system) {
-      setCampaignSetup({ step: 'system' })
-      return
-    }
-    if (!themeId) {
-      setCampaignSetup({ step: 'theme', system })
-      return
-    }
-    setCampaignSetup(null)
-    const info = await window.tabledm.newCampaign(system, themeId, options)
-    applyCampaign(info, themeId)
-    setPlayer(await window.tabledm.getPlayerState())
-    setMixer(await window.tabledm.getMixer())
-    setRecentCampaigns((await window.tabledm.getSettings()).recentCampaigns ?? [])
-  }
+  const { campaignSetup, setCampaignSetup, openFolder, newCampaign, openSample, openRecent } = useCampaignOpen({
+    applyCampaign,
+    syncAfterOpen
+  })
 
   async function changeCampaignTheme(next: ThemeId): Promise<void> {
     applyConsoleTheme(next)
@@ -267,23 +250,6 @@ export default function DmApp() {
     if (!campaign) return
     const updated = await window.tabledm.setCampaignCurrencies(currencies)
     if (updated) setCampaign(updated)
-  }
-
-  async function openSample(): Promise<void> {
-    const info = await window.tabledm.openSampleCampaign()
-    applyCampaign(info)
-    setPlayer(await window.tabledm.getPlayerState())
-    setMixer(await window.tabledm.getMixer())
-    setRecentCampaigns((await window.tabledm.getSettings()).recentCampaigns ?? [])
-  }
-
-  async function openRecent(folder: string): Promise<void> {
-    const info = await window.tabledm.openCampaignPath(folder)
-    applyCampaign(info)
-    setPlayer(await window.tabledm.getPlayerState())
-    setMixer(await window.tabledm.getMixer())
-    const prefs = await window.tabledm.getSettings()
-    setRecentCampaigns(prefs.recentCampaigns ?? [])
   }
 
   function navigateTo(path: string, kind: FileKind): void {
