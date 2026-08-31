@@ -11,10 +11,9 @@ import {
 } from '../lib/mapCamera'
 import { useMapFog } from '../hooks/useMapFog'
 import { useCreatureSpaces } from '../hooks/useCreatureSpaces'
+import { useMapTokens } from '../hooks/useMapTokens'
 import {
   TOKEN_SCALE_DEFAULT,
-  clampTokenScale,
-  creatureSpaceFromMarkdown,
   ensureHeading,
   extractMapNote,
   mapHeadings,
@@ -26,8 +25,7 @@ import {
   toPlayerMapToken,
   uniquePinId,
   type MapNoteData,
-  type MapPin,
-  type MapToken
+  type MapPin
 } from '../lib/mapNote'
 import { type CampaignNote } from '../lib/notes'
 import MapStage, { imagePointFromElement } from './MapStage'
@@ -37,9 +35,7 @@ import {
   liveView,
   primaryTool,
   type MapTool,
-  type PinAction,
-  type PickerTab,
-  type TokenPick
+  type PinAction
 } from './MapViewHelpers'
 import {
   MapFogToolbar,
@@ -77,16 +73,11 @@ export default function MapView({
   const [tool, setTool] = useState<MapTool>('pan')
   const [pinAction, setPinAction] = useState<PinAction>('view')
   const [selectedId, setSelectedId] = useState<string | null>(data?.pins[0]?.id ?? null)
-  const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null)
   const [draft, setDraft] = useState<{ x: number; y: number } | null>(null)
   const [label, setLabel] = useState('')
   const [heading, setHeading] = useState('')
   const [newHeading, setNewHeading] = useState('')
   const [dragPos, setDragPos] = useState<{ id: string; x: number; y: number } | null>(null)
-  const [pendingToken, setPendingToken] = useState<TokenPick | null>(null)
-  const [pickerTab, setPickerTab] = useState<PickerTab>('pc')
-  const [tokenQuery, setTokenQuery] = useState('')
-  const [scaleDraft, setScaleDraft] = useState<number | null>(null)
   const cameraRef = useRef(camera)
   const toolRef = useRef(tool)
   const panRef = useRef<{ x: number; y: number } | null>(null)
@@ -99,8 +90,6 @@ export default function MapView({
   const dataRef = useRef(data)
   const imagesRef = useRef(images)
   const markdownRef = useRef(markdown)
-  const tokenScaleTimer = useRef<number | null>(null)
-  const scaleDraftRef = useRef<number | null>(null)
   const placing = tool === 'pin' && pinAction === 'add'
   const catalog = useMemo(() => catalogFromNotes(notes, images), [notes, images])
   const catalogRef = useRef(catalog)
@@ -113,7 +102,6 @@ export default function MapView({
   catalogRef.current = catalog
   imagesRef.current = images
   markdownRef.current = markdown
-  scaleDraftRef.current = scaleDraft
 
   const fog = useMapFog({ getZoom: () => cameraRef.current.zoom, onCommit: () => persistFog() })
   const fogApiRef = useRef(fog)
@@ -128,23 +116,25 @@ export default function MapView({
       onChangeRef.current(replaceMapFence(markdownRef.current, withCurrentFog({ tokens })))
   })
 
+  const tokens = useMapTokens({
+    tokens: data?.tokens ?? [],
+    tokenScale: data?.tokenScale,
+    dataRef,
+    catalog,
+    spaceBySource,
+    setSpaceBySource,
+    persist: (partial) => onChangeRef.current(replaceMapFence(markdownRef.current, withCurrentFog(partial))),
+    onDeselectPins: () => setSelectedId(null)
+  })
+  const tokensApiRef = useRef(tokens)
+  tokensApiRef.current = tokens
+
   const headings = useMemo(() => mapHeadings(markdown), [markdown])
   const selected = data?.pins.find((pin) => pin.id === selectedId) ?? null
-  const selectedToken = data?.tokens.find((token) => token.id === selectedTokenId) ?? null
   const roomText = selected
     ? mapRoomMarkdown(markdown, selected.heading) ??
       `No heading yet for **${selected.heading || selected.label}**. Edit the note to add \`## ${selected.heading || selected.label}\`.`
     : mapOverviewMarkdown(markdown)
-  const filteredPicks = useMemo(() => {
-    const q = tokenQuery.trim().toLowerCase()
-    const list = catalog[pickerTab].map((item) => ({
-      ...item,
-      space: spaceBySource[item.source] ?? item.space
-    }))
-    if (!q) return list
-    return list.filter((item) => item.label.toLowerCase().includes(q))
-  }, [catalog, pickerTab, tokenQuery, spaceBySource])
-  const tokenScale = scaleDraft ?? data?.tokenScale ?? TOKEN_SCALE_DEFAULT
 
   const emitLive = useCallback((): void => {
     if (!imagePath || !onLiveViewRef.current) return
@@ -157,22 +147,20 @@ export default function MapView({
           fog.fogRef.current,
           dataRef.current?.tokens ?? [],
           imagesRef.current,
-          scaleDraftRef.current ?? dataRef.current?.tokenScale ?? TOKEN_SCALE_DEFAULT,
+          tokens.scaleDraftRef.current ?? dataRef.current?.tokenScale ?? TOKEN_SCALE_DEFAULT,
           dragPosRef.current
         )
       )
     })
-  }, [imagePath, fog.fogRef])
+  }, [imagePath, fog.fogRef, tokens.scaleDraftRef])
 
   useEffect(() => {
     fog.reset(data)
     setCamera(FIT_CAMERA)
     setTool('pan')
     setDraft(null)
-    setPendingToken(null)
-    setSelectedTokenId(null)
+    tokensApiRef.current.reset()
     setPinAction('view')
-    setScaleDraft(null)
     // Re-seed fog and reset the view only when the open map (path/image) changes.
     // Including data.fog / data.fogSize here would wipe fog mid-paint on every edit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -180,18 +168,13 @@ export default function MapView({
 
   useEffect(() => {
     emitLive()
-  }, [camera, fog.fogTick, emitLive, data?.tokens, data?.tokenScale, dragPos, scaleDraft])
+  }, [camera, fog.fogTick, emitLive, data?.tokens, data?.tokenScale, dragPos, tokens.scaleDraft])
 
   useEffect(() => {
-    if (selectedTokenId && data?.tokens.some((token) => token.id === selectedTokenId)) return
+    if (tokens.selectedTokenId && data?.tokens.some((token) => token.id === tokens.selectedTokenId)) return
     if (selectedId && data?.pins.some((pin) => pin.id === selectedId)) return
     setSelectedId(data?.pins[0]?.id ?? null)
-  }, [data, selectedId, selectedTokenId])
-
-  useEffect(() => {
-    if (selectedTokenId && data?.tokens.some((token) => token.id === selectedTokenId)) return
-    setSelectedTokenId(null)
-  }, [data, selectedTokenId])
+  }, [data, selectedId, tokens.selectedTokenId])
 
   useEffect(() => {
     const pane = paneRef.current
@@ -206,23 +189,10 @@ export default function MapView({
         return
       }
       if (event.shiftKey && (toolRef.current === 'token' || (dataRef.current?.tokens.length ?? 0) > 0)) {
-        const delta = event.deltaY < 0 ? 0.005 : -0.005
         const current = dataRef.current
         if (!current) return
-        const base = scaleDraftRef.current ?? current.tokenScale ?? TOKEN_SCALE_DEFAULT
-        const next = clampTokenScale(base + delta)
-        if (tokenScaleTimer.current) window.clearTimeout(tokenScaleTimer.current)
-        setScaleDraft(next)
-        onChangeRef.current(
-          replaceMapFence(markdownRef.current, {
-            image: current.image ?? '',
-            pins: current.pins ?? [],
-            tokens: current.tokens ?? [],
-            tokenScale: next,
-            pinsLocked: current.pinsLocked ?? true,
-            ...fogApiRef.current.fields()
-          })
-        )
+        const base = tokensApiRef.current.scaleDraftRef.current ?? current.tokenScale ?? TOKEN_SCALE_DEFAULT
+        tokensApiRef.current.applyScaleNow(base + (event.deltaY < 0 ? 0.005 : -0.005))
         return
       }
       const content = contentRef.current
@@ -257,7 +227,6 @@ export default function MapView({
 
   useEffect(() => {
     return () => {
-      if (tokenScaleTimer.current) window.clearTimeout(tokenScaleTimer.current)
       if (liveTimer.current) window.cancelAnimationFrame(liveTimer.current)
     }
   }, [])
@@ -294,7 +263,7 @@ export default function MapView({
     setTool('pin')
     setPinAction('add')
     setDraft(null)
-    setPendingToken(null)
+    tokens.setPendingToken(null)
     setLabel(nextPinLabel(pins))
     setHeading(headings[0] ?? '')
     setNewHeading('')
@@ -305,7 +274,7 @@ export default function MapView({
     setTool('pin')
     setPinAction('edit')
     setDraft(null)
-    setPendingToken(null)
+    tokens.setPendingToken(null)
     const pin = data.pins.find((item) => item.id === selectedId) ?? data.pins[0] ?? null
     if (pin) {
       setSelectedId(pin.id)
@@ -320,11 +289,11 @@ export default function MapView({
     setTool('pin')
     setPinAction('delete')
     setDraft(null)
-    setPendingToken(null)
+    tokens.setPendingToken(null)
   }
 
   function selectPrimary(next: 'pan' | 'pin' | 'token' | 'fog'): void {
-    if (next !== 'token') setPendingToken(null)
+    if (next !== 'token') tokens.setPendingToken(null)
     if (next !== 'pin') setDraft(null)
     if (next === 'pin') {
       setTool('pin')
@@ -399,60 +368,6 @@ export default function MapView({
     }
   }
 
-  function addToken(point: { x: number; y: number }): void {
-    const current = dataRef.current
-    if (!current || !pendingToken) return
-    const token: MapToken = {
-      id: uniquePinId(current.tokens, pendingToken.label),
-      kind: pendingToken.kind,
-      source: pendingToken.source,
-      x: point.x,
-      y: point.y,
-      space: pendingToken.space,
-      label: pendingToken.label,
-      image: ''
-    }
-    commit(withCurrentFog({ tokens: [...current.tokens, token] }))
-    setSelectedTokenId(token.id)
-    setSelectedId(null)
-  }
-
-  function moveToken(id: string, x: number, y: number): void {
-    const current = dataRef.current
-    if (!current) return
-    commit(withCurrentFog({ tokens: current.tokens.map((token) => (token.id === id ? { ...token, x, y } : token)) }))
-  }
-
-  function deleteToken(id: string): void {
-    const current = dataRef.current
-    if (!current) return
-    commit(withCurrentFog({ tokens: current.tokens.filter((token) => token.id !== id) }))
-    if (selectedTokenId === id) setSelectedTokenId(null)
-  }
-
-  function resizeAllTokens(size: number): void {
-    const next = clampTokenScale(size)
-    const current = dataRef.current
-    if (!current) return
-    if (tokenScaleTimer.current) window.clearTimeout(tokenScaleTimer.current)
-    tokenScaleTimer.current = window.setTimeout(() => {
-      commit(withCurrentFog({ tokenScale: next }))
-    }, 150)
-  }
-
-  function pickToken(item: TokenPick): void {
-    const space = spaceBySource[item.source] ?? item.space
-    setPendingToken({ ...item, space })
-    if (spaceBySource[item.source]) return
-    void window.tabledm.readFile(item.source).then((text) => {
-      const nextSpace = creatureSpaceFromMarkdown(text)
-      setSpaceBySource((prev) => ({ ...prev, [item.source]: nextSpace }))
-      setPendingToken((prev) =>
-        prev?.source === item.source ? { ...prev, space: nextSpace } : prev
-      )
-    }).catch(() => undefined)
-  }
-
   function onBoardPointerDown(event: ReactPointerEvent<HTMLDivElement>): void {
     if (event.button === 1 || event.altKey || (tool === 'pan' && event.button === 0)) {
       event.preventDefault()
@@ -473,7 +388,7 @@ export default function MapView({
     if (tool === 'token' && event.button === 0) {
       const point = pointFromEvent(event)
       if (point) fog.setBrushPos(point)
-      if (point && pendingToken) addToken(point)
+      if (point && tokens.pendingToken) tokens.addToken(point)
       return
     }
     if (tool === 'pin' && pinAction === 'add' && event.button === 0) {
@@ -485,7 +400,7 @@ export default function MapView({
   }
 
   function onBoardPointerMove(event: ReactPointerEvent<HTMLDivElement>): void {
-    if (tool === 'fog' || tool === 'reveal' || (tool === 'token' && pendingToken)) {
+    if (tool === 'fog' || tool === 'reveal' || (tool === 'token' && tokens.pendingToken)) {
       const hover = pointFromEvent(event)
       if (hover) fog.setBrushPos(hover)
     }
@@ -534,7 +449,7 @@ export default function MapView({
         : (tool === 'pin' && (pinAction === 'add' || pinAction === 'delete')) ||
             tool === 'fog' ||
             tool === 'reveal' ||
-            (tool === 'token' && pendingToken)
+            (tool === 'token' && tokens.pendingToken)
           ? 'crosshair'
           : 'default'
 
@@ -568,24 +483,21 @@ export default function MapView({
       {primary === 'token' ? (
         <div className="flex flex-col gap-1.5 border-b border-line bg-panel px-3 py-1.5">
           <MapTokenToolbar
-            pendingToken={pendingToken}
-            tokenScale={tokenScale}
-            selectedTokenId={selectedTokenId}
-            onTokenScaleChange={(next) => {
-              setScaleDraft(next)
-              resizeAllTokens(next)
-            }}
-            onDeleteToken={deleteToken}
+            pendingToken={tokens.pendingToken}
+            tokenScale={tokens.tokenScale}
+            selectedTokenId={tokens.selectedTokenId}
+            onTokenScaleChange={tokens.setScale}
+            onDeleteToken={tokens.deleteToken}
           />
           <MapTokenPickerPanel
-            pickerTab={pickerTab}
-            tokenQuery={tokenQuery}
+            pickerTab={tokens.pickerTab}
+            tokenQuery={tokens.tokenQuery}
             catalog={catalog}
-            filteredPicks={filteredPicks}
-            pendingToken={pendingToken}
-            onPickerTabChange={setPickerTab}
-            onTokenQueryChange={setTokenQuery}
-            onPickToken={pickToken}
+            filteredPicks={tokens.filteredPicks}
+            pendingToken={tokens.pendingToken}
+            onPickerTabChange={tokens.setPickerTab}
+            onTokenQueryChange={tokens.setTokenQuery}
+            onPickToken={tokens.pickToken}
           />
         </div>
       ) : null}
@@ -623,14 +535,14 @@ export default function MapView({
                 return (
                   <MapTokenMark
                     key={token.id}
-                    token={toPlayerMapToken(live, images, tokenScale)}
-                    selected={token.id === selectedTokenId}
+                    token={toPlayerMapToken(live, images, tokens.tokenScale)}
+                    selected={token.id === tokens.selectedTokenId}
                     interactive={!tokensLocked}
                     onPointerDown={(event) => {
                       if (tokensLocked) return
                       event.preventDefault()
                       event.stopPropagation()
-                      setSelectedTokenId(token.id)
+                      tokens.setSelectedTokenId(token.id)
                       setSelectedId(null)
                       tokenDrag.current = { id: token.id, moved: false }
                       event.currentTarget.setPointerCapture(event.pointerId)
@@ -649,23 +561,23 @@ export default function MapView({
                       tokenDrag.current = null
                       dragPosRef.current = null
                       if (active?.moved && pos && pos.id === token.id) {
-                        moveToken(token.id, pos.x, pos.y)
+                        tokens.moveToken(token.id, pos.x, pos.y)
                       }
                       setDragPos(null)
                     }}
                   />
                 )
               })}
-              {tool === 'token' && pendingToken && fog.brushPos ? (
+              {tool === 'token' && tokens.pendingToken && fog.brushPos ? (
                 <MapTokenMark
                   token={{
                     id: 'ghost',
                     x: fog.brushPos.x,
                     y: fog.brushPos.y,
-                    size: tokenDiameter(tokenScale, pendingToken.space),
-                    label: pendingToken.label,
-                    kind: pendingToken.kind,
-                    imageSrc: pendingToken.imageSrc
+                    size: tokenDiameter(tokens.tokenScale, tokens.pendingToken.space),
+                    label: tokens.pendingToken.label,
+                    kind: tokens.pendingToken.kind,
+                    imageSrc: tokens.pendingToken.imageSrc
                   }}
                   ghost
                 />
@@ -679,7 +591,7 @@ export default function MapView({
                     if (tool === 'fog' || tool === 'reveal' || tool === 'token') return
                     event.preventDefault()
                     event.stopPropagation()
-                    setSelectedTokenId(null)
+                    tokens.setSelectedTokenId(null)
                     if (tool === 'pin' && pinAction === 'delete') {
                       if (!pinsLocked) deletePin(pin.id)
                       return
@@ -787,11 +699,11 @@ export default function MapView({
 
       <div className="max-h-[38%] min-h-24 overflow-auto border-t border-line px-3 py-2">
         <div className="mx-auto max-w-3xl text-sm">
-          {selectedToken ? (
+          {tokens.selectedToken ? (
             <p className="mb-2 text-[11px] uppercase tracking-wider text-muted">
-              Token {selectedToken.label}
-              {selectedToken.kind === 'pc' ? ' · player' : selectedToken.kind === 'monster' ? ' · monster' : ' · npc'}
-              {` · ${selectedToken.space}`}
+              Token {tokens.selectedToken.label}
+              {tokens.selectedToken.kind === 'pc' ? ' · player' : tokens.selectedToken.kind === 'monster' ? ' · monster' : ' · npc'}
+              {` · ${tokens.selectedToken.space}`}
             </p>
           ) : selected ? (
             <p className="mb-2 text-[11px] uppercase tracking-wider text-muted">
