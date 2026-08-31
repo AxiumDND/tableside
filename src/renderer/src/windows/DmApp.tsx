@@ -10,11 +10,7 @@ import {
   type ThemeId
 } from '../../../shared/theme'
 import { getSystemPack } from '../../../shared/systemPack'
-import CampaignFiles, {
-  campaignFileUrl,
-  fileKind,
-  type FileKind
-} from '../components/CampaignFiles'
+import CampaignFiles, { campaignFileUrl, fileKind } from '../components/CampaignFiles'
 import AudioEngine from '../components/AudioEngine'
 import CombatTracker from '../components/CombatTracker'
 import MusicPanel from '../components/MusicPanel'
@@ -27,7 +23,7 @@ import SystemPicker from '../components/SystemPicker'
 import ThemeSetup from '../components/ThemeSetup'
 import DigitalRain from '../components/DigitalRain'
 import { combatToPlayerInitiative, combatProfileFor, advanceCombatTurn } from '../lib/combat'
-import { flattenImages, flattenVideos, imageTitle, isImagePath, isPdfPath } from '../lib/images'
+import { flattenImages, flattenVideos, imageTitle } from '../lib/images'
 import { allPartyNotes, bestiaryNotes, flattenNotes, sheetDisplayName } from '../lib/notes'
 import { libraryFolderFor, recordToCampaignMarkdown, gearSubfolderFor } from '../lib/lookupNotes'
 import type { SrdRecord } from '../lib/srd'
@@ -39,6 +35,7 @@ import { usePlayerPlayback } from '../hooks/usePlayerPlayback'
 import { useConsoleHotkeys } from '../hooks/useConsoleHotkeys'
 import { useCombatActions } from '../hooks/useCombatActions'
 import { useCampaignOpen } from '../hooks/useCampaignOpen'
+import { useCampaignNavigation } from '../hooks/useCampaignNavigation'
 
 const SIDE_PANEL_WIDTH = 'w-[400px]'
 
@@ -104,10 +101,22 @@ export default function DmApp() {
   const [mixerClock, setMixerClock] = useState(() => emptyMixerClock())
   const [displays, setDisplays] = useState<DisplayInfo[]>([])
   const [rightPanel, setRightPanel] = useState<'combat' | 'lookup' | 'help' | 'music' | null>(null)
-  const [openPath, setOpenPath] = useState('')
-  const [openKind, setOpenKind] = useState<FileKind>('note')
-  const [selectedImage, setSelectedImage] = useState<string | null>(null)
-  const [history, setHistory] = useState<{ path: string; kind: FileKind }[]>([])
+  const {
+    openPath,
+    openKind,
+    selectedImage,
+    history,
+    setSelectedImage,
+    navigateTo,
+    goBack,
+    goNextFile,
+    openNote,
+    openTreeFile,
+    resetNavigation,
+    restoreOpen,
+    clearOpen,
+    pruneHistory
+  } = useCampaignNavigation(campaign)
   const [playerDisplayId, setPlayerDisplayId] = useState<number | ''>('')
   const [showPlayerPreview, setShowPlayerPreview] = useState(true)
   const [showLeftSidebar, setShowLeftSidebar] = useState(true)
@@ -159,11 +168,10 @@ export default function DmApp() {
           : firstNote(info.tree)
       if (remembered) {
         const node = findTreeNode(info.tree, remembered)
-        setOpenPath(remembered)
-        setOpenKind(node ? fileKind(node) : 'note')
+        restoreOpen(remembered, node ? fileKind(node) : 'note')
       }
     }
-  }, [openPath])
+  }, [openPath, restoreOpen])
 
   useEffect(() => {
     if (digitalRainEnabled(theme, campaign?.digitalRain)) {
@@ -203,17 +211,9 @@ export default function DmApp() {
   function applyCampaign(info: CampaignInfo | null, appTheme?: string | null): void {
     setCampaign(info)
     applyConsoleTheme(resolveConsoleTheme(info?.theme, appTheme))
-    const note = info ? firstNote(info.tree) : ''
-    setOpenPath(note)
-    setOpenKind('note')
-    setSelectedImage(null)
-    setHistory([])
+    resetNavigation(info ? firstNote(info.tree) : '')
     skipRestoredCombatShow.current = true
     void clearPlayer()
-    void window.tabledm.saveSettings({
-      lastOpenPath: note || undefined,
-      lastOpenKind: note ? 'note' : undefined
-    })
   }
 
   const syncAfterOpen = useCallback(async (): Promise<void> => {
@@ -250,49 +250,6 @@ export default function DmApp() {
     if (!campaign) return
     const updated = await window.tabledm.setCampaignCurrencies(currencies)
     if (updated) setCampaign(updated)
-  }
-
-  function navigateTo(path: string, kind: FileKind): void {
-    if (!path || path === openPath) {
-      setOpenKind(kind)
-      setSelectedImage(kind === 'image' ? path : null)
-      return
-    }
-    if (openPath) {
-      setHistory((stack) => [...stack, { path: openPath, kind: openKind }].slice(-40))
-    }
-    setOpenPath(path)
-    setOpenKind(kind)
-    setSelectedImage(kind === 'image' ? path : null)
-    void window.tabledm.saveSettings({ lastOpenPath: path, lastOpenKind: kind })
-  }
-
-  function goBack(): void {
-    if (history.length === 0) return
-    const prev = history[history.length - 1]
-    setHistory((stack) => stack.slice(0, -1))
-    setOpenPath(prev.path)
-    setOpenKind(prev.kind)
-    setSelectedImage(prev.kind === 'image' ? prev.path : null)
-    void window.tabledm.saveSettings({ lastOpenPath: prev.path, lastOpenKind: prev.kind })
-  }
-
-  function showFile(path: string, kind: FileKind): void {
-    setOpenPath(path)
-    setOpenKind(kind)
-    setSelectedImage(kind === 'image' ? path : null)
-    void window.tabledm.saveSettings({ lastOpenPath: path, lastOpenKind: kind })
-  }
-
-  function goNextFile(): void {
-    if (!campaign) return
-    const next = adjacentCampaignFile(campaign.tree, openPath, 1)
-    if (!next) return
-    showFile(next.relativePath, fileKind(next))
-  }
-
-  async function openTreeFile(node: CampaignTreeNode): Promise<void> {
-    navigateTo(node.relativePath, fileKind(node))
   }
 
   const { saveCombat, addMonster, addNpcFromSheet, addPartyToCombat, addBestiaryToCombat, addEncounterItems } =
@@ -343,13 +300,6 @@ export default function DmApp() {
     if (!result) return
     setCampaign(result.campaign)
     return result.existed ? 'exists' : 'added'
-  }
-
-  function openNote(notePath: string): void {
-    navigateTo(
-      notePath,
-      isImagePath(notePath) ? 'image' : isPdfPath(notePath) ? 'pdf' : 'note'
-    )
   }
 
   const combat = campaign?.combat ?? emptyCombat()
@@ -479,12 +429,9 @@ export default function DmApp() {
                 onOpen={(node) => void openTreeFile(node)}
                 onTreeChange={(info, path) => {
                   setCampaign(info)
-                  setHistory((stack) => stack.filter((item) => findTreeNode(info.tree, item.path)))
+                  pruneHistory((p) => Boolean(findTreeNode(info.tree, p)))
                   if (path === '') {
-                    setOpenPath('')
-                    setOpenKind('note')
-                    setSelectedImage(null)
-                    void window.tabledm.saveSettings({ lastOpenPath: undefined, lastOpenKind: undefined })
+                    clearOpen()
                     return
                   }
                   if (!path) return
