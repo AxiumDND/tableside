@@ -16,9 +16,10 @@ test.beforeAll(async () => {
   // Isolate the profile so the run is hermetic (fresh first launch loads the
   // bundled Greystead sample) and never collides with a real install.
   const userDataDir = mkdtempSync(join(tmpdir(), 'tableside-e2e-'))
+  const electronBinary = process.platform === 'win32' ? 'electron.exe' : 'electron'
   app = await electron.launch({
     // Pin the local Electron binary so Playwright does not download another copy.
-    executablePath: join(process.cwd(), 'node_modules', 'electron', 'dist', 'electron.exe'),
+    executablePath: join(process.cwd(), 'node_modules', 'electron', 'dist', electronBinary),
     args: ['.', `--user-data-dir=${userDataDir}`, '--no-sandbox'],
     env: {
       ...process.env,
