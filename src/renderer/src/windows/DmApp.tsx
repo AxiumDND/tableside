@@ -1,12 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
-import type {
-  CampaignInfo,
-  CampaignTreeNode,
-  CombatState,
-  Combatant,
-  DisplayInfo,
-  RecentCampaign
-} from '../../../shared/types'
+import type { CampaignInfo, CampaignTreeNode, DisplayInfo, RecentCampaign } from '../../../shared/types'
 import { emptyMixerClock, emptyMixerState, mixerIsActive } from '../../../shared/audio'
 import { emptyCombat } from '../../../shared/types'
 import {
@@ -30,30 +23,22 @@ import DiceTray, { DiceLogProvider } from '../components/DiceTray'
 import HelpPanel from '../components/HelpPanel'
 import PlayerPreview from '../components/PlayerPreview'
 import RulesSearch from '../components/RulesSearch'
-import SessionNotes, { type EncounterAddItem } from '../components/SessionNotes'
+import SessionNotes from '../components/SessionNotes'
 import SystemPicker from '../components/SystemPicker'
 import ThemeSetup from '../components/ThemeSetup'
 import DigitalRain from '../components/DigitalRain'
-import { combatToPlayerInitiative, combatProfileFor, advanceCombatTurn, rollInitiativeFor } from '../lib/combat'
+import { combatToPlayerInitiative, combatProfileFor, advanceCombatTurn } from '../lib/combat'
 import { flattenImages, flattenVideos, imageTitle, isImagePath, isPdfPath } from '../lib/images'
-import {
-  allPartyNotes,
-  bestiaryNotes,
-  flattenNotes,
-  partyNotes,
-  pcCombatName,
-  sameCombatantName,
-  sheetDisplayName
-} from '../lib/notes'
+import { allPartyNotes, bestiaryNotes, flattenNotes, sheetDisplayName } from '../lib/notes'
 import { libraryFolderFor, recordToCampaignMarkdown, gearSubfolderFor } from '../lib/lookupNotes'
-import { monsterToStatBlock, type SrdRecord } from '../lib/srd'
-import { extractStatblock, fallbackStatblock, parsedToStatBlock, type ParsedStatblock } from '../lib/statblock'
+import type { SrdRecord } from '../lib/srd'
 import type { AppUpdateNotice } from '../../../shared/appUpdate'
 import UpdateBanner from '../components/UpdateBanner'
 import DmHeader from '../components/DmHeader'
 import { adjacentCampaignFile, canonicalFolder } from '../../../shared/campaignLayout'
 import { usePlayerPlayback } from '../hooks/usePlayerPlayback'
 import { useConsoleHotkeys } from '../hooks/useConsoleHotkeys'
+import { useCombatActions } from '../hooks/useCombatActions'
 
 const SIDE_PANEL_WIDTH = 'w-[400px]'
 
@@ -344,73 +329,13 @@ export default function DmApp() {
     navigateTo(node.relativePath, fileKind(node))
   }
 
-  async function saveCombat(next: CombatState): Promise<void> {
-    const info = await window.tabledm.saveCombat(next)
-    if (info) setCampaign(info)
-  }
-
-  const loadPartyItems = useCallback(async (): Promise<EncounterAddItem[]> => {
-    if (!campaign) return []
-    const notes = flattenNotes(campaign.tree)
-    const from = openPath || firstNote(campaign.tree)
-    const items: EncounterAddItem[] = []
-    const seen = new Set<string>()
-    for (const pc of partyNotes(from, notes)) {
-      const text = await window.tabledm.readFile(pc.relativePath)
-      const parsed = extractStatblock(text)?.block ?? fallbackStatblock(pc.relativePath, text)
-      items.push({
-        block: parsed,
-        kind: 'pc',
-        sourceId: pc.relativePath,
-        name: pcCombatName(pc.relativePath)
-      })
-      seen.add(parsed.name.toLowerCase())
-    }
-    for (const pc of campaign.party) {
-      if (seen.has(pc.name.toLowerCase())) continue
-      items.push({
-        block: {
-          name: pc.name,
-          ac: String(pc.ac),
-          hp: pc.maxHp,
-          stats: [10, 10, 10, 10, 10, 10],
-          saves: {},
-          skills: {},
-          traits: [],
-          actions: [],
-          bonusActions: [],
-          reactions: [],
-          legendary: []
-        },
-        kind: 'pc',
-        sourceId: pc.id,
-        name: pcCombatName(pc.name)
-      })
-    }
-    return items
-  }, [campaign, openPath])
-
-  function addMonster(record: SrdRecord): void {
-    const block = monsterToStatBlock(record.data)
-    const hp = Number(block.hp ?? 10)
-    const willpower =
-      typeof record.data.willpower === 'number' ? record.data.willpower : undefined
-    const hunger = typeof record.data.hunger === 'number' ? record.data.hunger : undefined
-    void addEncounterItems([], {
-      id: crypto.randomUUID(),
-      name: block.name,
-      kind: 'monster',
-      initiative: 0,
-      hp,
-      maxHp: hp,
-      ac: Number(block.ac ?? 10),
-      willpower,
-      maxWillpower: willpower,
-      hunger,
-      statBlock: block,
-      sourceId: record.id
+  const { saveCombat, addMonster, addNpcFromSheet, addPartyToCombat, addBestiaryToCombat, addEncounterItems } =
+    useCombatActions({
+      campaign,
+      setCampaign,
+      getPartyFromNote: () => openPath || firstNote(campaign?.tree ?? []),
+      onOpenCombatPanel: () => changeRightPanel('combat')
     })
-  }
 
   async function saveLookupToCampaign(record: SrdRecord): Promise<'added' | 'exists' | void> {
     const folder = libraryFolderFor(record)
@@ -452,93 +377,6 @@ export default function DmApp() {
     if (!result) return
     setCampaign(result.campaign)
     return result.existed ? 'exists' : 'added'
-  }
-
-  function addNpcFromSheet(block: ParsedStatblock, notePath?: string): void {
-    const sourceId = notePath || `sheet:${block.name}`
-    const name = notePath ? sheetDisplayName(notePath) : block.name
-    void addEncounterItems([{ block, kind: 'npc', sourceId, name }])
-  }
-
-  function nextCopyName(base: string, existing: Combatant[]): string {
-    if (!existing.some((c) => c.name === base)) return base
-    let n = 2
-    while (existing.some((c) => c.name === `${base} ${n}`)) n += 1
-    return `${base} ${n}`
-  }
-
-  function addPartyToCombat(): void {
-    void addEncounterItems([])
-  }
-
-  async function addBestiaryToCombat(notePath: string): Promise<void> {
-    const text = await window.tabledm.readFile(notePath)
-    const parsed = extractStatblock(text)?.block ?? fallbackStatblock(notePath, text)
-    const live = campaign?.combat ?? emptyCombat()
-    const name = nextCopyName(sheetDisplayName(notePath), live.combatants)
-    await addEncounterItems(
-      [{ block: parsed, kind: 'monster', sourceId: `${notePath}#${name}`, name }],
-      undefined,
-      false
-    )
-  }
-
-  async function addEncounterItems(
-    items: EncounterAddItem[],
-    extra?: Combatant,
-    includeParty = true
-  ): Promise<void> {
-    const party = includeParty ? await loadPartyItems() : []
-    const combined = [...party, ...items]
-    const combat = campaign?.combat ?? emptyCombat()
-    const next = [...combat.combatants]
-    let added = 0
-    for (const item of combined) {
-      const existing =
-        item.kind === 'monster'
-          ? next.find((c) => c.sourceId && item.sourceId && c.sourceId === item.sourceId)
-          : next.find(
-              (c) =>
-                (c.sourceId && item.sourceId && c.sourceId === item.sourceId) ||
-                sameCombatantName(c.name, item.name)
-            )
-      if (existing) {
-        if (existing.name !== item.name) {
-          existing.name = item.name
-          added += 1
-        }
-        continue
-      }
-      const statBlock = parsedToStatBlock(item.block)
-      next.push({
-        id: crypto.randomUUID(),
-        name: item.name,
-        kind: item.kind,
-        initiative: 0,
-        hp: statBlock.hp ?? 10,
-        maxHp: statBlock.hp ?? 10,
-        ac: statBlock.ac ?? 10,
-        willpower: item.block.willpower,
-        maxWillpower: item.block.maxWillpower ?? item.block.willpower,
-        hunger: item.block.hunger,
-        sourceId: item.sourceId,
-        statBlock
-      })
-      added += 1
-    }
-    if (extra && !next.some((c) => c.sourceId === extra.sourceId || c.id === extra.id)) {
-      next.push(extra)
-      added += 1
-    }
-    if (added > 0) {
-      const withInit = rollInitiativeFor(next, 'unrolled-npcs')
-      await saveCombat({
-        ...combat,
-        combatants: withInit,
-        activeId: combat.activeId
-      })
-    }
-    changeRightPanel('combat')
   }
 
   function openNote(notePath: string): void {

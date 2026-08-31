@@ -26,9 +26,9 @@ describe('DmHeader', () => {
     render(
       <DmHeader campaign={campaign} rightPanel={null} combatCount={0} mixerActive={false} {...noopHandlers} />
     )
-    expect(screen.getByText('Greystead')).toBeInTheDocument()
+    expect(screen.getByText('Greystead')).toBeTruthy()
     for (const label of ['New campaign', 'Open campaign', 'Lookup', 'Combat', 'Music', 'Help']) {
-      expect(screen.getByRole('button', { name: new RegExp(label, 'i') })).toBeInTheDocument()
+      expect(screen.getByRole('button', { name: new RegExp(label, 'i') })).toBeTruthy()
     }
   })
 
@@ -36,15 +36,15 @@ describe('DmHeader', () => {
     render(
       <DmHeader campaign={null} rightPanel={null} combatCount={0} mixerActive={false} {...noopHandlers} />
     )
-    expect(screen.getByText('No campaign open')).toBeInTheDocument()
+    expect(screen.getByText('No campaign open')).toBeTruthy()
   })
 
   it('shows the combatant count and mixer indicator', () => {
     render(
       <DmHeader campaign={campaign} rightPanel="combat" combatCount={3} mixerActive={true} {...noopHandlers} />
     )
-    expect(screen.getByRole('button', { name: /Combat \(3\)/ })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /Music ·/ })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Combat \(3\)/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Music ·/ })).toBeTruthy()
   })
 
   it('fires the matching toggle handler on click', async () => {
