@@ -8,6 +8,7 @@ export default tseslint.config(
     ignores: [
       'out/**',
       'dist/**',
+      'coverage/**',
       'node_modules/**',
       // Generated SRD/system data snapshots — not hand-edited.
       'src/renderer/src/data/**',
