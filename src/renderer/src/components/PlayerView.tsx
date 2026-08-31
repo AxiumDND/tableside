@@ -28,6 +28,17 @@ export default function PlayerView({
   const nextId = useRef(1)
   const [layers, setLayers] = useState<Layer[]>([])
   const [clearing, setClearing] = useState(false)
+  const [handoutScene, setHandoutScene] = useState<{
+    id: number
+    handout: NonNullable<PlayerState['handout']>
+    fromBlack: boolean
+    fadingOut: boolean
+  } | null>(null)
+  const handoutKey = state.handout
+    ? `${state.handout.title}\0${state.handout.subtitle ?? ''}\0${state.handout.body ?? ''}\0${
+        state.handout.includeSecrets ? '1' : '0'
+      }\0${(state.handout.facts ?? []).map((f) => `${f.label}:${f.value}`).join('\n')}`
+    : ''
 
   useEffect(() => {
     if (!incoming) {
@@ -65,6 +76,42 @@ export default function PlayerView({
     return () => clearTimeout(t)
   }, [layers.at(-1)?.id])
 
+  useEffect(() => {
+    const next = state.handout
+    if (!next || state.crawl || state.legend || state.gallery || state.video) {
+      setHandoutScene((prev) => {
+        if (!prev || prev.fadingOut) return prev
+        return { ...prev, fadingOut: true }
+      })
+      return
+    }
+    setHandoutScene((prev) => {
+      const same =
+        prev &&
+        !prev.fadingOut &&
+        prev.handout.title === next.title &&
+        prev.handout.subtitle === next.subtitle &&
+        prev.handout.body === next.body &&
+        prev.handout.includeSecrets === next.includeSecrets &&
+        JSON.stringify(prev.handout.facts ?? []) === JSON.stringify(next.facts ?? [])
+      if (same) return prev
+      return {
+        id: nextId.current++,
+        handout: next,
+        fromBlack: true,
+        fadingOut: false
+      }
+    })
+  }, [handoutKey, state.crawl, state.legend, state.gallery, state.video, state.handout])
+
+  useEffect(() => {
+    if (!handoutScene?.fadingOut) return
+    const t = window.setTimeout(() => {
+      setHandoutScene((prev) => (prev?.fadingOut ? null : prev))
+    }, FADE_MS)
+    return () => clearTimeout(t)
+  }, [handoutScene?.id, handoutScene?.fadingOut])
+
   const showInit =
     !state.crawl &&
     !state.legend &&
@@ -73,8 +120,15 @@ export default function PlayerView({
     state.showInitiative &&
     state.initiative.length > 0
 
+  const splitForHandout = Boolean(handoutScene && !handoutScene.fadingOut)
+  const handoutOnly = splitForHandout && !incoming && layers.length === 0
+
   return (
-    <div className={`player-stage${compact ? ' player-stage-compact' : ''}`}>
+    <div
+      className={`player-stage${compact ? ' player-stage-compact' : ''}${
+        splitForHandout && !handoutOnly ? ' has-handout' : ''
+      }${handoutOnly ? ' handout-only' : ''}`}
+    >
       {layers.map((layer, index) => {
         const top = index === layers.length - 1
         const fadeIn = top && !clearing && (index > 0 || Boolean(layer.fromBlack))
@@ -96,6 +150,41 @@ export default function PlayerView({
       {state.legend ? <OpeningLegend legend={state.legend} /> : null}
       {state.gallery ? <OpeningGallery gallery={state.gallery} /> : null}
       {state.video ? <OpeningVideo video={state.video} /> : null}
+      {handoutScene ? (
+        <aside
+          key={handoutScene.id}
+          className={`player-handout${
+            handoutScene.fadingOut
+              ? ' player-fade-out'
+              : handoutScene.fromBlack
+                ? ' player-fade-in'
+                : ''
+          }`}
+          aria-label={handoutScene.handout.title}
+        >
+          <h2 className="player-handout-title">{handoutScene.handout.title}</h2>
+          {handoutScene.handout.subtitle ? (
+            <p className="player-handout-sub">{handoutScene.handout.subtitle}</p>
+          ) : null}
+          {handoutScene.handout.facts && handoutScene.handout.facts.length > 0 ? (
+            <dl className="player-handout-facts">
+              {handoutScene.handout.facts.map((fact) => (
+                <div key={fact.label} className="player-handout-fact">
+                  <dt>{fact.label}</dt>
+                  <dd>{fact.value}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : null}
+          {handoutScene.handout.body ? (
+            <div className="player-handout-body">
+              {handoutScene.handout.body.split(/\n{2,}/).map((para, i) => (
+                <p key={i}>{para}</p>
+              ))}
+            </div>
+          ) : null}
+        </aside>
+      ) : null}
       {showInit ? (
         <div className="player-init" aria-label="Initiative order">
           <div className="player-init-round">

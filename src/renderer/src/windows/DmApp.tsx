@@ -596,7 +596,15 @@ export default function DmApp() {
       const key = e.key.toLowerCase()
       if (key === 's') {
         e.preventDefault()
-        void showSelectedToPlayers(selectedImage, openPath, openKind)
+        void showSelectedToPlayers(selectedImage, openPath, openKind, { mode: 'art' })
+        return
+      }
+      if (key === 'i') {
+        e.preventDefault()
+        void showSelectedToPlayers(selectedImage, openPath, openKind, {
+          mode: 'handout',
+          includeSecrets: e.shiftKey
+        })
         return
       }
       if (key === 'x') {
@@ -816,7 +824,9 @@ export default function DmApp() {
           selectedImage={selectedImage}
           disabled={!campaign}
           onSelectImage={setSelectedImage}
-          onShowToPlayers={() => void showSelectedToPlayers(selectedImage, openPath, openKind)}
+          onShowToPlayers={(options) =>
+            void showSelectedToPlayers(selectedImage, openPath, openKind, options)
+          }
           onPlayCrawl={(title, body, logoSrc, preface, musicPath, endSrc) =>
             void playCrawl(title, body, logoSrc, preface, musicPath, endSrc)
           }

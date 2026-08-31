@@ -2,6 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import type { DisplayInfo, PlayerState } from '../../../shared/types'
 import PlayerView from './PlayerView'
 
+/** Virtual stage size for the preview — scaled down so layout matches the TV. */
+const PREVIEW_STAGE_W = 1920
+const PREVIEW_STAGE_H = 1080
+
 function MonitorList({
   displays,
   playerDisplayId,
@@ -33,6 +37,40 @@ function MonitorList({
         )
       })}
     </>
+  )
+}
+
+function ScaledPlayerPreview({ state }: { state: PlayerState }) {
+  const frameRef = useRef<HTMLDivElement>(null)
+  const [scale, setScale] = useState(0.2)
+
+  useEffect(() => {
+    const el = frameRef.current
+    if (!el) return
+    const update = (): void => {
+      const width = el.clientWidth
+      if (width <= 0) return
+      setScale(width / PREVIEW_STAGE_W)
+    }
+    update()
+    const observer = new ResizeObserver(update)
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+    <div ref={frameRef} className="player-preview-frame aspect-video overflow-hidden bg-black">
+      <div
+        className="player-preview-stage"
+        style={{
+          width: PREVIEW_STAGE_W,
+          height: PREVIEW_STAGE_H,
+          transform: `scale(${scale})`
+        }}
+      >
+        <PlayerView state={state} />
+      </div>
+    </div>
   )
 }
 
@@ -99,7 +137,9 @@ export default function PlayerPreview({
                   ? state.gallery.title || 'Gallery'
                   : state.video
                     ? state.video.title || 'Video'
-                    : state.imageTitle || 'Nothing showing'}
+                    : state.handout
+                      ? state.handout.title
+                      : state.imageTitle || 'Nothing showing'}
           </div>
         </button>
         <div className="flex shrink-0 items-center gap-1">
@@ -107,7 +147,14 @@ export default function PlayerPreview({
             <button
               type="button"
               onClick={onClear}
-              disabled={!state.imageSrc && !state.crawl && !state.legend && !state.gallery && !state.video}
+              disabled={
+                !state.imageSrc &&
+                !state.crawl &&
+                !state.legend &&
+                !state.gallery &&
+                !state.video &&
+                !state.handout
+              }
               className="rounded border border-line px-2 py-0.5 text-[11px] hover:border-amber disabled:text-muted"
             >
               Clear
@@ -146,9 +193,7 @@ export default function PlayerPreview({
             onClick={() => void togglePicker()}
             className="block w-full overflow-hidden rounded border border-amber-dim/70"
           >
-            <div className="aspect-video">
-              <PlayerView state={state} compact />
-            </div>
+            <ScaledPlayerPreview state={state} />
           </button>
           <p className="mt-1 text-center text-[10px] text-muted">
             {displays.length < 2

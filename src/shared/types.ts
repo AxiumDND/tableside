@@ -214,6 +214,16 @@ export interface PlayerVideo {
   startedAt: number
 }
 
+/** Item / spell / place card shown with (or instead of) a still on the player screen. */
+export interface PlayerHandout {
+  title: string
+  subtitle?: string
+  facts?: { label: string; value: string }[]
+  body?: string
+  /** True when GM-only callouts were included in body. */
+  includeSecrets?: boolean
+}
+
 export interface PlayerState {
   imageSrc: string | null
   imageTitle: string
@@ -226,6 +236,7 @@ export interface PlayerState {
   legend?: PlayerLegend | null
   gallery?: PlayerGallery | null
   video?: PlayerVideo | null
+  handout?: PlayerHandout | null
 }
 
 export interface RecentCampaign {
@@ -278,7 +289,8 @@ export const emptyPlayerState = (): PlayerState => ({
   crawl: null,
   legend: null,
   gallery: null,
-  video: null
+  video: null,
+  handout: null
 })
 
 export const emptySettings = (): AppSettings => ({})

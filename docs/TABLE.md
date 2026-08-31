@@ -25,7 +25,7 @@ With more than one display, click the **Players see** preview to put the player 
 
 1. Open a note that embeds `![[image.png]]`, or open an image from the tree.
 2. Click the image so it is selected.
-3. Press **Show to players** — the player screen fades in over ~5 seconds on black.
+3. Press **Show to players** — the player screen fades in over ~5 seconds on black. On Gear, Spells, Places, and Factions sheets: **Show art to players** (`Alt+S`) is picture only; **Show item to players** (`Alt+I`) adds the title, facts, and player-facing notes (`[!gmonly]` stays hidden unless you **Shift+click** / **Alt+Shift+I**).
 4. **Clear** (header or preview) blanks the player screen.
 
 The left **Players see** panel mirrors the player window. Use **Hide** there if you need vertical space.
@@ -122,7 +122,8 @@ Bottom of the left column: quick d4–d20 buttons plus a custom expression field
 | --- | --- |
 | Alt+← | Back in note history |
 | Mouse back (button 4) | Back in note history |
-| Alt+S | Show selected image to players |
+| Alt+S | Show selected art to players |
+| Alt+I | Show item/place/spell details to players (Shift includes GM-only) |
 | Alt+X | Clear player screen |
 | Alt+T | Next combat turn (opens Combat) |
 | Ctrl+S (while editing) | Save note |

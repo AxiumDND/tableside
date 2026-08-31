@@ -316,11 +316,12 @@ export function clearPlayerMedia(): PlayerState {
     crawl: null,
     legend: null,
     gallery: null,
-    video: null
+    video: null,
+    handout: null
   })
 }
 
-/** Drop crawl / legend / gallery / video but keep the last still or map for crossfades. */
+/** Drop crawl / legend / gallery / video / handout but keep the last still or map for crossfades. */
 export function clearPlayerOverlays(): PlayerState {
   clearStopTimers()
   return setPlayerState({
@@ -328,7 +329,8 @@ export function clearPlayerOverlays(): PlayerState {
     crawl: null,
     legend: null,
     gallery: null,
-    video: null
+    video: null,
+    handout: null
   })
 }
 

@@ -148,7 +148,11 @@ export default function SessionNotes({
   selectedImage?: string | null
   disabled?: boolean
   onSelectImage?: (path: string) => void
-  onShowToPlayers?: () => void
+  onShowToPlayers?: (options?: {
+    includeSecrets?: boolean
+    markdown?: string
+    mode?: 'art' | 'handout'
+  }) => void
   onPlayCrawl?: (
     title: string | undefined,
     body: string,
@@ -665,7 +669,15 @@ export default function SessionNotes({
     }
   }
 
-  const canShow = Boolean(onShowToPlayers && (kind === 'image' || selectedImage || mapImage))
+  const canShowArt = Boolean(onShowToPlayers && (kind === 'image' || selectedImage || mapImage))
+  const canShowItem = Boolean(onShowToPlayers && itemMode)
+  const handoutButtonLabel = pathHasFolder(path, 'spells')
+    ? 'Show spell to players'
+    : pathHasFolder(path, 'places')
+      ? 'Show place to players'
+      : pathHasFolder(path, 'factions')
+        ? 'Show faction to players'
+        : 'Show item to players'
 
   const { renderDocument, renderMarkdown } = createSessionNoteMarkdown({
     markdown,
@@ -825,13 +837,30 @@ export default function SessionNotes({
                 </>
               )
             ) : null}
-            {canShow ? (
+            {canShowArt ? (
               <button
                 type="button"
-                onClick={onShowToPlayers}
+                title="Show the selected art only (Alt+S)"
+                onClick={() => onShowToPlayers?.({ mode: 'art', markdown })}
                 className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-on-amber"
               >
-                Show to players
+                {itemMode ? 'Show art to players' : 'Show to players'}
+              </button>
+            ) : null}
+            {canShowItem ? (
+              <button
+                type="button"
+                title="Show art and item details. Shift+click includes GM-only notes (Alt+I)."
+                onClick={(event) =>
+                  onShowToPlayers?.({
+                    mode: 'handout',
+                    includeSecrets: event.shiftKey,
+                    markdown
+                  })
+                }
+                className="rounded border border-amber px-2.5 py-1 text-xs font-semibold text-amber hover:bg-amber/10"
+              >
+                {handoutButtonLabel}
               </button>
             ) : null}
           </div>

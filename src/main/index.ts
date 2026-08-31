@@ -278,13 +278,19 @@ function registerIpc(): void {
 
   ipcMain.handle(
     IPC.playerShowImage,
-    (_e, payload: { src: string; title: string; mapView?: PlayerState['mapView'] }) => {
+    (_e, payload: {
+      src: string
+      title: string
+      mapView?: PlayerState['mapView']
+      handout?: PlayerState['handout']
+    }) => {
       return setPlayerState(
         {
           ...getPlayerState(),
-          imageSrc: payload.src,
+          imageSrc: payload.src || null,
           imageTitle: payload.title,
           mapView: payload.mapView ?? null,
+          handout: payload.handout ?? null,
           crawl: null,
           legend: null,
           gallery: null,
@@ -325,7 +331,8 @@ function registerIpc(): void {
         },
         legend: null,
         gallery: null,
-        video: null
+        video: null,
+        handout: null
       },
       { show: true }
     )
@@ -367,7 +374,8 @@ function registerIpc(): void {
           startedAt: Date.now()
         },
         gallery: null,
-        video: null
+        video: null,
+        handout: null
       },
       { show: true }
     )
@@ -426,7 +434,8 @@ function registerIpc(): void {
             loop,
             showTitle
           },
-          video: null
+          video: null,
+          handout: null
         },
         { show: true }
       )
@@ -463,7 +472,8 @@ function registerIpc(): void {
             src,
             muted: Boolean(payload?.muted),
             startedAt: Date.now()
-          }
+          },
+          handout: null
         },
         { show: true }
       )

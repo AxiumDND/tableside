@@ -244,7 +244,10 @@ export default function HelpPanel({
               </>,
               <>
                 Click a map or portrait in a note so it is selected, then <Action>Show to players</Action> (or{' '}
-                <Code>Alt+S</Code>). It fades in over about five seconds. In a Sci-fi campaign,{' '}
+                <Code>Alt+S</Code>). On Gear, Spells, Places, and Factions, use <Action>Show art to players</Action> for
+                the picture only, or <Action>Show item to players</Action> for art plus details (
+                <Code>Alt+I</Code>; hold <Code>Shift</Code> to include GM-only notes). It fades in over about five
+                seconds. In a Sci-fi campaign,{' '}
                 <Action>Play</Action> on an Opening crawl card sends that text to the player screen. While it runs,{' '}
                 <Action>Stop</Action> fades to black over five seconds, fades out crawl music, and resumes the mood
                 playlist.{' '}
@@ -681,7 +684,11 @@ export default function HelpPanel({
                 <Code>Alt+→</Code> or mouse forward — next file in the same folder
               </>,
               <>
-                <Code>Alt+S</Code> — Show selected image to players
+                <Code>Alt+S</Code> — Show selected art to players
+              </>,
+              <>
+                <Code>Alt+I</Code> — Show item / place / spell details to players (hold <Code>Shift</Code> to include
+                GM-only notes)
               </>,
               <>
                 <Code>Alt+X</Code> — Clear player screen

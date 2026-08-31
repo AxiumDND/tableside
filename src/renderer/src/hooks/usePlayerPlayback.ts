@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from 'react'
-import type { PlayerMapView, PlayerState } from '../../../shared/types'
+import type { PlayerHandout, PlayerMapView, PlayerState } from '../../../shared/types'
 import { emptyPlayerState } from '../../../shared/types'
+import { buildPlayerHandout, isHandoutSheetPath } from '../../../shared/playerHandout'
 import type { MixerState } from '../../../shared/audio'
 import { crawlMusicStartDelayMs, CRAWL_SYNC_MS, CRAWL_FADE_OUT_MS } from '../../../shared/openingCrawl'
 import { legendMusicStartDelayMs, LEGEND_SYNC_MS } from '../../../shared/openingLegend'
@@ -64,21 +65,42 @@ export function usePlayerPlayback(setMixer: Dispatch<SetStateAction<MixerState>>
   async function showSelectedToPlayers(
     selectedImage: string | null,
     openPath: string,
-    openKind: FileKind
+    openKind: FileKind,
+    options?: { includeSecrets?: boolean; markdown?: string; mode?: 'art' | 'handout' }
   ): Promise<void> {
     const path = selectedImage ?? (openKind === 'image' ? openPath : null)
-    if (!path) return
-    const src = path.startsWith('tabledm://') ? path : campaignFileUrl(path)
-    const title =
-      path.startsWith('tabledm://srd-portrait') ||
-      path.startsWith('tabledm://srd-item') ||
-      path.startsWith('tabledm://srd-school')
+    const mode = options?.mode ?? 'art'
+    let handout: PlayerHandout | null = null
+    if (
+      mode === 'handout' &&
+      openKind === 'note' &&
+      openPath &&
+      isHandoutSheetPath(openPath)
+    ) {
+      try {
+        const md = options?.markdown ?? (await window.tabledm.readFile(openPath))
+        handout = buildPlayerHandout(openPath, md, { includeSecrets: options?.includeSecrets })
+      } catch {
+        handout = null
+      }
+    }
+    if (!path && !handout) return
+
+    const src = path ? (path.startsWith('tabledm://') ? path : campaignFileUrl(path)) : ''
+    const title = handout?.title
+      ? handout.title
+      : path &&
+          (path.startsWith('tabledm://srd-portrait') ||
+            path.startsWith('tabledm://srd-item') ||
+            path.startsWith('tabledm://srd-school'))
         ? decodeURIComponent(new URL(path).searchParams.get('name') ?? 'Image')
-        : imageTitle(path)
+        : path
+          ? imageTitle(path)
+          : 'Handout'
     const live = mapLiveRef.current
-    const mapView = live?.src === src ? live.view : null
+    const mapView = path && live?.src === src ? live.view : null
     playerLiveRef.current = true
-    setPlayer(await window.tabledm.showImage(src, title, mapView))
+    setPlayer(await window.tabledm.showImage(src, title, mapView, handout))
   }
 
   function handleMapLiveView(imagePath: string, view: PlayerMapView): void {
@@ -86,7 +108,7 @@ export function usePlayerPlayback(setMixer: Dispatch<SetStateAction<MixerState>>
     const title = imageTitle(imagePath)
     mapLiveRef.current = { src, title, view }
     if (!playerLiveRef.current || playerSrcRef.current !== src) return
-    void window.tabledm.showImage(src, title, view).then(setPlayer)
+    void window.tabledm.showImage(src, title, view, null).then(setPlayer)
   }
 
   async function playCrawl(

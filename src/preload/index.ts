@@ -8,6 +8,7 @@ import type {
   CreateNoteMapImage,
   DisplayInfo,
   LegendLookId,
+  PlayerHandout,
   PlayerMapView,
   PlayerState
 } from '../shared/types'
@@ -47,8 +48,18 @@ const api = {
     ipcRenderer.on(IPC.appDisplaysChanged, listener)
     return () => ipcRenderer.removeListener(IPC.appDisplaysChanged, listener)
   },
-  showImage: (src: string, title: string, mapView?: PlayerMapView | null): Promise<PlayerState> =>
-    ipcRenderer.invoke(IPC.playerShowImage, { src, title, mapView: mapView ?? null }),
+  showImage: (
+    src: string,
+    title: string,
+    mapView?: PlayerMapView | null,
+    handout?: PlayerHandout | null
+  ): Promise<PlayerState> =>
+    ipcRenderer.invoke(IPC.playerShowImage, {
+      src,
+      title,
+      mapView: mapView ?? null,
+      handout: handout ?? null
+    }),
   showCrawl: (payload: {
     title?: string
     body: string

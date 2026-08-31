@@ -475,6 +475,110 @@ body,
   container-type: size;
 }
 
+.player-preview-frame {
+  position: relative;
+  width: 100%;
+}
+
+.player-preview-stage {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform-origin: top left;
+  pointer-events: none;
+}
+
+.player-preview-stage .player-stage {
+  height: 100%;
+  width: 100%;
+}
+
+.player-handout {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 5;
+  display: flex;
+  width: 42%;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.35rem 1.4rem 1.5rem;
+  overflow: hidden;
+  background: linear-gradient(180deg, rgba(8, 6, 4, 0.96) 0%, rgba(8, 6, 4, 0.92) 100%);
+  border-left: 1px solid color-mix(in srgb, var(--color-amber) 18%, transparent);
+  color: var(--color-parchment);
+  pointer-events: none;
+}
+
+.player-stage.handout-only .player-handout {
+  left: 50%;
+  right: auto;
+  width: min(42rem, 88%);
+  transform: translateX(-50%);
+  background: linear-gradient(180deg, rgba(8, 6, 4, 0.92) 0%, rgba(8, 6, 4, 0.88) 100%);
+  border-left: 1px solid color-mix(in srgb, var(--color-amber) 22%, transparent);
+  border-right: 1px solid color-mix(in srgb, var(--color-amber) 22%, transparent);
+}
+
+.player-handout-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: clamp(1.45rem, 3.2cqi, 2.1rem);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: var(--color-amber);
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+.player-handout-sub {
+  margin: -0.25rem 0 0;
+  font-size: clamp(0.95rem, 1.8cqi, 1.15rem);
+  font-style: italic;
+  color: var(--color-muted);
+  overflow-wrap: anywhere;
+}
+
+.player-handout-facts {
+  display: grid;
+  margin: 0.25rem 0 0;
+  gap: 0.35rem 0.85rem;
+  grid-template-columns: max-content 1fr;
+}
+
+.player-handout-fact {
+  display: contents;
+}
+
+.player-handout-facts dt {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: clamp(0.85rem, 1.5cqi, 1rem);
+}
+
+.player-handout-facts dd {
+  margin: 0;
+  font-size: clamp(0.95rem, 1.7cqi, 1.1rem);
+}
+
+.player-handout-body {
+  display: flex;
+  min-height: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.7rem;
+  margin-top: 0.35rem;
+  overflow: hidden;
+  font-size: clamp(0.95rem, 1.7cqi, 1.15rem);
+  line-height: 1.45;
+}
+
+.player-handout-body p {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
 .player-layer {
   position: absolute;
   inset: 0;
@@ -483,6 +587,11 @@ body,
   justify-content: center;
   overflow: hidden;
   background: #000;
+  transition: right 0.85s ease;
+}
+
+.player-stage.has-handout .player-layer {
+  right: 42%;
 }
 
 .player-layer img {

@@ -4,7 +4,7 @@ Hand this file to an agent converting a vault, Obsidian folder, or loose notes i
 
 Tableside is a **local folder of Markdown**. No account. The DM laptop is the console; a second monitor shows images only.
 
-**Target app version: 1.7.3+.** Night sheets use structured **combat** and **treasure** blocks (party auto-roster, item/monster lookup that copies into Gear / Bestiary). Prefer the formats below so Edit on a block works without hand-editing fences.
+**Target app version: 1.7.4+.** Night sheets use structured **combat** and **treasure** blocks (party auto-roster, item/monster lookup that copies into Gear / Bestiary). Prefer the formats below so Edit on a block works without hand-editing fences.
 
 ## Rules
 
