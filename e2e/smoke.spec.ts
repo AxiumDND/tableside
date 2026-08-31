@@ -1,5 +1,4 @@
-import { mkdtempSync } from 'node:fs'
-import { createRequire } from 'node:module'
+import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
@@ -10,12 +9,19 @@ import {
   type Page
 } from '@playwright/test'
 
-const require = createRequire(import.meta.url)
-
-/** Absolute path to the Electron binary from the local `electron` package. */
+/**
+ * Absolute path to the Electron binary from the local `electron` package.
+ * Reads path.txt directly so this file stays CJS-compatible under Playwright
+ * (package.json is not `"type": "module"`, so `import.meta` / createRequire fail).
+ */
 function localElectronPath(): string {
-  // `require('electron')` returns the binary path when loaded from Node (not from Electron).
-  return require('electron') as string
+  const electronRoot = join(process.cwd(), 'node_modules', 'electron')
+  const pathTxt = join(electronRoot, 'path.txt')
+  if (!existsSync(pathTxt)) {
+    throw new Error(`Electron path.txt missing at ${pathTxt}; run node_modules/electron/install.js`)
+  }
+  const relative = readFileSync(pathTxt, 'utf8').trim()
+  return join(electronRoot, 'dist', relative)
 }
 
 let app: ElectronApplication
