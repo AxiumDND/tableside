@@ -373,6 +373,441 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
     )
   }
 
+  function renderReadAloudBlock(part: CalloutBlock, key: string, blockKey: string): ReactNode {
+    const read = (
+      <ReadAloud title={part.title}>
+        <Markdown remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform} components={markdownComponents}>
+          {part.markdown || ''}
+        </Markdown>
+      </ReadAloud>
+    )
+    return (
+      <div key={key}>
+        {wrapSheetBlock(blockKey, part, 'readaloud', read)}
+      </div>
+    )
+  }
+
+  function renderCombatBlock(
+    part: CalloutBlock,
+    key: string,
+    blockKey: string,
+    blockEditing: boolean,
+    encounterScope?: string
+  ): ReactNode {
+    const heading = part.title?.trim() || 'Combat'
+    const sectionId = encounterSectionId(heading, encounterScope)
+    const encounter = encounters.find((item) => item.id === sectionId)
+    const canAdd = Boolean(encounter && onAddEncounter)
+    const initiativeAction = canAdd ? (
+      <button
+        type="button"
+        title="Load these sheets plus every PC in PCs/party. Anyone already listed is skipped. NPCs/monsters at init 0 are rolled."
+        onClick={() => onAddEncounterClick(encounter!)}
+        className="rounded bg-amber px-2 py-0.5 text-[11px] font-semibold text-on-amber"
+      >
+        {addingId === encounter!.id ? 'Adding…' : 'Add to initiative'}
+      </button>
+    ) : null
+    const rawCombat = blockIndex?.get(blockKey)?.block ?? part
+    const card = (
+      <CombatCard
+        title={rawCombat.title}
+        body={rawCombat.markdown}
+        editing={blockEditing}
+        disabled={disabled}
+        onChange={(fields: CombatFields) => onBlockSave?.(blockKey, serializeCombatCallout(fields))}
+        adding={Boolean(encounter && addingId === encounter.id)}
+        onAdd={blockEditEnabled ? undefined : canAdd ? () => onAddEncounterClick(encounter!) : undefined}
+        missing={missingCombatantTokens(rawCombat.markdown, path, noteIndex)}
+        sheetPath={path}
+        notes={gearNotes ?? noteIndex}
+        system={system}
+        onEnsureMonster={onEnsureMonster}
+        markdownComponents={markdownComponents}
+        urlTransform={markdownUrlTransform}
+      />
+    )
+    return (
+      <div key={key}>
+        {wrapSheetBlock(blockKey, part, 'combat', card, blockEditing ? card : undefined, initiativeAction)}
+      </div>
+    )
+  }
+
+  function renderPartyBlock(
+    part: CalloutBlock,
+    key: string,
+    blockKey: string,
+    blockEditing: boolean,
+    crawlBase: number,
+    legendBase: number,
+    galleryBase: number,
+    videoBase: number,
+    sectionIndex: number,
+    blockPath: number[]
+  ): ReactNode {
+    const read = (
+      <PartyCard title={part.title}>
+        {part.markdown.trim() && !blockEditing
+          ? renderSectionedMarkdown(
+              part.markdown,
+              `${key}-body`,
+              part.title?.trim() || undefined,
+              crawlBase,
+              legendBase,
+              galleryBase,
+              videoBase,
+              sectionIndex,
+              blockPath
+            )
+          : null}
+      </PartyCard>
+    )
+    return (
+      <div key={key}>
+        {wrapSheetBlock(blockKey, part, 'party', read)}
+      </div>
+    )
+  }
+
+  function renderSceneBlock(
+    part: CalloutBlock,
+    key: string,
+    blockKey: string,
+    blockEditing: boolean,
+    crawlBase: number,
+    legendBase: number,
+    galleryBase: number,
+    videoBase: number,
+    sectionIndex: number,
+    blockPath: number[]
+  ): ReactNode {
+    const { artSrc, artLabel, body } = splitLeadingSceneArt(part.markdown)
+    const resolved = artSrc ? resolveMarkdownImageSrc(artSrc, path, images) : { url: '', path: null }
+    const showArt = Boolean(artSrc || artLabel)
+    const read = (
+      <SceneCard
+        title={part.title}
+        art={
+          showArt ? (
+            <SheetArtFrame
+              title={part.title?.trim() || artLabel || 'Scene'}
+              imageSrc={resolved.path ? resolved.url : null}
+              selectValue={resolved.path}
+              selectedImage={selectedImage}
+              images={images}
+              aspect="portrait"
+              onSelectImage={onSelectImage}
+              onSrdError={() => undefined}
+            />
+          ) : undefined
+        }
+      >
+        {body.trim() && !blockEditing
+          ? renderSectionedMarkdown(
+              body,
+              `${key}-body`,
+              part.title?.trim() || undefined,
+              crawlBase,
+              legendBase,
+              galleryBase,
+              videoBase,
+              sectionIndex,
+              blockPath
+            )
+          : null}
+      </SceneCard>
+    )
+    return (
+      <div key={key}>
+        {wrapSheetBlock(blockKey, part, 'scene', read)}
+      </div>
+    )
+  }
+
+  function renderCrawlBlock(
+    part: CalloutBlock,
+    raw: CalloutBlock,
+    key: string,
+    blockKey: string,
+    blockEditing: boolean,
+    crawlIndex: number
+  ): ReactNode {
+    const logoRef = crawlLogoRef(raw.markdown)
+    const logoUrl = logoRef ? resolveMarkdownImageSrc(logoRef, path, images).url : null
+    const musicRef = crawlMusicRef(raw.markdown)
+    const endImageRef = crawlEndImageRef(raw.markdown)
+    const endImageUrl = endImageRef ? resolveMarkdownImageSrc(endImageRef, path, images).url : null
+    const crawlBody = crawlPlainText(raw.markdown)
+    const crawlTitle = raw.title
+    const isActiveCrawl =
+      activeCrawl != null &&
+      (activeCrawl.title ?? '') === (crawlTitle ?? '') &&
+      activeCrawl.body === crawlBody
+    const card = (
+      <CrawlCard
+        title={crawlTitle}
+        preface={crawlPreface(raw.markdown)}
+        body={crawlBody}
+        logoRef={logoRef}
+        logoUrl={logoUrl}
+        endImageRef={endImageRef}
+        endImageUrl={endImageUrl}
+        musicRef={musicRef}
+        musicTracks={musicTracks}
+        images={images}
+        canPlay={theme === 'scifi'}
+        disabled={disabled}
+        editing={blockEditing}
+        onChange={(fields) => void persistCrawl(crawlIndex, fields)}
+        onPlay={onPlayCrawl ? (fields) => void playCrawlCard(crawlIndex, fields) : undefined}
+        onStop={onStopCrawl}
+        crawlActive={isActiveCrawl && Boolean(playerCrawl)}
+        crawlStopping={isActiveCrawl && playerCrawl?.stoppingAt != null}
+        onLoadLogo={() => loadCrawlLogo()}
+        onLoadEndImage={() => loadCrawlEndImage()}
+        onLoadMusic={() => loadCrawlMusic()}
+      />
+    )
+    return (
+      <div key={key}>
+        {wrapSheetBlock(blockKey, part, 'crawl', card, blockEditing ? card : undefined)}
+      </div>
+    )
+  }
+
+  function renderLegendBlock(
+    part: CalloutBlock,
+    raw: CalloutBlock,
+    key: string,
+    blockKey: string,
+    blockEditing: boolean,
+    legendIndex: number
+  ): ReactNode {
+    const logoRef = legendLogoRef(raw.markdown)
+    const logoUrl = logoRef ? resolveMarkdownImageSrc(logoRef, path, images).url : null
+    const musicRef = legendMusicRef(raw.markdown)
+    const endImageRef = legendEndImageRef(raw.markdown)
+    const endImageUrl = endImageRef ? resolveMarkdownImageSrc(endImageRef, path, images).url : null
+    const legendBody = legendPlainText(raw.markdown)
+    const legendTitle = raw.title
+    const look = legendLook(raw.markdown)
+    const isActiveLegend =
+      activeLegend != null &&
+      (activeLegend.title ?? '') === (legendTitle ?? '') &&
+      activeLegend.body === legendBody
+    const card = (
+      <LegendCard
+        title={legendTitle}
+        preface={legendPreface(raw.markdown)}
+        body={legendBody}
+        look={look}
+        logoRef={logoRef}
+        logoUrl={logoUrl}
+        endImageRef={endImageRef}
+        endImageUrl={endImageUrl}
+        musicRef={musicRef}
+        musicTracks={musicTracks}
+        images={images}
+        canPlay={legendPlayEnabled(theme)}
+        disabled={disabled}
+        editing={blockEditing}
+        onChange={(fields) => void persistLegend(legendIndex, fields)}
+        onPlay={onPlayLegend ? (fields) => void playLegendCard(legendIndex, fields) : undefined}
+        onStop={onStopLegend}
+        legendActive={isActiveLegend && Boolean(playerLegend)}
+        legendStopping={isActiveLegend && playerLegend?.stoppingAt != null}
+        onLoadLogo={() => loadLegendLogo()}
+        onLoadEndImage={() => loadLegendEndImage()}
+        onLoadMusic={() => loadLegendMusic()}
+      />
+    )
+    return (
+      <div key={key}>
+        {wrapSheetBlock(blockKey, part, 'legend', card, blockEditing ? card : undefined)}
+      </div>
+    )
+  }
+
+  function renderGalleryBlock(
+    part: CalloutBlock,
+    raw: CalloutBlock,
+    key: string,
+    blockKey: string,
+    blockEditing: boolean,
+    galleryIndex: number
+  ): ReactNode {
+    const refs = galleryImageRefs(raw.markdown)
+    const intervalSec = galleryIntervalSec(raw.markdown)
+    const urls = refs.map((ref) => resolveMarkdownImageSrc(ref, path, images).url || null)
+    const refsKey = refs.join('\n')
+    const isActiveGallery =
+      activeGallery != null &&
+      (activeGallery.title ?? '') === (raw.title ?? '') &&
+      activeGallery.imageRefs.join('\n') === refsKey
+    const card = (
+      <GalleryCard
+        title={raw.title}
+        intervalSec={intervalSec}
+        loop={galleryLoops(raw.markdown)}
+        showTitle={galleryShowTitle(raw.markdown)}
+        imageRefs={refs}
+        images={images}
+        imageUrls={urls}
+        disabled={disabled}
+        editing={blockEditing}
+        onChange={(fields) => void persistGallery(galleryIndex, fields)}
+        onPlay={onPlayGallery ? (fields) => void playGalleryCard(galleryIndex, fields) : undefined}
+        onStop={onStopGallery}
+        onPrev={onGalleryPrev}
+        onNext={onGalleryNext}
+        galleryActive={isActiveGallery && Boolean(playerGallery)}
+        slideIndex={isActiveGallery ? playerGallery?.index : undefined}
+        slideCount={isActiveGallery ? playerGallery?.slides.length : undefined}
+      />
+    )
+    return (
+      <div key={key}>
+        {wrapSheetBlock(blockKey, part, 'gallery', card, blockEditing ? card : undefined)}
+      </div>
+    )
+  }
+
+  function renderVideoBlock(
+    part: CalloutBlock,
+    raw: CalloutBlock,
+    key: string,
+    blockKey: string,
+    blockEditing: boolean,
+    videoIndex: number
+  ): ReactNode {
+    const fields = parseVideoFields(raw.title, raw.markdown)
+    const isActiveVideo =
+      activeVideo != null &&
+      (activeVideo.title ?? '') === (fields.title ?? '') &&
+      activeVideo.videoRef === (fields.videoRef ?? '')
+    const card = (
+      <VideoCard
+        title={fields.title}
+        videoRef={fields.videoRef}
+        muted={fields.muted}
+        videos={videos ?? []}
+        disabled={disabled}
+        editing={blockEditing}
+        onChange={(next) => void persistVideo(videoIndex, next)}
+        onPlay={onPlayVideo ? (next) => void playVideoCard(videoIndex, next) : undefined}
+        onStop={onStopVideo}
+        videoActive={isActiveVideo && Boolean(playerVideo)}
+        onLoadVideo={() => loadVideoFile()}
+      />
+    )
+    return (
+      <div key={key}>
+        {wrapSheetBlock(blockKey, part, 'video', card, blockEditing ? card : undefined)}
+      </div>
+    )
+  }
+
+  function renderGmOnlyBlock(part: CalloutBlock, key: string, blockKey: string): ReactNode {
+    if (/^what this page does$/i.test(part.title ?? '')) return null
+    const read = (
+      <GmOnly title={part.title}>
+        <Markdown remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform} components={markdownComponents}>
+          {part.markdown || ''}
+        </Markdown>
+      </GmOnly>
+    )
+    return (
+      <div key={key}>
+        {wrapSheetBlock(blockKey, part, 'gmonly', read)}
+      </div>
+    )
+  }
+
+  function renderTreasureBlock(
+    part: CalloutBlock,
+    key: string,
+    blockKey: string,
+    blockEditing: boolean
+  ): ReactNode {
+    const rawTreasure = blockIndex?.get(blockKey)?.block ?? part
+    const card = (
+      <TreasureCard
+        title={rawTreasure.title}
+        body={rawTreasure.markdown}
+        currencies={currencies}
+        editing={blockEditing}
+        disabled={disabled}
+        onChange={(fields: TreasureFields) =>
+          onBlockSave?.(blockKey, serializeTreasureCallout(fields, currencies))
+        }
+        markdownComponents={markdownComponents}
+        urlTransform={markdownUrlTransform}
+        system={system}
+        sheetPath={path}
+        gearNotes={gearNotes ?? noteIndex}
+        onEnsureGear={onEnsureGear}
+      />
+    )
+    return (
+      <div key={key}>
+        {wrapSheetBlock(blockKey, part, 'treasure', card, blockEditing ? card : undefined)}
+      </div>
+    )
+  }
+
+  function renderLinksBlock(part: CalloutBlock, key: string, blockKey: string): ReactNode {
+    const read = <LinksCard title={part.title} entries={blockNavEntries(blockKey)} />
+    const edit = (
+      <div className="space-y-2">
+        <LinksCard title={part.title} entries={blockNavEntries(blockKey)} />
+        <p className="pl-2 text-[11px] text-muted">
+          Links update automatically from every other block on this sheet.
+        </p>
+        <BlockMarkdownEditor
+          title={part.title ?? ''}
+          body=""
+          kindLabel="Links"
+          titleOnly
+          disabled={disabled}
+          onChange={({ title }) =>
+            onBlockSave?.(
+              blockKey,
+              serializeCalloutBlock({
+                ...part,
+                title: title.trim() || undefined,
+                markdown: ''
+              })
+            )
+          }
+        />
+      </div>
+    )
+    return (
+      <div key={key}>
+        {wrapSheetBlock(blockKey, part, 'links', read, edit)}
+      </div>
+    )
+  }
+
+  function renderGenericCalloutBlock(part: CalloutBlock, key: string, blockKey: string): ReactNode {
+    const read = (
+      <CalloutCard type={part.kind === 'other' ? (part.type ?? 'note') : part.kind} title={part.title}>
+        {part.markdown.trim() ? (
+          <Markdown remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform} components={markdownComponents}>
+            {part.markdown}
+          </Markdown>
+        ) : null}
+      </CalloutCard>
+    )
+    return (
+      <div key={key}>
+        {wrapSheetBlock(blockKey, part, sheetBlockKind(part.kind), read)}
+      </div>
+    )
+  }
+
   function renderMarkdown(
     text: string,
     keyPrefix: string,
@@ -410,377 +845,69 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
       const blockEditing = blockEditEnabled && editingBlocks.has(blockKey)
 
       if (part.kind === 'readaloud') {
-        const read = (
-          <ReadAloud title={part.title}>
-            <Markdown remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform} components={markdownComponents}>
-              {part.markdown || ''}
-            </Markdown>
-          </ReadAloud>
-        )
-        return (
-          <div key={key}>
-            {wrapSheetBlock(blockKey, part, 'readaloud', read)}
-          </div>
-        )
+        return renderReadAloudBlock(part, key, blockKey)
       }
       if (part.kind === 'combat') {
-        const heading = part.title?.trim() || 'Combat'
-        const sectionId = encounterSectionId(heading, encounterScope)
-        const encounter = encounters.find((item) => item.id === sectionId)
-        const canAdd = Boolean(encounter && onAddEncounter)
-        const initiativeAction = canAdd ? (
-          <button
-            type="button"
-            title="Load these sheets plus every PC in PCs/party. Anyone already listed is skipped. NPCs/monsters at init 0 are rolled."
-            onClick={() => onAddEncounterClick(encounter!)}
-            className="rounded bg-amber px-2 py-0.5 text-[11px] font-semibold text-on-amber"
-          >
-            {addingId === encounter!.id ? 'Adding…' : 'Add to initiative'}
-          </button>
-        ) : null
-        const rawCombat = blockIndex?.get(blockKey)?.block ?? part
-        const card = (
-          <CombatCard
-            title={rawCombat.title}
-            body={rawCombat.markdown}
-            editing={blockEditing}
-            disabled={disabled}
-            onChange={(fields: CombatFields) => onBlockSave?.(blockKey, serializeCombatCallout(fields))}
-            adding={Boolean(encounter && addingId === encounter.id)}
-            onAdd={blockEditEnabled ? undefined : canAdd ? () => onAddEncounterClick(encounter!) : undefined}
-            missing={missingCombatantTokens(rawCombat.markdown, path, noteIndex)}
-            sheetPath={path}
-            notes={gearNotes ?? noteIndex}
-            system={system}
-            onEnsureMonster={onEnsureMonster}
-            markdownComponents={markdownComponents}
-            urlTransform={markdownUrlTransform}
-          />
-        )
-        return (
-          <div key={key}>
-            {wrapSheetBlock(blockKey, part, 'combat', card, blockEditing ? card : undefined, initiativeAction)}
-          </div>
-        )
+        return renderCombatBlock(part, key, blockKey, blockEditing, encounterScope)
       }
       if (part.kind === 'party') {
-        const read = (
-          <PartyCard title={part.title}>
-            {part.markdown.trim() && !blockEditing
-              ? renderSectionedMarkdown(
-                  part.markdown,
-                  `${key}-body`,
-                  part.title?.trim() || undefined,
-                  crawlOffset + crawlLocal,
-                  legendOffset + legendLocal,
-                  galleryOffset + galleryLocal,
-                  videoOffset + videoLocal,
-                  sectionIndex,
-                  blockPath
-                )
-              : null}
-          </PartyCard>
-        )
-        return (
-          <div key={key}>
-            {wrapSheetBlock(blockKey, part, 'party', read)}
-          </div>
+        return renderPartyBlock(
+          part,
+          key,
+          blockKey,
+          blockEditing,
+          crawlOffset + crawlLocal,
+          legendOffset + legendLocal,
+          galleryOffset + galleryLocal,
+          videoOffset + videoLocal,
+          sectionIndex,
+          blockPath
         )
       }
       if (part.kind === 'scene') {
-        const { artSrc, artLabel, body } = splitLeadingSceneArt(part.markdown)
-        const resolved = artSrc ? resolveMarkdownImageSrc(artSrc, path, images) : { url: '', path: null }
-        const showArt = Boolean(artSrc || artLabel)
-        const read = (
-          <SceneCard
-            title={part.title}
-            art={
-              showArt ? (
-                <SheetArtFrame
-                  title={part.title?.trim() || artLabel || 'Scene'}
-                  imageSrc={resolved.path ? resolved.url : null}
-                  selectValue={resolved.path}
-                  selectedImage={selectedImage}
-                  images={images}
-                  aspect="portrait"
-                  onSelectImage={onSelectImage}
-                  onSrdError={() => undefined}
-                />
-              ) : undefined
-            }
-          >
-            {body.trim() && !blockEditing
-              ? renderSectionedMarkdown(
-                  body,
-                  `${key}-body`,
-                  part.title?.trim() || undefined,
-                  crawlOffset + crawlLocal,
-                  legendOffset + legendLocal,
-                  galleryOffset + galleryLocal,
-                  videoOffset + videoLocal,
-                  sectionIndex,
-                  blockPath
-                )
-              : null}
-          </SceneCard>
-        )
-        return (
-          <div key={key}>
-            {wrapSheetBlock(blockKey, part, 'scene', read)}
-          </div>
+        return renderSceneBlock(
+          part,
+          key,
+          blockKey,
+          blockEditing,
+          crawlOffset + crawlLocal,
+          legendOffset + legendLocal,
+          galleryOffset + galleryLocal,
+          videoOffset + videoLocal,
+          sectionIndex,
+          blockPath
         )
       }
       if (part.kind === 'crawl') {
         const crawlIndex = crawlOffset + crawlLocal
         crawlLocal += 1
-        const raw = rawCrawls[crawlIndex] ?? part
-        const logoRef = crawlLogoRef(raw.markdown)
-        const logoUrl = logoRef ? resolveMarkdownImageSrc(logoRef, path, images).url : null
-        const musicRef = crawlMusicRef(raw.markdown)
-        const endImageRef = crawlEndImageRef(raw.markdown)
-        const endImageUrl = endImageRef ? resolveMarkdownImageSrc(endImageRef, path, images).url : null
-        const crawlBody = crawlPlainText(raw.markdown)
-        const crawlTitle = raw.title
-        const isActiveCrawl =
-          activeCrawl != null &&
-          (activeCrawl.title ?? '') === (crawlTitle ?? '') &&
-          activeCrawl.body === crawlBody
-        const card = (
-          <CrawlCard
-            title={crawlTitle}
-            preface={crawlPreface(raw.markdown)}
-            body={crawlBody}
-            logoRef={logoRef}
-            logoUrl={logoUrl}
-            endImageRef={endImageRef}
-            endImageUrl={endImageUrl}
-            musicRef={musicRef}
-            musicTracks={musicTracks}
-            images={images}
-            canPlay={theme === 'scifi'}
-            disabled={disabled}
-            editing={blockEditing}
-            onChange={(fields) => void persistCrawl(crawlIndex, fields)}
-            onPlay={onPlayCrawl ? (fields) => void playCrawlCard(crawlIndex, fields) : undefined}
-            onStop={onStopCrawl}
-            crawlActive={isActiveCrawl && Boolean(playerCrawl)}
-            crawlStopping={isActiveCrawl && playerCrawl?.stoppingAt != null}
-            onLoadLogo={() => loadCrawlLogo()}
-            onLoadEndImage={() => loadCrawlEndImage()}
-            onLoadMusic={() => loadCrawlMusic()}
-          />
-        )
-        return (
-          <div key={key}>
-            {wrapSheetBlock(blockKey, part, 'crawl', card, blockEditing ? card : undefined)}
-          </div>
-        )
+        return renderCrawlBlock(part, rawCrawls[crawlIndex] ?? part, key, blockKey, blockEditing, crawlIndex)
       }
       if (part.kind === 'legend') {
         const legendIndex = legendOffset + legendLocal
         legendLocal += 1
-        const raw = rawLegends[legendIndex] ?? part
-        const logoRef = legendLogoRef(raw.markdown)
-        const logoUrl = logoRef ? resolveMarkdownImageSrc(logoRef, path, images).url : null
-        const musicRef = legendMusicRef(raw.markdown)
-        const endImageRef = legendEndImageRef(raw.markdown)
-        const endImageUrl = endImageRef ? resolveMarkdownImageSrc(endImageRef, path, images).url : null
-        const legendBody = legendPlainText(raw.markdown)
-        const legendTitle = raw.title
-        const look = legendLook(raw.markdown)
-        const isActiveLegend =
-          activeLegend != null &&
-          (activeLegend.title ?? '') === (legendTitle ?? '') &&
-          activeLegend.body === legendBody
-        const card = (
-          <LegendCard
-            title={legendTitle}
-            preface={legendPreface(raw.markdown)}
-            body={legendBody}
-            look={look}
-            logoRef={logoRef}
-            logoUrl={logoUrl}
-            endImageRef={endImageRef}
-            endImageUrl={endImageUrl}
-            musicRef={musicRef}
-            musicTracks={musicTracks}
-            images={images}
-            canPlay={legendPlayEnabled(theme)}
-            disabled={disabled}
-            editing={blockEditing}
-            onChange={(fields) => void persistLegend(legendIndex, fields)}
-            onPlay={onPlayLegend ? (fields) => void playLegendCard(legendIndex, fields) : undefined}
-            onStop={onStopLegend}
-            legendActive={isActiveLegend && Boolean(playerLegend)}
-            legendStopping={isActiveLegend && playerLegend?.stoppingAt != null}
-            onLoadLogo={() => loadLegendLogo()}
-            onLoadEndImage={() => loadLegendEndImage()}
-            onLoadMusic={() => loadLegendMusic()}
-          />
-        )
-        return (
-          <div key={key}>
-            {wrapSheetBlock(blockKey, part, 'legend', card, blockEditing ? card : undefined)}
-          </div>
-        )
+        return renderLegendBlock(part, rawLegends[legendIndex] ?? part, key, blockKey, blockEditing, legendIndex)
       }
       if (part.kind === 'gallery') {
         const galleryIndex = galleryOffset + galleryLocal
         galleryLocal += 1
-        const raw = rawGalleries[galleryIndex] ?? part
-        const refs = galleryImageRefs(raw.markdown)
-        const intervalSec = galleryIntervalSec(raw.markdown)
-        const urls = refs.map((ref) => resolveMarkdownImageSrc(ref, path, images).url || null)
-        const refsKey = refs.join('\n')
-        const isActiveGallery =
-          activeGallery != null &&
-          (activeGallery.title ?? '') === (raw.title ?? '') &&
-          activeGallery.imageRefs.join('\n') === refsKey
-        const card = (
-          <GalleryCard
-            title={raw.title}
-            intervalSec={intervalSec}
-            loop={galleryLoops(raw.markdown)}
-            showTitle={galleryShowTitle(raw.markdown)}
-            imageRefs={refs}
-            images={images}
-            imageUrls={urls}
-            disabled={disabled}
-            editing={blockEditing}
-            onChange={(fields) => void persistGallery(galleryIndex, fields)}
-            onPlay={onPlayGallery ? (fields) => void playGalleryCard(galleryIndex, fields) : undefined}
-            onStop={onStopGallery}
-            onPrev={onGalleryPrev}
-            onNext={onGalleryNext}
-            galleryActive={isActiveGallery && Boolean(playerGallery)}
-            slideIndex={isActiveGallery ? playerGallery?.index : undefined}
-            slideCount={isActiveGallery ? playerGallery?.slides.length : undefined}
-          />
-        )
-        return (
-          <div key={key}>
-            {wrapSheetBlock(blockKey, part, 'gallery', card, blockEditing ? card : undefined)}
-          </div>
-        )
+        return renderGalleryBlock(part, rawGalleries[galleryIndex] ?? part, key, blockKey, blockEditing, galleryIndex)
       }
       if (part.kind === 'video') {
         const videoIndex = videoOffset + videoLocal
         videoLocal += 1
-        const raw = rawVideos[videoIndex] ?? part
-        const fields = parseVideoFields(raw.title, raw.markdown)
-        const isActiveVideo =
-          activeVideo != null &&
-          (activeVideo.title ?? '') === (fields.title ?? '') &&
-          activeVideo.videoRef === (fields.videoRef ?? '')
-        const card = (
-          <VideoCard
-            title={fields.title}
-            videoRef={fields.videoRef}
-            muted={fields.muted}
-            videos={videos ?? []}
-            disabled={disabled}
-            editing={blockEditing}
-            onChange={(next) => void persistVideo(videoIndex, next)}
-            onPlay={onPlayVideo ? (next) => void playVideoCard(videoIndex, next) : undefined}
-            onStop={onStopVideo}
-            videoActive={isActiveVideo && Boolean(playerVideo)}
-            onLoadVideo={() => loadVideoFile()}
-          />
-        )
-        return (
-          <div key={key}>
-            {wrapSheetBlock(blockKey, part, 'video', card, blockEditing ? card : undefined)}
-          </div>
-        )
+        return renderVideoBlock(part, rawVideos[videoIndex] ?? part, key, blockKey, blockEditing, videoIndex)
       }
       if (part.kind === 'gmonly') {
-        if (/^what this page does$/i.test(part.title ?? '')) return null
-        const read = (
-          <GmOnly title={part.title}>
-            <Markdown remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform} components={markdownComponents}>
-              {part.markdown || ''}
-            </Markdown>
-          </GmOnly>
-        )
-        return (
-          <div key={key}>
-            {wrapSheetBlock(blockKey, part, 'gmonly', read)}
-          </div>
-        )
+        return renderGmOnlyBlock(part, key, blockKey)
       }
       if (part.kind === 'treasure') {
-        const rawTreasure = blockIndex?.get(blockKey)?.block ?? part
-        const card = (
-          <TreasureCard
-            title={rawTreasure.title}
-            body={rawTreasure.markdown}
-            currencies={currencies}
-            editing={blockEditing}
-            disabled={disabled}
-            onChange={(fields: TreasureFields) =>
-              onBlockSave?.(blockKey, serializeTreasureCallout(fields, currencies))
-            }
-            markdownComponents={markdownComponents}
-            urlTransform={markdownUrlTransform}
-            system={system}
-            sheetPath={path}
-            gearNotes={gearNotes ?? noteIndex}
-            onEnsureGear={onEnsureGear}
-          />
-        )
-        return (
-          <div key={key}>
-            {wrapSheetBlock(blockKey, part, 'treasure', card, blockEditing ? card : undefined)}
-          </div>
-        )
+        return renderTreasureBlock(part, key, blockKey, blockEditing)
       }
       if (part.kind === 'links') {
-        const read = <LinksCard title={part.title} entries={blockNavEntries(blockKey)} />
-        const edit = (
-          <div className="space-y-2">
-            <LinksCard title={part.title} entries={blockNavEntries(blockKey)} />
-            <p className="pl-2 text-[11px] text-muted">
-              Links update automatically from every other block on this sheet.
-            </p>
-            <BlockMarkdownEditor
-              title={part.title ?? ''}
-              body=""
-              kindLabel="Links"
-              titleOnly
-              disabled={disabled}
-              onChange={({ title }) =>
-                onBlockSave?.(
-                  blockKey,
-                  serializeCalloutBlock({
-                    ...part,
-                    title: title.trim() || undefined,
-                    markdown: ''
-                  })
-                )
-              }
-            />
-          </div>
-        )
-        return (
-          <div key={key}>
-            {wrapSheetBlock(blockKey, part, 'links', read, edit)}
-          </div>
-        )
+        return renderLinksBlock(part, key, blockKey)
       }
-      const read = (
-        <CalloutCard type={part.kind === 'other' ? (part.type ?? 'note') : part.kind} title={part.title}>
-          {part.markdown.trim() ? (
-            <Markdown remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform} components={markdownComponents}>
-              {part.markdown}
-            </Markdown>
-          ) : null}
-        </CalloutCard>
-      )
-      return (
-        <div key={key}>
-          {wrapSheetBlock(blockKey, part, sheetBlockKind(part.kind), read)}
-        </div>
-      )
+      return renderGenericCalloutBlock(part, key, blockKey)
     })
   }
 
