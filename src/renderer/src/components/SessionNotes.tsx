@@ -1,17 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { isHoloPortraitPath, isStartHerePath, pathHasFolder } from '../../../shared/campaignLayout'
-import { replaceNthCrawlCallout, type CrawlCalloutFields } from '../../../shared/openingCrawl'
-import { replaceNthLegendCallout, type LegendCalloutFields } from '../../../shared/openingLegend'
-import { replaceNthGalleryCallout, type GalleryCalloutFields } from '../../../shared/playerGallery'
-import { replaceNthVideoCallout, type VideoCalloutFields } from '../../../shared/playerVideo'
 import { holoPortraitsEnabled, type ThemeId } from '../../../shared/theme'
 import type { CampaignInfo, Character, CreateNoteMapImage, PlayerMapView } from '../../../shared/types'
 import type { AudioTrack } from '../../../shared/audio'
 import {
-  campaignFileUrl,
   imageTitle,
   prepareNoteMarkdown,
-  resolveMarkdownImageSrc,
   type CampaignImage,
   type CampaignVideo
 } from '../lib/images'
@@ -34,26 +28,14 @@ import ItemSheet from './ItemSheet'
 import NpcSheet from './NpcSheet'
 import { CharacterCard } from './StatBlock'
 import { createSessionNoteMarkdown } from './SessionNoteMarkdown'
+import { useOpeningSequenceCards } from '../hooks/useOpeningSequenceCards'
+import { useNoteBlockEditing } from '../hooks/useNoteBlockEditing'
+import { useShopStock } from '../hooks/useShopStock'
+import { useNoteAutosave } from '../hooks/useNoteAutosave'
+import { useNoteEditSession } from '../hooks/useNoteEditSession'
 import type { FileKind } from './CampaignFiles'
-import type { ShopStockOffer } from '../../../shared/shopCatalogs'
-import {
-  applyShopInventory,
-  applyShopStock,
-  generateShopInventory,
-  looksLikeShopNote,
-  shopTypeFromMarkdown
-} from '../../../shared/shopStock'
-import { applyShopStanding, type ShopStanding } from '../../../shared/shopStanding'
-import { matchStockArt } from '../../../shared/stockArt'
-import {
-  buildBlockIndex,
-  defaultBlockTemplate,
-  deleteBlockByKey,
-  insertBlockByKey,
-  insertableBlockKindsForParent,
-  replaceBlockByKey
-} from '../../../shared/blockIndex'
-import type { CalloutKind } from '../../../shared/callouts'
+import { looksLikeShopNote } from '../../../shared/shopStock'
+import { buildBlockIndex } from '../../../shared/blockIndex'
 
 interface Heading {
   id: string
@@ -228,11 +210,8 @@ export default function SessionNotes({
   const [markdown, setMarkdown] = useState('')
   const [original, setOriginal] = useState('')
   const [character, setCharacter] = useState<Character | null>(null)
-  const [editing, setEditing] = useState(false)
-  const [editingBlocks, setEditingBlocks] = useState<Set<string>>(() => new Set())
   const [addingId, setAddingId] = useState<string | null>(null)
   const [saveError, setSaveError] = useState('')
-  const [confirmDiscard, setConfirmDiscard] = useState(false)
   const [showLinks, setShowLinks] = useState(false)
   const editorRef = useRef<HTMLTextAreaElement | null>(null)
   const markdownRef = useRef('')
@@ -240,6 +219,36 @@ export default function SessionNotes({
   const pathRef = useRef(path)
   markdownRef.current = markdown
   originalRef.current = original
+
+  const { commitSave, flushOpenNote } = useNoteAutosave({
+    markdownRef,
+    originalRef,
+    pathRef,
+    setOriginal,
+    setSaveError,
+    onCampaignChange,
+    onOpenNote
+  })
+  const {
+    editing,
+    setEditing,
+    confirmDiscard,
+    setConfirmDiscard,
+    save,
+    discardEdits,
+    requestCloseEditor,
+    resetEditSession
+  } = useNoteEditSession({
+    path,
+    markdown,
+    original,
+    setMarkdown,
+    setOriginal,
+    setSaveError,
+    commitSave,
+    editorRef
+  })
+
   const dirty = markdown !== original
   const noteIndex = notes ?? flattenNotes([])
   const rendered = useMemo(() => {
@@ -276,35 +285,18 @@ export default function SessionNotes({
   )
   const blockIndex = useMemo(() => buildBlockIndex(markdown), [markdown])
   const blockEditEnabled = kind === 'note' && !editing && !sheetChrome && !mapMode
-
-  async function commitSave(targetPath: string, contents: string): Promise<string | null> {
-    const result = await window.tabledm.saveFile(targetPath, contents)
-    if (!result) return null
-    onCampaignChange?.(result.campaign)
-    if (result.renamed && result.path !== targetPath) {
-      if (pathRef.current === targetPath) {
-        pathRef.current = result.path
-        onOpenNote?.(result.path)
-      }
-    }
-    return result.path
-  }
-
-  async function flushOpenNote(targetPath = pathRef.current): Promise<void> {
-    if (!targetPath || markdownRef.current === originalRef.current) return
-    try {
-      const savedPath = await commitSave(targetPath, markdownRef.current)
-      if (!savedPath) {
-        setSaveError('Could not save this file.')
-        return
-      }
-      originalRef.current = markdownRef.current
-      setOriginal(markdownRef.current)
-      setSaveError('')
-    } catch {
-      setSaveError('Could not save this file.')
-    }
-  }
+  const { editingBlocks, toggleBlockEdit, saveSheetBlock, insertSheetBlock, deleteSheetBlock, resetBlockEditing } =
+    useNoteBlockEditing({
+      markdownRef,
+      blockIndex,
+      currencies,
+      persistMarkdown: (next) => persistShopMarkdown(next)
+    })
+  const { rerollShopStock, changeShopStock, changeShopStanding } = useShopStock({
+    path,
+    markdownRef,
+    persistMarkdown: (next) => persistShopMarkdown(next)
+  })
 
   useEffect(() => {
     const prevPath = pathRef.current
@@ -312,9 +304,8 @@ export default function SessionNotes({
       void flushOpenNote(prevPath)
     }
     pathRef.current = path
-    setEditing(false)
-    setEditingBlocks(new Set())
-    setConfirmDiscard(false)
+    resetEditSession()
+    resetBlockEditing()
     setSaveError('')
     setShowLinks(false)
     setCharacter(null)
@@ -346,204 +337,17 @@ export default function SessionNotes({
     }
   }, [path, kind])
 
-  useEffect(() => {
-    if (editing) editorRef.current?.focus()
-  }, [editing])
-
-  useEffect(() => {
-    const onHidden = (): void => {
-      void flushOpenNote()
-    }
-    const onVis = (): void => {
-      if (document.visibilityState === 'hidden') void flushOpenNote()
-    }
-    window.addEventListener('beforeunload', onHidden)
-    document.addEventListener('visibilitychange', onVis)
-    const offClose = window.tabledm.onWillClose(async () => {
-      await flushOpenNote()
-      window.tabledm.confirmClose()
-    })
-    return () => {
-      window.removeEventListener('beforeunload', onHidden)
-      document.removeEventListener('visibilitychange', onVis)
-      offClose()
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!editing) return
-    const onKey = (e: KeyboardEvent): void => {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
-        e.preventDefault()
-        void save()
-      }
-      if (e.key === 'Escape') {
-        e.preventDefault()
-        requestCloseEditor()
-      }
-    }
-    window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
-  }, [editing, markdown, path])
-
-  async function save(): Promise<void> {
-    if (!path) return
-    try {
-      const savedPath = await commitSave(path, markdown)
-      if (!savedPath) {
-        setSaveError('Could not save this file.')
-        return
-      }
-      setOriginal(markdown)
-      setSaveError('')
-      setEditing(false)
-      setConfirmDiscard(false)
-    } catch {
-      setSaveError('Could not save this file.')
-    }
-  }
-
-  function discardEdits(): void {
-    setMarkdown(original)
-    setEditing(false)
-    setConfirmDiscard(false)
-    setSaveError('')
-  }
-
-  function requestCloseEditor(): void {
-    if (markdown !== original) {
-      setConfirmDiscard(true)
-      return
-    }
-    setEditing(false)
-  }
-
-  async function persistLegend(index: number, fields: LegendCalloutFields): Promise<void> {
-    if (!path) return
-    const next = replaceNthLegendCallout(markdownRef.current, index, fields)
-    if (next === markdownRef.current) return
-    await persistShopMarkdown(next)
-  }
-
-  async function playLegendCard(index: number, fields: LegendCalloutFields): Promise<void> {
-    await persistLegend(index, fields)
-    const logo = fields.logoRef ? resolveMarkdownImageSrc(fields.logoRef, path, images).url : null
-    const endImage = fields.endImageRef
-      ? resolveMarkdownImageSrc(fields.endImageRef, path, images).url
-      : null
-    onPlayLegend?.(
-      fields.title || undefined,
-      fields.body,
-      logo || null,
-      fields.preface,
-      fields.musicRef,
-      endImage || null,
-      fields.look
-    )
-  }
-
-  async function loadLegendLogo(): Promise<string | null> {
-    return loadCrawlLogo()
-  }
-
-  async function loadLegendEndImage(): Promise<string | null> {
-    return loadCrawlLogo()
-  }
-
-  async function loadLegendMusic(): Promise<string | null> {
-    return loadCrawlMusic()
-  }
-
-  async function persistGallery(index: number, fields: GalleryCalloutFields): Promise<void> {
-    if (!path) return
-    const next = replaceNthGalleryCallout(markdownRef.current, index, fields)
-    if (next === markdownRef.current) return
-    await persistShopMarkdown(next)
-  }
-
-  async function playGalleryCard(index: number, fields: GalleryCalloutFields): Promise<void> {
-    await persistGallery(index, fields)
-    const slides = fields.imageRefs
-      .map((ref) => {
-        const resolved = resolveMarkdownImageSrc(ref, path, images)
-        return resolved.url ? { src: resolved.url, label: imageTitle(ref) } : null
-      })
-      .filter((s): s is { src: string; label: string } => Boolean(s))
-    if (slides.length === 0) return
-    onPlayGallery?.(
-      fields.title || undefined,
-      slides,
-      fields.imageRefs,
-      fields.intervalSec,
-      fields.loop,
-      fields.showTitle
-    )
-  }
-
-  async function persistVideo(index: number, fields: VideoCalloutFields): Promise<void> {
-    if (!path) return
-    const next = replaceNthVideoCallout(markdownRef.current, index, fields)
-    if (next === markdownRef.current) return
-    await persistShopMarkdown(next)
-  }
-
-  async function playVideoCard(index: number, fields: VideoCalloutFields): Promise<void> {
-    await persistVideo(index, fields)
-    const ref = fields.videoRef?.trim()
-    if (!ref) return
-    onPlayVideo?.(fields.title || undefined, campaignFileUrl(ref), fields.muted, ref)
-  }
-
-  async function loadVideoFile(): Promise<string | null> {
-    const result = await window.tabledm.addFiles('Handouts')
-    if (!result?.paths?.length) return null
-    onCampaignChange?.(result.campaign)
-    return result.paths[0] ?? null
-  }
-
-  async function persistCrawl(index: number, fields: CrawlCalloutFields): Promise<void> {
-    if (!path) return
-    const next = replaceNthCrawlCallout(markdownRef.current, index, fields)
-    if (next === markdownRef.current) return
-    await persistShopMarkdown(next)
-  }
-
-  async function playCrawlCard(index: number, fields: CrawlCalloutFields): Promise<void> {
-    await persistCrawl(index, fields)
-    const logo = fields.logoRef ? resolveMarkdownImageSrc(fields.logoRef, path, images).url : null
-    const endImage = fields.endImageRef
-      ? resolveMarkdownImageSrc(fields.endImageRef, path, images).url
-      : null
-    onPlayCrawl?.(
-      fields.title || undefined,
-      fields.body,
-      logo || null,
-      fields.preface,
-      fields.musicRef,
-      endImage || null
-    )
-  }
-
-  async function loadCrawlLogo(): Promise<string | null> {
-    if (!path) return null
-    const picked = await window.tabledm.pickImageFile()
-    if (!picked) return null
-    const result = await window.tabledm.copyArtToNote(path, { kind: 'import', filePath: picked.filePath }, picked.fileName)
-    if (!result) return null
-    onCampaignChange?.(result.campaign)
-    return result.fileName
-  }
-
-  async function loadCrawlEndImage(): Promise<string | null> {
-    return loadCrawlLogo()
-  }
-
-  async function loadCrawlMusic(): Promise<string | null> {
-    const result = await window.tabledm.addFiles('Audio/Music/Crawl')
-    if (!result?.paths?.length) return null
-    onCampaignChange?.(result.campaign)
-    return result.paths[0] ?? null
-  }
+  const sequenceCards = useOpeningSequenceCards({
+    path,
+    images,
+    markdownRef,
+    persistMarkdown: (next) => persistShopMarkdown(next),
+    onCampaignChange,
+    onPlayCrawl,
+    onPlayLegend,
+    onPlayGallery,
+    onPlayVideo
+  })
 
   async function persistShopMarkdown(next: string): Promise<void> {
     if (!path) return
@@ -553,68 +357,6 @@ export default function SessionNotes({
     setOriginal(next)
     markdownRef.current = next
     originalRef.current = next
-  }
-
-  function toggleBlockEdit(key: string): void {
-    setEditingBlocks((prev) => {
-      const next = new Set(prev)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
-      return next
-    })
-  }
-
-  async function saveSheetBlock(key: string, replacement: string): Promise<void> {
-    const index = buildBlockIndex(markdownRef.current)
-    const next = replaceBlockByKey(markdownRef.current, index, key, replacement)
-    if (next === markdownRef.current) return
-    await persistShopMarkdown(next)
-  }
-
-  async function insertSheetBlock(key: string, position: 'above' | 'below', kind: CalloutKind): Promise<void> {
-    const keyParts = key.split(':')
-    const parentKey = keyParts.length > 2 ? keyParts.slice(0, -1).join(':') : null
-    const parentKind = parentKey ? blockIndex.get(parentKey)?.block.kind : null
-    if (!insertableBlockKindsForParent(parentKind).includes(kind)) return
-    const template = defaultBlockTemplate(kind, currencies)
-    const { markdown: next, newKey } = insertBlockByKey(
-      markdownRef.current,
-      blockIndex,
-      key,
-      position,
-      template
-    )
-    await persistShopMarkdown(next)
-    setEditingBlocks(new Set([newKey]))
-  }
-
-  async function deleteSheetBlock(key: string): Promise<void> {
-    const next = deleteBlockByKey(markdownRef.current, blockIndex, key)
-    if (next === markdownRef.current) return
-    await persistShopMarkdown(next)
-    setEditingBlocks((prev) => {
-      const nextSet = new Set(prev)
-      nextSet.delete(key)
-      return nextSet
-    })
-  }
-
-  async function rerollShopStock(): Promise<void> {
-    if (!path) return
-    const stem = (path.split('/').pop() ?? '').replace(/\.md$/i, '')
-    const type =
-      shopTypeFromMarkdown(markdownRef.current) ||
-      matchStockArt(stem, 'shop')?.id ||
-      'General Store'
-    await persistShopMarkdown(applyShopInventory(markdownRef.current, generateShopInventory(type)))
-  }
-
-  async function changeShopStock(stock: ShopStockOffer[]): Promise<void> {
-    await persistShopMarkdown(applyShopStock(markdownRef.current, stock))
-  }
-
-  async function changeShopStanding(standing: ShopStanding): Promise<void> {
-    await persistShopMarkdown(applyShopStanding(markdownRef.current, standing))
   }
 
   function jump(id: string): void {
@@ -699,35 +441,21 @@ export default function SessionNotes({
     playerCrawl,
     onStopCrawl,
     onPlayCrawl,
-    persistCrawl,
-    playCrawlCard,
-    loadCrawlLogo,
-    loadCrawlEndImage,
-    loadCrawlMusic,
+    ...sequenceCards,
     activeLegend,
     playerLegend,
     onStopLegend,
     onPlayLegend,
-    persistLegend,
-    playLegendCard,
-    loadLegendLogo,
-    loadLegendEndImage,
-    loadLegendMusic,
     activeGallery,
     playerGallery,
     onStopGallery,
     onGalleryPrev,
     onGalleryNext,
     onPlayGallery,
-    persistGallery,
-    playGalleryCard,
     activeVideo,
     playerVideo,
     onStopVideo,
     onPlayVideo,
-    persistVideo,
-    playVideoCard,
-    loadVideoFile,
     blockEditEnabled,
     blockIndex,
     editingBlocks,
