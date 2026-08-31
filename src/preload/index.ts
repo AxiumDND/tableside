@@ -141,7 +141,10 @@ const api = {
   getCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke(IPC.campaignGet),
   readFile: (relativePath: string): Promise<string> =>
     ipcRenderer.invoke(IPC.campaignReadFile, relativePath),
-  saveFile: (relativePath: string, contents: string): Promise<void> =>
+  saveFile: (
+    relativePath: string,
+    contents: string
+  ): Promise<{ campaign: CampaignInfo; path: string; renamed: boolean } | null> =>
     ipcRenderer.invoke(IPC.campaignSaveFile, relativePath, contents),
   saveCombat: (combat: CombatState): Promise<CampaignInfo | null> =>
     ipcRenderer.invoke(IPC.campaignSaveCombat, combat),

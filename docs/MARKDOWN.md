@@ -23,6 +23,7 @@ Reference for note syntax Tableside understands. How to use the app: [GUIDE.md](
 - `PC — Name` sheets match searches for `Name`.
 - Prefer unique stems; if several match, Party / NPCs / Bestiary sheets win, then notes near the current file.
 - Image embeds use `![[…]]` and are not treated as note links.
+- Saving a note renames the file to match its `#` title when that title changed (Party `PC —` and Session `— Game Night Sheet` stems are kept). Wikilinks are not rewritten automatically.
 
 ## Image embeds
 

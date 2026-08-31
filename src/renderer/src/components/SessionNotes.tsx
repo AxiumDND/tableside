@@ -272,10 +272,28 @@ export default function SessionNotes({
   )
   const blockIndex = useMemo(() => buildBlockIndex(markdown), [markdown])
   const blockEditEnabled = kind === 'note' && !editing && !sheetChrome && !mapMode
+
+  async function commitSave(targetPath: string, contents: string): Promise<string | null> {
+    const result = await window.tabledm.saveFile(targetPath, contents)
+    if (!result) return null
+    onCampaignChange?.(result.campaign)
+    if (result.renamed && result.path !== targetPath) {
+      if (pathRef.current === targetPath) {
+        pathRef.current = result.path
+        onOpenNote?.(result.path)
+      }
+    }
+    return result.path
+  }
+
   async function flushOpenNote(targetPath = pathRef.current): Promise<void> {
     if (!targetPath || markdownRef.current === originalRef.current) return
     try {
-      await window.tabledm.saveFile(targetPath, markdownRef.current)
+      const savedPath = await commitSave(targetPath, markdownRef.current)
+      if (!savedPath) {
+        setSaveError('Could not save this file.')
+        return
+      }
       originalRef.current = markdownRef.current
       setOriginal(markdownRef.current)
       setSaveError('')
@@ -367,7 +385,11 @@ export default function SessionNotes({
   async function save(): Promise<void> {
     if (!path) return
     try {
-      await window.tabledm.saveFile(path, markdown)
+      const savedPath = await commitSave(path, markdown)
+      if (!savedPath) {
+        setSaveError('Could not save this file.')
+        return
+      }
       setOriginal(markdown)
       setSaveError('')
       setEditing(false)
@@ -521,7 +543,8 @@ export default function SessionNotes({
 
   async function persistShopMarkdown(next: string): Promise<void> {
     if (!path) return
-    await window.tabledm.saveFile(path, next)
+    const savedPath = await commitSave(path, next)
+    if (!savedPath) return
     setMarkdown(next)
     setOriginal(next)
     markdownRef.current = next
@@ -629,7 +652,11 @@ export default function SessionNotes({
     setMarkdown(next)
     markdownRef.current = next
     try {
-      await window.tabledm.saveFile(path, next)
+      const savedPath = await commitSave(path, next)
+      if (!savedPath) {
+        setSaveError('Could not save this file.')
+        return
+      }
       originalRef.current = next
       setOriginal(next)
       setSaveError('')

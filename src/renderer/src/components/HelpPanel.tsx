@@ -642,7 +642,8 @@ export default function HelpPanel({
               </>,
               <>
                 <Action>Add to Bestiary / Spells / Gear</Action> writes a markdown note you can edit. Gear goes under
-                Weapons, Armor, Equipment, Trade Goods, or Magic Items. A monster also copies its default portrait into{' '}
+                Weapons, Armor, Equipment, Trade Goods, or Magic Items. Change the <Code>#</Code> title and save — the
+                file in the tree renames to match. A monster also copies its default portrait into{' '}
                 <Code>Bestiary/Art/</Code> if the campaign does not already have one. A spell copies its school emblem
                 into <Code>Spells/Art/</Code>.
               </>,

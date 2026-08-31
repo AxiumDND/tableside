@@ -559,6 +559,47 @@ export function displayTitle(fileStem: string): string {
   return fileStem.replace(/^pc\s*[—–-]\s*/i, '').trim()
 }
 
+/** First `# Title` / `# *Title*` line, or null if missing / looks like an embed. */
+export function headingTitleFromMarkdown(markdown: string): string | null {
+  const heading = /^#\s+\*?(.+?)\*?\s*$/m.exec(markdown)
+  if (!heading) return null
+  const text = heading[1].replace(/\*/g, '').trim()
+  if (!text || /!\[\[|\]\]|\.(png|jpe?g|webp|gif|svg)\b/i.test(text)) return null
+  return text
+}
+
+const PLACEHOLDER_TITLES = new Set(
+  Object.values(TEMPLATE_PLACEHOLDERS).map((value) => value.toLowerCase())
+)
+
+/** True when the H1 is still a blank-template placeholder (do not rename the file). */
+export function isPlaceholderHeadingTitle(title: string): boolean {
+  const folded = title.trim().toLowerCase()
+  if (!folded) return true
+  if (PLACEHOLDER_TITLES.has(folded)) return true
+  return PLACEHOLDER_TITLES.has(folded.replace(/\s*[—–-]\s*game\s*night\s*sheet$/i, '').trim())
+}
+
+/**
+ * Filename stem that should match an edited `#` title, preserving Party `PC —`
+ * and Session `— Game Night Sheet` conventions from the current path.
+ */
+export function desiredNoteFileStem(relativePath: string, title: string): string | null {
+  if (isPlaceholderHeadingTitle(title)) return null
+  const posix = relativePath.replaceAll('\\', '/')
+  const base = posix.split('/').pop() ?? posix
+  const currentStem = base.replace(/\.[^.]+$/, '')
+  let stem = sanitizeFileName(title).replace(/\.md$/i, '')
+  if (!stem) return null
+  if (/^pc\s*[—–-]/i.test(currentStem) && !/^pc\s*[—–-]/i.test(stem)) {
+    stem = `PC — ${stem}`
+  }
+  if (/game\s*night\s*sheet|night\s*sheet/i.test(currentStem)) {
+    stem = gameNightSheetFileStem(stem)
+  }
+  return stem
+}
+
 /** `Session 4` → `Session 4 — Game Night Sheet`. Leaves an existing game-night-sheet name alone. */
 export function gameNightSheetFileStem(name: string): string {
   const stem = sanitizeFileName(name).replace(/\.md$/i, '')

@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest'
-import { FALLBACK_TEMPLATES, fillTemplate, gameNightSheetFileStem, partyLinkList, wikiLinkForSheet } from './sheetTemplates'
+import {
+  FALLBACK_TEMPLATES,
+  desiredNoteFileStem,
+  fillTemplate,
+  gameNightSheetFileStem,
+  headingTitleFromMarkdown,
+  isPlaceholderHeadingTitle,
+  partyLinkList,
+  wikiLinkForSheet
+} from './sheetTemplates'
 import { templatesFor } from './systemTemplates'
 import { parseSystemId } from './systemPack'
 
@@ -27,6 +36,31 @@ describe('game night sheet names', () => {
     expect(gameNightSheetFileStem('Session 4')).toBe('Session 4 — Game Night Sheet')
     expect(gameNightSheetFileStem('Session 4 — Night Sheet')).toBe('Session 4 — Game Night Sheet')
     expect(gameNightSheetFileStem('Session 4 — Game Night Sheet')).toBe('Session 4 — Game Night Sheet')
+  })
+})
+
+describe('heading title → filename', () => {
+  it('reads # and # *Title* headings', () => {
+    expect(headingTitleFromMarkdown('# Potion of Healing\n\nBody')).toBe('Potion of Healing')
+    expect(headingTitleFromMarkdown("# *Lucian's Blade*\n\nBody")).toBe("Lucian's Blade")
+    expect(headingTitleFromMarkdown('## Not the title\n')).toBeNull()
+  })
+
+  it('treats template placeholders as non-renaming titles', () => {
+    expect(isPlaceholderHeadingTitle('Item Name')).toBe(true)
+    expect(isPlaceholderHeadingTitle('Session Name — Game Night Sheet')).toBe(true)
+    expect(isPlaceholderHeadingTitle('Cloak of Shadows')).toBe(false)
+  })
+
+  it('preserves PC — and Game Night Sheet stems', () => {
+    expect(desiredNoteFileStem('Gear/Magic Items/Potion of Healing.md', 'Cloak of Shadows')).toBe(
+      'Cloak of Shadows'
+    )
+    expect(desiredNoteFileStem('Party/PC — Aria.md', 'Aria Vale')).toBe('PC — Aria Vale')
+    expect(desiredNoteFileStem('Sessions/test — Game Night Sheet.md', 'River Ambush')).toBe(
+      'River Ambush — Game Night Sheet'
+    )
+    expect(desiredNoteFileStem('Gear/Item.md', 'Item Name')).toBeNull()
   })
 })
 

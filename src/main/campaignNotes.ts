@@ -1,5 +1,5 @@
 import { existsSync } from 'node:fs'
-import { copyFile, readdir, readFile, stat, unlink, writeFile } from 'node:fs/promises'
+import { copyFile, readdir, readFile, rename, stat, unlink, writeFile } from 'node:fs/promises'
 import { basename, dirname, extname, join, relative } from 'node:path'
 import type { OpenDialogOptions, OpenDialogReturnValue } from 'electron'
 import type { CampaignInfo, CreateNoteMapImage } from '../shared/types'
@@ -8,15 +8,18 @@ import {
   artFolderRelativePath,
   folderMatchesCanonical,
   isArtFolderName,
+  isStartHerePath,
   pathHasFolder,
   shouldSkipCampaignDir,
   type CampaignLibraryFolder
 } from '../shared/campaignLayout'
 import {
   TEMPLATE_FILE_NAMES,
+  desiredNoteFileStem,
   displayTitle,
   fillTemplate,
   gameNightSheetFileStem,
+  headingTitleFromMarkdown,
   rewriteDuplicatedMarkdown,
   sanitizeFileName,
   type SheetTemplateKind
@@ -401,4 +404,73 @@ export async function deleteCampaignFile(
   await unlink(dest)
   await deps.onCampaignFilesChanged()
   return { campaign: await loadCampaign(campaignFolder), path: toPosix(relative(campaignFolder, dest)) }
+}
+
+export type SaveCampaignFileResult = {
+  campaign: CampaignInfo
+  path: string
+  renamed: boolean
+}
+
+/**
+ * Write a note, then rename the file to match its `#` title when the stem changed.
+ * Skips Start Here overview and non-markdown files.
+ */
+export async function saveCampaignFile(
+  relativePath: string,
+  contents: string
+): Promise<SaveCampaignFileResult | null> {
+  const campaignFolder = getFolder()
+  if (!campaignFolder) return null
+  const posixPath = toPosix(relativePath)
+  const source = safeJoin(campaignFolder, posixPath)
+  await writeFile(source, contents, 'utf8')
+
+  const ext = extname(source)
+  const isMarkdown = /\.(md|markdown|txt)$/i.test(ext)
+  const skipRename =
+    !isMarkdown || isStartHerePath(posixPath) || /overview\.md$/i.test(posixPath.split('/').pop() ?? '')
+
+  if (skipRename) {
+    return { campaign: await loadCampaign(campaignFolder), path: posixPath, renamed: false }
+  }
+
+  const title = headingTitleFromMarkdown(contents)
+  if (!title) {
+    return { campaign: await loadCampaign(campaignFolder), path: posixPath, renamed: false }
+  }
+
+  const wantedStem = desiredNoteFileStem(posixPath, title)
+  if (!wantedStem) {
+    return { campaign: await loadCampaign(campaignFolder), path: posixPath, renamed: false }
+  }
+
+  const currentStem = basename(source, ext)
+  if (wantedStem === currentStem) {
+    return { campaign: await loadCampaign(campaignFolder), path: posixPath, renamed: false }
+  }
+
+  const dir = dirname(source)
+  const sameIgnoreCase =
+    wantedStem.localeCompare(currentStem, undefined, { sensitivity: 'accent' }) === 0
+  let destName = `${wantedStem}${ext}`
+  if (!sameIgnoreCase) {
+    destName = uniqueFileName(dir, destName)
+  }
+  const dest = join(dir, destName)
+  if (deps.samePath(source, dest)) {
+    return { campaign: await loadCampaign(campaignFolder), path: posixPath, renamed: false }
+  }
+
+  if (sameIgnoreCase) {
+    const temp = join(dir, `${currentStem}.tableside-rename${ext}`)
+    await rename(source, temp)
+    await rename(temp, dest)
+  } else {
+    await rename(source, dest)
+  }
+
+  await deps.onCampaignFilesChanged()
+  const nextPath = toPosix(relative(campaignFolder, dest))
+  return { campaign: await loadCampaign(campaignFolder), path: nextPath, renamed: true }
 }

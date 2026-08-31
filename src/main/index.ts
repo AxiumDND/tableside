@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain, protocol, screen, session, shell } from 'electron'
 import { existsSync } from 'node:fs'
-import { readFile, writeFile } from 'node:fs/promises'
+import { readFile } from 'node:fs/promises'
 import { join, relative, basename, dirname } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import type {
@@ -38,6 +38,7 @@ import {
   createCampaignNote,
   deleteCampaignFile,
   duplicateCampaignFile,
+  saveCampaignFile,
   saveToCampaignLibrary,
   setNotePortrait
 } from './campaignNotes'
@@ -643,8 +644,7 @@ function registerIpc(): void {
   })
 
   ipcMain.handle(IPC.campaignSaveFile, async (_e, relativePath: string, markdown: string) => {
-    if (!campaignFolder) return
-    await writeFile(safeJoin(campaignFolder, relativePath), markdown, 'utf8')
+    return saveCampaignFile(relativePath, markdown)
   })
 
   ipcMain.handle(IPC.campaignSaveCombat, async (_e, combat: CombatState) => {
