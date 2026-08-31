@@ -8,9 +8,11 @@ import {
   crawlMusicRef,
   crawlEndImageRef
 } from './openingCrawl'
+import type { LegendLookId } from './types'
 
 /** Sample body written into new Classic / Light / Vampire game night sheets. */
 export const NIGHTSHEET_LEGEND_SAMPLE = `[!legend] The Pale Well
+look: mist
 It is a quiet season in the uplands. Grain waits at the mill. The watch argues over bandits on the ridge.
 
 A girl named Lira vanishes on the night the well runs cold. The mayor's purse is already on the table, and the town swears it was thieves.
@@ -26,9 +28,43 @@ export const LEGEND_PREFACE_DEFAULT =
 
 export { CRAWL_FADE_OUT_MS as LEGEND_FADE_OUT_MS, CRAWL_SYNC_MS as LEGEND_SYNC_MS, CRAWL_MUSIC_LEAD_MS as LEGEND_MUSIC_LEAD_MS }
 
+export const LEGEND_LOOK_DEFAULT: LegendLookId = 'mist'
+
+export const LEGEND_LOOK_OPTIONS: { id: LegendLookId; label: string; hint: string }[] = [
+  { id: 'mist', label: 'Mist', hint: 'Cold fog — gothic / Curse of Strahd' },
+  { id: 'embers', label: 'Embers', hint: 'Warm campfire sparks' },
+  { id: 'crimson', label: 'Crimson', hint: 'Blood mist — vampire chronicles' },
+  { id: 'neon', label: 'Neon', hint: 'Holo fog — cyber / sci-fi' }
+]
+
 const PREFACE_LINE = /^(?:preface|ago|opening)\s*:\s*(.*)$/i
 const MUSIC_LINE = /^(?:music|legend\s*music|theme)\s*:\s*(.*)$/i
 const END_LINE = /^(?:end|end\s*image|finale)\s*:\s*(.*)$/i
+const LOOK_LINE = /^(?:look|style|atmosphere)\s*:\s*(.*)$/i
+
+const LOOK_ALIASES: Record<string, LegendLookId> = {
+  mist: 'mist',
+  smoke: 'mist',
+  fog: 'mist',
+  gothic: 'mist',
+  strahd: 'mist',
+  embers: 'embers',
+  ember: 'embers',
+  fire: 'embers',
+  campfire: 'embers',
+  sparks: 'embers',
+  crimson: 'crimson',
+  blood: 'crimson',
+  vampire: 'crimson',
+  vitae: 'crimson',
+  neon: 'neon',
+  cyber: 'neon',
+  cyberpunk: 'neon',
+  holo: 'neon',
+  scifi: 'neon',
+  'sci-fi': 'neon',
+  void: 'neon'
+}
 
 function stripWikiPath(value: string): string {
   const trimmed = value.trim()
@@ -37,6 +73,23 @@ function stripWikiPath(value: string): string {
   const md = /^!\[[^\]]*\]\(\s*<?([^>\s)]+)/.exec(trimmed)
   if (md?.[1]) return md[1].trim()
   return trimmed.replace(/^\[\[|\]\]$/g, '').trim()
+}
+
+export function parseLegendLook(raw: string | null | undefined): LegendLookId {
+  if (!raw?.trim()) return LEGEND_LOOK_DEFAULT
+  const key = raw.trim().toLowerCase().replace(/[\s_]+/g, '')
+  return LOOK_ALIASES[key] ?? LEGEND_LOOK_DEFAULT
+}
+
+/** Atmosphere for the player chronicle. Default mist when the note omits a look line. */
+export function legendLook(markdown: string): LegendLookId {
+  const match = markdown
+    .replace(/\r/g, '')
+    .split('\n')
+    .map((line) => LOOK_LINE.exec(line.trim()))
+    .find((item): item is RegExpExecArray => Boolean(item))
+  if (!match) return LEGEND_LOOK_DEFAULT
+  return parseLegendLook(match[1] ?? '')
 }
 
 /** First image embed in a legend callout — campaign file or markdown URL. */
@@ -90,6 +143,7 @@ export function legendPlainText(markdown: string): string {
     .replace(/^(?:preface|ago|opening)\s*:.*$/gim, '')
     .replace(/^(?:music|legend\s*music|theme|crawl\s*music)\s*:.*$/gim, '')
     .replace(/^(?:end|end\s*image|finale)\s*:.*$/gim, '')
+    .replace(/^(?:look|style|atmosphere)\s*:.*$/gim, '')
     .replace(/!\[\[[^\]]*\]\]/g, '')
     .replace(/!\[[^\]]*\]\([^)]+\)/g, '')
     .replace(/\[\[([^\]|\n]+)(?:\|([^\]\n]+))?\]\]/g, (_m, target: string, label?: string) =>
@@ -129,12 +183,15 @@ export interface LegendCalloutFields {
   logoRef: string | null
   endImageRef: string | null
   musicRef: string | null
+  look: LegendLookId
   body: string
 }
 
 export function serializeLegendCallout(fields: LegendCalloutFields): string {
   const title = fields.title?.trim()
   const body: string[] = []
+  const look = parseLegendLook(fields.look)
+  body.push(`look: ${look}`)
   if (fields.preface?.trim()) {
     body.push(`preface: ${fields.preface.replace(/\r/g, '').replace(/\n+/g, ' ').trim()}`)
   }

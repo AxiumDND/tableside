@@ -4,27 +4,42 @@ Hand this file to an agent converting a vault, Obsidian folder, or loose notes i
 
 Tableside is a **local folder of Markdown**. No account. The DM laptop is the console; a second monitor shows images only.
 
+**Target app version: 1.7.0+.** Night sheets use structured **combat** and **treasure** blocks (party auto-roster, item/monster lookup that copies into Gear / Bestiary). Prefer the formats below so Edit on a block works without hand-editing fences.
+
 ## Rules
 
-- One note = one thing (one PC, NPC, place, shop, faction, monster, map).
+- One note = one thing (one PC, NPC, place, shop, faction, monster, map, gear item).
 - Wikilinks resolve by **filename stem**, not folder. `[[Kay Himmel]]` opens `Kay Himmel.md` anywhere. Prefer unique stems.
 - Keep existing stems if the vault already uses `[[dash-names]]`. Do not rename files and leave old links.
 - Portraits live in that folder’s `Art/`, named like the sheet: `NPCs/Art/Orson Fairweather.webp`.
 - Battlemaps go in `Maps/` (note + `Art/` image). Gazetteer towns/shops go in `Places/`. People go in `NPCs/`, not on the shop page.
 - Published book dumps stay local. Put them in a folder named `Adventure book…` or `zz_…` so the file tree hides them. Never copy book text into a public repo.
 - Book Lookup (PHB/DMG dumps) is **not** part of the campaign. That is `%APPDATA%\Tableside\Additional Books`.
+- On game night sheets, prefer **fenced** callouts (`[!scene]…[!/scene]`) over `> [!scene]` quote callouts. Nest combat/treasure/read-aloud inside scenes.
 
 ## Root files
 
 `campaign.json` (required for a named pack; hidden in the tree):
 
 ```json
-{ "name": "Campaign Name", "system": "dnd5e", "theme": "classic" }
+{
+  "name": "Campaign Name",
+  "system": "dnd5e",
+  "theme": "classic",
+  "currencies": [
+    { "id": "platinum", "label": "Platinum", "abbr": "pp" },
+    { "id": "gold", "label": "Gold", "abbr": "gp" },
+    { "id": "silver", "label": "Silver", "abbr": "sp" },
+    { "id": "copper", "label": "Copper", "abbr": "cp" }
+  ]
+}
 ```
 
 `system` is `dnd5e` | `pf2e` | `v5`. Missing field = 5e. Do not change mid-campaign.
 
-`theme` is the DM console look: `classic` | `light` | `scifi` | `vampire` | `cyberpunk` | `matrix`. Missing field = Classic fantasy. Add a new look later by registering it in `src/shared/theme.ts` and tokens in `index.css`.
+`theme` is the DM console look: `classic` | `light` | `scifi` | `vampire` | `cyberpunk` | `matrix`. Missing field = Classic fantasy.
+
+`currencies` is optional. Omit it to use classic pp/gp/sp/cp. Edit later in **Help & settings → Currencies**. Treasure coin boxes follow this list. Sci-fi / other systems may rename abbreviations (e.g. credits).
 
 `combat.json` is live initiative. Leave it alone or omit it. `audio.json` is mixer volumes — omit it.
 
@@ -63,14 +78,15 @@ Archive/             transcripts, old drafts, YouTube text
 ```markdown
 # Display title
 
-> [!infobox]+
-> ![[Same Stem As Filename.webp]]
->
-> ### One-line tagline
->
-> | | |
-> |---|---|
-> | **Key** | Value with [[Wikilinks]] |
+[!pc]
+![[Same Stem As Filename.webp]]
+
+### *One-line tagline*
+
+| | |
+|---|---|
+| **Key** | Value with [[Wikilinks]] |
+[!/pc]
 
 ```statblock
 layout: Basic 5e Layout
@@ -82,17 +98,20 @@ stats: [16, 12, 14, 10, 12, 10]
 
 *Two sentences the DM needs at the table.*
 
-> [!readaloud]
-> Spoken text.
+[!readaloud]
+Spoken text.
+[!/readaloud]
 
-> [!gmonly]
-> Secrets.
+[!gmonly]
+Secrets.
+[!/gmonly]
 ```
 
+Sheet header fences may also be `[!npc]`, `[!monster]`, `[!place]`, `[!shop]`, `[!faction]`, `[!gear]`, `[!spell]`, or legacy `[!infobox]`. Quote-callout `> [!infobox]+` still works.
+
 - `layout` is `Basic 5e Layout` / `Basic PF2e Layout` / `Basic V5 Layout`. Combat needs `name`, `ac`, `hp`. `stats` is STR DEX CON INT WIS CHA.
-- Callouts: `infobox` (sheet chrome), `readaloud` / `flavor`, `crawl` / `opening` (Sci-fi Play: starfield, `preface:`, emblem, crawl; original user text only), `gmonly` / `secret`. Trailing `+` is fine.
 - Images: `![[file.webp]]`. Notes: `[[Stem]]` or `[[Stem|alias]]`.
-- Hide empty template rows. Do not leave `*placeholder*` text.
+- Hide empty template rows. Do not leave `*placeholder*` text or stub names like `[[Monster Name]]`, `[[Item Name]]`, `[[Magic Item]]`.
 
 ## Where each file goes
 
@@ -106,13 +125,16 @@ stats: [16, 12, 14, 10, 12, 10]
 | Guild, church, house, cult | `Factions/` | faction |
 | Battlemap / tactical image | `Maps/` + `Maps/Art/` | map |
 | Spell the table will edit | `Spells/` | spell |
-| Weapon / armor / gear / magic item | matching `Gear/…` | gear |
+| Weapon / armor / mundane gear | `Gear/Weapons` · `Armor` · `Equipment` · `Trade Goods` | gear |
+| Magic item | `Gear/Magic Items` | gear |
 | Tonight’s run (scenes + fight list) | `Sessions/` | nightsheet or plain note |
 | Recap, transcript, YouTube blurb | `Archive/` | plain note |
 | Haze rules, house rules | `Reference/` | plain note |
 | Hub, flowchart, live hooks | `Start Here/` | plain note + `Overview.md` |
 
 Shop = place note + proprietor NPC, linked both ways. Faction members stay NPCs; HQ is a Place.
+
+When converting loot lists: put real item sheets under the matching `Gear/…` subfolder so night-sheet treasure `[[Wikilinks]]` resolve (and hover previews work). The DM can also **Add item…** on a treasure card — that searches Gear + SRD/books and copies missing items into Gear.
 
 ## Infobox fields by kind
 
@@ -149,9 +171,56 @@ pinsLocked: true
 
 Pins/tokens/fog can be added in the app. Do not invent pin coordinates unless you have them.
 
-## Game night / combat
+## Game night sheets
 
-Prefer a fenced combat block (nestable in `[!scene]`). Aliases: `encounter`, `fight`. Skip titles that say `no combat`.
+A **game night sheet** is Party + Scenes (not a wall of prose). Right-click **Sessions** → **New game night sheet…**. Split long story into `Session N.md`; keep numbers on `Session N — Game Night Sheet.md`.
+
+### Scene block
+
+```markdown
+[!scene] Opening — name the beat
+![[Optional art.webp]]
+
+What could happen in one or two lines.
+
+[!readaloud]
+Spoken text.
+[!/readaloud]
+
+[!gmonly]
+Only you.
+[!/gmonly]
+
+[!treasure] Cache — name the find
+**Coin:** 12 gp · 40 sp · … pp · … cp
+**Mundane:**
+- [[Rope]]
+**Magic:**
+- [[Cloak of Elvenkind]] (attunement)
+**Hidden:**
+**Notes:**
+[!/treasure]
+
+[!combat] Combat 1 — name the encounter
+**Combatants:** [[Wolf]] ×2 · party
+
+- Telegraph:
+- Cut if running long:
+[!/combat]
+
+**At the table** (optional):
+- Place: [[Place Name]]
+- Map: [[Map Name]]
+- Checks: Perception DC 14
+- Music: General / Creepy / Combat
+[!/scene]
+```
+
+Do **not** nest another `scene`, `party`, `crawl`, or `legend` inside a scene.
+
+### Combat block (1.7+)
+
+Aliases: `encounter`, `fight`. Skip titles that say `no combat`.
 
 ```markdown
 [!combat] Combat 1 — Rat's Nest door
@@ -159,11 +228,45 @@ Prefer a fenced combat block (nestable in `[!scene]`). Aliases: `encounter`, `fi
 [!/combat]
 ```
 
-Legacy headings matching `combat`, `encounter`, or `⚔` (and not `no combat`) still feed initiative.
+- Always include `party` unless the fight truly excludes PCs. The app treats `party` as every `Party/` sheet (roster notes skipped).
+- Foes are `[[Bestiary or NPC stem]]` with optional `×N` / `xN`. Separators: `·` `|` `,` `;`.
+- Put only real stems — never `[[Monster Name]]`.
+- At the table the DM can **Edit** the block → **Add combatant…** (NPCs + Bestiary + SRD/books). Missing SRD monsters are copied into `Bestiary/` without leaving the sheet.
+- Legacy `#` / `##` headings matching `combat` / `encounter` / `⚔` still feed initiative.
 
-`party` = every `Party/` sheet except `*roster*`. Separators: `·` `|` `,` `;`. Counts: `×2` / `x2`.
+### Treasure block (1.7+)
 
-Split: prose in `Session 04 — The Rat's Nest/Notes.md`; numbers in `Session 04 — Game Night Sheet.md`. Link them.
+Aliases: `loot`, `hoard`.
+
+```markdown
+[!treasure] Cache — hearth stones
+**Coin:** 2 pp · 40 gp · … sp · 5 cp
+**Mundane:**
+- [[Rope]]
+- [[Traveler's Clothes]]
+**Magic:**
+- [[Cloak of Elvenkind]] (attunement)
+**Hidden:** Investigation DC 14
+**Notes:**
+Under the hearth.
+[!/treasure]
+```
+
+- Coin abbreviations must match `campaign.json` `currencies` (or defaults). Use `…` for empty denominations.
+- Mundane = weapons / armor / equipment / trade goods. Magic = magic items. Prefer `[[Gear stem]]` links.
+- Leave `**Hidden:**` blank if unused (do not leave the template stub “Perception / Investigation DC …” as filler).
+- Never leave `[[Item Name]]` or `[[Magic Item]] (attunement?) — …` stubs.
+- At the table: **Edit** → **Add item…** searches Gear + SRD/books and copies missing items into the correct `Gear/…` subfolder.
+
+### Other useful blocks
+
+| Fence | Use |
+| --- | --- |
+| `[!party]` | Night-sheet PC list (`- [[PC — Name\|Alias]]`) |
+| `[!links]` | Auto TOC of other blocks on the sheet |
+| `[!note]` / `[!abstract]` | Short text / summary |
+| `[!crawl]` / `[!legend]` | Player TV openings (Sci-fi / campfire) |
+| `[!gallery]` / `[!video]` | Player slideshow / clip |
 
 ## Start Here/Overview.md
 
@@ -171,13 +274,15 @@ Short hub only: party wikilinks, current place, faction list, tonight’s sessio
 
 ## Conversion checklist
 
-1. Write `campaign.json`. Create the standard folders.
+1. Write `campaign.json` (`name`, `system`, `theme`; optional `currencies`). Create the standard folders including `Gear/…` subfolders.
 2. Sort files with the table above. Move transcripts to `Archive/`.
 3. Rename image sidecars to `Art/`. Match portrait filenames to sheet stems.
-4. Give Party / NPC / Bestiary notes an infobox + `statblock` with AC/HP.
-5. Give Places / Shops / Factions an infobox and wikilinks to people and sites.
-6. Point every `![[…]]` at a real image filename.
-7. Fix broken `[[links]]` or keep stems so old links still resolve.
-8. **Open campaign** on the folder. Confirm Party appears under Add all players, portraits show, maps open as maps.
+4. Give Party / NPC / Bestiary notes a typed sheet header + `statblock` with AC/HP.
+5. Give Places / Shops / Factions a sheet header and wikilinks to people and sites.
+6. Put loot items under the matching `Gear/` subfolder; link them from treasure blocks.
+7. Point every `![[…]]` at a real image filename.
+8. Fix broken `[[links]]` or keep stems so old links still resolve.
+9. Build game night sheets with `[!scene]` nests: real `[!combat]` (`… · party`) and `[!treasure]` (no stubs).
+10. **Open campaign** on the folder. Confirm Party under Add all players, portraits show, maps open as maps, treasure/combat Edit lookups resolve.
 
-Do **not**: dump a city onto one page; put battlemaps in Places; put shopkeepers only on the shop note; ship copyrighted book text; edit `system` after people have sheets.
+Do **not**: dump a city onto one page; put battlemaps in Places; put shopkeepers only on the shop note; ship copyrighted book text; edit `system` after people have sheets; leave `[[Monster Name]]` / `[[Item Name]]` placeholders in live sheets.

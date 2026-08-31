@@ -3,6 +3,7 @@ import type { PlayerGallery } from '../../../shared/types'
 
 export default function OpeningGallery({ gallery }: { gallery: PlayerGallery }) {
   const slide = gallery.slides[gallery.index]
+  const stopping = gallery.stoppingAt != null
   const [visible, setVisible] = useState(true)
   const [shownSrc, setShownSrc] = useState(slide?.src ?? '')
   const showTitle = Boolean(gallery.showTitle && gallery.title?.trim())
@@ -23,11 +24,14 @@ export default function OpeningGallery({ gallery }: { gallery: PlayerGallery }) 
   }, [gallery.index, gallery.slides, shownSrc])
 
   if (!shownSrc) {
-    return <div className="opening-gallery" aria-label="Gallery" />
+    return <div className={`opening-gallery${stopping ? ' is-done' : ' player-fade-in'}`} aria-label="Gallery" />
   }
 
   return (
-    <div className="opening-gallery" aria-label={gallery.title || 'Gallery'}>
+    <div
+      className={`opening-gallery${stopping ? ' is-done' : ' player-fade-in'}`}
+      aria-label={gallery.title || 'Gallery'}
+    >
       <img
         key={shownSrc}
         src={shownSrc}

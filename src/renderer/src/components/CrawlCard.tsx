@@ -34,6 +34,7 @@ export default function CrawlCard({
   images,
   canPlay,
   disabled,
+  editing = false,
   onChange,
   onPlay,
   onStop,
@@ -55,6 +56,7 @@ export default function CrawlCard({
   images: CampaignImage[]
   canPlay?: boolean
   disabled?: boolean
+  editing?: boolean
   onChange: (next: CrawlFields) => void
   onPlay?: (fields: CrawlFields) => void
   onStop?: () => void
@@ -156,6 +158,42 @@ export default function CrawlCard({
       images.find((img) => img.relativePath === ref || img.name === ref)?.relativePath ?? ref ?? ''
     )
   }
+  const playFooter = (
+    <div className="mt-3 flex flex-wrap items-center gap-2 pl-2">
+      {crawlActive ? (
+        <button
+          type="button"
+          onClick={() => onStop?.()}
+          disabled={crawlStopping || !onStop}
+          className="rounded border border-line px-2.5 py-1 text-xs font-semibold hover:border-amber disabled:text-muted"
+        >
+          {crawlStopping ? 'Stopping…' : 'Stop'}
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            const nextFields = {
+              title: titleValue,
+              preface: prefaceOn ? prefaceValue : null,
+              body: bodyValue,
+              logoRef: logoValue,
+              endImageRef: endValue,
+              musicRef: musicValue
+            }
+            onChange(nextFields)
+            onPlay?.(nextFields)
+          }}
+          disabled={!canPlay || !onPlay}
+          className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-on-amber disabled:bg-line disabled:text-muted"
+        >
+          Play
+        </button>
+      )}
+      {!canPlay ? <span className="text-[11px] text-muted">Sci-fi look required</span> : null}
+    </div>
+  )
+
   return (
     <section className="opening-crawl-card my-5">
       <div className="relative rounded-md border border-amber/40 bg-panel-2 px-4 pb-4 pt-5">
@@ -165,7 +203,11 @@ export default function CrawlCard({
             <FilmMark />
           </span>
           <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber">Opening crawl</span>
+          {!editing && titleValue.trim() ? (
+            <span className="max-w-[14rem] truncate text-[11px] font-normal italic text-muted">{titleValue}</span>
+          ) : null}
         </div>
+        {editing ? (
         <div className="space-y-3 pl-2">
           <label className="block">
             <span className="text-[10px] uppercase tracking-wider text-muted">Title</span>
@@ -316,39 +358,23 @@ export default function CrawlCard({
             />
           </label>
         </div>
-        <div className="mt-3 flex flex-wrap items-center gap-2 pl-2">
-          {crawlActive ? (
-            <button
-              type="button"
-              onClick={() => onStop?.()}
-              disabled={crawlStopping || !onStop}
-              className="rounded border border-line px-2.5 py-1 text-xs font-semibold hover:border-amber disabled:text-muted"
-            >
-              {crawlStopping ? 'Stopping…' : 'Stop'}
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                const fields = {
-                  title: titleValue,
-                  preface: prefaceOn ? prefaceValue : null,
-                  body: bodyValue,
-                  logoRef: logoValue,
-                  endImageRef: endValue,
-                  musicRef: musicValue
-                }
-                onChange(fields)
-                onPlay?.(fields)
-              }}
-              disabled={!canPlay || !onPlay}
-              className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-on-amber disabled:bg-line disabled:text-muted"
-            >
-              Play
-            </button>
-          )}
-          {!canPlay ? <span className="text-[11px] text-muted">Sci-fi look required</span> : null}
-        </div>
+        ) : (
+          <div className="space-y-3 pl-2">
+            <div className="flex items-start gap-3">
+              <img src={preview} alt="" className="h-16 w-28 rounded border border-line bg-ink object-contain" />
+              {endPreview ? (
+                <img src={endPreview} alt="" className="h-16 w-28 rounded border border-line bg-ink object-contain" />
+              ) : null}
+            </div>
+            {prefaceOn && prefaceValue.trim() ? (
+              <p className="text-[12px] italic text-muted">{prefaceValue}</p>
+            ) : null}
+            <div className="whitespace-pre-wrap rounded border border-line/60 bg-ink/40 px-3 py-2 text-sm leading-relaxed text-parchment">
+              {bodyValue.trim() || 'No crawl text yet.'}
+            </div>
+          </div>
+        )}
+        {playFooter}
       </div>
     </section>
   )

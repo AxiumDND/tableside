@@ -275,6 +275,12 @@ export default function DmApp() {
     if (updated) setCampaign(updated)
   }
 
+  async function changeCurrencies(currencies: import('../../../shared/currencies').CampaignCurrency[]): Promise<void> {
+    if (!campaign) return
+    const updated = await window.tabledm.setCampaignCurrencies(currencies)
+    if (updated) setCampaign(updated)
+  }
+
   async function openSample(): Promise<void> {
     const info = await window.tabledm.openSampleCampaign()
     applyCampaign(info)
@@ -415,6 +421,33 @@ export default function DmApp() {
     if (!result) return
     setCampaign(result.campaign)
     navigateTo(result.path, 'note')
+    return result.existed ? 'exists' : 'added'
+  }
+
+  /** Copy an item into Gear without leaving the open sheet (treasure picker). */
+  async function ensureGearFromLookup(record: SrdRecord): Promise<'added' | 'exists' | void> {
+    if (libraryFolderFor(record) !== 'gear') return
+    const result = await window.tabledm.saveToCampaignLibrary(
+      'gear',
+      record.name,
+      recordToCampaignMarkdown(record),
+      gearSubfolderFor(record)
+    )
+    if (!result) return
+    setCampaign(result.campaign)
+    return result.existed ? 'exists' : 'added'
+  }
+
+  /** Copy a monster into Bestiary without leaving the open sheet (combat picker). */
+  async function ensureMonsterFromLookup(record: SrdRecord): Promise<'added' | 'exists' | void> {
+    if (libraryFolderFor(record) !== 'bestiary') return
+    const result = await window.tabledm.saveToCampaignLibrary(
+      'bestiary',
+      record.name,
+      recordToCampaignMarkdown(record)
+    )
+    if (!result) return
+    setCampaign(result.campaign)
     return result.existed ? 'exists' : 'added'
   }
 
@@ -757,8 +790,8 @@ export default function DmApp() {
           onStopCrawl={() => void stopCrawl()}
           activeCrawl={activeCrawl}
           playerCrawl={player.crawl}
-          onPlayLegend={(title, body, logoSrc, preface, musicPath, endSrc) =>
-            void playLegend(title, body, logoSrc, preface, musicPath, endSrc)
+          onPlayLegend={(title, body, logoSrc, preface, musicPath, endSrc, look) =>
+            void playLegend(title, body, logoSrc, preface, musicPath, endSrc, look)
           }
           onStopLegend={() => void stopLegend()}
           activeLegend={activeLegend}
@@ -802,6 +835,10 @@ export default function DmApp() {
           digitalRain={digitalRainEnabled(theme, campaign?.digitalRain)}
           onHoloPortraitsChange={campaign ? (enabled) => void changeHoloPortraits(enabled) : undefined}
           onDigitalRainChange={campaign ? (enabled) => void changeDigitalRain(enabled) : undefined}
+          currencies={campaign?.currencies}
+          system={campaign?.system}
+          onEnsureGear={ensureGearFromLookup}
+          onEnsureMonster={ensureMonsterFromLookup}
         />
         {rightPanel === 'music' ? (
           <MusicPanel
@@ -853,6 +890,8 @@ export default function DmApp() {
             onHoloPortraitsChange={campaign ? (enabled) => void changeHoloPortraits(enabled) : undefined}
             digitalRain={digitalRainEnabled(theme, campaign?.digitalRain)}
             onDigitalRainChange={campaign ? (enabled) => void changeDigitalRain(enabled) : undefined}
+            currencies={campaign?.currencies}
+            onCurrenciesChange={campaign ? (next) => void changeCurrencies(next) : undefined}
           />
         ) : null}
         </div>

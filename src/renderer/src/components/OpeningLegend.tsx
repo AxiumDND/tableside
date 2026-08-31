@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
-import { LEGEND_FADE_OUT_MS, LEGEND_HOLD_MS, legendDurationMs } from '../../../shared/openingLegend'
+import { LEGEND_FADE_OUT_MS, LEGEND_HOLD_MS, LEGEND_LOOK_DEFAULT, legendDurationMs, parseLegendLook } from '../../../shared/openingLegend'
 import type { PlayerLegend } from '../../../shared/types'
-import LegendSmoke from './LegendSmoke'
+import LegendParticles from './LegendParticles'
 
 type LegendPhase = 'hold' | 'body' | 'end' | 'done'
 
@@ -9,6 +9,7 @@ export default function OpeningLegend({ legend }: { legend: PlayerLegend }) {
   const durationMs = legendDurationMs(legend.title, legend.body)
   const stopping = legend.stoppingAt != null
   const endSrc = legend.endSrc?.trim() || null
+  const look = parseLegendLook(legend.look ?? LEGEND_LOOK_DEFAULT)
   const [phase, setPhase] = useState<LegendPhase>('hold')
   const paragraphs = legend.body
     .split(/\n\s*\n/)
@@ -30,7 +31,7 @@ export default function OpeningLegend({ legend }: { legend: PlayerLegend }) {
     return () => {
       for (const timer of timers) window.clearTimeout(timer)
     }
-  }, [legend.startedAt, durationMs, stopping, endSrc])
+  }, [legend.startedAt, durationMs, stopping, endSrc, look])
 
   const fadingOut = stopping || phase === 'done'
   const showEnd = Boolean(endSrc) && (phase === 'end' || (!stopping && phase === 'done'))
@@ -38,13 +39,14 @@ export default function OpeningLegend({ legend }: { legend: PlayerLegend }) {
 
   return (
     <div
-      className={`opening-legend${fadingOut ? ' is-done' : ''}${phase === 'end' ? ' has-end' : ''}`}
+      className={`opening-legend${fadingOut ? ' is-done' : ' player-fade-in'}${phase === 'end' ? ' has-end' : ''}`}
+      data-look={look}
       aria-label="Campfire chronicle"
       style={{ ['--legend-fade-ms' as string]: `${LEGEND_FADE_OUT_MS}ms` }}
     >
       <div className="opening-legend-night" />
       <div className="opening-legend-mist" />
-      <LegendSmoke />
+      <LegendParticles look={look} />
       <div className="opening-legend-vignette" />
       <div className="opening-legend-corners" aria-hidden="true">
         <span />
@@ -56,7 +58,7 @@ export default function OpeningLegend({ legend }: { legend: PlayerLegend }) {
       {showBody ? (
         <div className={`opening-legend-tapestry${phase === 'end' ? ' is-fading' : ''}`}>
           <div
-            key={legend.startedAt}
+            key={`${legend.startedAt}-${look}`}
             className="opening-legend-tapestry-track"
             style={{ ['--legend-ms' as string]: `${durationMs}ms` }}
           >

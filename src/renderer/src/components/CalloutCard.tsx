@@ -36,6 +36,20 @@ const VARIANTS: Record<string, { label: string; bar: string; box: string; labelC
     labelClass: 'text-muted',
     titleClass: 'text-parchment'
   },
+  summary: {
+    label: 'Summary',
+    bar: 'bg-muted',
+    box: 'border-line bg-panel-2',
+    labelClass: 'text-muted',
+    titleClass: 'text-parchment'
+  },
+  text: {
+    label: 'Text',
+    bar: 'bg-muted',
+    box: 'border-line/60 bg-panel-2',
+    labelClass: 'text-muted',
+    titleClass: 'text-parchment'
+  },
   note: {
     label: 'Note',
     bar: 'bg-muted',

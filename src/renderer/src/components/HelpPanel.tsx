@@ -3,6 +3,8 @@ import type { AppUpdateNotice } from '../../../shared/appUpdate'
 import { THEME_BLURBS, THEME_IDS, THEME_LABELS, type ThemeId } from '../../../shared/theme'
 import type { AppFolders } from '../../../shared/types'
 import { APP_VERSION } from '../../../shared/version'
+import type { CampaignCurrency } from '../../../shared/currencies'
+import CurrenciesSettings from './CurrenciesSettings'
 
 type HelpSection = 'settings' | 'start' | 'screens' | 'files' | 'music' | 'combat' | 'lookup' | 'keys' | 'updates'
 
@@ -105,7 +107,9 @@ export default function HelpPanel({
   holoPortraits = false,
   onHoloPortraitsChange,
   digitalRain = false,
-  onDigitalRainChange
+  onDigitalRainChange,
+  currencies,
+  onCurrenciesChange
 }: {
   onClose?: () => void
   updateNotice?: AppUpdateNotice | null
@@ -117,6 +121,8 @@ export default function HelpPanel({
   onHoloPortraitsChange?: (enabled: boolean) => void
   digitalRain?: boolean
   onDigitalRainChange?: (enabled: boolean) => void
+  currencies?: CampaignCurrency[]
+  onCurrenciesChange?: (currencies: CampaignCurrency[]) => void
 }) {
   const [open, setOpen] = useState<HelpSection | null>('settings')
   const [folders, setFolders] = useState<AppFolders | null>(null)
@@ -210,6 +216,12 @@ export default function HelpPanel({
               </span>
             </label>
           ) : null}
+          <Sub>Currencies</Sub>
+          {onCurrenciesChange ? (
+            <CurrenciesSettings currencies={currencies} onChange={onCurrenciesChange} />
+          ) : (
+            <p className="text-muted">Open a campaign to edit treasure currencies.</p>
+          )}
         </Section>
         <Section id="start" title="Quick start" open={open} onToggle={toggle}>
           <Ol
@@ -352,10 +364,12 @@ export default function HelpPanel({
           <Sub>Opening legend (Classic, Light, Vampire)</Sub>
           <p>
             Put <Code>[!legend] Title</Code> … <Code>[!/legend]</Code> (or <Code>tale</Code> / <Code>chronicle</Code>)
-            in any note for a campfire chronicle on the player screen — cold mist and smoke, then the tale scrolling up.
-            Edit title (DM label), body, optional <Code>music:</Code>, and optional <Code>end:</Code> still on the card.
-            No herald or opening line. <Action>Play</Action> is on when the campaign look is Classic, Light, or Vampire.
-            Mood and music timing match the Sci-fi crawl (1:32 sync). <Action>Stop</Action> fades to black and resumes mood.
+            in any note for a campfire chronicle on the player screen. Pick a <Action>Look</Action> on the card (
+            <Code>look: mist</Code>, <Code>embers</Code>, <Code>crimson</Code>, or <Code>neon</Code>) — mist for gothic
+            fog, embers for campfire sparks, crimson for vampire, neon for cyber / sci-fi. Edit title (DM label), body,
+            optional <Code>music:</Code>, and optional <Code>end:</Code> still. <Action>Play</Action> is on when the
+            campaign look is Classic, Light, or Vampire. Mood and music timing match the Sci-fi crawl (1:32 sync).{' '}
+            <Action>Stop</Action> fades to black and resumes mood.
           </p>
           <Sub>Gallery</Sub>
           <p>
@@ -535,7 +549,10 @@ export default function HelpPanel({
                 <Code>[!party]…[!/party]</Code>.
               </>,
               <>
-                Add a line like <Code>**Combatants:** [[Vesper]] · [[Cultist]] ×3 · party</Code>
+                Prefer a <Code>[!combat]</Code> block with{" "}
+                <Code>**Combatants:** [[Cultist]] ×3 · party</Code>. Use{" "}
+                <strong>Edit</strong> on the card for Party on/off and{" "}
+                <strong>Add combatant…</strong> (NPCs, Bestiary, SRD/books).
               </>
             ]}
           />

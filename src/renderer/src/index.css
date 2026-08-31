@@ -797,6 +797,10 @@ body,
   justify-content: center;
 }
 
+.opening-gallery.is-done {
+  animation: player-fade-out 5s ease forwards;
+}
+
 .opening-gallery-slide {
   max-width: 100%;
   max-height: 100%;
@@ -871,7 +875,7 @@ body,
   color: rgba(255, 245, 220, 0.92);
 }
 
-/* Campfire chronicle — misty gothic prologue on the player TV. */
+/* Campfire chronicle — scroll prologue on the player TV (look: mist|embers|crimson|neon). */
 .opening-legend {
   position: absolute;
   inset: 0;
@@ -919,7 +923,7 @@ body,
   }
 }
 
-.opening-legend-smoke {
+.opening-legend-particles {
   position: absolute;
   inset: 0;
   width: 100%;
@@ -1048,6 +1052,90 @@ body,
   width: 100%;
   height: 100%;
   object-fit: contain;
+}
+
+/* Embers — warm campfire */
+.opening-legend[data-look='embers'] {
+  background: #050302;
+  color: #f0d9a0;
+}
+
+.opening-legend[data-look='embers'] .opening-legend-night {
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 100%, rgba(180, 70, 20, 0.28), transparent 55%),
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(20, 30, 50, 0.45), transparent 60%),
+    linear-gradient(180deg, #0a0c12 0%, #120a06 55%, #1a0c04 100%);
+}
+
+.opening-legend[data-look='embers'] .opening-legend-mist {
+  background: radial-gradient(ellipse 55% 70% at 50% 100%, rgba(255, 140, 40, 0.35), transparent 70%);
+  height: 42%;
+  bottom: -8%;
+  left: 10%;
+  right: 10%;
+}
+
+.opening-legend[data-look='embers'] .opening-legend-corners span {
+  border-color: rgba(230, 180, 90, 0.45);
+}
+
+.opening-legend[data-look='embers'] .opening-legend-para {
+  color: rgba(255, 236, 210, 0.92);
+}
+
+/* Crimson — vampire */
+.opening-legend[data-look='crimson'] {
+  background: #060204;
+  color: #e4d0d0;
+}
+
+.opening-legend[data-look='crimson'] .opening-legend-night {
+  background:
+    radial-gradient(ellipse 95% 55% at 50% 100%, rgba(120, 10, 30, 0.35), transparent 58%),
+    radial-gradient(ellipse 70% 40% at 50% 0%, rgba(30, 10, 20, 0.55), transparent 55%),
+    linear-gradient(180deg, #08040a 0%, #12060c 50%, #1a080e 100%);
+}
+
+.opening-legend[data-look='crimson'] .opening-legend-mist {
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 100%, rgba(140, 20, 40, 0.28), transparent 72%),
+    radial-gradient(ellipse 40% 40% at 70% 90%, rgba(60, 5, 15, 0.25), transparent 70%);
+}
+
+.opening-legend[data-look='crimson'] .opening-legend-corners span {
+  border-color: rgba(160, 40, 55, 0.5);
+}
+
+.opening-legend[data-look='crimson'] .opening-legend-para {
+  color: rgba(230, 205, 205, 0.92);
+}
+
+/* Neon — cyber / sci-fi */
+.opening-legend[data-look='neon'] {
+  background: #02040a;
+  color: #c8f0ff;
+}
+
+.opening-legend[data-look='neon'] .opening-legend-night {
+  background:
+    radial-gradient(ellipse 90% 50% at 50% 100%, rgba(0, 180, 200, 0.18), transparent 55%),
+    radial-gradient(ellipse 60% 40% at 80% 10%, rgba(180, 0, 200, 0.16), transparent 50%),
+    linear-gradient(180deg, #02040c 0%, #050812 50%, #040610 100%);
+}
+
+.opening-legend[data-look='neon'] .opening-legend-mist {
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 100%, rgba(0, 200, 220, 0.16), transparent 72%),
+    radial-gradient(ellipse 35% 40% at 25% 85%, rgba(200, 0, 220, 0.12), transparent 70%);
+}
+
+.opening-legend[data-look='neon'] .opening-legend-corners span {
+  border-color: rgba(0, 220, 255, 0.4);
+}
+
+.opening-legend[data-look='neon'] .opening-legend-para {
+  color: rgba(200, 240, 255, 0.9);
+  text-shadow: 0 0 0.8cqw rgba(0, 220, 255, 0.25), 0 1px 3px rgba(0, 0, 0, 0.8);
 }
 
 .read-aloud-dot {

@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react'
+import {
+  LEGEND_LOOK_DEFAULT,
+  LEGEND_LOOK_OPTIONS,
+  parseLegendLook,
+  type LegendCalloutFields
+} from '../../../shared/openingLegend'
 import type { AudioTrack } from '../../../shared/audio'
+import type { LegendLookId } from '../../../shared/types'
 import type { CampaignImage } from '../lib/images'
 
 function ScrollMark() {
@@ -13,18 +20,10 @@ function ScrollMark() {
   )
 }
 
-type LegendFields = {
-  title: string
-  preface: string | null
-  body: string
-  logoRef: string | null
-  endImageRef: string | null
-  musicRef: string | null
-}
-
 export default function LegendCard({
   title,
   body,
+  look = LEGEND_LOOK_DEFAULT,
   endImageRef,
   endImageUrl,
   musicRef,
@@ -32,6 +31,7 @@ export default function LegendCard({
   images,
   canPlay,
   disabled,
+  editing = false,
   onChange,
   onPlay,
   onStop,
@@ -43,6 +43,7 @@ export default function LegendCard({
   title?: string
   preface: string | null
   body: string
+  look?: LegendLookId
   logoRef: string | null
   logoUrl?: string | null
   endImageRef: string | null
@@ -52,8 +53,9 @@ export default function LegendCard({
   images: CampaignImage[]
   canPlay?: boolean
   disabled?: boolean
-  onChange: (next: LegendFields) => void
-  onPlay?: (fields: LegendFields) => void
+  editing?: boolean
+  onChange: (next: LegendCalloutFields) => void
+  onPlay?: (fields: LegendCalloutFields) => void
   onStop?: () => void
   legendActive?: boolean
   legendStopping?: boolean
@@ -63,6 +65,7 @@ export default function LegendCard({
 }) {
   const [titleValue, setTitleValue] = useState(title ?? '')
   const [bodyValue, setBodyValue] = useState(body)
+  const [lookValue, setLookValue] = useState<LegendLookId>(parseLegendLook(look))
   const [endValue, setEndValue] = useState(endImageRef)
   const [musicValue, setMusicValue] = useState(musicRef)
   const [endBusy, setEndBusy] = useState(false)
@@ -71,20 +74,23 @@ export default function LegendCard({
   useEffect(() => {
     setTitleValue(title ?? '')
     setBodyValue(body)
+    setLookValue(parseLegendLook(look))
     setEndValue(endImageRef)
     setMusicValue(musicRef)
-  }, [title, body, endImageRef, musicRef])
+  }, [title, body, look, endImageRef, musicRef])
 
   function fields(partial?: {
     title?: string
     body?: string
+    look?: LegendLookId
     endImageRef?: string | null
     musicRef?: string | null
-  }): LegendFields {
+  }): LegendCalloutFields {
     return {
       title: partial?.title ?? titleValue,
       preface: null,
       body: partial?.body ?? bodyValue,
+      look: parseLegendLook(partial?.look ?? lookValue),
       logoRef: null,
       endImageRef: partial && 'endImageRef' in partial ? partial.endImageRef ?? null : endValue,
       musicRef: partial && 'musicRef' in partial ? partial.musicRef ?? null : musicValue
@@ -94,6 +100,7 @@ export default function LegendCard({
   function commit(partial?: {
     title?: string
     body?: string
+    look?: LegendLookId
     endImageRef?: string | null
     musicRef?: string | null
   }): void {
@@ -131,12 +138,45 @@ export default function LegendCard({
   const endPreview = endValue ? endImageUrl : null
   const tracks = musicTracks ?? []
   const musicKnown = tracks.some((track) => track.relativePath === musicValue)
+  const lookHint = LEGEND_LOOK_OPTIONS.find((opt) => opt.id === lookValue)?.hint
+  const lookLabel = LEGEND_LOOK_OPTIONS.find((opt) => opt.id === lookValue)?.label ?? lookValue
 
   function imageSelectValue(ref: string | null): string {
     return (
       images.find((img) => img.relativePath === ref || img.name === ref)?.relativePath ?? ref ?? ''
     )
   }
+
+  const playFooter = (
+    <div className="mt-3 flex flex-wrap items-center gap-2 pl-2">
+      {legendActive ? (
+        <button
+          type="button"
+          onClick={() => onStop?.()}
+          disabled={legendStopping || !onStop}
+          className="rounded border border-line px-2.5 py-1 text-xs font-semibold hover:border-amber disabled:text-muted"
+        >
+          {legendStopping ? 'Stopping…' : 'Stop'}
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => {
+            const next = fields()
+            onChange(next)
+            onPlay?.(next)
+          }}
+          disabled={!canPlay || !onPlay}
+          className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-on-amber disabled:bg-line disabled:text-muted"
+        >
+          Play
+        </button>
+      )}
+      {!canPlay ? (
+        <span className="text-[11px] text-muted">Classic, Light, or Vampire look required</span>
+      ) : null}
+    </div>
+  )
 
   return (
     <section className="opening-legend-card my-5">
@@ -147,130 +187,149 @@ export default function LegendCard({
             <ScrollMark />
           </span>
           <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber">Campfire chronicle</span>
+          {!editing && titleValue.trim() ? (
+            <span className="max-w-[14rem] truncate text-[11px] font-normal italic text-muted">{titleValue}</span>
+          ) : null}
         </div>
-        <div className="space-y-3 pl-2">
-          <label className="block">
-            <span className="text-[10px] uppercase tracking-wider text-muted">Title</span>
-            <input
-              value={titleValue}
-              disabled={disabled}
-              onChange={(event) => setTitleValue(event.target.value)}
-              onBlur={() => commit()}
-              className="mt-0.5 w-full rounded border border-line bg-ink px-2 py-1 text-sm text-parchment outline-none focus:border-amber disabled:opacity-50"
-            />
-            <p className="mt-0.5 text-[11px] text-muted">DM label only — the player sees the scrolling text.</p>
-          </label>
-          <div>
-            <span className="text-[10px] uppercase tracking-wider text-muted">End image</span>
-            <p className="mt-0.5 text-[11px] text-muted">Fades in when the scroll finishes (landscape, keep, etc.).</p>
-            <div className="mt-1 flex items-start gap-2">
-              <div className="flex h-14 w-24 items-center justify-center rounded border border-line bg-ink text-[10px] text-muted">
-                {endPreview ? <img src={endPreview} alt="" className="h-full w-full object-contain" /> : 'None'}
+        {editing ? (
+          <div className="space-y-3 pl-2">
+            <label className="block">
+              <span className="text-[10px] uppercase tracking-wider text-muted">Title</span>
+              <input
+                value={titleValue}
+                disabled={disabled}
+                onChange={(event) => setTitleValue(event.target.value)}
+                onBlur={() => commit()}
+                className="mt-0.5 w-full rounded border border-line bg-ink px-2 py-1 text-sm text-parchment outline-none focus:border-amber disabled:opacity-50"
+              />
+              <p className="mt-0.5 text-[11px] text-muted">DM label only — the player sees the scrolling text.</p>
+            </label>
+            <label className="block">
+              <span className="text-[10px] uppercase tracking-wider text-muted">Look</span>
+              <select
+                value={lookValue}
+                disabled={disabled}
+                onChange={(event) => {
+                  const next = parseLegendLook(event.target.value)
+                  setLookValue(next)
+                  commit({ look: next })
+                }}
+                className="mt-0.5 w-full rounded border border-line bg-ink px-2 py-1 text-sm text-parchment outline-none focus:border-amber disabled:opacity-50"
+              >
+                {LEGEND_LOOK_OPTIONS.map((opt) => (
+                  <option key={opt.id} value={opt.id}>
+                    {opt.label}
+                  </option>
+                ))}
+              </select>
+              {lookHint ? <p className="mt-0.5 text-[11px] text-muted">{lookHint}</p> : null}
+            </label>
+            <div>
+              <span className="text-[10px] uppercase tracking-wider text-muted">End image</span>
+              <p className="mt-0.5 text-[11px] text-muted">Fades in when the scroll finishes (landscape, keep, etc.).</p>
+              <div className="mt-1 flex items-start gap-2">
+                <div className="flex h-14 w-24 items-center justify-center rounded border border-line bg-ink text-[10px] text-muted">
+                  {endPreview ? <img src={endPreview} alt="" className="h-full w-full object-contain" /> : 'None'}
+                </div>
+                <div className="min-w-0 flex-1 space-y-1">
+                  <select
+                    disabled={disabled || endBusy}
+                    value={imageSelectValue(endValue)}
+                    onChange={(event) => {
+                      const value = event.target.value || null
+                      setEndValue(value)
+                      commit({ endImageRef: value })
+                    }}
+                    className="w-full rounded border border-line bg-ink px-1 py-1 text-[11px] text-parchment outline-none focus:border-amber disabled:opacity-50"
+                  >
+                    <option value="">None (fade to black)</option>
+                    {images.map((img) => (
+                      <option key={img.relativePath} value={img.relativePath}>
+                        {img.relativePath}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    disabled={disabled || endBusy || !onLoadEndImage}
+                    onClick={() => void loadEndImage()}
+                    className="rounded border border-line px-2 py-0.5 text-[11px] hover:border-amber disabled:text-muted"
+                  >
+                    {endBusy ? 'Saving…' : 'Load image…'}
+                  </button>
+                </div>
               </div>
-              <div className="min-w-0 flex-1 space-y-1">
+            </div>
+            <div>
+              <span className="text-[10px] uppercase tracking-wider text-muted">Legend music</span>
+              <p className="mt-0.5 text-[11px] text-muted">
+                Mood fades out on Play. Legend track runs for 1:32 from when it starts (fades out if longer), then mood
+                resumes.
+              </p>
+              <div className="mt-1 flex flex-wrap items-center gap-1">
                 <select
-                  disabled={disabled || endBusy}
-                  value={imageSelectValue(endValue)}
+                  disabled={disabled || musicBusy}
+                  value={musicValue ?? ''}
                   onChange={(event) => {
                     const value = event.target.value || null
-                    setEndValue(value)
-                    commit({ endImageRef: value })
+                    setMusicValue(value)
+                    commit({ musicRef: value })
                   }}
-                  className="w-full rounded border border-line bg-ink px-1 py-1 text-[11px] text-parchment outline-none focus:border-amber disabled:opacity-50"
+                  className="min-w-0 flex-1 rounded border border-line bg-ink px-1 py-1 text-[11px] text-parchment outline-none focus:border-amber disabled:opacity-50"
                 >
-                  <option value="">None (fade to black)</option>
-                  {images.map((img) => (
-                    <option key={img.relativePath} value={img.relativePath}>
-                      {img.relativePath}
+                  <option value="">Silent (no legend track)</option>
+                  {musicValue && !musicKnown ? <option value={musicValue}>{musicValue}</option> : null}
+                  {tracks.map((track) => (
+                    <option key={track.relativePath} value={track.relativePath}>
+                      {track.relativePath}
                     </option>
                   ))}
                 </select>
                 <button
                   type="button"
-                  disabled={disabled || endBusy || !onLoadEndImage}
-                  onClick={() => void loadEndImage()}
+                  disabled={disabled || musicBusy || !onLoadMusic}
+                  onClick={() => void loadMusic()}
                   className="rounded border border-line px-2 py-0.5 text-[11px] hover:border-amber disabled:text-muted"
                 >
-                  {endBusy ? 'Saving…' : 'Load image…'}
+                  {musicBusy ? 'Saving…' : 'Load audio…'}
                 </button>
               </div>
             </div>
+            <label className="block">
+              <span className="text-[10px] uppercase tracking-wider text-muted">Legend</span>
+              <textarea
+                value={bodyValue}
+                disabled={disabled}
+                rows={6}
+                onChange={(event) => setBodyValue(event.target.value)}
+                onBlur={() => commit()}
+                className="mt-0.5 w-full resize-y rounded border border-line bg-ink px-2 py-1 text-sm text-parchment outline-none focus:border-amber disabled:opacity-50"
+              />
+            </label>
           </div>
-          <div>
-            <span className="text-[10px] uppercase tracking-wider text-muted">Legend music</span>
-            <p className="mt-0.5 text-[11px] text-muted">
-              Mood fades out on Play. Legend track runs for 1:32 from when it starts (fades out if longer), then mood
-              resumes.
+        ) : (
+          <div className="space-y-3 pl-2">
+            <p className="text-[11px] text-muted">
+              Look: <span className="text-parchment">{lookLabel}</span>
+              {musicValue ? (
+                <>
+                  {' '}
+                  · Music: <span className="text-parchment">{musicValue.split(/[\\/]/).pop()}</span>
+                </>
+              ) : null}
             </p>
-            <div className="mt-1 flex flex-wrap items-center gap-1">
-              <select
-                disabled={disabled || musicBusy}
-                value={musicValue ?? ''}
-                onChange={(event) => {
-                  const value = event.target.value || null
-                  setMusicValue(value)
-                  commit({ musicRef: value })
-                }}
-                className="min-w-0 flex-1 rounded border border-line bg-ink px-1 py-1 text-[11px] text-parchment outline-none focus:border-amber disabled:opacity-50"
-              >
-                <option value="">Silent (no legend track)</option>
-                {musicValue && !musicKnown ? <option value={musicValue}>{musicValue}</option> : null}
-                {tracks.map((track) => (
-                  <option key={track.relativePath} value={track.relativePath}>
-                    {track.relativePath}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                disabled={disabled || musicBusy || !onLoadMusic}
-                onClick={() => void loadMusic()}
-                className="rounded border border-line px-2 py-0.5 text-[11px] hover:border-amber disabled:text-muted"
-              >
-                {musicBusy ? 'Saving…' : 'Load audio…'}
-              </button>
+            {endPreview ? (
+              <div className="flex items-start gap-2">
+                <img src={endPreview} alt="" className="h-16 w-28 rounded border border-line bg-ink object-contain" />
+                <span className="text-[11px] text-muted">End image</span>
+              </div>
+            ) : null}
+            <div className="whitespace-pre-wrap rounded border border-line/60 bg-ink/40 px-3 py-2 text-sm leading-relaxed text-parchment">
+              {bodyValue.trim() || 'No scroll text yet.'}
             </div>
           </div>
-          <label className="block">
-            <span className="text-[10px] uppercase tracking-wider text-muted">Legend</span>
-            <textarea
-              value={bodyValue}
-              disabled={disabled}
-              rows={6}
-              onChange={(event) => setBodyValue(event.target.value)}
-              onBlur={() => commit()}
-              className="mt-0.5 w-full resize-y rounded border border-line bg-ink px-2 py-1 text-sm text-parchment outline-none focus:border-amber disabled:opacity-50"
-            />
-          </label>
-        </div>
-        <div className="mt-3 flex flex-wrap items-center gap-2 pl-2">
-          {legendActive ? (
-            <button
-              type="button"
-              onClick={() => onStop?.()}
-              disabled={legendStopping || !onStop}
-              className="rounded border border-line px-2.5 py-1 text-xs font-semibold hover:border-amber disabled:text-muted"
-            >
-              {legendStopping ? 'Stopping…' : 'Stop'}
-            </button>
-          ) : (
-            <button
-              type="button"
-              onClick={() => {
-                const next = fields()
-                onChange(next)
-                onPlay?.(next)
-              }}
-              disabled={!canPlay || !onPlay}
-              className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-on-amber disabled:bg-line disabled:text-muted"
-            >
-              Play
-            </button>
-          )}
-          {!canPlay ? (
-            <span className="text-[11px] text-muted">Classic, Light, or Vampire look required</span>
-          ) : null}
-        </div>
+        )}
+        {playFooter}
       </div>
     </section>
   )

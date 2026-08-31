@@ -4,13 +4,13 @@ A local Windows app for running **in-person** tabletop games. Your laptop is the
 
 This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table.
 
-**New campaign** asks which system pack to use: **D&D 5e** (bundled SRD 5.2.1), **Pathfinder 2e** (small original core), or **Vampire 5th Edition** (Health / Willpower / Hunger tracker and original table procedures). Existing folders without a `system` field keep working as D&D 5e. Sample is still the 5e Greystead one-shot. Current release: **1.6.12**.
+**New campaign** asks which system pack to use: **D&D 5e** (bundled SRD 5.2.1), **Pathfinder 2e** (small original core), or **Vampire 5th Edition** (Health / Willpower / Hunger tracker and original table procedures). Existing folders without a `system` field keep working as D&D 5e. Sample is still the 5e Greystead one-shot. Current release: **1.7.0**.
 
 Tableside is a table app. It is not an official Wizards, Paizo, or Paradox product.
 
 ## Install (Windows)
 
-**[Download the latest installer](https://github.com/AxiumDND/tableside/releases/latest)** — look for `Tableside-Setup-1.6.12.exe`. No account, no admin.
+**[Download the latest installer](https://github.com/AxiumDND/tableside/releases/latest)** — look for `Tableside-Setup-1.7.0.exe`. No account, no admin.
 
 1. Run the installer. It is a per-user install: Start Menu + desktop shortcuts. You can pick the folder.
 2. Open **Tableside** from the Start Menu.
@@ -57,13 +57,15 @@ Short version:
 - Click a map or portrait, then **Show to players** — 5 second fade-in on a black screen
 - Map notes: zoom/pan, DM-only pins, tokens, fog of war — the TV follows crop, fog, and tokens
 - Optional initiative overlay: order, whose turn, and pack tags (5e Bloodied / 0 HP; PF2e Dying / Wounded; V5 Health, Willpower, Hunger)
+- Game night sheets: structured **combat** and **treasure** blocks (party auto-roster, Add combatant / Add item lookups that copy into Bestiary / Gear), per-block Edit, nested scenes
 - Game night sheets pull Party / NPC / Bestiary sheets into initiative
 - Music mixer: one mood playlist (Play / Pause / Skip / Stop, in order or shuffle), one ambience bed, soundboard — your files, your output device
-- Sci-fi opening crawl (`> [!crawl]`) — write your own words; Play sends a starfield crawl to the TV
+- Sci-fi opening crawl (`> [!crawl]`) and campfire chronicle (`[!legend]`) — write your own words; Play sends them to the TV
 - Offline Lookup for the open campaign’s system pack (5e SRD; PF2e original core; V5 original procedures)
 - Optional extra 5e lookup from your own book text files in `Additional Books/`
-- Add a monster, spell, or gear item from Lookup into the campaign folder
-- Places, shops, factions, dice tray, in-app **Help & settings**, file search (`Ctrl+F`), table hotkeys
+- Add a monster, spell, or gear item from Lookup into the campaign folder (treasure/combat pickers do the same without leaving the sheet)
+- Help & settings: campaign look, currencies for treasure, layout, maps, combat overlay, Lookup chips, shortcuts
+- Places, shops, factions, dice tray, file search (`Ctrl+F`), table hotkeys
 - Installed copies check GitHub at launch and ask to install if a newer release exists
 
 ## Run from source
@@ -84,7 +86,7 @@ npm start
 npm run dist
 ```
 
-Writes `dist/Tableside-Setup-1.6.12.exe`. Pushing a `v1.6.12` tag builds that file and attaches it to the [GitHub Release](https://github.com/AxiumDND/tableside/releases/latest).
+Writes `dist/Tableside-Setup-1.7.0.exe`. Pushing a `v1.7.0` tag builds that file and attaches it to the [GitHub Release](https://github.com/AxiumDND/tableside/releases/latest).
 
 `npm run fetch-srd` is only needed if you want to refresh the bundled SRD snapshot from the [Open5e API](https://api.open5e.com/) (`srd-2024`).
 

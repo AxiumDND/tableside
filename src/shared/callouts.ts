@@ -25,6 +25,9 @@ export type CalloutKind =
   | 'example'
   | 'abstract'
   | 'note'
+  | 'text'
+  | 'links'
+  | 'treasure'
   | 'danger'
   | 'success'
   | 'info'
@@ -58,6 +61,10 @@ export function calloutKind(type: string): CalloutKind {
   if (folded === 'scene' || folded === 'beat') return 'scene'
   if (folded === 'combat' || folded === 'encounter' || folded === 'fight') return 'combat'
   if (folded === 'party' || folded === 'roster' || folded === 'pcs') return 'party'
+  if (folded === 'text' || folded === 'body') return 'text'
+  if (folded === 'summary') return 'abstract'
+  if (folded === 'links' || folded === 'toc' || folded === 'contents') return 'links'
+  if (folded === 'treasure' || folded === 'loot' || folded === 'hoard') return 'treasure'
   if (folded === 'pc' || folded === 'player' || folded === 'character') return 'pc'
   if (folded === 'npc') return 'npc'
   if (folded === 'monster' || folded === 'creature' || folded === 'bestiary') return 'monster'
@@ -119,6 +126,10 @@ export function canonicalCalloutType(kind: CalloutKind, rawType: string): string
       return 'combat'
     case 'party':
       return 'party'
+    case 'links':
+      return 'links'
+    case 'treasure':
+      return 'treasure'
     case 'pc':
       return 'pc'
     case 'npc':
@@ -149,7 +160,7 @@ const CALLOUT_CLOSE = /^\s*\[!(?:\/([a-z][\w-]*)|end([a-z][\w]*)?)\]\s*$/i
 const CALLOUT_FENCE_START = /^\s*\[!([a-z][\w-]*)\][+-]?\s*(.*)$/i
 const CALLOUT_QUOTE_START = /^>\s*\[!([a-z][\w-]*)\][+-]?\s*(.*)$/i
 
-function parseClose(line: string): { bare: boolean; type?: string } | null {
+export function parseClose(line: string): { bare: boolean; type?: string } | null {
   const match = CALLOUT_CLOSE.exec(line)
   if (!match) return null
   if (match[1]) return { bare: false, type: match[1].toLowerCase() }
@@ -160,7 +171,7 @@ function parseClose(line: string): { bare: boolean; type?: string } | null {
   return { bare: true }
 }
 
-function parseFenceStart(line: string): { type: string; title: string } | null {
+export function parseFenceStart(line: string): { type: string; title: string } | null {
   if (parseClose(line)) return null
   const match = CALLOUT_FENCE_START.exec(line)
   if (!match) return null
@@ -169,13 +180,13 @@ function parseFenceStart(line: string): { type: string; title: string } | null {
   return { type, title: match[2].trim() }
 }
 
-function parseQuoteStart(line: string): { type: string; title: string } | null {
+export function parseQuoteStart(line: string): { type: string; title: string } | null {
   const match = CALLOUT_QUOTE_START.exec(line)
   if (!match) return null
   return { type: match[1].toLowerCase(), title: match[2].trim() }
 }
 
-function closeMatches(
+export function closeMatches(
   close: { bare: boolean; type?: string },
   openType: string,
   openKind: CalloutKind

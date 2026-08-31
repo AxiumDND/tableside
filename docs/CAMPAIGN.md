@@ -8,7 +8,7 @@ Also read:
 - [TABLE.md](TABLE.md) — DM console, combat, Lookup, player display
 - [RECIPES.md](RECIPES.md) — game night sheet → initiative, Lookup → campaign note, music, crawl (also in-app **Help**)
 - [MARKDOWN.md](MARKDOWN.md) — wikilinks, callouts, `statblock` field reference
-- [AI-CAMPAIGN.md](AI-CAMPAIGN.md) — short spec for an AI converting a vault into this layout
+- [AI-CAMPAIGN.md](AI-CAMPAIGN.md) — spec for an AI converting a vault into this layout (updated for 1.7 combat/treasure blocks)
 - [Additional Books/README.md](../Additional%20Books/README.md) — optional book text for Lookup
 
 ## Folder layout
@@ -203,7 +203,7 @@ A **game night sheet** is a session note with a Party roster block and scene blo
 
 Wrap PC links in `[!party]…[!/party]` (optional Focus tonight note inside). Scene blocks use `[!scene] Title` … `[!/scene]`. Put optional art with `![[…]]`, a short “what could happen” note, nested `[!readaloud]` for spoken text, nested `[!gmonly]` for hidden prep, nested `[!combat]` for fights, optional secrets/treasure/NPC bullets, and an **At the table** cue list (place, map, checks, if they miss, music, sound, leads to). Copy a whole scene block to add another beat.
 
-1. Prefer a combat block inside a scene (or at document level). Aliases: `encounter`, `fight`.
+1. Prefer a combat block inside a scene (or at document level). Aliases: `encounter`, `fight`. New blocks default to `**Combatants:** party`. Add foes with real Bestiary / NPC stems, or use **Edit → Add combatant…** at the table (SRD/book monsters copy into `Bestiary/`).
 
 ```markdown
 [!scene] The door
@@ -214,14 +214,16 @@ Wrap PC links in `[!party]…[!/party]` (optional Focus tonight note inside). Sc
 [!/scene]
 ```
 
+2. Treasure in a beat uses `[!treasure]` (coin + Gear wikilinks). **Edit → Add item…** searches Gear / SRD / books and copies missing items into `Gear/…`. Currencies: **Help & settings → Currencies**.
+
 Legacy: a `#` / `##` heading that includes `Combat`, `Encounter`, or ⚔️ (skip headings that say `no combat`) still works the same way.
 
-2. List combatants with wikilinks to Party / NPCs / Bestiary sheets:
+3. List combatants with wikilinks to Party / NPCs / Bestiary sheets:
 
 - `party` adds every PC under `Party/`.
 - `×2` / `x2` adds multiple copies of that sheet.
 - Separators: `·`, `|`, `,`, or `;`.
-
+- Do not leave `[[Monster Name]]` stubs.
 If there is no `Combatants:` line, Tableside still picks up wikilinks (and some bold table labels) to Party / NPCs / Bestiary notes in that section.
 
 On the game night sheet, use **Add to initiative** / **Add encounter** to load those sheets into Combat. **Add all players** pulls every PC sheet.

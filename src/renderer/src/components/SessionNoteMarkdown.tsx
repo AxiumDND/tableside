@@ -2,6 +2,14 @@ import { type ReactNode } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import {
+  blockKeyFromPath,
+  insertableBlockKinds,
+  insertableBlockKindsForParent,
+  serializeCalloutBlock,
+  type BlockIndex
+} from '../../../shared/blockIndex'
+import type { CalloutBlock, CalloutKind } from '../../../shared/callouts'
+import {
   crawlLogoRef,
   crawlPlainText,
   crawlPreface,
@@ -11,6 +19,7 @@ import {
 } from '../../../shared/openingCrawl'
 import {
   legendLogoRef,
+  legendLook,
   legendPlainText,
   legendPreface,
   legendMusicRef,
@@ -58,11 +67,24 @@ import LegendCard from './LegendCard'
 import GalleryCard from './GalleryCard'
 import VideoCard from './VideoCard'
 import CombatCard from './CombatCard'
+import TreasureCard from './TreasureCard'
+import NoteWikiLink from './NoteWikiLink'
 import GmOnly from './GmOnly'
 import ReadAloud from './ReadAloud'
 import PartyCard from './PartyCard'
 import SceneCard from './SceneCard'
 import SheetArtFrame from './SheetArtFrame'
+import SheetBlockShell, { BLOCK_KIND_LABELS } from './SheetBlockShell'
+import BlockMarkdownEditor from './BlockMarkdownEditor'
+import LinksCard, { type BlockNavEntry } from './LinksCard'
+import {
+  serializeTreasureCallout,
+  type TreasureFields
+} from '../../../shared/treasureFields'
+import {
+  serializeCombatCallout,
+  type CombatFields
+} from '../../../shared/combatFields'
 
 export type SessionNoteMarkdownDeps = {
   markdown: string
@@ -113,6 +135,23 @@ export type SessionNoteMarkdownDeps = {
   persistVideo: (index: number, fields: VideoCalloutFields) => void | Promise<void>
   playVideoCard: (index: number, fields: VideoCalloutFields) => void | Promise<void>
   loadVideoFile: () => Promise<string | null>
+  blockEditEnabled?: boolean
+  blockIndex?: BlockIndex
+  editingBlocks?: ReadonlySet<string>
+  onBlockEdit?: (key: string) => void
+  onBlockDone?: (key: string) => void
+  onBlockSave?: (key: string, markdown: string) => void
+  onBlockInsert?: (key: string, position: 'above' | 'below', kind: CalloutKind) => void
+  onBlockDelete?: (key: string) => void
+  currencies?: import('../../../shared/currencies').CampaignCurrency[]
+  system?: string | null
+  onEnsureGear?: (
+    record: import('../lib/srd').SrdRecord
+  ) => Promise<'added' | 'exists' | void> | 'added' | 'exists' | void
+  onEnsureMonster?: (
+    record: import('../lib/srd').SrdRecord
+  ) => Promise<'added' | 'exists' | void> | 'added' | 'exists' | void
+  gearNotes?: CampaignNote[]
 }
 
 export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
@@ -184,7 +223,20 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
     onPlayVideo,
     persistVideo,
     playVideoCard,
-    loadVideoFile
+    loadVideoFile,
+    blockEditEnabled = false,
+    blockIndex,
+    editingBlocks = new Set(),
+    onBlockEdit,
+    onBlockDone,
+    onBlockSave,
+    onBlockInsert,
+    onBlockDelete,
+    currencies,
+    system,
+    onEnsureGear,
+    onEnsureMonster,
+    gearNotes
   } = deps
 
   const markdownComponents = {
@@ -215,13 +267,9 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
       if (href?.startsWith('#note:')) {
         const notePath = decodeURIComponent(href.slice(6))
         return (
-          <button
-            type="button"
-            onClick={() => onOpenNote?.(notePath)}
-            className="text-amber underline decoration-amber-dim underline-offset-2 hover:text-parchment"
-          >
+          <NoteWikiLink notePath={notePath} onOpenNote={onOpenNote}>
             {children}
-          </button>
+          </NoteWikiLink>
         )
       }
       return (
@@ -250,6 +298,81 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
     }
   }
 
+  function sheetBlockKind(kind: CalloutKind): CalloutKind {
+    return insertableBlockKinds().includes(kind) ? kind : 'note'
+  }
+
+  function blockNavEntries(excludeKey: string): BlockNavEntry[] {
+    if (!blockIndex) return []
+    return [...blockIndex.entries()]
+      .filter(([key, item]) => key !== excludeKey && item.block.kind !== 'links')
+      .sort((a, b) => a[1].range.from - b[1].range.from)
+      .map(([key, item]) => ({
+        key,
+        kind: item.block.kind,
+        title: item.block.title,
+        depth: Math.max(0, key.split(':').length - 2)
+      }))
+  }
+
+  function wrapSheetBlock(
+    blockKey: string,
+    part: CalloutBlock,
+    defaultKind: CalloutKind,
+    readContent: ReactNode,
+    editContent?: ReactNode,
+    headerRight?: ReactNode
+  ): ReactNode {
+    if (!blockEditEnabled || !onBlockEdit || !onBlockDone) {
+      return (
+        <div id={`sheet-block-${blockKey.replace(/:/g, '-')}`} className="scroll-mt-3">
+          {readContent}
+        </div>
+      )
+    }
+    const editing = editingBlocks.has(blockKey)
+    const keyParts = blockKey.split(':')
+    const parentKey = keyParts.length > 2 ? keyParts.slice(0, -1).join(':') : null
+    const parentKind = parentKey ? blockIndex?.get(parentKey)?.block.kind : null
+    const insertKinds = insertableBlockKindsForParent(parentKind)
+    return (
+      <SheetBlockShell
+        blockKey={blockKey}
+        editing={editing}
+        disabled={disabled}
+        defaultKind={defaultKind}
+        insertKinds={insertKinds}
+        onEdit={() => onBlockEdit(blockKey)}
+        onDone={() => onBlockDone(blockKey)}
+        onInsertAbove={onBlockInsert ? (kind) => onBlockInsert(blockKey, 'above', kind) : undefined}
+        onInsertBelow={onBlockInsert ? (kind) => onBlockInsert(blockKey, 'below', kind) : undefined}
+        onDelete={onBlockDelete ? () => onBlockDelete(blockKey) : undefined}
+        headerRight={headerRight}
+      >
+        {editing
+          ? editContent ?? (
+              <BlockMarkdownEditor
+                title={part.title ?? ''}
+                body={part.markdown}
+                kindLabel={BLOCK_KIND_LABELS[defaultKind] ?? defaultKind}
+                disabled={disabled}
+                onChange={({ title, body }) =>
+                  onBlockSave?.(
+                    blockKey,
+                    serializeCalloutBlock({
+                      ...part,
+                      title: title.trim() || undefined,
+                      markdown: body
+                    })
+                  )
+                }
+              />
+            )
+          : readContent}
+      </SheetBlockShell>
+    )
+  }
+
   function renderMarkdown(
     text: string,
     keyPrefix: string,
@@ -257,7 +380,9 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
     legendOffset = 0,
     galleryOffset = 0,
     videoOffset = 0,
-    encounterScope?: string
+    encounterScope?: string,
+    sectionIndex = 0,
+    blockPathPrefix: number[] = []
   ) {
     const rawCrawls = splitCalloutBlocks(markdown).filter((block) => block.kind === 'crawl')
     const rawLegends = splitCalloutBlocks(markdown).filter((block) => block.kind === 'legend')
@@ -267,60 +392,81 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
     let legendLocal = 0
     let galleryLocal = 0
     let videoLocal = 0
+    let calloutLocal = 0
     return splitCalloutBlocks(text).map((part, i) => {
       const key = `${keyPrefix}-${i}`
-      if (part.kind === 'readaloud') {
+      if (part.kind === 'prose') {
+        if (!part.markdown.trim()) return null
         return (
-          <ReadAloud key={key} title={part.title}>
+          <Markdown key={key} remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform} components={markdownComponents}>
+            {part.markdown}
+          </Markdown>
+        )
+      }
+
+      const blockPath = [...blockPathPrefix, calloutLocal]
+      calloutLocal += 1
+      const blockKey = blockKeyFromPath(sectionIndex, blockPath)
+      const blockEditing = blockEditEnabled && editingBlocks.has(blockKey)
+
+      if (part.kind === 'readaloud') {
+        const read = (
+          <ReadAloud title={part.title}>
             <Markdown remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform} components={markdownComponents}>
               {part.markdown || ''}
             </Markdown>
           </ReadAloud>
+        )
+        return (
+          <div key={key}>
+            {wrapSheetBlock(blockKey, part, 'readaloud', read)}
+          </div>
         )
       }
       if (part.kind === 'combat') {
         const heading = part.title?.trim() || 'Combat'
         const sectionId = encounterSectionId(heading, encounterScope)
         const encounter = encounters.find((item) => item.id === sectionId)
-        const { card, rest } = splitCombatCardContent(
-          part.markdown.trim() ? `## ${heading}\n${part.markdown}` : `## ${heading}`
+        const canAdd = Boolean(encounter && onAddEncounter)
+        const initiativeAction = canAdd ? (
+          <button
+            type="button"
+            title="Load these sheets plus every PC in PCs/party. Anyone already listed is skipped. NPCs/monsters at init 0 are rolled."
+            onClick={() => onAddEncounterClick(encounter!)}
+            className="rounded bg-amber px-2 py-0.5 text-[11px] font-semibold text-on-amber"
+          >
+            {addingId === encounter!.id ? 'Adding…' : 'Add to initiative'}
+          </button>
+        ) : null
+        const rawCombat = blockIndex?.get(blockKey)?.block ?? part
+        const card = (
+          <CombatCard
+            title={rawCombat.title}
+            body={rawCombat.markdown}
+            editing={blockEditing}
+            disabled={disabled}
+            onChange={(fields: CombatFields) => onBlockSave?.(blockKey, serializeCombatCallout(fields))}
+            adding={Boolean(encounter && addingId === encounter.id)}
+            onAdd={blockEditEnabled ? undefined : canAdd ? () => onAddEncounterClick(encounter!) : undefined}
+            missing={missingCombatantTokens(rawCombat.markdown, path, noteIndex)}
+            sheetPath={path}
+            notes={gearNotes ?? noteIndex}
+            system={system}
+            onEnsureMonster={onEnsureMonster}
+            markdownComponents={markdownComponents}
+            urlTransform={markdownUrlTransform}
+          />
         )
-        // Card markdown already has a synthetic ## heading for roster split; show title in chrome instead.
-        const cardBody = card.replace(/^#{1,2}\s+[^\n]+\n?/, '')
         return (
           <div key={key}>
-            <CombatCard
-              title={heading}
-              adding={Boolean(encounter && addingId === encounter.id)}
-              onAdd={encounter && onAddEncounter ? () => onAddEncounterClick(encounter) : undefined}
-              missing={missingCombatantTokens(part.markdown, path, noteIndex)}
-            >
-              {cardBody.trim() ? (
-                <Markdown remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform} components={markdownComponents}>
-                  {cardBody}
-                </Markdown>
-              ) : null}
-            </CombatCard>
-            {rest.trim() ? (
-              <div className="markdown-body">
-                {renderMarkdown(
-                  rest,
-                  `${key}-rest`,
-                  crawlOffset + crawlLocal,
-                  legendOffset + legendLocal,
-                  galleryOffset + galleryLocal,
-                  videoOffset + videoLocal,
-                  encounterScope
-                )}
-              </div>
-            ) : null}
+            {wrapSheetBlock(blockKey, part, 'combat', card, blockEditing ? card : undefined, initiativeAction)}
           </div>
         )
       }
       if (part.kind === 'party') {
-        return (
-          <PartyCard key={key} title={part.title}>
-            {part.markdown.trim()
+        const read = (
+          <PartyCard title={part.title}>
+            {part.markdown.trim() && !blockEditing
               ? renderSectionedMarkdown(
                   part.markdown,
                   `${key}-body`,
@@ -328,19 +474,25 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
                   crawlOffset + crawlLocal,
                   legendOffset + legendLocal,
                   galleryOffset + galleryLocal,
-                  videoOffset + videoLocal
+                  videoOffset + videoLocal,
+                  sectionIndex,
+                  blockPath
                 )
               : null}
           </PartyCard>
+        )
+        return (
+          <div key={key}>
+            {wrapSheetBlock(blockKey, part, 'party', read)}
+          </div>
         )
       }
       if (part.kind === 'scene') {
         const { artSrc, artLabel, body } = splitLeadingSceneArt(part.markdown)
         const resolved = artSrc ? resolveMarkdownImageSrc(artSrc, path, images) : { url: '', path: null }
         const showArt = Boolean(artSrc || artLabel)
-        return (
+        const read = (
           <SceneCard
-            key={key}
             title={part.title}
             art={
               showArt ? (
@@ -357,7 +509,7 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
               ) : undefined
             }
           >
-            {body.trim()
+            {body.trim() && !blockEditing
               ? renderSectionedMarkdown(
                   body,
                   `${key}-body`,
@@ -365,10 +517,17 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
                   crawlOffset + crawlLocal,
                   legendOffset + legendLocal,
                   galleryOffset + galleryLocal,
-                  videoOffset + videoLocal
+                  videoOffset + videoLocal,
+                  sectionIndex,
+                  blockPath
                 )
               : null}
           </SceneCard>
+        )
+        return (
+          <div key={key}>
+            {wrapSheetBlock(blockKey, part, 'scene', read)}
+          </div>
         )
       }
       if (part.kind === 'crawl') {
@@ -386,9 +545,8 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
           activeCrawl != null &&
           (activeCrawl.title ?? '') === (crawlTitle ?? '') &&
           activeCrawl.body === crawlBody
-        return (
+        const card = (
           <CrawlCard
-            key={key}
             title={crawlTitle}
             preface={crawlPreface(raw.markdown)}
             body={crawlBody}
@@ -401,6 +559,7 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
             images={images}
             canPlay={theme === 'scifi'}
             disabled={disabled}
+            editing={blockEditing}
             onChange={(fields) => void persistCrawl(crawlIndex, fields)}
             onPlay={onPlayCrawl ? (fields) => void playCrawlCard(crawlIndex, fields) : undefined}
             onStop={onStopCrawl}
@@ -410,6 +569,11 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
             onLoadEndImage={() => loadCrawlEndImage()}
             onLoadMusic={() => loadCrawlMusic()}
           />
+        )
+        return (
+          <div key={key}>
+            {wrapSheetBlock(blockKey, part, 'crawl', card, blockEditing ? card : undefined)}
+          </div>
         )
       }
       if (part.kind === 'legend') {
@@ -423,16 +587,17 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
         const endImageUrl = endImageRef ? resolveMarkdownImageSrc(endImageRef, path, images).url : null
         const legendBody = legendPlainText(raw.markdown)
         const legendTitle = raw.title
+        const look = legendLook(raw.markdown)
         const isActiveLegend =
           activeLegend != null &&
           (activeLegend.title ?? '') === (legendTitle ?? '') &&
           activeLegend.body === legendBody
-        return (
+        const card = (
           <LegendCard
-            key={key}
             title={legendTitle}
             preface={legendPreface(raw.markdown)}
             body={legendBody}
+            look={look}
             logoRef={logoRef}
             logoUrl={logoUrl}
             endImageRef={endImageRef}
@@ -442,6 +607,7 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
             images={images}
             canPlay={legendPlayEnabled(theme)}
             disabled={disabled}
+            editing={blockEditing}
             onChange={(fields) => void persistLegend(legendIndex, fields)}
             onPlay={onPlayLegend ? (fields) => void playLegendCard(legendIndex, fields) : undefined}
             onStop={onStopLegend}
@@ -451,6 +617,11 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
             onLoadEndImage={() => loadLegendEndImage()}
             onLoadMusic={() => loadLegendMusic()}
           />
+        )
+        return (
+          <div key={key}>
+            {wrapSheetBlock(blockKey, part, 'legend', card, blockEditing ? card : undefined)}
+          </div>
         )
       }
       if (part.kind === 'gallery') {
@@ -465,9 +636,8 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
           activeGallery != null &&
           (activeGallery.title ?? '') === (raw.title ?? '') &&
           activeGallery.imageRefs.join('\n') === refsKey
-        return (
+        const card = (
           <GalleryCard
-            key={key}
             title={raw.title}
             intervalSec={intervalSec}
             loop={galleryLoops(raw.markdown)}
@@ -476,6 +646,7 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
             images={images}
             imageUrls={urls}
             disabled={disabled}
+            editing={blockEditing}
             onChange={(fields) => void persistGallery(galleryIndex, fields)}
             onPlay={onPlayGallery ? (fields) => void playGalleryCard(galleryIndex, fields) : undefined}
             onStop={onStopGallery}
@@ -485,6 +656,11 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
             slideIndex={isActiveGallery ? playerGallery?.index : undefined}
             slideCount={isActiveGallery ? playerGallery?.slides.length : undefined}
           />
+        )
+        return (
+          <div key={key}>
+            {wrapSheetBlock(blockKey, part, 'gallery', card, blockEditing ? card : undefined)}
+          </div>
         )
       }
       if (part.kind === 'video') {
@@ -496,14 +672,14 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
           activeVideo != null &&
           (activeVideo.title ?? '') === (fields.title ?? '') &&
           activeVideo.videoRef === (fields.videoRef ?? '')
-        return (
+        const card = (
           <VideoCard
-            key={key}
             title={fields.title}
             videoRef={fields.videoRef}
             muted={fields.muted}
             videos={videos ?? []}
             disabled={disabled}
+            editing={blockEditing}
             onChange={(next) => void persistVideo(videoIndex, next)}
             onPlay={onPlayVideo ? (next) => void playVideoCard(videoIndex, next) : undefined}
             onStop={onStopVideo}
@@ -511,33 +687,99 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
             onLoadVideo={() => loadVideoFile()}
           />
         )
+        return (
+          <div key={key}>
+            {wrapSheetBlock(blockKey, part, 'video', card, blockEditing ? card : undefined)}
+          </div>
+        )
       }
       if (part.kind === 'gmonly') {
         if (/^what this page does$/i.test(part.title ?? '')) return null
-        return (
-          <GmOnly key={key} title={part.title}>
+        const read = (
+          <GmOnly title={part.title}>
             <Markdown remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform} components={markdownComponents}>
               {part.markdown || ''}
             </Markdown>
           </GmOnly>
         )
-      }
-      if (part.kind !== 'prose') {
         return (
-          <CalloutCard key={key} type={part.kind === 'other' ? (part.type ?? 'note') : part.kind} title={part.title}>
-            {part.markdown.trim() ? (
-              <Markdown remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform} components={markdownComponents}>
-                {part.markdown}
-              </Markdown>
-            ) : null}
-          </CalloutCard>
+          <div key={key}>
+            {wrapSheetBlock(blockKey, part, 'gmonly', read)}
+          </div>
         )
       }
-      if (!part.markdown.trim()) return null
+      if (part.kind === 'treasure') {
+        const rawTreasure = blockIndex?.get(blockKey)?.block ?? part
+        const card = (
+          <TreasureCard
+            title={rawTreasure.title}
+            body={rawTreasure.markdown}
+            currencies={currencies}
+            editing={blockEditing}
+            disabled={disabled}
+            onChange={(fields: TreasureFields) =>
+              onBlockSave?.(blockKey, serializeTreasureCallout(fields, currencies))
+            }
+            markdownComponents={markdownComponents}
+            urlTransform={markdownUrlTransform}
+            system={system}
+            sheetPath={path}
+            gearNotes={gearNotes ?? noteIndex}
+            onEnsureGear={onEnsureGear}
+          />
+        )
+        return (
+          <div key={key}>
+            {wrapSheetBlock(blockKey, part, 'treasure', card, blockEditing ? card : undefined)}
+          </div>
+        )
+      }
+      if (part.kind === 'links') {
+        const read = <LinksCard title={part.title} entries={blockNavEntries(blockKey)} />
+        const edit = (
+          <div className="space-y-2">
+            <LinksCard title={part.title} entries={blockNavEntries(blockKey)} />
+            <p className="pl-2 text-[11px] text-muted">
+              Links update automatically from every other block on this sheet.
+            </p>
+            <BlockMarkdownEditor
+              title={part.title ?? ''}
+              body=""
+              kindLabel="Links"
+              titleOnly
+              disabled={disabled}
+              onChange={({ title }) =>
+                onBlockSave?.(
+                  blockKey,
+                  serializeCalloutBlock({
+                    ...part,
+                    title: title.trim() || undefined,
+                    markdown: ''
+                  })
+                )
+              }
+            />
+          </div>
+        )
+        return (
+          <div key={key}>
+            {wrapSheetBlock(blockKey, part, 'links', read, edit)}
+          </div>
+        )
+      }
+      const read = (
+        <CalloutCard type={part.kind === 'other' ? (part.type ?? 'note') : part.kind} title={part.title}>
+          {part.markdown.trim() ? (
+            <Markdown remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform} components={markdownComponents}>
+              {part.markdown}
+            </Markdown>
+          ) : null}
+        </CalloutCard>
+      )
       return (
-        <Markdown key={key} remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform} components={markdownComponents}>
-          {part.markdown}
-        </Markdown>
+        <div key={key}>
+          {wrapSheetBlock(blockKey, part, sheetBlockKind(part.kind), read)}
+        </div>
       )
     })
   }
@@ -549,7 +791,9 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
     crawlOffset = 0,
     legendOffset = 0,
     galleryOffset = 0,
-    videoOffset = 0
+    videoOffset = 0,
+    sectionIndex = 0,
+    blockPathPrefix: number[] = []
   ) {
     const docSections = splitMarkdownSections(text)
     if (docSections.length === 0) {
@@ -559,7 +803,10 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
         crawlOffset,
         legendOffset,
         galleryOffset,
-        videoOffset
+        videoOffset,
+        encounterScope,
+        sectionIndex,
+        blockPathPrefix
       )
     }
     let crawlsBefore = 0
@@ -596,7 +843,9 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
               legendOff,
               galleryOff,
               videoOff,
-              encounterScope
+              encounterScope,
+              sectionIndex,
+              blockPathPrefix
             )}
           </div>
         )
@@ -622,7 +871,9 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
               legendOff,
               galleryOff,
               videoOff,
-              encounterScope
+              encounterScope,
+              sectionIndex,
+              blockPathPrefix
             )}
           </CombatCard>
           {rest.trim() ? (
@@ -634,7 +885,9 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
                 legendOff + cardLegends,
                 galleryOff + cardGalleries,
                 videoOff + cardVideos,
-                encounterScope
+                encounterScope,
+                sectionIndex,
+                blockPathPrefix
               )}
             </div>
           ) : null}
@@ -678,7 +931,9 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
               crawlOff,
               legendOff,
               galleryOff,
-              videoOff
+              videoOff,
+              undefined,
+              index
             )}
           </div>
         )
@@ -697,7 +952,16 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
             onAdd={encounter && onAddEncounter ? () => onAddEncounterClick(encounter) : undefined}
             missing={missingCombatantTokens(section.markdown, path, noteIndex)}
           >
-            {renderMarkdown(card.replace(/^#{1,2}\s+[^\n]+\n?/, ''), `${key}-card`, crawlOff, legendOff, galleryOff, videoOff)}
+            {renderMarkdown(
+              card.replace(/^#{1,2}\s+[^\n]+\n?/, ''),
+              `${key}-card`,
+              crawlOff,
+              legendOff,
+              galleryOff,
+              videoOff,
+              undefined,
+              index
+            )}
           </CombatCard>
           {rest.trim() ? (
             <div className="markdown-body">
@@ -707,7 +971,9 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
                 crawlOff + cardCrawls,
                 legendOff + cardLegends,
                 galleryOff + cardGalleries,
-                videoOff + cardVideos
+                videoOff + cardVideos,
+                undefined,
+                index
               )}
             </div>
           ) : null}

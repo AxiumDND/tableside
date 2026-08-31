@@ -20,7 +20,8 @@ export default function StartHereTheme({
     <div className="mb-4 rounded border border-line/80 bg-ink/40 px-3 py-2.5">
       <div className="text-sm font-semibold text-amber">Campaign look</div>
       <p className="mt-1 text-[13px] leading-relaxed text-parchment/85">
-        Saved in this folder and remembered when you open it. The player TV stays black.
+        Saved in this folder and remembered when you open it. The player TV stays black. Treasure currencies are
+        under <span className="font-semibold text-parchment">Help & settings</span>.
       </p>
       <div className="mt-2">
         <ThemePicker theme={theme} onChange={onChange} />

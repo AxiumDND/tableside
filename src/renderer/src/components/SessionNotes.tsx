@@ -45,6 +45,15 @@ import {
 } from '../../../shared/shopStock'
 import { applyShopStanding, type ShopStanding } from '../../../shared/shopStanding'
 import { matchStockArt } from '../../../shared/stockArt'
+import {
+  buildBlockIndex,
+  defaultBlockTemplate,
+  deleteBlockByKey,
+  insertBlockByKey,
+  insertableBlockKindsForParent,
+  replaceBlockByKey
+} from '../../../shared/blockIndex'
+import type { CalloutKind } from '../../../shared/callouts'
 
 interface Heading {
   id: string
@@ -125,7 +134,11 @@ export default function SessionNotes({
   holoPortraits = false,
   digitalRain = false,
   onHoloPortraitsChange,
-  onDigitalRainChange
+  onDigitalRainChange,
+  currencies,
+  system,
+  onEnsureGear,
+  onEnsureMonster
 }: {
   path: string
   kind: FileKind
@@ -153,7 +166,8 @@ export default function SessionNotes({
     logoSrc?: string | null,
     preface?: string | null,
     musicPath?: string | null,
-    endSrc?: string | null
+    endSrc?: string | null,
+    look?: import('../../../shared/types').LegendLookId
   ) => void
   onStopLegend?: () => void
   activeLegend?: { title?: string; body: string } | null
@@ -198,11 +212,20 @@ export default function SessionNotes({
   digitalRain?: boolean
   onHoloPortraitsChange?: (enabled: boolean) => void
   onDigitalRainChange?: (enabled: boolean) => void
+  currencies?: import('../../../shared/currencies').CampaignCurrency[]
+  system?: string | null
+  onEnsureGear?: (
+    record: import('../lib/srd').SrdRecord
+  ) => Promise<'added' | 'exists' | void> | 'added' | 'exists' | void
+  onEnsureMonster?: (
+    record: import('../lib/srd').SrdRecord
+  ) => Promise<'added' | 'exists' | void> | 'added' | 'exists' | void
 }) {
   const [markdown, setMarkdown] = useState('')
   const [original, setOriginal] = useState('')
   const [character, setCharacter] = useState<Character | null>(null)
   const [editing, setEditing] = useState(false)
+  const [editingBlocks, setEditingBlocks] = useState<Set<string>>(() => new Set())
   const [addingId, setAddingId] = useState<string | null>(null)
   const [saveError, setSaveError] = useState('')
   const [confirmDiscard, setConfirmDiscard] = useState(false)
@@ -247,6 +270,8 @@ export default function SessionNotes({
     () => (kind === 'note' && !editing ? parseNightEncounters(markdown, path, noteIndex) : []),
     [kind, editing, markdown, path, noteIndex]
   )
+  const blockIndex = useMemo(() => buildBlockIndex(markdown), [markdown])
+  const blockEditEnabled = kind === 'note' && !editing && !sheetChrome && !mapMode
   async function flushOpenNote(targetPath = pathRef.current): Promise<void> {
     if (!targetPath || markdownRef.current === originalRef.current) return
     try {
@@ -266,6 +291,7 @@ export default function SessionNotes({
     }
     pathRef.current = path
     setEditing(false)
+    setEditingBlocks(new Set())
     setConfirmDiscard(false)
     setSaveError('')
     setShowLinks(false)
@@ -385,7 +411,8 @@ export default function SessionNotes({
       logo || null,
       fields.preface,
       fields.musicRef,
-      endImage || null
+      endImage || null,
+      fields.look
     )
   }
 
@@ -499,6 +526,50 @@ export default function SessionNotes({
     setOriginal(next)
     markdownRef.current = next
     originalRef.current = next
+  }
+
+  function toggleBlockEdit(key: string): void {
+    setEditingBlocks((prev) => {
+      const next = new Set(prev)
+      if (next.has(key)) next.delete(key)
+      else next.add(key)
+      return next
+    })
+  }
+
+  async function saveSheetBlock(key: string, replacement: string): Promise<void> {
+    const index = buildBlockIndex(markdownRef.current)
+    const next = replaceBlockByKey(markdownRef.current, index, key, replacement)
+    if (next === markdownRef.current) return
+    await persistShopMarkdown(next)
+  }
+
+  async function insertSheetBlock(key: string, position: 'above' | 'below', kind: CalloutKind): Promise<void> {
+    const keyParts = key.split(':')
+    const parentKey = keyParts.length > 2 ? keyParts.slice(0, -1).join(':') : null
+    const parentKind = parentKey ? blockIndex.get(parentKey)?.block.kind : null
+    if (!insertableBlockKindsForParent(parentKind).includes(kind)) return
+    const template = defaultBlockTemplate(kind, currencies)
+    const { markdown: next, newKey } = insertBlockByKey(
+      markdownRef.current,
+      blockIndex,
+      key,
+      position,
+      template
+    )
+    await persistShopMarkdown(next)
+    setEditingBlocks(new Set([newKey]))
+  }
+
+  async function deleteSheetBlock(key: string): Promise<void> {
+    const next = deleteBlockByKey(markdownRef.current, blockIndex, key)
+    if (next === markdownRef.current) return
+    await persistShopMarkdown(next)
+    setEditingBlocks((prev) => {
+      const nextSet = new Set(prev)
+      nextSet.delete(key)
+      return nextSet
+    })
   }
 
   async function rerollShopStock(): Promise<void> {
@@ -617,7 +688,20 @@ export default function SessionNotes({
     onPlayVideo,
     persistVideo,
     playVideoCard,
-    loadVideoFile
+    loadVideoFile,
+    blockEditEnabled,
+    blockIndex,
+    editingBlocks,
+    onBlockEdit: toggleBlockEdit,
+    onBlockDone: toggleBlockEdit,
+    onBlockSave: (key, replacement) => void saveSheetBlock(key, replacement),
+    onBlockInsert: (key, position, kind) => void insertSheetBlock(key, position, kind),
+    onBlockDelete: (key) => void deleteSheetBlock(key),
+    currencies,
+    system,
+    onEnsureGear,
+    onEnsureMonster,
+    gearNotes: noteIndex
   })
 
   return (

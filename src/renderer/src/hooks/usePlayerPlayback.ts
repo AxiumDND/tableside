@@ -135,7 +135,8 @@ export function usePlayerPlayback(setMixer: Dispatch<SetStateAction<MixerState>>
     logoSrc?: string | null,
     preface?: string | null,
     musicPath?: string | null,
-    endSrc?: string | null
+    endSrc?: string | null,
+    look?: import('../../../shared/types').LegendLookId
   ): Promise<void> {
     playerLiveRef.current = false
     clearCrawlMusicTimer()
@@ -162,11 +163,11 @@ export function usePlayerPlayback(setMixer: Dispatch<SetStateAction<MixerState>>
       crawlSettleTimerRef.current = null
       setActiveLegend(null)
       if (!prologueHasEndImageRef.current) {
-        void window.tabledm.clearPlayer().then(setPlayer)
+        void window.tabledm.clearPlayerOverlays().then(setPlayer)
       }
     }, musicDelay + LEGEND_SYNC_MS + CRAWL_FADE_OUT_MS)
     setActiveLegend({ title, body })
-    setPlayer(await window.tabledm.showLegend({ title, body, logoSrc, preface, endSrc }))
+    setPlayer(await window.tabledm.showLegend({ title, body, logoSrc, preface, endSrc, look }))
   }
 
   async function stopCrawl(): Promise<void> {

@@ -16,9 +16,11 @@ Prep combatants in Markdown once; load them at the table in one click.
 
 ```markdown
 [!combat] Combat 1 — the door
-**Combatants:** [[Vesper]] · [[Cultist]] ×3 · party
+**Combatants:** [[Cultist]] ×3 · party
 [!/combat]
 ```
+
+Or **Edit** the combat card and use **Add combatant…**. Party stays on by default.
 
 Rules of thumb:
 

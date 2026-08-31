@@ -36,6 +36,7 @@ const programmaticPlayerCloses = new WeakSet<BrowserWindow>()
 let playerState: PlayerState = emptyPlayerState()
 let crawlStopTimer: ReturnType<typeof setTimeout> | null = null
 let legendStopTimer: ReturnType<typeof setTimeout> | null = null
+let galleryStopTimer: ReturnType<typeof setTimeout> | null = null
 
 export function configurePlayerOutput(next: PlayerOutputDeps): void {
   deps = next
@@ -71,6 +72,10 @@ function clearStopTimers(): void {
   if (legendStopTimer) {
     clearTimeout(legendStopTimer)
     legendStopTimer = null
+  }
+  if (galleryStopTimer) {
+    clearTimeout(galleryStopTimer)
+    galleryStopTimer = null
   }
 }
 
@@ -315,6 +320,18 @@ export function clearPlayerMedia(): PlayerState {
   })
 }
 
+/** Drop crawl / legend / gallery / video but keep the last still or map for crossfades. */
+export function clearPlayerOverlays(): PlayerState {
+  clearStopTimers()
+  return setPlayerState({
+    ...playerState,
+    crawl: null,
+    legend: null,
+    gallery: null,
+    video: null
+  })
+}
+
 export function stopPlayerCrawl(): PlayerState {
   const crawl = playerState.crawl
   if (!crawl || crawl.stoppingAt != null) return playerState
@@ -353,6 +370,28 @@ export function stopPlayerLegend(): PlayerState {
     legendStopTimer = null
     if (playerState.legend?.stoppingAt) {
       playerState = { ...playerState, legend: null }
+      sendPlayerState()
+    }
+  }, CRAWL_FADE_OUT_MS)
+  return playerState
+}
+
+export function stopPlayerGallery(): PlayerState {
+  const gallery = playerState.gallery
+  if (!gallery || gallery.stoppingAt != null) return playerState
+  if (galleryStopTimer) {
+    clearTimeout(galleryStopTimer)
+    galleryStopTimer = null
+  }
+  playerState = {
+    ...playerState,
+    gallery: { ...gallery, stoppingAt: Date.now() }
+  }
+  sendPlayerState()
+  galleryStopTimer = setTimeout(() => {
+    galleryStopTimer = null
+    if (playerState.gallery?.stoppingAt) {
+      playerState = { ...playerState, gallery: null }
       sendPlayerState()
     }
   }, CRAWL_FADE_OUT_MS)

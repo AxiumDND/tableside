@@ -7,6 +7,7 @@ import type {
   CombatState,
   CreateNoteMapImage,
   DisplayInfo,
+  LegendLookId,
   PlayerMapView,
   PlayerState
 } from '../shared/types'
@@ -14,6 +15,7 @@ import type { CampaignLibraryFolder } from '../shared/campaignLayout'
 import type { SheetTemplateKind } from '../shared/sheetTemplates'
 import type { BookLibrary } from '../shared/books'
 import type { AppUpdateNotice } from '../shared/appUpdate'
+import type { CampaignCurrency } from '../shared/currencies'
 import { IPC } from '../shared/ipc'
 
 const api = {
@@ -61,6 +63,7 @@ const api = {
     logoSrc?: string | null
     endSrc?: string | null
     preface?: string | null
+    look?: LegendLookId
   }): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerShowLegend, payload),
   stopLegend: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerStopLegend),
   showGallery: (payload: {
@@ -80,6 +83,7 @@ const api = {
   }): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerShowVideo, payload),
   stopVideo: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerStopVideo),
   clearPlayer: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerClear),
+  clearPlayerOverlays: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerClearOverlays),
   setPlayerInitiative: (payload: {
     entries: PlayerState['initiative']
     show: boolean
@@ -131,6 +135,8 @@ const api = {
     ipcRenderer.invoke(IPC.campaignSetHoloPortraits, enabled),
   setCampaignDigitalRain: (enabled: boolean): Promise<CampaignInfo | null> =>
     ipcRenderer.invoke(IPC.campaignSetDigitalRain, enabled),
+  setCampaignCurrencies: (currencies: CampaignCurrency[]): Promise<CampaignInfo | null> =>
+    ipcRenderer.invoke(IPC.campaignSetCurrencies, currencies),
   openSampleCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke(IPC.campaignOpenSample),
   getCampaign: (): Promise<CampaignInfo | null> => ipcRenderer.invoke(IPC.campaignGet),
   readFile: (relativePath: string): Promise<string> =>

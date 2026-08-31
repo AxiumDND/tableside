@@ -75,28 +75,27 @@ export default function PlayerView({
 
   return (
     <div className={`player-stage${compact ? ' player-stage-compact' : ''}`}>
+      {layers.map((layer, index) => {
+        const top = index === layers.length - 1
+        const fadeIn = top && !clearing && (index > 0 || Boolean(layer.fromBlack))
+        const fadeOut = top && clearing
+        return (
+          <div
+            key={layer.id}
+            className={`player-layer${fadeIn ? ' player-fade-in' : ''}${fadeOut ? ' player-fade-out' : ''}`}
+          >
+            {layer.mapView ? (
+              <PlayerMapLayer src={layer.src} mapView={layer.mapView} />
+            ) : (
+              <img src={layer.src} alt="" />
+            )}
+          </div>
+        )
+      })}
       {state.crawl ? <OpeningCrawl crawl={state.crawl} /> : null}
       {state.legend ? <OpeningLegend legend={state.legend} /> : null}
       {state.gallery ? <OpeningGallery gallery={state.gallery} /> : null}
       {state.video ? <OpeningVideo video={state.video} /> : null}
-      {!state.crawl && !state.legend && !state.gallery && !state.video &&
-        layers.map((layer, index) => {
-          const top = index === layers.length - 1
-          const fadeIn = top && !clearing && (index > 0 || Boolean(layer.fromBlack))
-          const fadeOut = top && clearing
-          return (
-            <div
-              key={layer.id}
-              className={`player-layer${fadeIn ? ' player-fade-in' : ''}${fadeOut ? ' player-fade-out' : ''}`}
-            >
-              {layer.mapView ? (
-                <PlayerMapLayer src={layer.src} mapView={layer.mapView} />
-              ) : (
-                <img src={layer.src} alt="" />
-              )}
-            </div>
-          )
-        })}
       {showInit ? (
         <div className="player-init" aria-label="Initiative order">
           <div className="player-init-round">

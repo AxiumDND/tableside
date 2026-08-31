@@ -70,8 +70,8 @@ Navigation: **← Back** in the note header, **Alt+←**, or mouse back button.
 - Wikilinks open other notes; images stay clickable for **Show to players**. A `> [!crawl]` block is an Opening crawl card — **Play** in Sci-fi sends it to the player screen.
 - Sheets with a `statblock` (Party / NPCs / Bestiary) open in sheet view with **Add to combat**.
 - Map notes (` ```map ` fence) show **Pan / Pin / Token / Fog** — extra controls open as a submenu under the selected tool. Pins stay DM-only. Tokens (Party / NPCs / Bestiary portraits) scale together; Large/Huge stay 2×/3× a Medium token. **Show to players** follows crop, fog, and tokens.
-- Night-sheet combat sections show **Add to initiative** when combatants resolve — see [CAMPAIGN.md](CAMPAIGN.md).
-
+- Night-sheet combat and treasure cards support per-block **Edit** (structured forms + lookup). Combat sections also show **Add to initiative** when combatants resolve — see [CAMPAIGN.md](CAMPAIGN.md).
+- **Help & settings → Currencies** edits coin denominations for treasure blocks.
 ## Combat panel
 
 Open with **Combat** in the header.

@@ -63,6 +63,7 @@ import {
 } from './appSettings'
 import {
   clearPlayerMedia,
+  clearPlayerOverlays,
   closePlayerWindow,
   configurePlayerOutput,
   disposePlayerWindow,
@@ -75,11 +76,13 @@ import {
   setPlayerState,
   showPlayerWindow,
   stopPlayerCrawl,
+  stopPlayerGallery,
   stopPlayerLegend,
   syncPlayerWindow,
   watchDisplays
 } from './playerOutput'
 import { parseThemeId, THEME_WINDOW_BACKGROUND } from '../shared/theme'
+import { normalizeCurrencies } from '../shared/currencies'
 import { isAllowedExternalUrl } from '../shared/externalLinks'
 import { IPC } from '../shared/ipc'
 import { APP_NAME, APP_VERSION } from '../shared/version'
@@ -335,18 +338,23 @@ function registerIpc(): void {
       logoSrc?: string | null
       endSrc?: string | null
       preface?: string | null
+      look?: string | null
     }) => {
     const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
     const body = typeof payload?.body === 'string' ? payload.body : ''
     const logoSrc = typeof payload?.logoSrc === 'string' && payload.logoSrc.trim() ? payload.logoSrc.trim() : null
     const endSrc = typeof payload?.endSrc === 'string' && payload.endSrc.trim() ? payload.endSrc.trim() : null
     const preface = payload?.preface === null ? null : typeof payload?.preface === 'string' ? payload.preface : undefined
+    const lookRaw = typeof payload?.look === 'string' ? payload.look.trim().toLowerCase() : ''
+    const look =
+      lookRaw === 'embers' || lookRaw === 'crimson' || lookRaw === 'neon' || lookRaw === 'mist'
+        ? lookRaw
+        : 'mist'
+    const prev = getPlayerState()
     return setPlayerState(
       {
-        ...getPlayerState(),
-        imageSrc: null,
-        imageTitle: title || 'Campfire chronicle',
-        mapView: null,
+        ...prev,
+        imageTitle: prev.imageSrc ? prev.imageTitle : title || 'Campfire chronicle',
         crawl: null,
         legend: {
           title: title || undefined,
@@ -354,6 +362,7 @@ function registerIpc(): void {
           logoSrc,
           endSrc,
           preface,
+          look,
           startedAt: Date.now()
         },
         gallery: null,
@@ -364,6 +373,8 @@ function registerIpc(): void {
   })
 
   ipcMain.handle(IPC.playerClear, () => clearPlayerMedia())
+
+  ipcMain.handle(IPC.playerClearOverlays, () => clearPlayerOverlays())
 
   ipcMain.handle(IPC.playerStopCrawl, () => stopPlayerCrawl())
 
@@ -398,12 +409,11 @@ function registerIpc(): void {
           : null
       const loop = payload?.loop !== false
       const showTitle = Boolean(payload?.showTitle) && Boolean(title)
+      const prev = getPlayerState()
       return setPlayerState(
         {
-          ...getPlayerState(),
-          imageSrc: null,
-          imageTitle: title || 'Gallery',
-          mapView: null,
+          ...prev,
+          imageTitle: prev.imageSrc ? prev.imageTitle : title || 'Gallery',
           crawl: null,
           legend: null,
           gallery: {
@@ -430,10 +440,7 @@ function registerIpc(): void {
     return setPlayerState({ ...getPlayerState(), gallery: { ...gallery, index: next } })
   })
 
-  ipcMain.handle(IPC.playerStopGallery, () => {
-    if (!getPlayerState().gallery) return getPlayerState()
-    return setPlayerState({ ...getPlayerState(), gallery: null, imageTitle: '' })
-  })
+  ipcMain.handle(IPC.playerStopGallery, () => stopPlayerGallery())
 
   ipcMain.handle(
     IPC.playerShowVideo,
@@ -609,6 +616,14 @@ function registerIpc(): void {
     const campaignPath = join(campaignFolder, 'campaign.json')
     const campaign = await readJson<CampaignFile>(campaignPath, {})
     await writeJson(campaignPath, { ...campaign, digitalRain: enabled === true })
+    return loadCampaign(campaignFolder)
+  })
+
+  ipcMain.handle(IPC.campaignSetCurrencies, async (_e, currencies?: unknown) => {
+    if (!campaignFolder) return null
+    const campaignPath = join(campaignFolder, 'campaign.json')
+    const campaign = await readJson<CampaignFile>(campaignPath, {})
+    await writeJson(campaignPath, { ...campaign, currencies: normalizeCurrencies(currencies) })
     return loadCampaign(campaignFolder)
   })
 

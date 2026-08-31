@@ -1,15 +1,18 @@
 import { describe, expect, it } from 'vitest'
 import {
   LEGEND_HOLD_MS,
+  LEGEND_LOOK_DEFAULT,
   LEGEND_SYNC_MS,
   legendBodyDurationMs,
   legendDurationMs,
   legendEndImageRef,
   legendLogoRef,
+  legendLook,
   legendMusicRef,
   legendMusicStartDelayMs,
   legendPlainText,
   legendPreface,
+  parseLegendLook,
   replaceNthLegendCallout,
   serializeLegendCallout
 } from './openingLegend'
@@ -25,9 +28,19 @@ describe('legendPlainText', () => {
   it('drops image embeds and field lines from the scroll body', () => {
     expect(
       legendPlainText(
-        'preface: In the reign of forgotten kings.\nmusic: Audio/Music/Crawl/Fanfare.mp3\n![[Sigil.png]]\n\nThe well runs cold.'
+        'look: embers\npreface: In the reign of forgotten kings.\nmusic: Audio/Music/Crawl/Fanfare.mp3\n![[Sigil.png]]\n\nThe well runs cold.'
       )
     ).toBe('The well runs cold.')
+  })
+})
+
+describe('legendLook', () => {
+  it('defaults to mist and reads look / style aliases', () => {
+    expect(legendLook('The well runs cold.')).toBe(LEGEND_LOOK_DEFAULT)
+    expect(legendLook('look: embers\n\nGo.')).toBe('embers')
+    expect(legendLook('style: blood\n\nGo.')).toBe('crimson')
+    expect(legendLook('atmosphere: cyberpunk\n\nGo.')).toBe('neon')
+    expect(parseLegendLook('strahd')).toBe('mist')
   })
 })
 
@@ -65,11 +78,12 @@ describe('legendEndImageRef', () => {
 })
 
 describe('legend callout rewrite', () => {
-  it('serializes title, music, end image, and body without herald or opening line', () => {
+  it('serializes look, music, end image, and body', () => {
     expect(
       serializeLegendCallout({
         title: 'The Pale Well',
         preface: null,
+        look: 'crimson',
         musicRef: 'Audio/Music/Crawl/Fanfare.mp3',
         logoRef: null,
         endImageRef: 'Art/Pale Well.webp',
@@ -78,6 +92,7 @@ describe('legend callout rewrite', () => {
     ).toBe(
       [
         '[!legend] The Pale Well',
+        'look: crimson',
         'music: Audio/Music/Crawl/Fanfare.mp3',
         'end: ![[Art/Pale Well.webp]]',
         '',
@@ -90,21 +105,22 @@ describe('legend callout rewrite', () => {
   })
 
   it('replaces the first legend block in a night sheet', () => {
-    const src = ['# Session 1', '', '> [!legend] Old', '> preface: none', '> Go.', '', '## 1. The Party', ''].join('\n')
+    const src = ['# Session 1', '', '> [!legend] Old', '> look: mist', '> Go.', '', '## 1. The Party', ''].join('\n')
     const next = replaceNthLegendCallout(src, 0, {
       title: 'New',
       preface: null,
+      look: 'embers',
       logoRef: null,
       endImageRef: null,
       musicRef: null,
       body: 'The well runs cold.'
     })
     expect(next).toContain('[!legend] New')
+    expect(next).toContain('look: embers')
     expect(next).toContain('The well runs cold.')
     expect(next).toContain('[!/legend]')
     expect(next).toContain('## 1. The Party')
     expect(next).not.toContain('[!legend] Old')
-    expect(next).not.toContain('preface:')
   })
 })
 

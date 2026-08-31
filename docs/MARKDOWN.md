@@ -48,8 +48,9 @@ Obsidian callout form:
 | TYPE | Aliases | Rendering |
 | --- | --- | --- |
 | `readaloud` | `flavor` | Read-aloud card |
-| `scene` | `beat` | Scene card on a game night sheet. Optional `![[art]]` (right-side frame), description, nested `readaloud` / `gmonly` / `combat`, optional secrets/treasure/NPCs, and **At the table** cues (place, map, checks, music, sound, leads to). Copy a whole scene block to add another beat. |
-| `combat` | `encounter`, `fight` | Combat card with **Add to initiative**. Nest inside a `scene` or place at document level. Title names the fight; body holds `**Combatants:**` plus telegraph / stat notes. |
+| `scene` | `beat` | Scene card on a game night sheet. Optional `![[art]]` (right-side frame), description, nested `readaloud` / `gmonly` / `combat` / `treasure`, optional secrets/NPCs, and **At the table** cues (place, map, checks, music, sound, leads to). Copy a whole scene block to add another beat. |
+| `combat` | `encounter`, `fight` | Combat card with **Add to initiative**. Nest inside a `scene` or place at document level. Structured **Edit**: Party on/off (default on), foe list with counts, **Add combatant…** (NPCs / Bestiary / SRD / books — missing monsters copy into `Bestiary/`). Body stores `**Combatants:**` plus optional notes. |
+| `treasure` | `loot`, `hoard` | Loot card for coin, mundane gear, and magic items. Nest inside a `scene` or at document level. Structured **Edit**: coin boxes, **Add item…** (Gear / SRD / books — missing items copy into the matching `Gear/` subfolder), mundane/magic lists. Coin abbreviations come from **Help & settings → Currencies** (default `pp · gp · sp · cp`). Prefer `[[Gear wikilinks]]`. |
 | `crawl` | `opening` | Opening crawl card. Edit title, far-off line, emblem, crawl music, and crawl on the card (writes back to the note). **Play** (Sci-fi look only) shows a starfield, an original far-off line (`preface:`; `none` skips it), a generic title emblem (or the first `![[image]]`), then a perspective prologue. Optional `music: Audio/Music/…` fades mood out on Play; the crawl track starts half a second before the emblem and runs for 1:32 (longer files fade out there), then resumes mood when that window ends, you Stop, or you Clear. Optional `end: ![[…]]` fades in a closing still when the crawl finishes. Write your own words — Tableside does not include licensed crawl text, logos, or music files. |
 | `gmonly` | `secret` | Collapsible GM-only |
 | `infobox` | — | Sheet header (often with portrait + facts table); not split like other callouts |
@@ -65,10 +66,15 @@ Prefer a fenced combat block (nestable in a scene):
 ```markdown
 [!combat] Combat 1 — the door
 **Combatants:** [[Vesper]] · [[Cultist]] ×3 · party
+
+- Telegraph:
+- Cut if running long:
 [!/combat]
 ```
 
 Aliases: `encounter`, `fight`. Skip titles that say `no combat`.
+
+Default new blocks start as `**Combatants:** party` only — add foes in **Edit** or by writing wikilinks. Do not leave `[[Monster Name]]` stubs.
 
 Legacy: a `#` or `##` heading still counts as combat if it matches `/combat|encounter|⚔/i` and does **not** match `/no combat/i`.
 
@@ -84,6 +90,22 @@ Fallback: wikilinks in the section to Party / NPCs / Bestiary notes, and bold la
 
 `party` means every note under `Party/` (roster-named notes skipped).
 
+## Treasure blocks
+
+```markdown
+[!treasure] Cache — hearth stones
+**Coin:** 2 pp · 40 gp · … sp · 5 cp
+**Mundane:**
+- [[Rope]]
+**Magic:**
+- [[Cloak of Elvenkind]] (attunement)
+**Hidden:**
+**Notes:**
+Under the hearth.
+[!/treasure]
+```
+
+Aliases: `loot`, `hoard`. Coin abbreviations follow campaign currencies. Leave **Hidden** empty when unused. Prefer Gear wikilinks so read mode can open the sheet and show a hover preview.
 ## Map notes
 
 A note with a fenced `map` block opens as a map view (image fills the center). Pins are **DM-only**. Tokens (party, NPC, and monster portraits) **show on the player screen**. Scroll to zoom, drag to pan (or use **Pan**). **Show to players** sends the image, the current crop, fog of war, and tokens — the player screen follows as you zoom, pan, paint, or move tokens.

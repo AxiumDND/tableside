@@ -13,6 +13,7 @@ export default function VideoCard({
   muted,
   videos,
   disabled,
+  editing = false,
   onChange,
   onPlay,
   onStop,
@@ -24,6 +25,7 @@ export default function VideoCard({
   muted: boolean
   videos: CampaignVideo[]
   disabled?: boolean
+  editing?: boolean
   onChange: (next: VideoFields) => void
   onPlay?: (fields: VideoFields) => void
   onStop?: () => void
@@ -72,7 +74,11 @@ export default function VideoCard({
         <div className="pointer-events-none absolute inset-y-0 left-0 w-1 rounded-l-md bg-amber" />
         <div className="absolute -top-3 left-3 flex items-center gap-1.5 bg-panel px-2">
           <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber">Video</span>
+          {!editing && titleValue.trim() ? (
+            <span className="max-w-[14rem] truncate text-[11px] font-normal italic text-muted">{titleValue}</span>
+          ) : null}
         </div>
+        {editing ? (
         <div className="space-y-3 pl-2">
           <label className="block">
             <span className="text-[10px] uppercase tracking-wider text-muted">Title</span>
@@ -130,6 +136,12 @@ export default function VideoCard({
             Mute clip audio (keep mood music)
           </label>
         </div>
+        ) : (
+          <div className="space-y-2 pl-2">
+            <p className="text-sm text-parchment">{refValue?.split(/[\\/]/).pop() ?? 'No video selected'}</p>
+            {muteValue ? <p className="text-[11px] text-muted">Muted on player</p> : null}
+          </div>
+        )}
         <div className="mt-3 flex flex-wrap items-center gap-2 pl-2">
           {videoActive ? (
             <button

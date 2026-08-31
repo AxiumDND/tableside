@@ -1,4 +1,5 @@
 import { APP_NAME } from './version'
+import type { CampaignCurrency } from './currencies'
 
 export type CombatantKind = 'pc' | 'npc' | 'monster'
 
@@ -110,6 +111,8 @@ export interface CampaignInfo {
   holoPortraits?: boolean
   /** Digital rain only: falling-code wallpaper in the dark wells. */
   digitalRain?: boolean
+  /** Coin denominations for Treasure blocks (defaults to pp/gp/sp/cp). */
+  currencies?: CampaignCurrency[]
   media: MediaItem[]
   sessions: SessionFile[]
   party: Character[]
@@ -176,8 +179,13 @@ export interface PlayerCrawl {
   stoppingAt?: number
 }
 
-/** Parchment legend scroll — same payload shape as crawl. */
-export type PlayerLegend = PlayerCrawl
+/** Campfire chronicle look: mist, embers, crimson (vampire), neon (cyber/sci-fi). */
+export type LegendLookId = 'mist' | 'embers' | 'crimson' | 'neon'
+
+/** Parchment legend scroll — crawl payload plus atmosphere look. */
+export interface PlayerLegend extends PlayerCrawl {
+  look?: LegendLookId
+}
 
 export interface PlayerGallerySlide {
   src: string
@@ -195,6 +203,8 @@ export interface PlayerGallery {
   loop?: boolean
   /** Show title caption on the player screen. Default false. */
   showTitle?: boolean
+  /** Set when the DM stops early — player view fades out, then clears. */
+  stoppingAt?: number
 }
 
 export interface PlayerVideo {

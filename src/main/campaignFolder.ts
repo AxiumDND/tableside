@@ -10,6 +10,7 @@ import type {
   SessionFile
 } from '../shared/types'
 import { emptyCombat } from '../shared/types'
+import { normalizeCurrencies, type CampaignCurrency } from '../shared/currencies'
 import { IMAGE_EXT } from '../shared/imageExt'
 import {
   STANDARD_LAYOUT,
@@ -206,6 +207,7 @@ export type CampaignFile = {
   theme?: string
   holoPortraits?: boolean
   digitalRain?: boolean
+  currencies?: CampaignCurrency[]
 }
 
 export async function seedNewCampaignFiles(
@@ -401,6 +403,7 @@ export async function loadCampaign(folder: string): Promise<CampaignInfo> {
     theme,
     holoPortraits: holoPortraitsEnabled(theme, campaign.holoPortraits),
     digitalRain: digitalRainEnabled(theme, campaign.digitalRain),
+    currencies: normalizeCurrencies(campaign.currencies),
     media,
     sessions: await listSessions(await findChildDir(folder, isSessionsFolderName, 'Sessions')),
     party: await listJsonCharacters(await findChildDir(folder, isPartyFolderName, 'Party')),

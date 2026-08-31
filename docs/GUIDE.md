@@ -8,7 +8,7 @@ Deeper reference: [TABLE.md](TABLE.md) (every control), [CAMPAIGN.md](CAMPAIGN.m
 
 ## Install
 
-1. Download **[Tableside-Setup-1.6.9.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
+1. Download **[Tableside-Setup-1.7.0.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
 2. Run it. Per-user install — Start Menu + desktop shortcut. No admin.
 3. If Windows says **Windows protected your PC**, click **More info**, then **Run anyway**. The installer is not code-signed. That is expected.
 4. Open **Tableside**.
@@ -81,10 +81,14 @@ Prep on a **game night sheet** (right-click **Sessions/** → **New game night s
 [!scene] The door
 …
 [!combat] Combat 1 — the door
-**Combatants:** [[Vesper]] · [[Cultist]] ×3 · party
+**Combatants:** [[Cultist]] ×3 · party
 [!/combat]
 [!/scene]
 ```
+
+Include `party` unless PCs are not in the fight. Prefer real Bestiary / NPC stems. On the card, **Edit** opens a structured roster: Party toggle, foe counts, and **Add combatant…** (NPCs, Bestiary, SRD/books — missing monsters land in `Bestiary/`).
+
+Treasure in a scene uses `[!treasure]` — **Edit** for coin boxes and **Add item…** (Gear / SRD / books). Currencies live under **Help & settings → Currencies**.
 
 At the table:
 

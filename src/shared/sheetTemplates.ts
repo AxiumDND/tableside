@@ -255,7 +255,7 @@ const NIGHTSHEET = `<!--
   {{party}} is replaced with wikilinks to every Party/ sheet.
   {{crawl}} is replaced on Sci-fi campaigns with an Opening crawl sample (Play on the player screen).
   {{legend}} is replaced on Classic, Light, and Vampire campaigns with an Opening legend sample.
-  Scene blocks: [!scene] Title … [!/scene] — art, what could happen, nested [!readaloud] / [!gmonly] / [!combat], optional NPCs, secrets, treasure, and table cues.
+  Scene blocks: [!scene] Title … [!/scene] — art, what could happen, nested [!readaloud] / [!gmonly] / [!combat] / [!treasure], optional secrets/NPCs, and table cues.
   Party roster: [!party] … [!/party] wraps PC links and the Focus tonight note.
   Copy a scene block to add another beat. Use // lines for notes that stay in the editor only.
   Combat blocks: [!combat] Title … [!/combat] (nest in a scene or at document level). Legacy ## Combat / Encounter / ⚔️ headings still work.
@@ -341,20 +341,20 @@ Hidden truth, rigged outcome, or NPC tell they must not hear yet.
 - 
 - 
 
-**Treasure in this scene** (optional — delete if none):
-- Coin / mundane:
-- Magic (attunement?):
+[!treasure] Cache — name the find
+**Coin:** … pp · … gp · … sp · … cp
+**Mundane:**
+**Magic:**
+**Hidden:**
+**Notes:**
+[!/treasure]
 
 **NPCs in this scene** (optional — delete if none):
 - [[NPC Name]] — want / will say / will not say
 - Voice:
 
 [!combat] Combat 1 — name the encounter
-**Combatants:** [[Monster Name]] · party
-
-| | |
-|---|---|
-| **Monster Name** | AC · HP · key attacks |
+**Combatants:** party
 
 - Telegraph:
 - Target / quarry:

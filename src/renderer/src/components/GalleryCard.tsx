@@ -25,6 +25,7 @@ export default function GalleryCard({
   images,
   imageUrls,
   disabled,
+  editing = false,
   onChange,
   onPlay,
   onStop,
@@ -42,6 +43,7 @@ export default function GalleryCard({
   images: CampaignImage[]
   imageUrls: (string | null)[]
   disabled?: boolean
+  editing?: boolean
   onChange: (next: GalleryFields) => void
   onPlay?: (fields: GalleryFields) => void
   onStop?: () => void
@@ -122,7 +124,11 @@ export default function GalleryCard({
         <div className="pointer-events-none absolute inset-y-0 left-0 w-1 rounded-l-md bg-amber" />
         <div className="absolute -top-3 left-3 flex items-center gap-1.5 bg-panel px-2">
           <span className="text-[10px] font-semibold uppercase tracking-[0.22em] text-amber">Gallery</span>
+          {!editing && titleValue.trim() ? (
+            <span className="max-w-[14rem] truncate text-[11px] font-normal italic text-muted">{titleValue}</span>
+          ) : null}
         </div>
+        {editing ? (
         <div className="space-y-3 pl-2">
           <label className="block">
             <span className="text-[10px] uppercase tracking-wider text-muted">Title</span>
@@ -244,6 +250,29 @@ export default function GalleryCard({
             </select>
           </div>
         </div>
+        ) : (
+          <div className="space-y-3 pl-2">
+            <div className="flex flex-wrap gap-2">
+              {refs.map((ref, index) => (
+                <div
+                  key={`${ref}-${index}`}
+                  className="flex h-14 w-20 items-center justify-center overflow-hidden rounded border border-line bg-ink"
+                >
+                  {imageUrls[index] ? (
+                    <img src={imageUrls[index]!} alt="" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-[9px] text-muted">?</span>
+                  )}
+                </div>
+              ))}
+            </div>
+            <p className="text-[11px] text-muted">
+              {refs.length} slide{refs.length === 1 ? '' : 's'}
+              {intervalValue != null ? ` · every ${intervalValue}s` : ' · manual advance'}
+              {loopValue ? ' · loops' : ''}
+            </p>
+          </div>
+        )}
         <div className="mt-3 flex flex-wrap items-center gap-2 pl-2">
           {galleryActive ? (
             <>
