@@ -29,6 +29,7 @@ import NpcSheet from './NpcSheet'
 import { CharacterCard } from './StatBlock'
 import { createSessionNoteMarkdown } from './SessionNoteMarkdown'
 import { useOpeningSequenceCards } from '../hooks/useOpeningSequenceCards'
+import { useNoteBlockEditing } from '../hooks/useNoteBlockEditing'
 import type { FileKind } from './CampaignFiles'
 import type { ShopStockOffer } from '../../../shared/shopCatalogs'
 import {
@@ -40,15 +41,7 @@ import {
 } from '../../../shared/shopStock'
 import { applyShopStanding, type ShopStanding } from '../../../shared/shopStanding'
 import { matchStockArt } from '../../../shared/stockArt'
-import {
-  buildBlockIndex,
-  defaultBlockTemplate,
-  deleteBlockByKey,
-  insertBlockByKey,
-  insertableBlockKindsForParent,
-  replaceBlockByKey
-} from '../../../shared/blockIndex'
-import type { CalloutKind } from '../../../shared/callouts'
+import { buildBlockIndex } from '../../../shared/blockIndex'
 
 interface Heading {
   id: string
@@ -224,7 +217,6 @@ export default function SessionNotes({
   const [original, setOriginal] = useState('')
   const [character, setCharacter] = useState<Character | null>(null)
   const [editing, setEditing] = useState(false)
-  const [editingBlocks, setEditingBlocks] = useState<Set<string>>(() => new Set())
   const [addingId, setAddingId] = useState<string | null>(null)
   const [saveError, setSaveError] = useState('')
   const [confirmDiscard, setConfirmDiscard] = useState(false)
@@ -271,6 +263,13 @@ export default function SessionNotes({
   )
   const blockIndex = useMemo(() => buildBlockIndex(markdown), [markdown])
   const blockEditEnabled = kind === 'note' && !editing && !sheetChrome && !mapMode
+  const { editingBlocks, toggleBlockEdit, saveSheetBlock, insertSheetBlock, deleteSheetBlock, resetBlockEditing } =
+    useNoteBlockEditing({
+      markdownRef,
+      blockIndex,
+      currencies,
+      persistMarkdown: (next) => persistShopMarkdown(next)
+    })
 
   async function commitSave(targetPath: string, contents: string): Promise<string | null> {
     const result = await window.tabledm.saveFile(targetPath, contents)
@@ -308,7 +307,7 @@ export default function SessionNotes({
     }
     pathRef.current = path
     setEditing(false)
-    setEditingBlocks(new Set())
+    resetBlockEditing()
     setConfirmDiscard(false)
     setSaveError('')
     setShowLinks(false)
@@ -433,50 +432,6 @@ export default function SessionNotes({
     setOriginal(next)
     markdownRef.current = next
     originalRef.current = next
-  }
-
-  function toggleBlockEdit(key: string): void {
-    setEditingBlocks((prev) => {
-      const next = new Set(prev)
-      if (next.has(key)) next.delete(key)
-      else next.add(key)
-      return next
-    })
-  }
-
-  async function saveSheetBlock(key: string, replacement: string): Promise<void> {
-    const index = buildBlockIndex(markdownRef.current)
-    const next = replaceBlockByKey(markdownRef.current, index, key, replacement)
-    if (next === markdownRef.current) return
-    await persistShopMarkdown(next)
-  }
-
-  async function insertSheetBlock(key: string, position: 'above' | 'below', kind: CalloutKind): Promise<void> {
-    const keyParts = key.split(':')
-    const parentKey = keyParts.length > 2 ? keyParts.slice(0, -1).join(':') : null
-    const parentKind = parentKey ? blockIndex.get(parentKey)?.block.kind : null
-    if (!insertableBlockKindsForParent(parentKind).includes(kind)) return
-    const template = defaultBlockTemplate(kind, currencies)
-    const { markdown: next, newKey } = insertBlockByKey(
-      markdownRef.current,
-      blockIndex,
-      key,
-      position,
-      template
-    )
-    await persistShopMarkdown(next)
-    setEditingBlocks(new Set([newKey]))
-  }
-
-  async function deleteSheetBlock(key: string): Promise<void> {
-    const next = deleteBlockByKey(markdownRef.current, blockIndex, key)
-    if (next === markdownRef.current) return
-    await persistShopMarkdown(next)
-    setEditingBlocks((prev) => {
-      const nextSet = new Set(prev)
-      nextSet.delete(key)
-      return nextSet
-    })
   }
 
   async function rerollShopStock(): Promise<void> {
