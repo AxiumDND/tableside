@@ -1,17 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { isHoloPortraitPath, isStartHerePath, pathHasFolder } from '../../../shared/campaignLayout'
-import { replaceNthCrawlCallout, type CrawlCalloutFields } from '../../../shared/openingCrawl'
-import { replaceNthLegendCallout, type LegendCalloutFields } from '../../../shared/openingLegend'
-import { replaceNthGalleryCallout, type GalleryCalloutFields } from '../../../shared/playerGallery'
-import { replaceNthVideoCallout, type VideoCalloutFields } from '../../../shared/playerVideo'
 import { holoPortraitsEnabled, type ThemeId } from '../../../shared/theme'
 import type { CampaignInfo, Character, CreateNoteMapImage, PlayerMapView } from '../../../shared/types'
 import type { AudioTrack } from '../../../shared/audio'
 import {
-  campaignFileUrl,
   imageTitle,
   prepareNoteMarkdown,
-  resolveMarkdownImageSrc,
   type CampaignImage,
   type CampaignVideo
 } from '../lib/images'
@@ -34,6 +28,7 @@ import ItemSheet from './ItemSheet'
 import NpcSheet from './NpcSheet'
 import { CharacterCard } from './StatBlock'
 import { createSessionNoteMarkdown } from './SessionNoteMarkdown'
+import { useOpeningSequenceCards } from '../hooks/useOpeningSequenceCards'
 import type { FileKind } from './CampaignFiles'
 import type { ShopStockOffer } from '../../../shared/shopCatalogs'
 import {
@@ -418,132 +413,17 @@ export default function SessionNotes({
     setEditing(false)
   }
 
-  async function persistLegend(index: number, fields: LegendCalloutFields): Promise<void> {
-    if (!path) return
-    const next = replaceNthLegendCallout(markdownRef.current, index, fields)
-    if (next === markdownRef.current) return
-    await persistShopMarkdown(next)
-  }
-
-  async function playLegendCard(index: number, fields: LegendCalloutFields): Promise<void> {
-    await persistLegend(index, fields)
-    const logo = fields.logoRef ? resolveMarkdownImageSrc(fields.logoRef, path, images).url : null
-    const endImage = fields.endImageRef
-      ? resolveMarkdownImageSrc(fields.endImageRef, path, images).url
-      : null
-    onPlayLegend?.(
-      fields.title || undefined,
-      fields.body,
-      logo || null,
-      fields.preface,
-      fields.musicRef,
-      endImage || null,
-      fields.look
-    )
-  }
-
-  async function loadLegendLogo(): Promise<string | null> {
-    return loadCrawlLogo()
-  }
-
-  async function loadLegendEndImage(): Promise<string | null> {
-    return loadCrawlLogo()
-  }
-
-  async function loadLegendMusic(): Promise<string | null> {
-    return loadCrawlMusic()
-  }
-
-  async function persistGallery(index: number, fields: GalleryCalloutFields): Promise<void> {
-    if (!path) return
-    const next = replaceNthGalleryCallout(markdownRef.current, index, fields)
-    if (next === markdownRef.current) return
-    await persistShopMarkdown(next)
-  }
-
-  async function playGalleryCard(index: number, fields: GalleryCalloutFields): Promise<void> {
-    await persistGallery(index, fields)
-    const slides = fields.imageRefs
-      .map((ref) => {
-        const resolved = resolveMarkdownImageSrc(ref, path, images)
-        return resolved.url ? { src: resolved.url, label: imageTitle(ref) } : null
-      })
-      .filter((s): s is { src: string; label: string } => Boolean(s))
-    if (slides.length === 0) return
-    onPlayGallery?.(
-      fields.title || undefined,
-      slides,
-      fields.imageRefs,
-      fields.intervalSec,
-      fields.loop,
-      fields.showTitle
-    )
-  }
-
-  async function persistVideo(index: number, fields: VideoCalloutFields): Promise<void> {
-    if (!path) return
-    const next = replaceNthVideoCallout(markdownRef.current, index, fields)
-    if (next === markdownRef.current) return
-    await persistShopMarkdown(next)
-  }
-
-  async function playVideoCard(index: number, fields: VideoCalloutFields): Promise<void> {
-    await persistVideo(index, fields)
-    const ref = fields.videoRef?.trim()
-    if (!ref) return
-    onPlayVideo?.(fields.title || undefined, campaignFileUrl(ref), fields.muted, ref)
-  }
-
-  async function loadVideoFile(): Promise<string | null> {
-    const result = await window.tabledm.addFiles('Handouts')
-    if (!result?.paths?.length) return null
-    onCampaignChange?.(result.campaign)
-    return result.paths[0] ?? null
-  }
-
-  async function persistCrawl(index: number, fields: CrawlCalloutFields): Promise<void> {
-    if (!path) return
-    const next = replaceNthCrawlCallout(markdownRef.current, index, fields)
-    if (next === markdownRef.current) return
-    await persistShopMarkdown(next)
-  }
-
-  async function playCrawlCard(index: number, fields: CrawlCalloutFields): Promise<void> {
-    await persistCrawl(index, fields)
-    const logo = fields.logoRef ? resolveMarkdownImageSrc(fields.logoRef, path, images).url : null
-    const endImage = fields.endImageRef
-      ? resolveMarkdownImageSrc(fields.endImageRef, path, images).url
-      : null
-    onPlayCrawl?.(
-      fields.title || undefined,
-      fields.body,
-      logo || null,
-      fields.preface,
-      fields.musicRef,
-      endImage || null
-    )
-  }
-
-  async function loadCrawlLogo(): Promise<string | null> {
-    if (!path) return null
-    const picked = await window.tabledm.pickImageFile()
-    if (!picked) return null
-    const result = await window.tabledm.copyArtToNote(path, { kind: 'import', filePath: picked.filePath }, picked.fileName)
-    if (!result) return null
-    onCampaignChange?.(result.campaign)
-    return result.fileName
-  }
-
-  async function loadCrawlEndImage(): Promise<string | null> {
-    return loadCrawlLogo()
-  }
-
-  async function loadCrawlMusic(): Promise<string | null> {
-    const result = await window.tabledm.addFiles('Audio/Music/Crawl')
-    if (!result?.paths?.length) return null
-    onCampaignChange?.(result.campaign)
-    return result.paths[0] ?? null
-  }
+  const sequenceCards = useOpeningSequenceCards({
+    path,
+    images,
+    markdownRef,
+    persistMarkdown: (next) => persistShopMarkdown(next),
+    onCampaignChange,
+    onPlayCrawl,
+    onPlayLegend,
+    onPlayGallery,
+    onPlayVideo
+  })
 
   async function persistShopMarkdown(next: string): Promise<void> {
     if (!path) return
@@ -699,35 +579,21 @@ export default function SessionNotes({
     playerCrawl,
     onStopCrawl,
     onPlayCrawl,
-    persistCrawl,
-    playCrawlCard,
-    loadCrawlLogo,
-    loadCrawlEndImage,
-    loadCrawlMusic,
+    ...sequenceCards,
     activeLegend,
     playerLegend,
     onStopLegend,
     onPlayLegend,
-    persistLegend,
-    playLegendCard,
-    loadLegendLogo,
-    loadLegendEndImage,
-    loadLegendMusic,
     activeGallery,
     playerGallery,
     onStopGallery,
     onGalleryPrev,
     onGalleryNext,
     onPlayGallery,
-    persistGallery,
-    playGalleryCard,
     activeVideo,
     playerVideo,
     onStopVideo,
     onPlayVideo,
-    persistVideo,
-    playVideoCard,
-    loadVideoFile,
     blockEditEnabled,
     blockIndex,
     editingBlocks,
