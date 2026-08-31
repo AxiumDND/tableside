@@ -1,4 +1,5 @@
 import { mkdtempSync } from 'node:fs'
+import { createRequire } from 'node:module'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import {
@@ -9,6 +10,14 @@ import {
   type Page
 } from '@playwright/test'
 
+const require = createRequire(import.meta.url)
+
+/** Absolute path to the Electron binary from the local `electron` package. */
+function localElectronPath(): string {
+  // `require('electron')` returns the binary path when loaded from Node (not from Electron).
+  return require('electron') as string
+}
+
 let app: ElectronApplication
 let dmWindow: Page
 
@@ -16,10 +25,9 @@ test.beforeAll(async () => {
   // Isolate the profile so the run is hermetic (fresh first launch loads the
   // bundled Greystead sample) and never collides with a real install.
   const userDataDir = mkdtempSync(join(tmpdir(), 'tableside-e2e-'))
-  const electronBinary = process.platform === 'win32' ? 'electron.exe' : 'electron'
   app = await electron.launch({
     // Pin the local Electron binary so Playwright does not download another copy.
-    executablePath: join(process.cwd(), 'node_modules', 'electron', 'dist', electronBinary),
+    executablePath: localElectronPath(),
     args: ['.', `--user-data-dir=${userDataDir}`, '--no-sandbox'],
     env: {
       ...process.env,
