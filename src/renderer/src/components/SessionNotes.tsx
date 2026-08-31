@@ -30,17 +30,9 @@ import { CharacterCard } from './StatBlock'
 import { createSessionNoteMarkdown } from './SessionNoteMarkdown'
 import { useOpeningSequenceCards } from '../hooks/useOpeningSequenceCards'
 import { useNoteBlockEditing } from '../hooks/useNoteBlockEditing'
+import { useShopStock } from '../hooks/useShopStock'
 import type { FileKind } from './CampaignFiles'
-import type { ShopStockOffer } from '../../../shared/shopCatalogs'
-import {
-  applyShopInventory,
-  applyShopStock,
-  generateShopInventory,
-  looksLikeShopNote,
-  shopTypeFromMarkdown
-} from '../../../shared/shopStock'
-import { applyShopStanding, type ShopStanding } from '../../../shared/shopStanding'
-import { matchStockArt } from '../../../shared/stockArt'
+import { looksLikeShopNote } from '../../../shared/shopStock'
 import { buildBlockIndex } from '../../../shared/blockIndex'
 
 interface Heading {
@@ -270,6 +262,11 @@ export default function SessionNotes({
       currencies,
       persistMarkdown: (next) => persistShopMarkdown(next)
     })
+  const { rerollShopStock, changeShopStock, changeShopStanding } = useShopStock({
+    path,
+    markdownRef,
+    persistMarkdown: (next) => persistShopMarkdown(next)
+  })
 
   async function commitSave(targetPath: string, contents: string): Promise<string | null> {
     const result = await window.tabledm.saveFile(targetPath, contents)
@@ -432,24 +429,6 @@ export default function SessionNotes({
     setOriginal(next)
     markdownRef.current = next
     originalRef.current = next
-  }
-
-  async function rerollShopStock(): Promise<void> {
-    if (!path) return
-    const stem = (path.split('/').pop() ?? '').replace(/\.md$/i, '')
-    const type =
-      shopTypeFromMarkdown(markdownRef.current) ||
-      matchStockArt(stem, 'shop')?.id ||
-      'General Store'
-    await persistShopMarkdown(applyShopInventory(markdownRef.current, generateShopInventory(type)))
-  }
-
-  async function changeShopStock(stock: ShopStockOffer[]): Promise<void> {
-    await persistShopMarkdown(applyShopStock(markdownRef.current, stock))
-  }
-
-  async function changeShopStanding(standing: ShopStanding): Promise<void> {
-    await persistShopMarkdown(applyShopStanding(markdownRef.current, standing))
   }
 
   function jump(id: string): void {
