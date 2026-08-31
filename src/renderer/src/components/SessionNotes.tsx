@@ -31,6 +31,7 @@ import { createSessionNoteMarkdown } from './SessionNoteMarkdown'
 import { useOpeningSequenceCards } from '../hooks/useOpeningSequenceCards'
 import { useNoteBlockEditing } from '../hooks/useNoteBlockEditing'
 import { useShopStock } from '../hooks/useShopStock'
+import { useNoteAutosave } from '../hooks/useNoteAutosave'
 import type { FileKind } from './CampaignFiles'
 import { looksLikeShopNote } from '../../../shared/shopStock'
 import { buildBlockIndex } from '../../../shared/blockIndex'
@@ -268,34 +269,15 @@ export default function SessionNotes({
     persistMarkdown: (next) => persistShopMarkdown(next)
   })
 
-  async function commitSave(targetPath: string, contents: string): Promise<string | null> {
-    const result = await window.tabledm.saveFile(targetPath, contents)
-    if (!result) return null
-    onCampaignChange?.(result.campaign)
-    if (result.renamed && result.path !== targetPath) {
-      if (pathRef.current === targetPath) {
-        pathRef.current = result.path
-        onOpenNote?.(result.path)
-      }
-    }
-    return result.path
-  }
-
-  async function flushOpenNote(targetPath = pathRef.current): Promise<void> {
-    if (!targetPath || markdownRef.current === originalRef.current) return
-    try {
-      const savedPath = await commitSave(targetPath, markdownRef.current)
-      if (!savedPath) {
-        setSaveError('Could not save this file.')
-        return
-      }
-      originalRef.current = markdownRef.current
-      setOriginal(markdownRef.current)
-      setSaveError('')
-    } catch {
-      setSaveError('Could not save this file.')
-    }
-  }
+  const { commitSave, flushOpenNote } = useNoteAutosave({
+    markdownRef,
+    originalRef,
+    pathRef,
+    setOriginal,
+    setSaveError,
+    onCampaignChange,
+    onOpenNote
+  })
 
   useEffect(() => {
     const prevPath = pathRef.current
@@ -340,26 +322,6 @@ export default function SessionNotes({
   useEffect(() => {
     if (editing) editorRef.current?.focus()
   }, [editing])
-
-  useEffect(() => {
-    const onHidden = (): void => {
-      void flushOpenNote()
-    }
-    const onVis = (): void => {
-      if (document.visibilityState === 'hidden') void flushOpenNote()
-    }
-    window.addEventListener('beforeunload', onHidden)
-    document.addEventListener('visibilitychange', onVis)
-    const offClose = window.tabledm.onWillClose(async () => {
-      await flushOpenNote()
-      window.tabledm.confirmClose()
-    })
-    return () => {
-      window.removeEventListener('beforeunload', onHidden)
-      document.removeEventListener('visibilitychange', onVis)
-      offClose()
-    }
-  }, [])
 
   useEffect(() => {
     if (!editing) return
