@@ -248,6 +248,8 @@ export interface AppFolders {
   appFolder: string
   userDataFolder: string
   booksFolder: string
+  campaignFolder: string
+  convertGuidePath: string
 }
 
 export interface AppSettings {

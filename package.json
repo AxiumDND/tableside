@@ -75,6 +75,10 @@
     ],
     "extraResources": [
       {
+        "from": "docs/AI-CAMPAIGN.md",
+        "to": "AI-CAMPAIGN.md"
+      },
+      {
         "from": "examples/greystead",
         "to": "examples/greystead"
       },

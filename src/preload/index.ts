@@ -203,8 +203,9 @@ const api = {
   loadBookLibrary: (): Promise<BookLibrary> => ipcRenderer.invoke(IPC.booksLoad),
   openBooksFolder: (): Promise<string> => ipcRenderer.invoke(IPC.booksOpenFolder),
   getAppFolders: (): Promise<AppFolders> => ipcRenderer.invoke(IPC.appFolders),
-  openAppFolder: (kind: 'app' | 'userData' | 'books'): Promise<string> =>
-    ipcRenderer.invoke(IPC.appOpenFolder, kind),
+  openAppFolder: (
+    kind: 'app' | 'userData' | 'books' | 'campaign' | 'convert'
+  ): Promise<string> => ipcRenderer.invoke(IPC.appOpenFolder, kind),
   checkForUpdate: (fromHelp?: boolean): Promise<void> =>
     ipcRenderer.invoke(IPC.appCheckUpdate, fromHelp ?? false),
   startUpdate: (): Promise<void> => ipcRenderer.invoke(IPC.appStartUpdate),

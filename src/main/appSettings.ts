@@ -5,6 +5,7 @@ import { dirname, join, normalize } from 'node:path'
 import type { AppSettings } from '../shared/types'
 import { emptySettings } from '../shared/types'
 import { ensureBooksHome } from './bookLibrary'
+import { ensureConvertGuide, revealConvertGuide } from './convertGuide'
 
 export type AppSettingsDeps = {
   onThemeChanged?: (theme?: string | null) => void
@@ -43,15 +44,20 @@ export async function appFolders(): Promise<{
   appFolder: string
   userDataFolder: string
   booksFolder: string
+  campaignFolder: string
+  convertGuidePath: string
 }> {
   return {
     appFolder: appInstallFolder(),
     userDataFolder: app.getPath('userData'),
-    booksFolder: await ensureBooksHome()
+    booksFolder: await ensureBooksHome(),
+    campaignFolder: settings.campaignFolder ?? '',
+    convertGuidePath: await ensureConvertGuide()
   }
 }
 
 export async function openAppFolder(kind: string): Promise<string> {
+  if (kind === 'convert') return revealConvertGuide()
   const folders = await appFolders()
   const folder =
     kind === 'userData'
@@ -60,7 +66,9 @@ export async function openAppFolder(kind: string): Promise<string> {
         ? folders.appFolder
         : kind === 'books'
           ? folders.booksFolder
-          : null
+          : kind === 'campaign'
+            ? folders.campaignFolder
+            : null
   if (!folder) return ''
   await shell.openPath(folder)
   return folder

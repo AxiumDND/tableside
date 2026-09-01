@@ -255,6 +255,18 @@ export default function HelpPanel({
             This is not a VTT. There is no account and no internet at the table. Notes are ordinary Markdown on disk
             (Obsidian-friendly).
           </p>
+          <Sub>Convert a vault</Sub>
+          <p>
+            Hand <Code>AI-CAMPAIGN.md</Code> to an agent converting Obsidian notes or a folder of Markdown into a
+            Tableside campaign. Help copies the current spec next to your app settings.
+          </p>
+          {folders?.convertGuidePath ? (
+            <FolderOpen
+              label="Conversion spec (open this folder, then drop the file into ChatGPT, Cursor, or Claude):"
+              path={folders.convertGuidePath}
+              onOpen={() => void window.tabledm.openAppFolder('convert')}
+            />
+          ) : null}
         </Section>
 
         <Section id="updates" title="Updates" open={open} onToggle={toggle}>
@@ -425,6 +437,20 @@ export default function HelpPanel({
           </p>
           {folders ? (
             <>
+              {folders.campaignFolder ? (
+                <FolderOpen
+                  label="This campaign (notes, art, and audio on disk):"
+                  path={folders.campaignFolder}
+                  onOpen={() => void window.tabledm.openAppFolder('campaign')}
+                />
+              ) : (
+                <p className="text-muted">Open a campaign to see its folder here.</p>
+              )}
+              <FolderOpen
+                label="Conversion spec for an AI (AI-CAMPAIGN.md):"
+                path={folders.convertGuidePath}
+                onOpen={() => void window.tabledm.openAppFolder('convert')}
+              />
               <FolderOpen
                 label="This copy of Tableside:"
                 path={folders.appFolder}

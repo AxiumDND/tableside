@@ -91,6 +91,7 @@ import { type CampaignLibraryFolder } from '../shared/campaignLayout'
 import { sanitizeFileName, type SheetTemplateKind } from '../shared/sheetTemplates'
 import { parseSystemId } from '../shared/systemPack'
 import { ensureBooksHome, loadBookLibrary, openBooksFolder } from './bookLibrary'
+import { ensureConvertGuide } from './convertGuide'
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -743,6 +744,7 @@ app.whenReady().then(async () => {
   await migrateLegacyUserData()
   await removeDroppedAppSamples()
   await ensureBooksHome()
+  await ensureConvertGuide()
 
   registerMediaProtocol({ getCampaignFolder: () => campaignFolder, safeJoin })
 
