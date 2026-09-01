@@ -64,9 +64,10 @@ PDFs open for you only. They are not sent to the TV. Use an image under `Maps/Ar
 1. Right-click **Maps/** → **New map…**. Pick an existing campaign image or **Load image…** (copied into `Maps/Art/` and named like the note).
 2. The map fills the center. Tools: **Pan**, **Pin**, **Token**, **Fog**. Extra options sit under the selected tool.
 3. On **Pan**, click **Scale map**, then two points that are 5 feet apart (or type another length). Tokens snap to that 5 ft grid.
-4. Scroll to zoom. Drag to pan.
-5. **Pins** are DM-only. **Tokens** (Party / NPCs / Bestiary portraits) and **fog** show on the TV.
-6. **Show to players**. The TV follows as you zoom, pan, paint fog, or move tokens.
+4. **Line**, **Cone**, and **Round** drop a feet-sized template on that grid (default 30 ft). Click origin and drag to aim; **Round** is a radius at the click. Esc clears. Templates stay on the DM map only.
+5. Scroll to zoom. Drag to pan.
+6. **Pins** are DM-only. **Tokens** (Party / NPCs / Bestiary portraits) and **fog** show on the TV.
+7. **Show to players**. The TV follows as you zoom, pan, paint fog, or move tokens.
 
 Large and Huge tokens stay 2× / 3× a Medium token.
 

@@ -2,6 +2,8 @@ import { type MapPin } from '../lib/mapNote'
 import { BRUSH_MAX, BRUSH_MIN } from '../lib/mapFog'
 import { MAX_ZOOM, MIN_ZOOM } from '../lib/mapCamera'
 import { toolButton, type MapTool, type PinAction, type PickerTab, type TokenPick } from './MapViewHelpers'
+import type { MeasureKind } from '../lib/mapMeasure'
+import { MEASURE_FEET_MAX, MEASURE_FEET_MIN } from '../lib/mapMeasure'
 
 export function MapPrimaryToolbar({
   primary,
@@ -33,19 +35,27 @@ export function MapPanToolbar({
   scaleArmed,
   scaleFeet,
   scaleHint,
+  measureKind,
+  measureFeet,
   onZoomChange,
   onFit,
   onToggleScale,
-  onScaleFeetChange
+  onScaleFeetChange,
+  onMeasureKind,
+  onMeasureFeetChange
 }: {
   zoom: number
   scaleArmed: boolean
   scaleFeet: number
   scaleHint: string
+  measureKind: MeasureKind | null
+  measureFeet: number
   onZoomChange: (zoom: number) => void
   onFit: () => void
   onToggleScale: () => void
   onScaleFeetChange: (feet: number) => void
+  onMeasureKind: (kind: MeasureKind) => void
+  onMeasureFeetChange: (feet: number) => void
 }) {
   return (
     <div className="flex flex-wrap items-center gap-1.5 border-b border-line bg-panel px-3 py-1.5 text-[11px] text-muted">
@@ -66,6 +76,43 @@ export function MapPanToolbar({
           step={5}
           value={scaleFeet}
           onChange={(event) => onScaleFeetChange(Number(event.target.value))}
+          className="h-6 w-12 rounded border border-line bg-ink px-1 text-parchment tabular-nums"
+        />
+        ft
+      </label>
+      <span className="text-line">·</span>
+      <button
+        type="button"
+        title="5 ft wide line"
+        onClick={() => onMeasureKind('line')}
+        className={toolButton(measureKind === 'line')}
+      >
+        Line
+      </button>
+      <button
+        type="button"
+        title="90° cone"
+        onClick={() => onMeasureKind('cone')}
+        className={toolButton(measureKind === 'cone')}
+      >
+        Cone
+      </button>
+      <button
+        type="button"
+        title="Radius circle"
+        onClick={() => onMeasureKind('round')}
+        className={toolButton(measureKind === 'round')}
+      >
+        Round
+      </button>
+      <label className="flex items-center gap-1" title="Template length or radius">
+        <input
+          type="number"
+          min={MEASURE_FEET_MIN}
+          max={MEASURE_FEET_MAX}
+          step={5}
+          value={measureFeet}
+          onChange={(event) => onMeasureFeetChange(Number(event.target.value))}
           className="h-6 w-12 rounded border border-line bg-ink px-1 text-parchment tabular-nums"
         />
         ft

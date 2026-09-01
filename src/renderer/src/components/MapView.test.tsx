@@ -56,7 +56,24 @@ describe('MapView', () => {
     expect(screen.getByRole('button', { name: 'Fog' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Fit' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Scale map' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Line' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Cone' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Round' })).toBeTruthy()
     expect(screen.getByText(/Scale map sets 5 ft squares/)).toBeTruthy()
+  })
+
+  it('arms Round and asks for a center click in feet', async () => {
+    const user = userEvent.setup()
+    renderMap()
+    await user.click(screen.getByRole('button', { name: 'Round' }))
+    expect(screen.getByText(/Click the center \(30 ft radius\)/)).toBeTruthy()
+  })
+
+  it('arms Cone with a drag-to-aim hint', async () => {
+    const user = userEvent.setup()
+    renderMap()
+    await user.click(screen.getByRole('button', { name: 'Cone' }))
+    expect(screen.getByText(/Click origin, drag to aim \(30 ft cone\)/)).toBeTruthy()
   })
 
   it('arms Scale map and asks for two clicks', async () => {
