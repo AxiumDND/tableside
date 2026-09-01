@@ -215,4 +215,41 @@ describe('SessionNoteMarkdown', () => {
     expect(screen.getByText('Behind the mill')).toBeTruthy()
     expect(screen.getByText(/well is a lie/)).toBeTruthy()
   })
+
+  it('renders a party roster with nested note and wiki link', async () => {
+    const user = userEvent.setup()
+    const md = [
+      '[!party] The table',
+      '- [[Ash]]',
+      '',
+      '[!note] Focus tonight',
+      'The well.',
+      '[!/note]',
+      '[!/party]',
+      ''
+    ].join('\n')
+    const { onOpenNote } = renderNote(md)
+    expect(screen.getByText('Party')).toBeTruthy()
+    expect(screen.getByText('The table')).toBeTruthy()
+    expect(screen.getByText('Focus tonight')).toBeTruthy()
+    expect(screen.getByText(/The well/)).toBeTruthy()
+    const link = screen.getByRole('button', { name: 'Ash' })
+    await user.click(link)
+    expect(onOpenNote).toHaveBeenCalledWith('NPCs/Ash.md')
+  })
+
+  it('renders a scene card and leaves leading art out of the body', () => {
+    const md = [
+      '[!scene] Opening — Hire at the Grey Mare',
+      '![[The Grey Mare.webp]]',
+      '',
+      'Rain on the shutters.',
+      '[!/scene]',
+      ''
+    ].join('\n')
+    renderNote(md)
+    expect(screen.getByText('Scene')).toBeTruthy()
+    expect(screen.getByText('Opening — Hire at the Grey Mare')).toBeTruthy()
+    expect(screen.getByText(/Rain on the shutters/)).toBeTruthy()
+  })
 })

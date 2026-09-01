@@ -31,7 +31,6 @@ import {
   childText,
   encounterSectionId,
   headingId,
-  splitLeadingSceneArt,
   splitMarkdownSections,
   splitCalloutBlocks,
   isCombatHeading,
@@ -40,9 +39,6 @@ import {
 } from '../lib/notes'
 import CalloutCard from './CalloutCard'
 import NoteWikiLink from './NoteWikiLink'
-import PartyCard from './PartyCard'
-import SceneCard from './SceneCard'
-import SheetArtFrame from './SheetArtFrame'
 import SheetBlockShell, { BLOCK_KIND_LABELS } from './SheetBlockShell'
 import BlockMarkdownEditor from './BlockMarkdownEditor'
 import LinksCard, { type BlockNavEntry } from './LinksCard'
@@ -55,7 +51,9 @@ import {
 } from './sessionNoteOpening'
 import {
   renderGmOnlyBlock as renderGmOnlyCalloutBlock,
+  renderPartyBlock as renderPartyCalloutBlock,
   renderReadAloudBlock as renderReadAloudCalloutBlock,
+  renderSceneBlock as renderSceneCalloutBlock,
   renderTreasureBlock as renderTreasureCalloutBlock
 } from './sessionNoteCards'
 
@@ -400,28 +398,20 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
     sectionIndex: number,
     blockPath: number[]
   ): ReactNode {
-    const read = (
-      <PartyCard title={part.title}>
-        {part.markdown.trim() && !blockEditing
-          ? renderSectionedMarkdown(
-              part.markdown,
-              `${key}-body`,
-              part.title?.trim() || undefined,
-              crawlBase,
-              legendBase,
-              galleryBase,
-              videoBase,
-              sectionIndex,
-              blockPath
-            )
-          : null}
-      </PartyCard>
-    )
-    return (
-      <div key={key}>
-        {wrapSheetBlock(blockKey, part, 'party', read)}
-      </div>
-    )
+    return renderPartyCalloutBlock({
+      part,
+      key,
+      blockKey,
+      blockEditing,
+      wrapSheetBlock,
+      crawlBase,
+      legendBase,
+      galleryBase,
+      videoBase,
+      sectionIndex,
+      blockPath,
+      renderSectionedMarkdown
+    })
   }
 
   function renderSceneBlock(
@@ -436,47 +426,24 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
     sectionIndex: number,
     blockPath: number[]
   ): ReactNode {
-    const { artSrc, artLabel, body } = splitLeadingSceneArt(part.markdown)
-    const resolved = artSrc ? resolveMarkdownImageSrc(artSrc, path, images) : { url: '', path: null }
-    const showArt = Boolean(artSrc || artLabel)
-    const read = (
-      <SceneCard
-        title={part.title}
-        art={
-          showArt ? (
-            <SheetArtFrame
-              title={part.title?.trim() || artLabel || 'Scene'}
-              imageSrc={resolved.path ? resolved.url : null}
-              selectValue={resolved.path}
-              selectedImage={selectedImage}
-              images={images}
-              aspect="portrait"
-              onSelectImage={onSelectImage}
-              onSrdError={() => undefined}
-            />
-          ) : undefined
-        }
-      >
-        {body.trim() && !blockEditing
-          ? renderSectionedMarkdown(
-              body,
-              `${key}-body`,
-              part.title?.trim() || undefined,
-              crawlBase,
-              legendBase,
-              galleryBase,
-              videoBase,
-              sectionIndex,
-              blockPath
-            )
-          : null}
-      </SceneCard>
-    )
-    return (
-      <div key={key}>
-        {wrapSheetBlock(blockKey, part, 'scene', read)}
-      </div>
-    )
+    return renderSceneCalloutBlock({
+      part,
+      key,
+      blockKey,
+      blockEditing,
+      wrapSheetBlock,
+      path,
+      images,
+      selectedImage,
+      onSelectImage,
+      crawlBase,
+      legendBase,
+      galleryBase,
+      videoBase,
+      sectionIndex,
+      blockPath,
+      renderSectionedMarkdown
+    })
   }
 
   function renderCrawlBlock(
