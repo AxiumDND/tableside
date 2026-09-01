@@ -549,8 +549,11 @@ export default function HelpPanel({
               </>,
               <>
                 Map notes (<Code>```map</Code> fence) show <Action>Pan</Action> / <Action>Pin</Action> /{' '}
-                <Action>Token</Action> / <Action>Fog</Action>. Extra controls open as a submenu. Tokens (Party / NPCs /
-                Bestiary portraits) scale together; Large/Huge stay 2×/3× a Medium token.
+                <Action>Token</Action> / <Action>Fog</Action>. Extra controls open as a submenu. On Pan,{' '}
+                <Action>Scale map</Action> — click two points that are 5 ft (or another length) apart. Tokens snap to
+                that grid. <Action>Line</Action> / <Action>Cone</Action> / <Action>Round</Action> drop a feet-sized
+                template (click origin, drag to aim; Round is a radius). Esc clears. Templates are DM-only.
+                Large/Huge stay 2×/3× a Medium token.
               </>
             ]}
           />

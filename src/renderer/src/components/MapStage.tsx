@@ -37,6 +37,7 @@ export default function MapStage({
   cursor,
   viewportRef,
   contentRef,
+  onNaturalSize,
   onPointerDown,
   onPointerMove,
   onPointerUp,
@@ -54,6 +55,7 @@ export default function MapStage({
   cursor?: string
   viewportRef?: RefObject<HTMLDivElement | null>
   contentRef?: RefObject<HTMLDivElement | null>
+  onNaturalSize?: (size: { w: number; h: number } | null) => void
   onPointerDown?: (event: ReactPointerEvent<HTMLDivElement>) => void
   onPointerMove?: (event: ReactPointerEvent<HTMLDivElement>) => void
   onPointerUp?: (event: ReactPointerEvent<HTMLDivElement>) => void
@@ -61,6 +63,8 @@ export default function MapStage({
 }) {
   const localViewport = useRef<HTMLDivElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
+  const onNaturalSizeRef = useRef(onNaturalSize)
+  onNaturalSizeRef.current = onNaturalSize
   const [natural, setNatural] = useState<{ w: number; h: number } | null>(null)
   const [view, setView] = useState<{ w: number; h: number } | null>(null)
 
@@ -79,8 +83,14 @@ export default function MapStage({
   }, [])
 
   useEffect(() => {
+    setNatural(null)
+    onNaturalSizeRef.current?.(null)
     const image = new Image()
-    image.onload = () => setNatural({ w: image.naturalWidth, h: image.naturalHeight })
+    image.onload = () => {
+      const size = { w: image.naturalWidth, h: image.naturalHeight }
+      setNatural(size)
+      onNaturalSizeRef.current?.(size)
+    }
     image.src = src
   }, [src])
 

@@ -7,6 +7,13 @@ import { useMapLiveView } from '../hooks/useMapLiveView'
 import { useCreatureSpaces } from '../hooks/useCreatureSpaces'
 import { useMapTokens, type MapTokens } from '../hooks/useMapTokens'
 import { useMapPins, type MapPins } from '../hooks/useMapPins'
+import { cellFromSpan, clampScaleFeet, FEET_PER_SQUARE, imageAspect, snapTokenPoint } from '../lib/mapGrid'
+import {
+  clampMeasureFeet,
+  MEASURE_FEET_DEFAULT,
+  measureShape,
+  type MeasureKind
+} from '../lib/mapMeasure'
 import {
   TOKEN_SCALE_DEFAULT,
   extractMapNote,
@@ -16,9 +23,12 @@ import {
   replaceMapFence,
   tokenDiameter,
   toPlayerMapToken,
+  type CreatureSpace,
   type MapNoteData
 } from '../lib/mapNote'
 import { type CampaignNote } from '../lib/notes'
+import MapGridOverlay from './MapGridOverlay'
+import MapMeasureOverlay from './MapMeasureOverlay'
 import MapStage, { imagePointFromElement } from './MapStage'
 import MapTokenMark from './MapTokenMark'
 import {
@@ -60,7 +70,19 @@ export default function MapView({
   const contentRef = useRef<HTMLDivElement | null>(null)
   const [tool, setTool] = useState<MapTool>('pan')
   const [dragPos, setDragPos] = useState<{ id: string; x: number; y: number } | null>(null)
+  const [scaleArmed, setScaleArmed] = useState(false)
+  const [scaleFeet, setScaleFeet] = useState(FEET_PER_SQUARE)
+  const [scaleFirst, setScaleFirst] = useState<{ x: number; y: number } | null>(null)
+  const [scaleHover, setScaleHover] = useState<{ x: number; y: number } | null>(null)
+  const [imageSize, setImageSize] = useState<{ w: number; h: number } | null>(null)
+  const [measureKind, setMeasureKind] = useState<MeasureKind | null>(null)
+  const [measureFeet, setMeasureFeet] = useState(MEASURE_FEET_DEFAULT)
+  const [measureOrigin, setMeasureOrigin] = useState<{ x: number; y: number } | null>(null)
+  const [measureAim, setMeasureAim] = useState<{ x: number; y: number } | null>(null)
   const toolRef = useRef(tool)
+  const scaleArmedRef = useRef(scaleArmed)
+  const measureKindRef = useRef(measureKind)
+  const measureDrag = useRef(false)
   const pinDrag = useRef<{ id: string; moved: boolean } | null>(null)
   const tokenDrag = useRef<{ id: string; moved: boolean } | null>(null)
   const dragPosRef = useRef<{ id: string; x: number; y: number } | null>(null)
@@ -71,6 +93,8 @@ export default function MapView({
   const catalogRef = useRef(catalog)
 
   toolRef.current = tool
+  scaleArmedRef.current = scaleArmed
+  measureKindRef.current = measureKind
   onChangeRef.current = onChange
   dataRef.current = data
   catalogRef.current = catalog
@@ -98,12 +122,16 @@ export default function MapView({
         fogApiRef.current?.bumpBrush(event.deltaY < 0 ? 1 : -1)
         return true
       }
-      if (toolRef.current === 'token' || (dataRef.current?.tokens.length ?? 0) > 0) {
+      if (scaleArmedRef.current) {
         const current = dataRef.current
         const tokens = tokensApiRef.current
         if (!current || !tokens) return true
         const base = tokens.scaleDraftRef.current ?? current.tokenScale ?? TOKEN_SCALE_DEFAULT
-        tokens.applyScaleNow(base + (event.deltaY < 0 ? 0.005 : -0.005))
+        tokens.applyScaleNow(base + (event.deltaY < 0 ? 0.002 : -0.002))
+        return true
+      }
+      if (measureKindRef.current) {
+        setMeasureFeet((feet) => clampMeasureFeet(feet + (event.deltaY < 0 ? 5 : -5)))
         return true
       }
       return false
@@ -179,12 +207,35 @@ export default function MapView({
     fog.reset(data)
     resetCamera()
     setTool('pan')
+    setScaleArmed(false)
+    setScaleFirst(null)
+    setScaleHover(null)
+    setMeasureKind(null)
+    setMeasureOrigin(null)
+    setMeasureAim(null)
+    measureDrag.current = false
     tokensApiRef.current?.reset()
     pinsApiRef.current?.reset()
     // Re-seed fog and reset the view only when the open map (path/image) changes.
     // Including data.fog / data.fogSize here would wipe fog mid-paint on every edit.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path, data?.image])
+
+  useEffect(() => {
+    if (!scaleArmed && !measureKind) return
+    function onKey(event: KeyboardEvent): void {
+      if (event.key !== 'Escape') return
+      setScaleArmed(false)
+      setScaleFirst(null)
+      setScaleHover(null)
+      setMeasureKind(null)
+      setMeasureOrigin(null)
+      setMeasureAim(null)
+      measureDrag.current = false
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [scaleArmed, measureKind])
 
   useEffect(() => {
     if (tool !== 'fog' && tool !== 'reveal' && tool !== 'token') fogApiRef.current?.setBrushPos(null)
@@ -216,7 +267,44 @@ export default function MapView({
     return imagePointFromElement(contentRef.current, event.clientX, event.clientY)
   }
 
+  function snapPoint(point: { x: number; y: number }, space: CreatureSpace): { x: number; y: number } {
+    return snapTokenPoint(point.x, point.y, tokens.tokenScale, space, imageAspect(imageSize))
+  }
+
+  function cancelScale(): void {
+    setScaleArmed(false)
+    setScaleFirst(null)
+    setScaleHover(null)
+  }
+
+  function cancelMeasure(): void {
+    measureDrag.current = false
+    setMeasureKind(null)
+    setMeasureOrigin(null)
+    setMeasureAim(null)
+  }
+
+  function selectMeasure(kind: MeasureKind): void {
+    cancelScale()
+    if (measureKind === kind) {
+      cancelMeasure()
+      return
+    }
+    setMeasureKind(kind)
+    setMeasureOrigin(null)
+    setMeasureAim(null)
+  }
+
+  function applyScaleFromSpan(a: { x: number; y: number }, b: { x: number; y: number }): void {
+    tokens.applyScaleNow(cellFromSpan(a, b, clampScaleFeet(scaleFeet), imageAspect(imageSize)))
+    cancelScale()
+  }
+
   function selectPrimary(next: 'pan' | 'pin' | 'token' | 'fog'): void {
+    if (next !== 'pan') {
+      cancelScale()
+      cancelMeasure()
+    }
     if (next !== 'token') tokens.setPendingToken(null)
     if (next !== 'pin') pins.setDraft(null)
     if (next === 'pin') {
@@ -237,6 +325,28 @@ export default function MapView({
   }
 
   function onBoardPointerDown(event: ReactPointerEvent<HTMLDivElement>): void {
+    if (scaleArmed && event.button === 0 && !event.altKey) {
+      event.preventDefault()
+      const point = pointFromEvent(event)
+      if (!point) return
+      if (!scaleFirst) {
+        setScaleFirst(point)
+        setScaleHover(point)
+        return
+      }
+      applyScaleFromSpan(scaleFirst, point)
+      return
+    }
+    if (measureKind && event.button === 0 && !event.altKey) {
+      event.preventDefault()
+      const point = pointFromEvent(event)
+      if (!point) return
+      measureDrag.current = true
+      setMeasureOrigin(point)
+      setMeasureAim(point)
+      event.currentTarget.setPointerCapture(event.pointerId)
+      return
+    }
     if (event.button === 1 || event.altKey || (tool === 'pan' && event.button === 0)) {
       event.preventDefault()
       beginPan(event.clientX, event.clientY)
@@ -255,8 +365,13 @@ export default function MapView({
     }
     if (tool === 'token' && event.button === 0) {
       const point = pointFromEvent(event)
+      if (point && tokens.pendingToken) {
+        const snapped = snapPoint(point, tokens.pendingToken.space)
+        fog.setBrushPos(snapped)
+        tokens.addToken(snapped)
+        return
+      }
       if (point) fog.setBrushPos(point)
-      if (point && tokens.pendingToken) tokens.addToken(point)
       return
     }
     if (tool === 'pin' && pins.pinAction === 'add' && event.button === 0) {
@@ -268,9 +383,21 @@ export default function MapView({
   }
 
   function onBoardPointerMove(event: ReactPointerEvent<HTMLDivElement>): void {
+    if (scaleArmed) {
+      const hover = pointFromEvent(event)
+      if (hover) setScaleHover(hover)
+    }
+    if (measureKind && measureOrigin && measureDrag.current) {
+      const hover = pointFromEvent(event)
+      if (hover) setMeasureAim(hover)
+    }
     if (tool === 'fog' || tool === 'reveal' || (tool === 'token' && tokens.pendingToken)) {
       const hover = pointFromEvent(event)
-      if (hover) fog.setBrushPos(hover)
+      if (hover) {
+        fog.setBrushPos(
+          tool === 'token' && tokens.pendingToken ? snapPoint(hover, tokens.pendingToken.space) : hover
+        )
+      }
     }
     if (panRef.current) {
       movePan(event.clientX, event.clientY)
@@ -282,6 +409,7 @@ export default function MapView({
   }
 
   function onBoardPointerUp(): void {
+    measureDrag.current = false
     endPan()
     if (fog.paintRef.current !== null) {
       fog.paintRef.current = null
@@ -291,6 +419,7 @@ export default function MapView({
 
   function onBoardPointerLeave(): void {
     if (fog.paintRef.current === null) fog.setBrushPos(null)
+    if (!scaleArmed) setScaleHover(null)
     onBoardPointerUp()
   }
 
@@ -300,17 +429,31 @@ export default function MapView({
   const canAddPin = !pinsLocked || pinCount === 0
   const canEditPins = !pinsLocked && pinCount > 0
   const tokensLocked = tool === 'fog' || tool === 'reveal' || tool === 'pin'
+  const placingOnBoard = scaleArmed || Boolean(measureKind)
+  const scaleHint = scaleArmed
+    ? scaleFirst
+      ? `Click the second point (${clampScaleFeet(scaleFeet)} ft)`
+      : `Click two points that are ${clampScaleFeet(scaleFeet)} ft apart`
+    : measureKind === 'round'
+      ? `Click the center (${clampMeasureFeet(measureFeet)} ft radius)`
+      : measureKind === 'cone'
+        ? `Click origin, drag to aim (${clampMeasureFeet(measureFeet)} ft cone)`
+        : measureKind === 'line'
+          ? `Click origin, drag to aim (${clampMeasureFeet(measureFeet)} ft line)`
+          : 'Drag to pan · Scale map sets 5 ft squares'
   const cursor =
     panRef.current
       ? 'grabbing'
-      : tool === 'pan'
-        ? 'grab'
-        : (tool === 'pin' && (pins.pinAction === 'add' || pins.pinAction === 'delete')) ||
-            tool === 'fog' ||
-            tool === 'reveal' ||
-            (tool === 'token' && tokens.pendingToken)
-          ? 'crosshair'
-          : 'default'
+      : scaleArmed || measureKind
+        ? 'crosshair'
+        : tool === 'pan'
+          ? 'grab'
+          : (tool === 'pin' && (pins.pinAction === 'add' || pins.pinAction === 'delete')) ||
+              tool === 'fog' ||
+              tool === 'reveal' ||
+              (tool === 'token' && tokens.pendingToken)
+            ? 'crosshair'
+            : 'default'
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
@@ -319,8 +462,24 @@ export default function MapView({
       {primary === 'pan' ? (
         <MapPanToolbar
           zoom={camera.zoom}
+          scaleArmed={scaleArmed}
+          scaleFeet={scaleFeet}
+          scaleHint={scaleHint}
+          measureKind={measureKind}
+          measureFeet={measureFeet}
           onZoomChange={setZoom}
           onFit={fit}
+          onToggleScale={() => {
+            cancelMeasure()
+            if (scaleArmed) cancelScale()
+            else {
+              setScaleArmed(true)
+              setScaleFirst(null)
+            }
+          }}
+          onScaleFeetChange={setScaleFeet}
+          onMeasureKind={selectMeasure}
+          onMeasureFeetChange={(feet) => setMeasureFeet(clampMeasureFeet(feet))}
         />
       ) : null}
 
@@ -343,9 +502,7 @@ export default function MapView({
         <div className="flex flex-col gap-1.5 border-b border-line bg-panel px-3 py-1.5">
           <MapTokenToolbar
             pendingToken={tokens.pendingToken}
-            tokenScale={tokens.tokenScale}
             selectedTokenId={tokens.selectedTokenId}
-            onTokenScaleChange={tokens.setScale}
             onDeleteToken={tokens.deleteToken}
           />
           <MapTokenPickerPanel
@@ -384,11 +541,35 @@ export default function MapView({
               cursor={cursor}
               viewportRef={viewportRef}
               contentRef={contentRef}
+              onNaturalSize={setImageSize}
               onPointerDown={onBoardPointerDown}
               onPointerMove={onBoardPointerMove}
               onPointerUp={onBoardPointerUp}
               onPointerLeave={onBoardPointerLeave}
             >
+              <MapGridOverlay cell={tokens.tokenScale} aspect={imageAspect(imageSize)} />
+              {scaleArmed && scaleFirst ? (
+                <svg
+                  className="pointer-events-none absolute inset-0 z-[6] h-full w-full"
+                  viewBox="0 0 1 1"
+                  preserveAspectRatio="none"
+                  aria-hidden
+                >
+                  <line
+                    x1={scaleFirst.x}
+                    y1={scaleFirst.y}
+                    x2={(scaleHover ?? scaleFirst).x}
+                    y2={(scaleHover ?? scaleFirst).y}
+                    stroke="rgb(232 201 140 / 0.95)"
+                    strokeWidth={0.006}
+                    strokeDasharray="0.02 0.015"
+                  />
+                  <circle cx={scaleFirst.x} cy={scaleFirst.y} r={0.012} fill="rgb(232 201 140)" />
+                  {scaleHover ? (
+                    <circle cx={scaleHover.x} cy={scaleHover.y} r={0.012} fill="rgb(232 201 140 / 0.7)" />
+                  ) : null}
+                </svg>
+              ) : null}
               {(data?.tokens ?? []).map((token) => {
                 const live = dragPos?.id === token.id ? { ...token, x: dragPos.x, y: dragPos.y } : token
                 return (
@@ -396,7 +577,7 @@ export default function MapView({
                     key={token.id}
                     token={toPlayerMapToken(live, images, tokens.tokenScale)}
                     selected={token.id === tokens.selectedTokenId}
-                    interactive={!tokensLocked}
+                    interactive={!tokensLocked && !placingOnBoard}
                     onPointerDown={(event) => {
                       if (tokensLocked) return
                       event.preventDefault()
@@ -410,9 +591,10 @@ export default function MapView({
                       if (!tokenDrag.current || tokenDrag.current.id !== token.id) return
                       const point = pointFromEvent(event)
                       if (!point) return
+                      const snapped = snapPoint(point, token.space)
                       tokenDrag.current.moved = true
-                      dragPosRef.current = { id: token.id, x: point.x, y: point.y }
-                      setDragPos({ id: token.id, x: point.x, y: point.y })
+                      dragPosRef.current = { id: token.id, x: snapped.x, y: snapped.y }
+                      setDragPos({ id: token.id, x: snapped.x, y: snapped.y })
                     }}
                     onPointerUp={() => {
                       const active = tokenDrag.current
@@ -427,6 +609,21 @@ export default function MapView({
                   />
                 )
               })}
+              {measureKind && measureOrigin ? (
+                <MapMeasureOverlay
+                  kind={measureKind}
+                  feet={measureFeet}
+                  origin={measureOrigin}
+                  shape={measureShape(
+                    measureKind,
+                    measureOrigin,
+                    measureAim,
+                    measureFeet,
+                    tokens.tokenScale,
+                    imageAspect(imageSize)
+                  )}
+                />
+              ) : null}
               {tool === 'token' && tokens.pendingToken && fog.brushPos ? (
                 <MapTokenMark
                   token={{
@@ -496,7 +693,8 @@ export default function MapView({
                         : data?.pinsLocked
                           ? 'pointer'
                           : 'grab',
-                    pointerEvents: tool === 'fog' || tool === 'reveal' || tool === 'token' ? 'none' : 'auto'
+                    pointerEvents:
+                      tool === 'fog' || tool === 'reveal' || tool === 'token' || placingOnBoard ? 'none' : 'auto'
                   }}
                 >
                   {pin.label}
