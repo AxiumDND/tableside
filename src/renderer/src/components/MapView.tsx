@@ -1,17 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import type { PlayerMapView } from '../../../shared/types'
 import { campaignFileUrl, resolveImageRef, type CampaignImage } from '../lib/images'
-import {
-  FIT_CAMERA,
-  MAX_ZOOM,
-  MIN_ZOOM,
-  panCamera,
-  zoomCameraAt,
-  type MapCamera
-} from '../lib/mapCamera'
+import { useMapCamera } from '../hooks/useMapCamera'
 import { useMapFog } from '../hooks/useMapFog'
 import { useCreatureSpaces } from '../hooks/useCreatureSpaces'
-import { useMapTokens } from '../hooks/useMapTokens'
+import { useMapTokens, type MapTokens } from '../hooks/useMapTokens'
 import { useMapPins, type MapPins } from '../hooks/useMapPins'
 import {
   TOKEN_SCALE_DEFAULT,
@@ -65,12 +58,9 @@ export default function MapView({
   const paneRef = useRef<HTMLDivElement | null>(null)
   const viewportRef = useRef<HTMLDivElement | null>(null)
   const contentRef = useRef<HTMLDivElement | null>(null)
-  const [camera, setCamera] = useState<MapCamera>(FIT_CAMERA)
   const [tool, setTool] = useState<MapTool>('pan')
   const [dragPos, setDragPos] = useState<{ id: string; x: number; y: number } | null>(null)
-  const cameraRef = useRef(camera)
   const toolRef = useRef(tool)
-  const panRef = useRef<{ x: number; y: number } | null>(null)
   const pinDrag = useRef<{ id: string; moved: boolean } | null>(null)
   const tokenDrag = useRef<{ id: string; moved: boolean } | null>(null)
   const dragPosRef = useRef<{ id: string; x: number; y: number } | null>(null)
@@ -83,7 +73,6 @@ export default function MapView({
   const catalog = useMemo(() => catalogFromNotes(notes, images), [notes, images])
   const catalogRef = useRef(catalog)
 
-  cameraRef.current = camera
   toolRef.current = tool
   onLiveViewRef.current = onLiveView
   onChangeRef.current = onChange
@@ -92,8 +81,41 @@ export default function MapView({
   imagesRef.current = images
   markdownRef.current = markdown
 
+  const fogApiRef = useRef<ReturnType<typeof useMapFog> | null>(null)
+  const tokensApiRef = useRef<MapTokens | null>(null)
+
+  const {
+    camera,
+    cameraRef,
+    setZoom,
+    fit,
+    reset: resetCamera,
+    panRef,
+    beginPan,
+    movePan,
+    endPan
+  } = useMapCamera({
+    paneRef,
+    contentRef,
+    viewportRef,
+    onShiftWheel: (event) => {
+      if (toolRef.current === 'fog' || toolRef.current === 'reveal') {
+        fogApiRef.current?.bumpBrush(event.deltaY < 0 ? 1 : -1)
+        return true
+      }
+      if (toolRef.current === 'token' || (dataRef.current?.tokens.length ?? 0) > 0) {
+        const current = dataRef.current
+        const tokens = tokensApiRef.current
+        if (!current || !tokens) return true
+        const base = tokens.scaleDraftRef.current ?? current.tokenScale ?? TOKEN_SCALE_DEFAULT
+        tokens.applyScaleNow(base + (event.deltaY < 0 ? 0.005 : -0.005))
+        return true
+      }
+      return false
+    }
+  })
+
   const fog = useMapFog({ getZoom: () => cameraRef.current.zoom, onCommit: () => persistFog() })
-  const fogApiRef = useRef(fog)
   fogApiRef.current = fog
 
   const { spaceBySource, setSpaceBySource } = useCreatureSpaces({
@@ -116,7 +138,6 @@ export default function MapView({
     persist: (partial) => onChangeRef.current(replaceMapFence(markdownRef.current, withCurrentFog(partial))),
     onDeselectPins: () => pinsApiRef.current?.setSelectedId(null)
   })
-  const tokensApiRef = useRef(tokens)
   tokensApiRef.current = tokens
 
   const headings = useMemo(() => mapHeadings(markdown), [markdown])
@@ -158,13 +179,13 @@ export default function MapView({
         )
       )
     })
-  }, [imagePath, fog.fogRef, tokens.scaleDraftRef])
+  }, [imagePath, cameraRef, fog.fogRef, tokens.scaleDraftRef])
 
   useEffect(() => {
     fog.reset(data)
-    setCamera(FIT_CAMERA)
+    resetCamera()
     setTool('pan')
-    tokensApiRef.current.reset()
+    tokensApiRef.current?.reset()
     pinsApiRef.current?.reset()
     // Re-seed fog and reset the view only when the open map (path/image) changes.
     // Including data.fog / data.fogSize here would wipe fog mid-paint on every edit.
@@ -176,52 +197,7 @@ export default function MapView({
   }, [camera, fog.fogTick, emitLive, data?.tokens, data?.tokenScale, dragPos, tokens.scaleDraft])
 
   useEffect(() => {
-    const pane = paneRef.current
-    if (!pane) return
-    const onWheel = (event: WheelEvent): void => {
-      event.preventDefault()
-      if (
-        event.shiftKey &&
-        (toolRef.current === 'fog' || toolRef.current === 'reveal')
-      ) {
-        fogApiRef.current.bumpBrush(event.deltaY < 0 ? 1 : -1)
-        return
-      }
-      if (event.shiftKey && (toolRef.current === 'token' || (dataRef.current?.tokens.length ?? 0) > 0)) {
-        const current = dataRef.current
-        if (!current) return
-        const base = tokensApiRef.current.scaleDraftRef.current ?? current.tokenScale ?? TOKEN_SCALE_DEFAULT
-        tokensApiRef.current.applyScaleNow(base + (event.deltaY < 0 ? 0.005 : -0.005))
-        return
-      }
-      const content = contentRef.current
-      const view = viewportRef.current ?? paneRef.current
-      const point = imagePointFromElement(content, event.clientX, event.clientY)
-      if (!point || !content || !view) return
-      const contentRect = content.getBoundingClientRect()
-      const paneRect = view.getBoundingClientRect()
-      if (contentRect.width <= 0 || paneRect.width <= 0) return
-      const factor = event.deltaY < 0 ? 1.12 : 1 / 1.12
-      const nextZoom = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, cameraRef.current.zoom * factor))
-      setCamera(
-        zoomCameraAt(
-          cameraRef.current,
-          point.x,
-          point.y,
-          event.clientX,
-          event.clientY,
-          paneRect,
-          contentRect,
-          nextZoom
-        )
-      )
-    }
-    pane.addEventListener('wheel', onWheel, { passive: false })
-    return () => pane.removeEventListener('wheel', onWheel)
-  }, [])
-
-  useEffect(() => {
-    if (tool !== 'fog' && tool !== 'reveal' && tool !== 'token') fogApiRef.current.setBrushPos(null)
+    if (tool !== 'fog' && tool !== 'reveal' && tool !== 'token') fogApiRef.current?.setBrushPos(null)
   }, [tool])
 
   useEffect(() => {
@@ -243,7 +219,7 @@ export default function MapView({
       tokenScale: current?.tokenScale ?? TOKEN_SCALE_DEFAULT,
       pinsLocked: current?.pinsLocked ?? true,
       ...partial,
-      ...fogApiRef.current.fields()
+      ...(fogApiRef.current?.fields() ?? { fog: '', fogSize: 0 })
     }
   }
 
@@ -279,7 +255,7 @@ export default function MapView({
   function onBoardPointerDown(event: ReactPointerEvent<HTMLDivElement>): void {
     if (event.button === 1 || event.altKey || (tool === 'pan' && event.button === 0)) {
       event.preventDefault()
-      panRef.current = { x: event.clientX, y: event.clientY }
+      beginPan(event.clientX, event.clientY)
       event.currentTarget.setPointerCapture(event.pointerId)
       return
     }
@@ -313,16 +289,7 @@ export default function MapView({
       if (hover) fog.setBrushPos(hover)
     }
     if (panRef.current) {
-      const dx = event.clientX - panRef.current.x
-      const dy = event.clientY - panRef.current.y
-      panRef.current = { x: event.clientX, y: event.clientY }
-      const content = contentRef.current
-      const pane = viewportRef.current ?? paneRef.current
-      if (!content || !pane) return
-      const contentRect = content.getBoundingClientRect()
-      setCamera((prev) =>
-        panCamera(prev, dx, dy, contentRect.width, contentRect.height, pane.clientWidth, pane.clientHeight)
-      )
+      movePan(event.clientX, event.clientY)
       return
     }
     if (fog.paintRef.current === null) return
@@ -331,7 +298,7 @@ export default function MapView({
   }
 
   function onBoardPointerUp(): void {
-    panRef.current = null
+    endPan()
     if (fog.paintRef.current !== null) {
       fog.paintRef.current = null
       persistFog()
@@ -368,8 +335,8 @@ export default function MapView({
       {primary === 'pan' ? (
         <MapPanToolbar
           zoom={camera.zoom}
-          onZoomChange={(zoom) => setCamera((prev) => ({ ...prev, zoom }))}
-          onFit={() => setCamera(FIT_CAMERA)}
+          onZoomChange={setZoom}
+          onFit={fit}
         />
       ) : null}
 
