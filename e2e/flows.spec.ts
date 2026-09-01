@@ -83,6 +83,12 @@ test('combat tracker adds a combatant and starts a round', async () => {
   // Combat is running: the round controls + Next turn replace Start combat.
   await expect(dmWindow.getByRole('button', { name: 'Next turn' })).toBeVisible()
   await expect(dmWindow.getByText(/Round/).first()).toBeVisible()
+
+  await dmWindow.getByRole('button', { name: 'Conditions for Dire Wolf' }).click()
+  await dmWindow.getByRole('button', { name: 'Poisoned' }).click()
+  await expect(dmWindow.getByRole('button', { name: 'Poisoned' })).toHaveAttribute('aria-pressed', 'true')
+  await dmWindow.getByRole('button', { name: 'Done' }).click()
+  await expect(dmWindow.getByRole('button', { name: 'Clear Poisoned' })).toBeVisible()
 })
 
 test('map note exposes fog tools and covers the map without error', async () => {

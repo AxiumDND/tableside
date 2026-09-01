@@ -103,4 +103,23 @@ describe('CombatTracker', () => {
     expect(next.combatants[0].hp).toBe(6)
     expect(screen.queryByRole('button', { name: 'Damage' })).toBeNull()
   })
+
+  it('adds and clears a condition on a combatant', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    const combat = makeCombat([combatant({ id: 'a', name: 'Goblin Scout', hp: 10, maxHp: 10 })])
+    const { rerender } = render(<CombatTracker combat={combat} onChange={onChange} />)
+
+    expect(screen.queryByRole('button', { name: 'Poisoned' })).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'Conditions for Goblin Scout' }))
+    await user.click(screen.getByRole('button', { name: 'Poisoned' }))
+
+    const next = onChange.mock.calls.at(-1)![0] as CombatState
+    expect(next.combatants[0].conditions).toEqual(['poisoned'])
+
+    rerender(<CombatTracker combat={next} onChange={onChange} />)
+    expect(screen.getByRole('button', { name: 'Poisoned' }).getAttribute('aria-pressed')).toBe('true')
+    await user.click(screen.getByRole('button', { name: 'Done' }))
+    expect(screen.getByRole('button', { name: 'Clear Poisoned' })).toBeTruthy()
+  })
 })

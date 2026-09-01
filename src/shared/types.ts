@@ -73,6 +73,8 @@ export interface Combatant {
   notes?: string
   statBlock?: StatBlock
   sourceId?: string
+  /** Toggleable status ids (Poisoned, Prone, …). HP-derived Bloodied/Dead stay separate. */
+  conditions?: string[]
 }
 
 export interface CombatState {

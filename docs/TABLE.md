@@ -84,6 +84,7 @@ Open with **Combat** in the header.
 | d20 on a row | Rolls initiative for that combatant (PCs: type their table roll into Init) |
 | **Start** / next-round controls | Begins round 1 and advances whose turn it is |
 | Eye / view | Opens that combatant’s rollable statblock without changing the turn |
+| **Cnd** | Toggle conditions (Poisoned, Prone, …) on that PC, NPC, or monster |
 | **Show to players** | Superimposes initiative order on the current player image |
 | Clear combat | Empties the tracker (confirm dialog) |
 
@@ -95,6 +96,7 @@ State saves to `combat.json` in the campaign folder.
 - D&D 5e: **Bloodied** on enemies/NPCs under half HP; **Unconscious** on PCs at 0 HP; **dead** on monsters/NPCs at 0 HP
 - Pathfinder 2e: **Wounded** under half HP; **Dying** on PCs at 0 HP
 - Vampire 5th: **Health**, **Willpower**, and **Hunger** (0–5)
+- Conditions you set on a row (Poisoned, Prone, …) also appear
 - No extra secrets (full HP pools stay on the DM tracker)
 
 ## Lookup panel

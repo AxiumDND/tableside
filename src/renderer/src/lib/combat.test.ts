@@ -85,6 +85,28 @@ describe('combat helpers', () => {
     expect(tags).toEqual(expect.arrayContaining(['Health 4/7', 'WP 2/5', 'Hunger 3']))
   })
 
+  it('adds tracker statuses to the player overlay without duplicating Unconscious', () => {
+    const pc: Combatant = {
+      id: '2',
+      name: 'Mira',
+      kind: 'pc',
+      initiative: 12,
+      hp: 0,
+      maxHp: 30,
+      ac: 16,
+      conditions: ['poisoned', 'unconscious']
+    }
+    const tags = combatToPlayerInitiative({
+      combatants: [pc],
+      activeId: null,
+      round: 0,
+      showOrderToPlayers: true
+    })[0].overlayTags?.map((tag) => tag.label)
+    expect(tags).toContain('Unconscious')
+    expect(tags).toContain('Poisoned')
+    expect(tags?.filter((label) => label === 'Unconscious')).toHaveLength(1)
+  })
+
   it('advances turns and rounds', () => {
     const combat: CombatState = {
       combatants: [

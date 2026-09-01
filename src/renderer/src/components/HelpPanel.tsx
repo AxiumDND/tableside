@@ -619,8 +619,9 @@ export default function HelpPanel({
               </>,
               <>
                 <Action>Start</Action> begins round 1. <Code>Alt+T</Code> advances the turn (opens Combat if needed).
-                Adjust HP on the row. The eye opens that combatant’s rollable statblock without changing whose turn it
-                is.
+                Adjust HP on the row. <Action>Cnd</Action> toggles conditions (Poisoned, Prone, and the rest of the
+                pack) on that PC, NPC, or monster. The name opens that combatant’s rollable statblock without changing
+                whose turn it is.
               </>,
               <>
                 Optionally <Action>Show to players</Action> on the Combat panel to overlay initiative on the current
@@ -641,6 +642,7 @@ export default function HelpPanel({
                 HP.
               </>,
               <>Vampire 5th: Health, Willpower, and Hunger (0–5) on the overlay. No AC or Bloodied.</>,
+              <>Conditions you set on a row (Poisoned, Prone, …) also show on the overlay.</>,
               <>No HP numbers, AC, or other secrets on 5e/PF2e overlays beyond those tags.</>
             ]}
           />

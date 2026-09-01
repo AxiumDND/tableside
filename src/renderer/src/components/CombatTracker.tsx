@@ -1,9 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { Combatant, CombatantKind, CombatState } from '../../../shared/types'
+import { combatStatusesFor, toggleStatus } from '../../../shared/combatConditions'
 import { conditionLabel } from '../../../shared/systemPack'
 import { advanceCombatTurn, combatantCondition, combatProfileFor, initiativeBonus, sortCombatants } from '../lib/combat'
 import { formatMod, rollD20 } from '../lib/dice'
 import { statBlockToParsed } from '../lib/statblock'
+import { CombatConditionChips, CombatConditionPicker } from './CombatConditionPicker'
 import { useDiceLog } from './DiceTray'
 import RollableStatBlock from './RollableStatBlock'
 import { combatantToBlock } from './StatBlock'
@@ -39,6 +41,7 @@ export default function CombatTracker({
   const [viewedId, setViewedId] = useState<string | null>(null)
   const [confirmClear, setConfirmClear] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState<Combatant | null>(null)
+  const [conditionEdit, setConditionEdit] = useState<Combatant | null>(null)
   const dice = useDiceLog()
   const ordered = useMemo(() => sortCombatants(combat.combatants), [combat.combatants])
   const round = combat.round ?? 0
@@ -53,22 +56,27 @@ export default function CombatTracker({
     const q = beastQuery.trim().toLowerCase()
     return q ? bestiary.filter((b) => b.name.toLowerCase().includes(q)) : bestiary
   }, [bestiary, beastQuery])
+  const statusCatalog = useMemo(() => combatStatusesFor(system), [system])
   const hpEditLive = hpEdit
     ? (combat.combatants.find((c) => c.id === hpEdit.id) ?? hpEdit)
     : null
+  const conditionEditLive = conditionEdit
+    ? (combat.combatants.find((c) => c.id === conditionEdit.id) ?? conditionEdit)
+    : null
 
   useEffect(() => {
-    if (!confirmClear && !confirmRemove && !hpEdit) return
+    if (!confirmClear && !confirmRemove && !hpEdit && !conditionEdit) return
     const onKey = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') {
         setConfirmClear(false)
         setConfirmRemove(null)
         setHpEdit(null)
+        setConditionEdit(null)
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [confirmClear, confirmRemove, hpEdit])
+  }, [confirmClear, confirmRemove, hpEdit, conditionEdit])
 
   function update(partial: Partial<CombatState>): void {
     onChange({ ...combat, ...partial })
@@ -142,6 +150,7 @@ export default function CombatTracker({
     setHpAmount('')
     setConfirmClear(false)
     setConfirmRemove(null)
+    setConditionEdit(null)
     update({ combatants: [], activeId: null, round: 0, showOrderToPlayers: false })
   }
 
@@ -152,6 +161,7 @@ export default function CombatTracker({
       setHpEdit(null)
       setHpAmount('')
     }
+    if (conditionEdit?.id === id) setConditionEdit(null)
     update({
       combatants: combat.combatants.filter((x) => x.id !== id),
       activeId: combat.activeId === id ? null : combat.activeId
@@ -175,6 +185,12 @@ export default function CombatTracker({
     patchCombatant(live.id, { hp: nextHp })
     setHpEdit(null)
     setHpAmount('')
+  }
+
+  function toggleCombatantStatus(id: string, statusId: string): void {
+    const live = combat.combatants.find((c) => c.id === id)
+    if (!live) return
+    patchCombatant(id, { conditions: toggleStatus(live.conditions, statusId) })
   }
 
   return (
@@ -390,6 +406,15 @@ export default function CombatTracker({
                   ) : null}
                   <button
                     type="button"
+                    className="shrink-0 rounded border border-line px-1.5 py-0.5 text-[10px] uppercase tracking-wide text-muted hover:border-amber hover:text-amber"
+                    title={`Conditions for ${c.name}`}
+                    aria-label={`Conditions for ${c.name}`}
+                    onClick={() => setConditionEdit(c)}
+                  >
+                    Cnd
+                  </button>
+                  <button
+                    type="button"
                     className="text-muted hover:text-blood"
                     title={`Remove ${c.name}`}
                     onClick={() => setConfirmRemove(c)}
@@ -397,6 +422,14 @@ export default function CombatTracker({
                     ×
                   </button>
                 </div>
+                {(c.conditions?.length ?? 0) > 0 ? (
+                  <CombatConditionChips
+                    ids={c.conditions ?? []}
+                    catalog={statusCatalog}
+                    onToggle={(id) => toggleCombatantStatus(c.id, id)}
+                    onOpen={() => setConditionEdit(c)}
+                  />
+                ) : null}
               </li>
             )
           })}
@@ -527,6 +560,16 @@ export default function CombatTracker({
           </div>
         ) : null}
       </div>
+
+      {conditionEditLive ? (
+        <CombatConditionPicker
+          name={conditionEditLive.name}
+          selected={conditionEditLive.conditions ?? []}
+          system={system}
+          onToggle={(id) => toggleCombatantStatus(conditionEditLive.id, id)}
+          onClose={() => setConditionEdit(null)}
+        />
+      ) : null}
 
       {hpEditLive ? (
         <div

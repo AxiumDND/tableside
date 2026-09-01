@@ -1,4 +1,9 @@
 import type { Combatant, CombatState, PlayerInitiativeEntry } from '../../../shared/types'
+import {
+  combatStatusesFor,
+  orderedStatuses,
+  statusLabel
+} from '../../../shared/combatConditions'
 import { conditionLabel, getSystemPack, type CombatProfile, type OverlayTag } from '../../../shared/systemPack'
 import { abilityMod, rollD20 } from './dice'
 
@@ -43,6 +48,12 @@ function overlayTagsFor(c: Combatant, profile: CombatProfile): OverlayTag[] {
   const condition = combatantCondition(c, profile)
   const label = conditionLabel(condition)
   if (label) tags.push({ label, tone: 'blood' })
+  const catalog = combatStatusesFor(profile.id)
+  for (const id of orderedStatuses(c.conditions, catalog)) {
+    const status = statusLabel(id, catalog)
+    if (tags.some((tag) => tag.label.toLowerCase() === status.toLowerCase())) continue
+    tags.push({ label: status, tone: 'muted' })
+  }
   if (profile.showWillpower) {
     const current = c.willpower ?? c.maxWillpower ?? 0
     const max = c.maxWillpower ?? current

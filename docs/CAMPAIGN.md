@@ -243,6 +243,7 @@ On the Combat panel, **Show to players** overlays order on the second monitor:
 - Current turn highlighted
 - Enemies under half HP tagged **Bloodied**
 - PCs at 0 HP tagged unconscious; monsters/NPCs at 0 HP tagged dead
+- Conditions you toggle on a row (Poisoned, Prone, …)
 
 HP edits stay on the DM console; the overlay never shows numbers. Step-by-step UI: [TABLE.md](TABLE.md#combat-panel).
 
