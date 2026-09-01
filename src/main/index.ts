@@ -13,6 +13,7 @@ import type {
 } from '../shared/types'
 import { type MixerPrefs } from '../shared/audio'
 import { setupAppUpdater, scheduleLaunchUpdateCheck } from './appUpdater'
+import { attachSpellChecker } from './spellcheck'
 import { registerMediaProtocol } from './mediaAssets'
 import {
   ensureSampleWorkingCopy,
@@ -79,6 +80,9 @@ import {
   stopPlayerCrawl,
   stopPlayerGallery,
   stopPlayerLegend,
+  stopPlayerPhone,
+  arrivePlayerHyperspace,
+  stopPlayerHyperspace,
   syncPlayerWindow,
   watchDisplays
 } from './playerOutput'
@@ -216,6 +220,7 @@ function createDmWindow(): void {
       sandbox: false,
       contextIsolation: true,
       plugins: true,
+      spellcheck: true,
       autoplayPolicy: 'no-user-gesture-required'
     }
   })
@@ -248,6 +253,7 @@ function createDmWindow(): void {
     disposePlayerWindow()
   })
   applyWindowSecurity(dmWindow.webContents)
+  attachSpellChecker(dmWindow, app.getLocale())
   dmWindow.loadURL(rendererUrl('dm'))
 }
 
@@ -295,7 +301,9 @@ function registerIpc(): void {
           crawl: null,
           legend: null,
           gallery: null,
-          video: null
+          video: null,
+          phone: null,
+          hyperspace: null
         },
         { show: true }
       )
@@ -333,6 +341,8 @@ function registerIpc(): void {
         legend: null,
         gallery: null,
         video: null,
+        phone: null,
+        hyperspace: null,
         handout: null
       },
       { show: true }
@@ -376,6 +386,8 @@ function registerIpc(): void {
         },
         gallery: null,
         video: null,
+        phone: null,
+        hyperspace: null,
         handout: null
       },
       { show: true }
@@ -436,6 +448,8 @@ function registerIpc(): void {
             showTitle
           },
           video: null,
+          phone: null,
+          hyperspace: null,
           handout: null
         },
         { show: true }
@@ -474,6 +488,8 @@ function registerIpc(): void {
             muted: Boolean(payload?.muted),
             startedAt: Date.now()
           },
+          phone: null,
+          hyperspace: null,
           handout: null
         },
         { show: true }
@@ -485,6 +501,88 @@ function registerIpc(): void {
     if (!getPlayerState().video) return getPlayerState()
     return setPlayerState({ ...getPlayerState(), video: null, imageTitle: '' })
   })
+
+  ipcMain.handle(
+    IPC.playerShowPhone,
+    (
+      _e,
+      payload: { title?: string; photoSrc?: string | null; ringSrc?: string | null }
+    ) => {
+      const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
+      const photoSrc =
+        typeof payload?.photoSrc === 'string' && payload.photoSrc.trim() ? payload.photoSrc.trim() : null
+      const ringSrc =
+        typeof payload?.ringSrc === 'string' && payload.ringSrc.trim() ? payload.ringSrc.trim() : null
+      return setPlayerState(
+        {
+          ...getPlayerState(),
+          imageSrc: null,
+          imageTitle: title || 'Incoming call',
+          mapView: null,
+          crawl: null,
+          legend: null,
+          gallery: null,
+          video: null,
+          phone: {
+            title: title || undefined,
+            photoSrc,
+            ringSrc,
+            startedAt: Date.now()
+          },
+          hyperspace: null,
+          handout: null
+        },
+        { show: true }
+      )
+    }
+  )
+
+  ipcMain.handle(IPC.playerAnswerPhone, () => {
+    const phone = getPlayerState().phone
+    if (!phone || phone.answeredAt || phone.stoppingAt) return getPlayerState()
+    return setPlayerState({ ...getPlayerState(), phone: { ...phone, answeredAt: Date.now() } })
+  })
+
+  ipcMain.handle(IPC.playerStopPhone, () => stopPlayerPhone())
+
+  ipcMain.handle(
+    IPC.playerShowHyperspace,
+    (
+      _e,
+      payload: { title?: string; shipSrc?: string | null; planetSrc?: string | null }
+    ) => {
+      const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
+      const shipSrc =
+        typeof payload?.shipSrc === 'string' && payload.shipSrc.trim() ? payload.shipSrc.trim() : null
+      const planetSrc =
+        typeof payload?.planetSrc === 'string' && payload.planetSrc.trim() ? payload.planetSrc.trim() : null
+      return setPlayerState(
+        {
+          ...getPlayerState(),
+          imageSrc: null,
+          imageTitle: title || 'Hyperspace',
+          mapView: null,
+          crawl: null,
+          legend: null,
+          gallery: null,
+          video: null,
+          phone: null,
+          hyperspace: {
+            title: title || undefined,
+            shipSrc,
+            planetSrc,
+            startedAt: Date.now()
+          },
+          handout: null
+        },
+        { show: true }
+      )
+    }
+  )
+
+  ipcMain.handle(IPC.playerArriveHyperspace, () => arrivePlayerHyperspace())
+
+  ipcMain.handle(IPC.playerStopHyperspace, () => stopPlayerHyperspace())
 
   ipcMain.handle(
     IPC.playerSetInitiative,
@@ -524,6 +622,10 @@ function registerIpc(): void {
   )
   ipcMain.handle(IPC.mixerArmCrawlMusic, () => runMixer({ type: 'arm-crawl-music' }))
   ipcMain.handle(IPC.mixerStopCrawlMusic, () => runMixer({ type: 'stop-crawl-music' }))
+  ipcMain.handle(IPC.mixerPlayHyperspaceLoop, (_e, path: string) =>
+    runMixer({ type: 'play-hyperspace-loop', path: String(path ?? '') })
+  )
+  ipcMain.handle(IPC.mixerStopHyperspaceLoop, () => runMixer({ type: 'stop-hyperspace-loop' }))
   ipcMain.handle(IPC.mixerStopAll, () => runMixer({ type: 'stop-all' }))
   ipcMain.handle(IPC.mixerSetPrefs, (_e, prefs: Partial<MixerPrefs>) =>
     runMixer({ type: 'set-prefs', prefs: prefs ?? {} })

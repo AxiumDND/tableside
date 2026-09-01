@@ -35,6 +35,14 @@ function deps(overrides: Partial<SessionNoteMarkdownDeps> = {}): SessionNoteMark
     persistVideo: vi.fn(),
     playVideoCard: vi.fn(),
     loadVideoFile: async () => null,
+    persistPhone: vi.fn(),
+    playPhoneCard: vi.fn(),
+    loadPhoneRing: async () => null,
+    persistHyperspace: vi.fn(),
+    playHyperspaceCard: vi.fn(),
+    loadHyperspaceShip: async () => null,
+    loadHyperspacePlanet: async () => null,
+    loadHyperspaceSound: async () => null,
     ...overrides
   }
 }
@@ -158,6 +166,15 @@ describe('SessionNoteMarkdown', () => {
       '[!video] Vision at the Pale Well',
       '![[Clip.mp4]]',
       '[!/video]',
+      '',
+      '[!phone]',
+      '[[Ash]]',
+      '[!/phone]',
+      '',
+      '[!hyperspace] Jump to Alderaan',
+      'ship: ![[Falcon.png]]',
+      'planet: ![[Alderaan.webp]]',
+      '[!/hyperspace]',
       ''
     ].join('\n')
     renderNote(md)
@@ -170,6 +187,10 @@ describe('SessionNoteMarkdown', () => {
     expect(screen.getByText('Video')).toBeTruthy()
     expect(screen.getByText('Vision at the Pale Well')).toBeTruthy()
     expect(screen.getByText('Clip.mp4')).toBeTruthy()
+    expect(screen.getByText('Phone')).toBeTruthy()
+    expect(screen.getAllByText('Ash').length).toBeGreaterThan(0)
+    expect(screen.getByText('Hyperspace')).toBeTruthy()
+    expect(screen.getByText('Jump to Alderaan')).toBeTruthy()
   })
 
   it('renders a read-aloud card', () => {

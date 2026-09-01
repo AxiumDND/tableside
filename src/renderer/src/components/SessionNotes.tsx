@@ -94,6 +94,16 @@ export default function SessionNotes({
   onStopVideo,
   activeVideo,
   playerVideo,
+  onPlayPhone,
+  onStopPhone,
+  onAnswerPhone,
+  activePhone,
+  playerPhone,
+  onPlayHyperspace,
+  onStopHyperspace,
+  onArriveHyperspace,
+  activeHyperspace,
+  playerHyperspace,
   videos,
   musicTracks,
   onMapLiveView,
@@ -175,6 +185,30 @@ export default function SessionNotes({
   onStopVideo?: () => void
   activeVideo?: { title?: string; videoRef: string } | null
   playerVideo?: import('../../../shared/types').PlayerVideo | null
+  onPlayPhone?: (
+    title: string | undefined,
+    photoSrc: string | null,
+    ringSrc: string | null,
+    npcRef: string | null
+  ) => void
+  onStopPhone?: () => void
+  onAnswerPhone?: () => void
+  activePhone?: { title?: string; npcRef: string | null } | null
+  playerPhone?: import('../../../shared/types').PlayerPhone | null
+  onPlayHyperspace?: (
+    title: string | undefined,
+    shipSrc: string | null,
+    planetSrc: string | null,
+    shipRef: string | null,
+    planetRef: string | null,
+    enterSound?: string | null,
+    loopSound?: string | null,
+    exitSound?: string | null
+  ) => void
+  onStopHyperspace?: () => void
+  onArriveHyperspace?: () => void
+  activeHyperspace?: { title?: string; shipRef: string | null; planetRef: string | null } | null
+  playerHyperspace?: import('../../../shared/types').PlayerHyperspace | null
   videos?: CampaignVideo[]
   musicTracks?: AudioTrack[]
   onMapLiveView?: (imagePath: string, view: PlayerMapView) => void
@@ -344,13 +378,16 @@ export default function SessionNotes({
   const sequenceCards = useOpeningSequenceCards({
     path,
     images,
+    notes: noteIndex,
     markdownRef,
     persistMarkdown: (next) => persistShopMarkdown(next),
     onCampaignChange,
     onPlayCrawl,
     onPlayLegend,
     onPlayGallery,
-    onPlayVideo
+    onPlayVideo,
+    onPlayPhone,
+    onPlayHyperspace
   })
 
   async function persistShopMarkdown(next: string): Promise<void> {
@@ -460,6 +497,16 @@ export default function SessionNotes({
     playerVideo,
     onStopVideo,
     onPlayVideo,
+    activePhone,
+    playerPhone,
+    onStopPhone,
+    onAnswerPhone,
+    onPlayPhone,
+    activeHyperspace,
+    playerHyperspace,
+    onStopHyperspace,
+    onArriveHyperspace,
+    onPlayHyperspace,
     blockEditEnabled,
     blockIndex,
     editingBlocks,
@@ -618,7 +665,9 @@ export default function SessionNotes({
 
       {editing ? (
         <div className="flex min-h-0 flex-1 flex-col p-3 pt-2">
-          <p className="mb-2 text-[11px] text-muted">Markdown · Ctrl+S saves · Esc cancels</p>
+          <p className="mb-2 text-[11px] text-muted">
+            Markdown · Ctrl+S saves · Esc cancels · right-click a misspelled word
+          </p>
           {saveError ? <p className="mb-2 text-[11px] text-blood">{saveError}</p> : null}
           <textarea
             ref={editorRef}

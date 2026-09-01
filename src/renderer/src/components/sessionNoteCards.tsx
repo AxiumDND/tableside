@@ -27,6 +27,8 @@ export type RenderSectionedMarkdown = (
   legendOffset?: number,
   galleryOffset?: number,
   videoOffset?: number,
+  phoneOffset?: number,
+  hyperOffset?: number,
   sectionIndex?: number,
   blockPathPrefix?: number[]
 ) => ReactNode
@@ -131,6 +133,8 @@ export function renderPartyBlock(opts: {
   legendBase: number
   galleryBase: number
   videoBase: number
+  phoneBase: number
+  hyperBase: number
   sectionIndex: number
   blockPath: number[]
   renderSectionedMarkdown: RenderSectionedMarkdown
@@ -169,6 +173,8 @@ export function renderPartyBlock(opts: {
             opts.legendBase,
             opts.galleryBase,
             opts.videoBase,
+            opts.phoneBase,
+            opts.hyperBase,
             opts.sectionIndex,
             opts.blockPath
           )
@@ -197,6 +203,8 @@ export function renderSceneBlock(opts: {
   legendBase: number
   galleryBase: number
   videoBase: number
+  phoneBase: number
+  hyperBase: number
   sectionIndex: number
   blockPath: number[]
   renderSectionedMarkdown: RenderSectionedMarkdown
@@ -231,6 +239,8 @@ export function renderSceneBlock(opts: {
             opts.legendBase,
             opts.galleryBase,
             opts.videoBase,
+            opts.phoneBase,
+            opts.hyperBase,
             opts.sectionIndex,
             opts.blockPath
           )

@@ -9,6 +9,10 @@ import {
   legendDurationMs,
   legendMusicStartDelayMs
 } from '../../../shared/openingLegend'
+import {
+  HYPERSPACE_LOOP_AT_MS,
+  HYPERSPACE_STARFIELD_MS
+} from '../../../shared/playerHyperspace'
 import { campaignFileUrl, type FileKind } from '../components/CampaignFiles'
 import { imageTitle } from '../lib/images'
 
@@ -16,14 +20,18 @@ export type ActiveCrawl = { title?: string; body: string }
 export type ActiveLegend = { title?: string; body: string }
 export type ActiveGallery = { title?: string; imageRefs: string[] }
 export type ActiveVideo = { title?: string; videoRef: string }
+export type ActivePhone = { title?: string; npcRef: string | null }
+export type ActiveHyperspace = { title?: string; shipRef: string | null; planetRef: string | null }
 
-/** Owns DM → player-output playback (image, crawl, legend, gallery, video) and related timers. */
+/** Owns DM → player-output playback (image, crawl, legend, gallery, video, phone) and related timers. */
 export function usePlayerPlayback(setMixer: Dispatch<SetStateAction<MixerState>>) {
   const [player, setPlayer] = useState<PlayerState>(emptyPlayerState())
   const [activeCrawl, setActiveCrawl] = useState<ActiveCrawl | null>(null)
   const [activeLegend, setActiveLegend] = useState<ActiveLegend | null>(null)
   const [activeGallery, setActiveGallery] = useState<ActiveGallery | null>(null)
   const [activeVideo, setActiveVideo] = useState<ActiveVideo | null>(null)
+  const [activePhone, setActivePhone] = useState<ActivePhone | null>(null)
+  const [activeHyperspace, setActiveHyperspace] = useState<ActiveHyperspace | null>(null)
 
   const playerSrcRef = useRef(player.imageSrc)
   const mapLiveRef = useRef<{ src: string; title: string; view: PlayerMapView } | null>(null)
@@ -32,6 +40,9 @@ export function usePlayerPlayback(setMixer: Dispatch<SetStateAction<MixerState>>
   const crawlMusicEndTimerRef = useRef<number | null>(null)
   const crawlSettleTimerRef = useRef<number | null>(null)
   const galleryAdvanceTimerRef = useRef<number | null>(null)
+  const hyperEnterTimerRef = useRef<number | null>(null)
+  const hyperLoopTimerRef = useRef<number | null>(null)
+  const hyperExitSoundRef = useRef<string | null>(null)
   const prologueHasEndImageRef = useRef(false)
   playerSrcRef.current = player.imageSrc
 
@@ -50,6 +61,22 @@ export function usePlayerPlayback(setMixer: Dispatch<SetStateAction<MixerState>>
     }
   }
 
+  function clearHyperspaceAudioTimers(): void {
+    if (hyperEnterTimerRef.current != null) {
+      window.clearTimeout(hyperEnterTimerRef.current)
+      hyperEnterTimerRef.current = null
+    }
+    if (hyperLoopTimerRef.current != null) {
+      window.clearTimeout(hyperLoopTimerRef.current)
+      hyperLoopTimerRef.current = null
+    }
+  }
+
+  async function stopHyperspaceAudio(): Promise<void> {
+    clearHyperspaceAudioTimers()
+    setMixer(await window.tabledm.mixerStopHyperspaceLoop())
+  }
+
   function clearGalleryAdvanceTimer(): void {
     if (galleryAdvanceTimerRef.current != null) {
       window.clearInterval(galleryAdvanceTimerRef.current)
@@ -60,6 +87,10 @@ export function usePlayerPlayback(setMixer: Dispatch<SetStateAction<MixerState>>
   useEffect(() => {
     if (!player.crawl) setActiveCrawl(null)
   }, [player.crawl])
+
+  useEffect(() => {
+    if (!player.hyperspace) setActiveHyperspace(null)
+  }, [player.hyperspace])
 
   useEffect(() => {
     playerLiveRef.current = false
@@ -104,6 +135,12 @@ export function usePlayerPlayback(setMixer: Dispatch<SetStateAction<MixerState>>
     const live = mapLiveRef.current
     const mapView = path && live?.src === src ? live.view : null
     playerLiveRef.current = true
+    setActiveCrawl(null)
+    setActiveLegend(null)
+    setActiveGallery(null)
+    setActiveVideo(null)
+    setActivePhone(null)
+    setActiveHyperspace(null)
     setPlayer(await window.tabledm.showImage(src, title, mapView, handout))
   }
 
@@ -130,6 +167,8 @@ export function usePlayerPlayback(setMixer: Dispatch<SetStateAction<MixerState>>
     setActiveLegend(null)
     setActiveGallery(null)
     setActiveVideo(null)
+    setActivePhone(null)
+    setActiveHyperspace(null)
     clearGalleryAdvanceTimer()
     setMixer(await window.tabledm.mixerArmCrawlMusic())
     const track = musicPath?.trim()
@@ -171,6 +210,8 @@ export function usePlayerPlayback(setMixer: Dispatch<SetStateAction<MixerState>>
     setActiveCrawl(null)
     setActiveGallery(null)
     setActiveVideo(null)
+    setActivePhone(null)
+    setActiveHyperspace(null)
     clearGalleryAdvanceTimer()
     setMixer(await window.tabledm.mixerArmCrawlMusic())
     const track = musicPath?.trim()
@@ -228,6 +269,8 @@ export function usePlayerPlayback(setMixer: Dispatch<SetStateAction<MixerState>>
     setActiveCrawl(null)
     setActiveLegend(null)
     setActiveVideo(null)
+    setActivePhone(null)
+    setActiveHyperspace(null)
     setActiveGallery({ title, imageRefs })
     setMixer(await window.tabledm.mixerStopCrawlMusic())
     const state = await window.tabledm.showGallery({
@@ -302,6 +345,8 @@ export function usePlayerPlayback(setMixer: Dispatch<SetStateAction<MixerState>>
     setActiveCrawl(null)
     setActiveLegend(null)
     setActiveGallery(null)
+    setActivePhone(null)
+    setActiveHyperspace(null)
     setActiveVideo({ title, videoRef })
     if (!muted) {
       setMixer(await window.tabledm.mixerArmCrawlMusic())
@@ -317,6 +362,92 @@ export function usePlayerPlayback(setMixer: Dispatch<SetStateAction<MixerState>>
     setPlayer(await window.tabledm.stopVideo())
   }
 
+  async function playPhone(
+    title: string | undefined,
+    photoSrc: string | null,
+    ringSrc: string | null,
+    npcRef: string | null
+  ): Promise<void> {
+    playerLiveRef.current = false
+    clearCrawlMusicTimer()
+    clearGalleryAdvanceTimer()
+    setActiveCrawl(null)
+    setActiveLegend(null)
+    setActiveGallery(null)
+    setActiveVideo(null)
+    setActiveHyperspace(null)
+    setActivePhone({ title, npcRef })
+    setMixer(await window.tabledm.mixerArmCrawlMusic())
+    setPlayer(await window.tabledm.showPhone({ title, photoSrc, ringSrc }))
+  }
+
+  async function answerPhone(): Promise<void> {
+    setPlayer(await window.tabledm.answerPhone())
+  }
+
+  async function stopPhone(): Promise<void> {
+    setActivePhone(null)
+    setMixer(await window.tabledm.mixerStopCrawlMusic())
+    setPlayer(await window.tabledm.stopPhone())
+  }
+
+  async function playHyperspace(
+    title: string | undefined,
+    shipSrc: string | null,
+    planetSrc: string | null,
+    shipRef: string | null,
+    planetRef: string | null,
+    enterSound?: string | null,
+    loopSound?: string | null,
+    exitSound?: string | null
+  ): Promise<void> {
+    playerLiveRef.current = false
+    clearCrawlMusicTimer()
+    clearGalleryAdvanceTimer()
+    clearHyperspaceAudioTimers()
+    setActiveCrawl(null)
+    setActiveLegend(null)
+    setActiveGallery(null)
+    setActiveVideo(null)
+    setActivePhone(null)
+    setActiveHyperspace({ title, shipRef, planetRef })
+    setMixer(await window.tabledm.mixerArmCrawlMusic())
+    setMixer(await window.tabledm.mixerStopHyperspaceLoop())
+    setPlayer(await window.tabledm.showHyperspace({ title, shipSrc, planetSrc }))
+    const enter = enterSound?.trim()
+    const loop = loopSound?.trim()
+    if (enter) {
+      hyperEnterTimerRef.current = window.setTimeout(() => {
+        hyperEnterTimerRef.current = null
+        void window.tabledm.mixerOneshot(enter).then(setMixer)
+      }, HYPERSPACE_STARFIELD_MS)
+    }
+    if (loop) {
+      hyperLoopTimerRef.current = window.setTimeout(() => {
+        hyperLoopTimerRef.current = null
+        void window.tabledm.mixerPlayHyperspaceLoop(loop).then(setMixer)
+      }, HYPERSPACE_LOOP_AT_MS)
+    }
+    hyperExitSoundRef.current = exitSound?.trim() || null
+  }
+
+  async function arriveHyperspace(): Promise<void> {
+    clearHyperspaceAudioTimers()
+    setMixer(await window.tabledm.mixerStopHyperspaceLoop())
+    const exit = hyperExitSoundRef.current
+    hyperExitSoundRef.current = null
+    if (exit) setMixer(await window.tabledm.mixerOneshot(exit))
+    setPlayer(await window.tabledm.arriveHyperspace())
+  }
+
+  async function stopHyperspace(): Promise<void> {
+    setActiveHyperspace(null)
+    hyperExitSoundRef.current = null
+    await stopHyperspaceAudio()
+    setMixer(await window.tabledm.mixerStopCrawlMusic())
+    setPlayer(await window.tabledm.stopHyperspace())
+  }
+
   async function clearPlayer(): Promise<void> {
     playerLiveRef.current = false
     clearCrawlMusicTimer()
@@ -325,6 +456,10 @@ export function usePlayerPlayback(setMixer: Dispatch<SetStateAction<MixerState>>
     setActiveLegend(null)
     setActiveGallery(null)
     setActiveVideo(null)
+    setActivePhone(null)
+    setActiveHyperspace(null)
+    hyperExitSoundRef.current = null
+    await stopHyperspaceAudio()
     setMixer(await window.tabledm.mixerStopCrawlMusic())
     setPlayer(await window.tabledm.clearPlayer())
   }
@@ -336,6 +471,8 @@ export function usePlayerPlayback(setMixer: Dispatch<SetStateAction<MixerState>>
     activeLegend,
     activeGallery,
     activeVideo,
+    activePhone,
+    activeHyperspace,
     showSelectedToPlayers,
     handleMapLiveView,
     playCrawl,
@@ -348,6 +485,12 @@ export function usePlayerPlayback(setMixer: Dispatch<SetStateAction<MixerState>>
     stopGallery,
     playVideo,
     stopVideo,
+    playPhone,
+    answerPhone,
+    stopPhone,
+    playHyperspace,
+    arriveHyperspace,
+    stopHyperspace,
     clearPlayer
   }
 }

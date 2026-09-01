@@ -104,6 +104,16 @@ describe('fenced callouts', () => {
     expect(nested.find((p) => p.kind === 'note')?.title).toBe('Focus tonight')
   })
 
+  it('maps phone aliases', () => {
+    expect(splitCalloutBlocks('[!call] Lodin\n![[face.png]]\n[!/call]')[0]?.kind).toBe('phone')
+    expect(splitCalloutBlocks('[!incoming] Lodin\n[!/incoming]')[0]?.kind).toBe('phone')
+  })
+
+  it('maps hyperspace aliases', () => {
+    expect(splitCalloutBlocks('[!jump] Alderaan\n[!/jump]')[0]?.kind).toBe('hyperspace')
+    expect(splitCalloutBlocks('[!lightspeed] Kessel\n[!/lightspeed]')[0]?.kind).toBe('hyperspace')
+  })
+
   it('still parses legacy quoted callouts', () => {
     const crawl = splitCalloutBlocks('> [!crawl] Title\n> Line one.\n').find((p) => p.kind === 'crawl')
     expect(crawl).toMatchObject({ title: 'Title', markdown: 'Line one.' })

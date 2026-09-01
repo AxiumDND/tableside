@@ -137,9 +137,15 @@ export default function PlayerPreview({
                   ? state.gallery.title || 'Gallery'
                   : state.video
                     ? state.video.title || 'Video'
-                    : state.handout
-                      ? state.handout.title
-                      : state.imageTitle || 'Nothing showing'}
+                    : state.phone
+                      ? state.phone.title || 'Incoming call'
+                      : state.hyperspace
+                        ? state.hyperspace.arrivedAt
+                          ? state.hyperspace.title || 'Arrival'
+                          : state.hyperspace.title || 'Hyperspace'
+                        : state.handout
+                          ? state.handout.title
+                          : state.imageTitle || 'Nothing showing'}
           </div>
         </button>
         <div className="flex shrink-0 items-center gap-1">
@@ -153,6 +159,8 @@ export default function PlayerPreview({
                 !state.legend &&
                 !state.gallery &&
                 !state.video &&
+                !state.phone &&
+                !state.hyperspace &&
                 !state.handout
               }
               className="rounded border border-line px-2 py-0.5 text-[11px] hover:border-amber disabled:text-muted"

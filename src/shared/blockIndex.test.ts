@@ -5,6 +5,7 @@ import {
   deleteBlockByKey,
   insertBlockByKey,
   insertableBlockKindsForParent,
+  insertableBlockKinds,
   replaceBlockByKey,
   serializeCalloutBlock
 } from './blockIndex'
@@ -118,5 +119,16 @@ describe('insertableBlockKindsForParent', () => {
     expect(kinds).toContain('combat')
     expect(kinds).toContain('treasure')
     expect(kinds).toContain('text')
+    expect(kinds).toContain('video')
+    expect(kinds).toContain('phone')
+    expect(kinds).toContain('hyperspace')
+    expect(kinds).toContain('gallery')
+  })
+})
+
+describe('insertableBlockKinds', () => {
+  it('includes phone and hyperspace for Add above / Add below', () => {
+    expect(insertableBlockKinds()).toContain('phone')
+    expect(insertableBlockKinds()).toContain('hyperspace')
   })
 })

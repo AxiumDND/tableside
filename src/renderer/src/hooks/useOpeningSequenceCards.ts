@@ -1,10 +1,14 @@
 import type { MutableRefObject } from 'react'
 import type { CampaignInfo, LegendLookId } from '../../../shared/types'
-import { campaignFileUrl, imageTitle, resolveMarkdownImageSrc, type CampaignImage } from '../lib/images'
+import { campaignFileUrl, imageTitle, portraitSrcForNote, resolveMarkdownImageSrc, type CampaignImage } from '../lib/images'
+import { hyperspacePlanetSrc, hyperspaceShipSrc } from '../lib/hyperspaceDefaults'
+import { resolveNoteRef, sheetDisplayName, type CampaignNote } from '../lib/notes'
 import { replaceNthCrawlCallout, type CrawlCalloutFields } from '../../../shared/openingCrawl'
 import { replaceNthLegendCallout, type LegendCalloutFields } from '../../../shared/openingLegend'
 import { replaceNthGalleryCallout, type GalleryCalloutFields } from '../../../shared/playerGallery'
 import { replaceNthVideoCallout, type VideoCalloutFields } from '../../../shared/playerVideo'
+import { replaceNthPhoneCallout, type PhoneCalloutFields } from '../../../shared/playerPhone'
+import { replaceNthHyperspaceCallout, type HyperspaceCalloutFields } from '../../../shared/playerHyperspace'
 
 type PlayCrawl = (
   title: string | undefined,
@@ -35,6 +39,22 @@ type PlayGallery = (
 ) => void
 
 type PlayVideo = (title: string | undefined, src: string, muted: boolean, videoRef: string) => void
+type PlayPhone = (
+  title: string | undefined,
+  photoSrc: string | null,
+  ringSrc: string | null,
+  npcRef: string | null
+) => void
+type PlayHyperspace = (
+  title: string | undefined,
+  shipSrc: string | null,
+  planetSrc: string | null,
+  shipRef: string | null,
+  planetRef: string | null,
+  enterSound?: string | null,
+  loopSound?: string | null,
+  exitSound?: string | null
+) => void
 
 export interface OpeningSequenceCards {
   persistCrawl: (index: number, fields: CrawlCalloutFields) => Promise<void>
@@ -52,27 +72,39 @@ export interface OpeningSequenceCards {
   persistVideo: (index: number, fields: VideoCalloutFields) => Promise<void>
   playVideoCard: (index: number, fields: VideoCalloutFields) => Promise<void>
   loadVideoFile: () => Promise<string | null>
+  persistPhone: (index: number, fields: PhoneCalloutFields) => Promise<void>
+  playPhoneCard: (index: number, fields: PhoneCalloutFields) => Promise<void>
+  loadPhoneRing: () => Promise<string | null>
+  persistHyperspace: (index: number, fields: HyperspaceCalloutFields) => Promise<void>
+  playHyperspaceCard: (index: number, fields: HyperspaceCalloutFields) => Promise<void>
+  loadHyperspaceShip: () => Promise<string | null>
+  loadHyperspacePlanet: () => Promise<string | null>
+  loadHyperspaceSound: () => Promise<string | null>
 }
 
 /**
  * The opening-sequence cards embedded in a note (crawl / legend / gallery /
- * video): persist their callout edits back into the markdown and play them on
+ * video / phone / hyperspace): persist their callout edits back into the markdown and play them on
  * the player screen. Persisting is injected (`persistMarkdown`) so this hook
  * stays out of the note's editing/save state.
  */
 export function useOpeningSequenceCards({
   path,
   images,
+  notes,
   markdownRef,
   persistMarkdown,
   onCampaignChange,
   onPlayCrawl,
   onPlayLegend,
   onPlayGallery,
-  onPlayVideo
+  onPlayVideo,
+  onPlayPhone,
+  onPlayHyperspace
 }: {
   path: string
   images: CampaignImage[]
+  notes?: CampaignNote[]
   markdownRef: MutableRefObject<string>
   persistMarkdown: (next: string) => Promise<void>
   onCampaignChange?: (campaign: CampaignInfo) => void
@@ -80,6 +112,8 @@ export function useOpeningSequenceCards({
   onPlayLegend?: PlayLegend
   onPlayGallery?: PlayGallery
   onPlayVideo?: PlayVideo
+  onPlayPhone?: PlayPhone
+  onPlayHyperspace?: PlayHyperspace
 }): OpeningSequenceCards {
   async function loadCrawlLogo(): Promise<string | null> {
     if (!path) return null
@@ -174,6 +208,54 @@ export function useOpeningSequenceCards({
     return result.paths[0] ?? null
   }
 
+  async function persistPhone(index: number, fields: PhoneCalloutFields): Promise<void> {
+    if (!path) return
+    const next = replaceNthPhoneCallout(markdownRef.current, index, fields)
+    if (next === markdownRef.current) return
+    await persistMarkdown(next)
+  }
+
+  async function playPhoneCard(index: number, fields: PhoneCalloutFields): Promise<void> {
+    await persistPhone(index, fields)
+    const npc = fields.npcRef?.trim()
+    if (!npc) return
+    const sheet = resolveNoteRef(npc, path, notes ?? [])
+    const title = sheet ? sheetDisplayName(sheet.stem) : npc
+    const photo = sheet ? portraitSrcForNote(sheet.relativePath, images) : null
+    const ring = fields.ringRef?.trim() ? campaignFileUrl(fields.ringRef.trim()) : null
+    onPlayPhone?.(title, photo, ring, npc)
+  }
+
+  async function loadPhoneRing(): Promise<string | null> {
+    const result = await window.tabledm.addFiles('Audio/Sfx')
+    if (!result?.paths?.length) return null
+    onCampaignChange?.(result.campaign)
+    return result.paths[0] ?? null
+  }
+
+  async function persistHyperspace(index: number, fields: HyperspaceCalloutFields): Promise<void> {
+    if (!path) return
+    const next = replaceNthHyperspaceCallout(markdownRef.current, index, fields)
+    if (next === markdownRef.current) return
+    await persistMarkdown(next)
+  }
+
+  async function playHyperspaceCard(index: number, fields: HyperspaceCalloutFields): Promise<void> {
+    await persistHyperspace(index, fields)
+    const ship = fields.shipRef ? resolveMarkdownImageSrc(fields.shipRef, path, images) : { url: '', path: null }
+    const planet = fields.planetRef ? resolveMarkdownImageSrc(fields.planetRef, path, images) : { url: '', path: null }
+    onPlayHyperspace?.(
+      fields.title || undefined,
+      hyperspaceShipSrc(ship.path ? ship.url : null),
+      hyperspacePlanetSrc(planet.path ? planet.url : null),
+      fields.shipRef,
+      fields.planetRef,
+      fields.enterSoundRef,
+      fields.loopSoundRef,
+      fields.exitSoundRef
+    )
+  }
+
   return {
     persistCrawl,
     playCrawlCard,
@@ -189,6 +271,14 @@ export function useOpeningSequenceCards({
     playGalleryCard,
     persistVideo,
     playVideoCard,
-    loadVideoFile
+    loadVideoFile,
+    persistPhone,
+    playPhoneCard,
+    loadPhoneRing,
+    persistHyperspace,
+    playHyperspaceCard,
+    loadHyperspaceShip: loadCrawlLogo,
+    loadHyperspacePlanet: loadCrawlLogo,
+    loadHyperspaceSound: loadPhoneRing
   }
 }

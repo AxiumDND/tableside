@@ -8,6 +8,8 @@ export type CalloutKind =
   | 'legend'
   | 'gallery'
   | 'video'
+  | 'phone'
+  | 'hyperspace'
   | 'scene'
   | 'combat'
   | 'party'
@@ -58,6 +60,8 @@ export function calloutKind(type: string): CalloutKind {
   if (folded === 'legend' || folded === 'tale' || folded === 'chronicle') return 'legend'
   if (folded === 'gallery' || folded === 'slides' || folded === 'sequence') return 'gallery'
   if (folded === 'video' || folded === 'clip' || folded === 'film') return 'video'
+  if (folded === 'phone' || folded === 'call' || folded === 'incoming') return 'phone'
+  if (folded === 'hyperspace' || folded === 'jump' || folded === 'lightspeed') return 'hyperspace'
   if (folded === 'scene' || folded === 'beat') return 'scene'
   if (folded === 'combat' || folded === 'encounter' || folded === 'fight') return 'combat'
   if (folded === 'party' || folded === 'roster' || folded === 'pcs') return 'party'
@@ -120,6 +124,10 @@ export function canonicalCalloutType(kind: CalloutKind, rawType: string): string
       return 'gallery'
     case 'video':
       return 'video'
+    case 'phone':
+      return 'phone'
+    case 'hyperspace':
+      return 'hyperspace'
     case 'scene':
       return 'scene'
     case 'combat':

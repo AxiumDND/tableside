@@ -66,6 +66,7 @@ export default function BlockMarkdownEditor({
           onBlur={() => flush()}
           placeholder="Optional"
           className="mt-0.5 w-full rounded border border-line bg-ink px-2 py-1 text-sm text-parchment outline-none focus:border-amber disabled:opacity-50"
+          spellCheck
         />
       </label>
       {titleOnly ? null : (
@@ -78,6 +79,7 @@ export default function BlockMarkdownEditor({
             onChange={(event) => setBodyValue(event.target.value)}
             onBlur={() => flush()}
             className="mt-0.5 w-full resize-y rounded border border-line bg-ink px-2 py-1.5 font-mono text-[12px] leading-relaxed text-parchment outline-none focus:border-amber disabled:opacity-50"
+            spellCheck
           />
         </label>
       )}

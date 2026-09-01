@@ -42,6 +42,8 @@ const INSERTABLE_KINDS: CalloutKind[] = [
   'crawl',
   'gallery',
   'video',
+  'phone',
+  'hyperspace',
   'party',
   'note'
 ]
@@ -107,6 +109,10 @@ export function defaultBlockTemplate(kind: CalloutKind, currencies?: CampaignCur
       return serializeFencedCallout('gallery', 'Gallery', ['interval: 8s', '![[Slide 1.webp]]'])
     case 'video':
       return serializeFencedCallout('video', 'Video clip', ['video: Handouts/clip.mp4'])
+    case 'phone':
+      return serializeFencedCallout('phone', '', ['[[NPC Name]]'])
+    case 'hyperspace':
+      return serializeFencedCallout('hyperspace', 'Jump', [])
     case 'party':
       return serializeFencedCallout('party', '', ['- [[PC Name]]'])
     case 'note':

@@ -26,6 +26,8 @@ export type RenderNoteMarkdown = (
   legendOffset?: number,
   galleryOffset?: number,
   videoOffset?: number,
+  phoneOffset?: number,
+  hyperOffset?: number,
   encounterScope?: string,
   sectionIndex?: number,
   blockPathPrefix?: number[]
@@ -113,6 +115,8 @@ export function renderBoxedCombatSection(opts: {
   legendOff: number
   galleryOff: number
   videoOff: number
+  phoneOff: number
+  hyperOff: number
   encounterScope?: string
   sectionIndex: number
   blockPathPrefix?: number[]
@@ -124,6 +128,8 @@ export function renderBoxedCombatSection(opts: {
   const cardLegends = cardParts.filter((block) => block.kind === 'legend').length
   const cardGalleries = cardParts.filter((block) => block.kind === 'gallery').length
   const cardVideos = cardParts.filter((block) => block.kind === 'video').length
+  const cardPhones = cardParts.filter((block) => block.kind === 'phone').length
+  const cardHypers = cardParts.filter((block) => block.kind === 'hyperspace').length
   return (
     <div key={opts.key}>
       <CombatCard
@@ -143,6 +149,8 @@ export function renderBoxedCombatSection(opts: {
           opts.legendOff,
           opts.galleryOff,
           opts.videoOff,
+          opts.phoneOff,
+          opts.hyperOff,
           opts.encounterScope,
           opts.sectionIndex,
           opts.blockPathPrefix
@@ -157,6 +165,8 @@ export function renderBoxedCombatSection(opts: {
             opts.legendOff + cardLegends,
             opts.galleryOff + cardGalleries,
             opts.videoOff + cardVideos,
+            opts.phoneOff + cardPhones,
+            opts.hyperOff + cardHypers,
             opts.encounterScope,
             opts.sectionIndex,
             opts.blockPathPrefix

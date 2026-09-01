@@ -93,6 +93,20 @@ const api = {
     muted?: boolean
   }): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerShowVideo, payload),
   stopVideo: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerStopVideo),
+  showPhone: (payload: {
+    title?: string
+    photoSrc?: string | null
+    ringSrc?: string | null
+  }): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerShowPhone, payload),
+  answerPhone: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerAnswerPhone),
+  stopPhone: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerStopPhone),
+  showHyperspace: (payload: {
+    title?: string
+    shipSrc?: string | null
+    planetSrc?: string | null
+  }): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerShowHyperspace, payload),
+  arriveHyperspace: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerArriveHyperspace),
+  stopHyperspace: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerStopHyperspace),
   clearPlayer: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerClear),
   clearPlayerOverlays: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerClearOverlays),
   setPlayerInitiative: (payload: {
@@ -115,6 +129,9 @@ const api = {
     ipcRenderer.invoke(IPC.mixerPlayCrawlMusic, path),
   mixerArmCrawlMusic: (): Promise<MixerState> => ipcRenderer.invoke(IPC.mixerArmCrawlMusic),
   mixerStopCrawlMusic: (): Promise<MixerState> => ipcRenderer.invoke(IPC.mixerStopCrawlMusic),
+  mixerPlayHyperspaceLoop: (path: string): Promise<MixerState> =>
+    ipcRenderer.invoke(IPC.mixerPlayHyperspaceLoop, path),
+  mixerStopHyperspaceLoop: (): Promise<MixerState> => ipcRenderer.invoke(IPC.mixerStopHyperspaceLoop),
   mixerStopAll: (): Promise<MixerState> => ipcRenderer.invoke(IPC.mixerStopAll),
   mixerSetPrefs: (prefs: Partial<MixerPrefs>): Promise<MixerState> =>
     ipcRenderer.invoke(IPC.mixerSetPrefs, prefs),

@@ -13,6 +13,8 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
     legendOffset?: number,
     galleryOffset?: number,
     videoOffset?: number,
+    phoneOffset?: number,
+    hyperOffset?: number,
     encounterScope?: string
   ) => ReactNode
   renderSectionedMarkdown: (
@@ -22,7 +24,9 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
     crawlOffset?: number,
     legendOffset?: number,
     galleryOffset?: number,
-    videoOffset?: number
+    videoOffset?: number,
+    phoneOffset?: number,
+    hyperOffset?: number
   ) => ReactNode
   renderDocument: (text: string, keyPrefix: string) => ReactNode
 } {

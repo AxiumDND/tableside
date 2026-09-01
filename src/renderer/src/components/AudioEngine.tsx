@@ -227,6 +227,7 @@ export default function AudioEngine({
   const musicRef = useRef<LayerPlayer | null>(null)
   const ambienceRef = useRef<LayerPlayer | null>(null)
   const crawlRef = useRef<LayerPlayer | null>(null)
+  const hyperLoopRef = useRef<LayerPlayer | null>(null)
   const oneshotAt = useRef(0)
   const clockRef = useRef<MixerClock>(emptyMixerClock())
   const onClockRef = useRef(onClock)
@@ -254,10 +255,12 @@ export default function AudioEngine({
       publish('ambience', current, duration)
     )
     crawlRef.current = new LayerPlayer(false, () => ended('crawl'), failed, () => undefined)
+    hyperLoopRef.current = new LayerPlayer(true, () => undefined, failed, () => undefined)
     return () => {
       musicRef.current?.stop()
       ambienceRef.current?.stop()
       crawlRef.current?.stop()
+      hyperLoopRef.current?.stop()
       clockRef.current = emptyMixerClock()
       onClockRef.current?.(emptyMixerClock())
     }
@@ -267,19 +270,28 @@ export default function AudioEngine({
     const music = musicRef.current
     const ambience = ambienceRef.current
     const crawl = crawlRef.current
-    if (!music || !ambience || !crawl) return
+    const hyperLoop = hyperLoopRef.current
+    if (!music || !ambience || !crawl || !hyperLoop) return
     const sink = state.prefs.outputDeviceId
     void (async () => {
-      await Promise.all([music.setSink(sink), ambience.setSink(sink), crawl.setSink(sink)])
+      await Promise.all([
+        music.setSink(sink),
+        ambience.setSink(sink),
+        crawl.setSink(sink),
+        hyperLoop.setSink(sink)
+      ])
       music.setGain(mixerLayerGain(state.prefs, 'music'))
       ambience.setGain(mixerLayerGain(state.prefs, 'ambience'))
       crawl.setGain(mixerLayerGain(state.prefs, 'music'))
+      hyperLoop.setGain(mixerLayerGain(state.prefs, 'sfx'))
       const musicUrl = state.playback.musicTrack ? audioFileUrl(state.playback.musicTrack) : null
       const ambienceUrl = state.playback.ambienceTrack ? audioFileUrl(state.playback.ambienceTrack) : null
       const crawlUrl = state.playback.crawlMusic ? audioFileUrl(state.playback.crawlMusic) : null
+      const hyperUrl = state.playback.hyperspaceLoop ? audioFileUrl(state.playback.hyperspaceLoop) : null
       await music.sync(musicUrl, state.playback.musicPlaying, state.playback.musicGeneration)
       await ambience.sync(ambienceUrl, state.playback.ambiencePlaying, state.playback.ambienceGeneration)
       await crawl.sync(crawlUrl, Boolean(crawlUrl), state.playback.crawlMusicGeneration)
+      await hyperLoop.sync(hyperUrl, Boolean(hyperUrl), state.playback.hyperspaceLoopGeneration)
     })()
     const shot = state.playback.oneshot
     if (shot && shot.at !== oneshotAt.current) {

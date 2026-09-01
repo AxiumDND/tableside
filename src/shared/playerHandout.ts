@@ -105,6 +105,8 @@ export function playerSafeNoteBody(markdown: string, includeSecrets = false): st
       block.kind === 'legend' ||
       block.kind === 'gallery' ||
       block.kind === 'video' ||
+      block.kind === 'phone' ||
+      block.kind === 'hyperspace' ||
       block.kind === 'combat' ||
       block.kind === 'treasure' ||
       block.kind === 'party' ||

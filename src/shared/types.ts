@@ -216,6 +216,24 @@ export interface PlayerVideo {
   startedAt: number
 }
 
+export interface PlayerPhone {
+  title?: string
+  photoSrc?: string | null
+  ringSrc?: string | null
+  startedAt: number
+  answeredAt?: number
+  stoppingAt?: number
+}
+
+export interface PlayerHyperspace {
+  title?: string
+  shipSrc?: string | null
+  planetSrc?: string | null
+  startedAt: number
+  arrivedAt?: number
+  stoppingAt?: number
+}
+
 /** Item / spell / place card shown with (or instead of) a still on the player screen. */
 export interface PlayerHandout {
   title: string
@@ -238,6 +256,8 @@ export interface PlayerState {
   legend?: PlayerLegend | null
   gallery?: PlayerGallery | null
   video?: PlayerVideo | null
+  phone?: PlayerPhone | null
+  hyperspace?: PlayerHyperspace | null
   handout?: PlayerHandout | null
 }
 
@@ -296,6 +316,8 @@ export const emptyPlayerState = (): PlayerState => ({
   legend: null,
   gallery: null,
   video: null,
+  phone: null,
+  hyperspace: null,
   handout: null
 })
 

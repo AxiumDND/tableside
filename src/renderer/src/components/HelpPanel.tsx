@@ -396,6 +396,27 @@ export default function HelpPanel({
             local <Code>![[clip.mp4]]</Code> (mp4 / webm / mov). <Action>Play</Action> sends it to the player screen.
             Optional <Code>mute: true</Code> keeps mood music; otherwise mood fades while the clip has sound.
           </p>
+          <Sub>Phone call</Sub>
+          <p>
+            Put <Code>[!phone]</Code> … <Code>[!/phone]</Code> (or <Code>call</Code> / <Code>incoming</Code>) and pick an
+            NPC on the card — or write <Code>[[NPC Name]]</Code>. <Action>Play</Action> rings on the player screen, then
+            fades in an iPhone-style handset using that sheet’s name and portrait. <Action>Answer</Action> silences the
+            ring; <Action>Hang up</Action> fades it out. Optional <Code>ring: ![[tone.mp3]]</Code> uses campaign audio;
+            otherwise Tableside plays a built-in dual-tone ring (not a licensed phone ringtone). Works on every campaign
+            look.
+          </p>
+          <Sub>Hyperspace</Sub>
+          <p>
+            Put <Code>[!hyperspace] Jump to Alderaan</Code> … <Code>[!/hyperspace]</Code> (or <Code>jump</Code> /{' '}
+            <Code>lightspeed</Code>) with optional <Code>ship: ![[falcon.png]]</Code> and{' '}
+            <Code>planet: ![[alderaan.png]]</Code>. Until you pick art, Tableside uses a generic ship and planet.{' '}
+            <Action>Enter hyperspace</Action> holds a starfield, fades in the same streak tunnel as exit, then holds a
+            fullscreen ship still. Optional <Code>enter:</Code> (once), <Code>loop:</Code> (while the ship is up), and{' '}
+            <Code>exit:</Code> (once) pick campaign audio under <Code>Audio/Sfx</Code>. <Action>Exit hyperspace</Action>{' '}
+            fades the streak lines in, then the planet still.{' '}
+            <Action>Abort</Action> drops the overlay without arriving. Tableside draws an original starfield and streaks —
+            it does not include licensed Star Wars footage.
+          </p>
         </Section>
 
         <Section id="music" title="Music & sound" open={open} onToggle={toggle}>
@@ -516,7 +537,7 @@ export default function HelpPanel({
             items={[
               <>
                 <Action>Edit</Action> / <Action>Save</Action> — <Code>Ctrl+S</Code> saves, <Code>Esc</Code> cancels,
-                Tab inserts two spaces.
+                Tab inserts two spaces. Misspellings underline; right-click for suggestions or add to the dictionary.
               </>,
               <>
                 <Code>[[Note Name]]</Code> opens another note. Images in the note stay clickable for Show to players.{' '}
@@ -527,7 +548,9 @@ export default function HelpPanel({
               </>,
               <>
                 <Code>[!gallery]…[!/gallery]</Code> is an image sequence on the player screen;{' '}
-                <Code>[!video]…[!/video]</Code> plays a local clip.
+                <Code>[!video]…[!/video]</Code> plays a local clip; <Code>[!phone]…[!/phone]</Code> is an incoming-call
+                overlay; <Code>[!hyperspace]…[!/hyperspace]</Code> is enter (starfield → tunnel → ship still) then exit
+                (streaks, then a planet still).
               </>,
               <>
                 <Code>[!pc]</Code> / <Code>[!npc]</Code> / <Code>[!monster]</Code> (and place, shop, faction, gear,
@@ -730,7 +753,8 @@ export default function HelpPanel({
                 <Code>Alt+T</Code> — Next combat turn
               </>,
               <>
-                While editing: <Code>Ctrl+S</Code> save, <Code>Esc</Code> cancel (prompts if unsaved)
+                While editing: <Code>Ctrl+S</Code> save, <Code>Esc</Code> cancel (prompts if unsaved). Right-click a
+                misspelled word for suggestions.
               </>,
               <>
                 <Code>Esc</Code> also dismisses confirm dialogs, and hides Files search after clearing it

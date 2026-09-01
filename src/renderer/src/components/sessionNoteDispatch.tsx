@@ -21,6 +21,8 @@ import {
   renderCrawlBlock,
   renderGalleryBlock,
   renderLegendBlock,
+  renderHyperspaceBlock,
+  renderPhoneBlock,
   renderVideoBlock
 } from './sessionNoteOpening'
 import {
@@ -39,6 +41,8 @@ export type SessionNoteRenderers = {
     legendOffset?: number,
     galleryOffset?: number,
     videoOffset?: number,
+    phoneOffset?: number,
+    hyperOffset?: number,
     encounterScope?: string
   ) => ReactNode
   renderSectionedMarkdown: (
@@ -48,7 +52,9 @@ export type SessionNoteRenderers = {
     crawlOffset?: number,
     legendOffset?: number,
     galleryOffset?: number,
-    videoOffset?: number
+    videoOffset?: number,
+    phoneOffset?: number,
+    hyperOffset?: number
   ) => ReactNode
   renderDocument: (text: string, keyPrefix: string) => ReactNode
 }
@@ -108,6 +114,24 @@ export function createSessionNoteRenderers(
     persistVideo,
     playVideoCard,
     loadVideoFile,
+    activePhone,
+    playerPhone,
+    onStopPhone,
+    onAnswerPhone,
+    onPlayPhone,
+    persistPhone,
+    playPhoneCard,
+    loadPhoneRing,
+    activeHyperspace,
+    playerHyperspace,
+    onStopHyperspace,
+    onArriveHyperspace,
+    onPlayHyperspace,
+    persistHyperspace,
+    playHyperspaceCard,
+    loadHyperspaceShip,
+    loadHyperspacePlanet,
+    loadHyperspaceSound,
     blockEditEnabled = false,
     blockIndex,
     editingBlocks = new Set(),
@@ -128,6 +152,8 @@ export function createSessionNoteRenderers(
     legendOffset = 0,
     galleryOffset = 0,
     videoOffset = 0,
+    phoneOffset = 0,
+    hyperOffset = 0,
     encounterScope?: string,
     sectionIndex = 0,
     blockPathPrefix: number[] = []
@@ -136,10 +162,14 @@ export function createSessionNoteRenderers(
     const rawLegends = splitCalloutBlocks(markdown).filter((block) => block.kind === 'legend')
     const rawGalleries = splitCalloutBlocks(markdown).filter((block) => block.kind === 'gallery')
     const rawVideos = splitCalloutBlocks(markdown).filter((block) => block.kind === 'video')
+    const rawPhones = splitCalloutBlocks(markdown).filter((block) => block.kind === 'phone')
+    const rawHypers = splitCalloutBlocks(markdown).filter((block) => block.kind === 'hyperspace')
     let crawlLocal = 0
     let legendLocal = 0
     let galleryLocal = 0
     let videoLocal = 0
+    let phoneLocal = 0
+    let hyperLocal = 0
     let calloutLocal = 0
     return splitCalloutBlocks(text).map((part, i) => {
       const key = `${keyPrefix}-${i}`
@@ -196,6 +226,8 @@ export function createSessionNoteRenderers(
           legendBase: legendOffset + legendLocal,
           galleryBase: galleryOffset + galleryLocal,
           videoBase: videoOffset + videoLocal,
+          phoneBase: phoneOffset + phoneLocal,
+          hyperBase: hyperOffset + hyperLocal,
           sectionIndex,
           blockPath,
           renderSectionedMarkdown,
@@ -223,6 +255,8 @@ export function createSessionNoteRenderers(
           legendBase: legendOffset + legendLocal,
           galleryBase: galleryOffset + galleryLocal,
           videoBase: videoOffset + videoLocal,
+          phoneBase: phoneOffset + phoneLocal,
+          hyperBase: hyperOffset + hyperLocal,
           sectionIndex,
           blockPath,
           renderSectionedMarkdown
@@ -328,6 +362,57 @@ export function createSessionNoteRenderers(
           loadVideoFile
         })
       }
+      if (part.kind === 'phone') {
+        const phoneIndex = phoneOffset + phoneLocal
+        phoneLocal += 1
+        return renderPhoneBlock({
+          part,
+          raw: rawPhones[phoneIndex] ?? part,
+          key,
+          blockKey,
+          blockEditing,
+          phoneIndex,
+          wrapSheetBlock,
+          path,
+          images,
+          notes: noteIndex,
+          disabled,
+          activePhone,
+          playerPhone,
+          onStopPhone,
+          onAnswerPhone,
+          onPlayPhone,
+          persistPhone,
+          playPhoneCard,
+          loadPhoneRing
+        })
+      }
+      if (part.kind === 'hyperspace') {
+        const hyperIndex = hyperOffset + hyperLocal
+        hyperLocal += 1
+        return renderHyperspaceBlock({
+          part,
+          raw: rawHypers[hyperIndex] ?? part,
+          key,
+          blockKey,
+          blockEditing,
+          hyperIndex,
+          wrapSheetBlock,
+          path,
+          images,
+          disabled,
+          activeHyperspace,
+          playerHyperspace,
+          onStopHyperspace,
+          onArriveHyperspace,
+          onPlayHyperspace,
+          persistHyperspace,
+          playHyperspaceCard,
+          loadHyperspaceShip,
+          loadHyperspacePlanet,
+          loadHyperspaceSound
+        })
+      }
       if (part.kind === 'gmonly') {
         return renderGmOnlyBlock({ part, key, blockKey, wrapSheetBlock, markdownComponents })
       }
@@ -373,6 +458,8 @@ export function createSessionNoteRenderers(
     legendOffset = 0,
     galleryOffset = 0,
     videoOffset = 0,
+    phoneOffset = 0,
+    hyperOffset = 0,
     sectionIndex = 0,
     blockPathPrefix: number[] = []
   ): ReactNode {
@@ -384,6 +471,8 @@ export function createSessionNoteRenderers(
       legendOffset,
       galleryOffset,
       videoOffset,
+      phoneOffset,
+      hyperOffset,
       sectionIndexAt: () => sectionIndex,
       blockPathPrefix,
       wrapEmpty: false,
@@ -405,6 +494,8 @@ export function createSessionNoteRenderers(
       legendOffset: 0,
       galleryOffset: 0,
       videoOffset: 0,
+      phoneOffset: 0,
+      hyperOffset: 0,
       sectionIndexAt: (index) => index,
       blockPathPrefix: [],
       wrapEmpty: true,
@@ -429,6 +520,8 @@ function renderNoteSections(opts: {
   legendOffset: number
   galleryOffset: number
   videoOffset: number
+  phoneOffset: number
+  hyperOffset: number
   sectionIndexAt: (index: number) => number
   blockPathPrefix: number[]
   wrapEmpty: boolean
@@ -449,6 +542,8 @@ function renderNoteSections(opts: {
       opts.legendOffset,
       opts.galleryOffset,
       opts.videoOffset,
+      opts.phoneOffset,
+      opts.hyperOffset,
       opts.encounterScope,
       opts.sectionIndexAt(0),
       opts.blockPathPrefix
@@ -459,6 +554,8 @@ function renderNoteSections(opts: {
   let legendsBefore = 0
   let galleriesBefore = 0
   let videosBefore = 0
+  let phonesBefore = 0
+  let hypersBefore = 0
   return docSections.map((section, index) => {
     const sectionId = opts.encounterScope
       ? encounterSectionId(section.heading, opts.encounterScope)
@@ -471,14 +568,20 @@ function renderNoteSections(opts: {
     const sectionLegends = parts.filter((block) => block.kind === 'legend').length
     const sectionGalleries = parts.filter((block) => block.kind === 'gallery').length
     const sectionVideos = parts.filter((block) => block.kind === 'video').length
+    const sectionPhones = parts.filter((block) => block.kind === 'phone').length
+    const sectionHypers = parts.filter((block) => block.kind === 'hyperspace').length
     const crawlOff = opts.crawlOffset + crawlsBefore
     const legendOff = opts.legendOffset + legendsBefore
     const galleryOff = opts.galleryOffset + galleriesBefore
     const videoOff = opts.videoOffset + videosBefore
+    const phoneOff = opts.phoneOffset + phonesBefore
+    const hyperOff = opts.hyperOffset + hypersBefore
     crawlsBefore += sectionCrawls
     legendsBefore += sectionLegends
     galleriesBefore += sectionGalleries
     videosBefore += sectionVideos
+    phonesBefore += sectionPhones
+    hypersBefore += sectionHypers
     const sectionIndex = opts.sectionIndexAt(index)
     if (!boxed) {
       return (
@@ -490,6 +593,8 @@ function renderNoteSections(opts: {
             legendOff,
             galleryOff,
             videoOff,
+            phoneOff,
+            hyperOff,
             opts.encounterScope,
             sectionIndex,
             opts.blockPathPrefix
@@ -511,6 +616,8 @@ function renderNoteSections(opts: {
       legendOff,
       galleryOff,
       videoOff,
+      phoneOff,
+      hyperOff,
       encounterScope: opts.encounterScope,
       sectionIndex,
       blockPathPrefix: opts.blockPathPrefix,

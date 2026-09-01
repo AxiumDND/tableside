@@ -15,6 +15,8 @@ export const BLOCK_KIND_LABELS: Partial<Record<CalloutKind, string>> = {
   crawl: 'Opening crawl',
   gallery: 'Gallery',
   video: 'Video',
+  phone: 'Phone',
+  hyperspace: 'Hyperspace',
   party: 'Party',
   note: 'Note'
 }

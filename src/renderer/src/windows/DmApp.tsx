@@ -90,6 +90,7 @@ export default function DmApp() {
     activeLegend,
     activeGallery,
     activeVideo,
+    activePhone,
     showSelectedToPlayers,
     handleMapLiveView,
     playCrawl,
@@ -102,6 +103,13 @@ export default function DmApp() {
     stopGallery,
     playVideo,
     stopVideo,
+    playPhone,
+    answerPhone,
+    stopPhone,
+    playHyperspace,
+    arriveHyperspace,
+    stopHyperspace,
+    activeHyperspace,
     clearPlayer
   } = usePlayerPlayback(setMixer)
   const [mixerClock, setMixerClock] = useState(() => emptyMixerClock())
@@ -490,6 +498,29 @@ export default function DmApp() {
           onStopVideo={() => void stopVideo()}
           activeVideo={activeVideo}
           playerVideo={player.video}
+          onPlayPhone={(title, photoSrc, ringSrc, npcRef) =>
+            void playPhone(title, photoSrc, ringSrc, npcRef)
+          }
+          onStopPhone={() => void stopPhone()}
+          onAnswerPhone={() => void answerPhone()}
+          activePhone={activePhone}
+          playerPhone={player.phone}
+          onPlayHyperspace={(title, shipSrc, planetSrc, shipRef, planetRef, enterSound, loopSound, exitSound) =>
+            void playHyperspace(
+              title,
+              shipSrc,
+              planetSrc,
+              shipRef,
+              planetRef,
+              enterSound,
+              loopSound,
+              exitSound
+            )
+          }
+          onStopHyperspace={() => void stopHyperspace()}
+          onArriveHyperspace={() => void arriveHyperspace()}
+          activeHyperspace={activeHyperspace}
+          playerHyperspace={player.hyperspace}
           videos={campaign ? flattenVideos(campaign.tree) : []}
           musicTracks={mixer.library.music.flatMap((playlist) => playlist.tracks)}
           onMapLiveView={handleMapLiveView}

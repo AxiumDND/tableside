@@ -7,6 +7,8 @@ import OpeningCrawl from './OpeningCrawl'
 import OpeningLegend from './OpeningLegend'
 import OpeningGallery from './OpeningGallery'
 import OpeningVideo from './OpeningVideo'
+import OpeningPhone from './OpeningPhone'
+import OpeningHyperspace from './OpeningHyperspace'
 
 const FADE_MS = 5000
 
@@ -80,7 +82,7 @@ export default function PlayerView({
 
   useEffect(() => {
     const next = state.handout
-    if (!next || state.crawl || state.legend || state.gallery || state.video) {
+    if (!next || state.crawl || state.legend || state.gallery || state.video || state.phone || state.hyperspace) {
       setHandoutScene((prev) => {
         if (!prev || prev.fadingOut) return prev
         return { ...prev, fadingOut: true }
@@ -104,7 +106,7 @@ export default function PlayerView({
         fadingOut: false
       }
     })
-  }, [handoutKey, state.crawl, state.legend, state.gallery, state.video, state.handout])
+  }, [handoutKey, state.crawl, state.legend, state.gallery, state.video, state.phone, state.hyperspace, state.handout])
 
   useEffect(() => {
     if (!handoutScene?.fadingOut) return
@@ -119,6 +121,8 @@ export default function PlayerView({
     !state.legend &&
     !state.gallery &&
     !state.video &&
+    !state.phone &&
+    !state.hyperspace &&
     state.showInitiative &&
     state.initiative.length > 0
 
@@ -152,6 +156,8 @@ export default function PlayerView({
       {state.legend ? <OpeningLegend legend={state.legend} /> : null}
       {state.gallery ? <OpeningGallery gallery={state.gallery} /> : null}
       {state.video ? <OpeningVideo video={state.video} /> : null}
+      {state.phone ? <OpeningPhone phone={state.phone} /> : null}
+      {state.hyperspace ? <OpeningHyperspace jump={state.hyperspace} /> : null}
       {handoutScene ? (
         <aside
           key={handoutScene.id}

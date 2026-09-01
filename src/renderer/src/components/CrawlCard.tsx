@@ -239,6 +239,7 @@ export default function CrawlCard({
               rows={2}
               onChange={(event) => setPrefaceValue(event.target.value)}
               onBlur={() => commit()}
+              spellCheck
               className="w-full resize-y rounded border border-line bg-ink px-2 py-1 text-sm text-parchment outline-none focus:border-amber disabled:opacity-50"
             />
           ) : null}
@@ -354,6 +355,7 @@ export default function CrawlCard({
               rows={6}
               onChange={(event) => setBodyValue(event.target.value)}
               onBlur={() => commit()}
+              spellCheck
               className="mt-0.5 w-full resize-y rounded border border-line bg-ink px-2 py-1 text-sm text-parchment outline-none focus:border-amber disabled:opacity-50"
             />
           </label>

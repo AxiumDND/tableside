@@ -10,6 +10,8 @@ import {
 import { IPC } from '../shared/ipc'
 import { APP_NAME } from '../shared/version'
 import { CRAWL_FADE_OUT_MS } from '../shared/openingCrawl'
+import { PHONE_FADE_OUT_MS } from '../shared/playerPhone'
+import { HYPERSPACE_ARRIVE_MS, HYPERSPACE_FADE_OUT_MS } from '../shared/playerHyperspace'
 
 export type PlayerOutputDeps = {
   getDmWindow: () => BrowserWindow | null
@@ -37,6 +39,8 @@ let playerState: PlayerState = emptyPlayerState()
 let crawlStopTimer: ReturnType<typeof setTimeout> | null = null
 let legendStopTimer: ReturnType<typeof setTimeout> | null = null
 let galleryStopTimer: ReturnType<typeof setTimeout> | null = null
+let phoneStopTimer: ReturnType<typeof setTimeout> | null = null
+let hyperspaceStopTimer: ReturnType<typeof setTimeout> | null = null
 
 export function configurePlayerOutput(next: PlayerOutputDeps): void {
   deps = next
@@ -76,6 +80,14 @@ function clearStopTimers(): void {
   if (galleryStopTimer) {
     clearTimeout(galleryStopTimer)
     galleryStopTimer = null
+  }
+  if (phoneStopTimer) {
+    clearTimeout(phoneStopTimer)
+    phoneStopTimer = null
+  }
+  if (hyperspaceStopTimer) {
+    clearTimeout(hyperspaceStopTimer)
+    hyperspaceStopTimer = null
   }
 }
 
@@ -317,11 +329,13 @@ export function clearPlayerMedia(): PlayerState {
     legend: null,
     gallery: null,
     video: null,
+    phone: null,
+    hyperspace: null,
     handout: null
   })
 }
 
-/** Drop crawl / legend / gallery / video / handout but keep the last still or map for crossfades. */
+/** Drop crawl / legend / gallery / video / phone / hyperspace / handout but keep the last still or map for crossfades. */
 export function clearPlayerOverlays(): PlayerState {
   clearStopTimers()
   return setPlayerState({
@@ -330,6 +344,8 @@ export function clearPlayerOverlays(): PlayerState {
     legend: null,
     gallery: null,
     video: null,
+    phone: null,
+    hyperspace: null,
     handout: null
   })
 }
@@ -397,5 +413,75 @@ export function stopPlayerGallery(): PlayerState {
       sendPlayerState()
     }
   }, CRAWL_FADE_OUT_MS)
+  return playerState
+}
+
+export function stopPlayerPhone(): PlayerState {
+  const phone = playerState.phone
+  if (!phone || phone.stoppingAt != null) return playerState
+  if (phoneStopTimer) {
+    clearTimeout(phoneStopTimer)
+    phoneStopTimer = null
+  }
+  playerState = {
+    ...playerState,
+    phone: { ...phone, stoppingAt: Date.now() }
+  }
+  sendPlayerState()
+  phoneStopTimer = setTimeout(() => {
+    phoneStopTimer = null
+    if (playerState.phone?.stoppingAt) {
+      playerState = { ...playerState, phone: null, imageTitle: '' }
+      sendPlayerState()
+    }
+  }, PHONE_FADE_OUT_MS)
+  return playerState
+}
+
+export function arrivePlayerHyperspace(): PlayerState {
+  const jump = playerState.hyperspace
+  if (!jump || jump.arrivedAt || jump.stoppingAt) return playerState
+  if (hyperspaceStopTimer) {
+    clearTimeout(hyperspaceStopTimer)
+    hyperspaceStopTimer = null
+  }
+  const planet = jump.planetSrc?.trim() || null
+  playerState = {
+    ...playerState,
+    imageSrc: planet ?? playerState.imageSrc,
+    imageTitle: planet ? jump.title || 'Arrival' : playerState.imageTitle,
+    mapView: planet ? null : playerState.mapView,
+    hyperspace: { ...jump, arrivedAt: Date.now() }
+  }
+  sendPlayerState()
+  hyperspaceStopTimer = setTimeout(() => {
+    hyperspaceStopTimer = null
+    if (playerState.hyperspace?.arrivedAt && !playerState.hyperspace.stoppingAt) {
+      playerState = { ...playerState, hyperspace: null }
+      sendPlayerState()
+    }
+  }, HYPERSPACE_ARRIVE_MS + 200)
+  return playerState
+}
+
+export function stopPlayerHyperspace(): PlayerState {
+  const jump = playerState.hyperspace
+  if (!jump || jump.stoppingAt != null) return playerState
+  if (hyperspaceStopTimer) {
+    clearTimeout(hyperspaceStopTimer)
+    hyperspaceStopTimer = null
+  }
+  playerState = {
+    ...playerState,
+    hyperspace: { ...jump, stoppingAt: Date.now() }
+  }
+  sendPlayerState()
+  hyperspaceStopTimer = setTimeout(() => {
+    hyperspaceStopTimer = null
+    if (playerState.hyperspace?.stoppingAt) {
+      playerState = { ...playerState, hyperspace: null }
+      sendPlayerState()
+    }
+  }, HYPERSPACE_FADE_OUT_MS)
   return playerState
 }

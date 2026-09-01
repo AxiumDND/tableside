@@ -25,26 +25,33 @@ import {
   type GalleryCalloutFields
 } from '../../../shared/playerGallery'
 import { parseVideoFields, type VideoCalloutFields } from '../../../shared/playerVideo'
+import { parsePhoneFields, type PhoneCalloutFields } from '../../../shared/playerPhone'
+import { parseHyperspaceFields, type HyperspaceCalloutFields } from '../../../shared/playerHyperspace'
 import { legendPlayEnabled, type ThemeId } from '../../../shared/theme'
 import type { AudioTrack } from '../../../shared/audio'
 import type {
   PlayerCrawl,
   PlayerGallery,
   PlayerLegend,
+  PlayerHyperspace,
+  PlayerPhone,
   PlayerVideo
 } from '../../../shared/types'
 import { resolveMarkdownImageSrc, type CampaignImage, type CampaignVideo } from '../lib/images'
+import type { CampaignNote } from '../lib/notes'
 import type { WrapSheetBlock } from './sessionNoteShell'
 import CrawlCard from './CrawlCard'
 import LegendCard from './LegendCard'
 import GalleryCard from './GalleryCard'
 import VideoCard from './VideoCard'
+import PhoneCard from './PhoneCard'
+import HyperspaceCard from './HyperspaceCard'
 
 function wrapOpeningCard(
   wrapSheetBlock: WrapSheetBlock,
   blockKey: string,
   part: CalloutBlock,
-  kind: 'crawl' | 'legend' | 'gallery' | 'video',
+  kind: 'crawl' | 'legend' | 'gallery' | 'video' | 'phone' | 'hyperspace',
   key: string,
   blockEditing: boolean,
   card: ReactNode
@@ -305,6 +312,122 @@ export function renderVideoBlock(opts: {
     opts.blockKey,
     opts.part,
     'video',
+    opts.key,
+    opts.blockEditing,
+    card
+  )
+}
+
+/** Fenced `[!phone]` — incoming-call overlay on the player screen. */
+export function renderPhoneBlock(opts: {
+  part: CalloutBlock
+  raw: CalloutBlock
+  key: string
+  blockKey: string
+  blockEditing: boolean
+  phoneIndex: number
+  wrapSheetBlock: WrapSheetBlock
+  path: string
+  images: CampaignImage[]
+  notes: CampaignNote[]
+  disabled?: boolean
+  activePhone?: { title?: string; npcRef: string | null } | null
+  playerPhone?: PlayerPhone | null
+  onStopPhone?: () => void
+  onAnswerPhone?: () => void
+  onPlayPhone?: unknown
+  persistPhone: (index: number, fields: PhoneCalloutFields) => void | Promise<void>
+  playPhoneCard: (index: number, fields: PhoneCalloutFields) => void | Promise<void>
+  loadPhoneRing: () => Promise<string | null>
+}): ReactNode {
+  const fields = parsePhoneFields(opts.raw.title, opts.raw.markdown)
+  const isActivePhone =
+    opts.activePhone != null && (opts.activePhone.npcRef ?? '') === (fields.npcRef ?? '')
+  const card = (
+    <PhoneCard
+      npcRef={fields.npcRef}
+      ringRef={fields.ringRef}
+      notes={opts.notes}
+      images={opts.images}
+      fromPath={opts.path}
+      disabled={opts.disabled}
+      editing={opts.blockEditing}
+      onChange={(next) => void opts.persistPhone(opts.phoneIndex, next)}
+      onPlay={opts.onPlayPhone ? (next) => void opts.playPhoneCard(opts.phoneIndex, next) : undefined}
+      onStop={opts.onStopPhone}
+      onAnswer={opts.onAnswerPhone}
+      phoneActive={isActivePhone && Boolean(opts.playerPhone)}
+      phoneAnswered={isActivePhone && Boolean(opts.playerPhone?.answeredAt)}
+      onLoadRing={() => opts.loadPhoneRing()}
+    />
+  )
+  return wrapOpeningCard(
+    opts.wrapSheetBlock,
+    opts.blockKey,
+    opts.part,
+    'phone',
+    opts.key,
+    opts.blockEditing,
+    card
+  )
+}
+
+/** Fenced `[!hyperspace]` — jump streaks, ship, then a planet still. */
+export function renderHyperspaceBlock(opts: {
+  part: CalloutBlock
+  raw: CalloutBlock
+  key: string
+  blockKey: string
+  blockEditing: boolean
+  hyperIndex: number
+  wrapSheetBlock: WrapSheetBlock
+  path: string
+  images: CampaignImage[]
+  disabled?: boolean
+  activeHyperspace?: { title?: string; shipRef: string | null; planetRef: string | null } | null
+  playerHyperspace?: PlayerHyperspace | null
+  onStopHyperspace?: () => void
+  onArriveHyperspace?: () => void
+  onPlayHyperspace?: unknown
+  persistHyperspace: (index: number, fields: HyperspaceCalloutFields) => void | Promise<void>
+  playHyperspaceCard: (index: number, fields: HyperspaceCalloutFields) => void | Promise<void>
+  loadHyperspaceShip: () => Promise<string | null>
+  loadHyperspacePlanet: () => Promise<string | null>
+  loadHyperspaceSound: () => Promise<string | null>
+}): ReactNode {
+  const fields = parseHyperspaceFields(opts.raw.title, opts.raw.markdown)
+  const isActive =
+    opts.activeHyperspace != null &&
+    (opts.activeHyperspace.title ?? '') === (fields.title ?? '') &&
+    (opts.activeHyperspace.shipRef ?? '') === (fields.shipRef ?? '') &&
+    (opts.activeHyperspace.planetRef ?? '') === (fields.planetRef ?? '')
+  const card = (
+    <HyperspaceCard
+      title={fields.title}
+      shipRef={fields.shipRef}
+      planetRef={fields.planetRef}
+      enterSoundRef={fields.enterSoundRef}
+      loopSoundRef={fields.loopSoundRef}
+      exitSoundRef={fields.exitSoundRef}
+      images={opts.images}
+      disabled={opts.disabled}
+      editing={opts.blockEditing}
+      onChange={(next) => void opts.persistHyperspace(opts.hyperIndex, next)}
+      onPlay={opts.onPlayHyperspace ? (next) => void opts.playHyperspaceCard(opts.hyperIndex, next) : undefined}
+      onArrive={opts.onArriveHyperspace}
+      onStop={opts.onStopHyperspace}
+      jumpActive={isActive && Boolean(opts.playerHyperspace)}
+      jumpArrived={isActive && Boolean(opts.playerHyperspace?.arrivedAt)}
+      onLoadShip={() => opts.loadHyperspaceShip()}
+      onLoadPlanet={() => opts.loadHyperspacePlanet()}
+      onLoadSound={() => opts.loadHyperspaceSound()}
+    />
+  )
+  return wrapOpeningCard(
+    opts.wrapSheetBlock,
+    opts.blockKey,
+    opts.part,
+    'hyperspace',
     opts.key,
     opts.blockEditing,
     card

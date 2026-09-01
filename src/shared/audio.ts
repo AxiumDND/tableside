@@ -73,6 +73,9 @@ export interface MixerPlayback {
   crawlMusicGeneration: number
   /** Resume mood music after crawl music ends or is cleared. */
   musicResumeAfterCrawl: boolean
+  /** Looping bed while a hyperspace card is holding on the ship still. */
+  hyperspaceLoop: string | null
+  hyperspaceLoopGeneration: number
   oneshot: { path: string; at: number } | null
   error: string | null
 }
@@ -101,6 +104,8 @@ export type MixerCommand =
   | { type: 'play-crawl-music'; path: string }
   | { type: 'arm-crawl-music' }
   | { type: 'stop-crawl-music' }
+  | { type: 'play-hyperspace-loop'; path: string }
+  | { type: 'stop-hyperspace-loop' }
   | { type: 'stop-all' }
   | { type: 'ended'; layer: MixerLayerId | 'crawl' }
   | { type: 'set-prefs'; prefs: Partial<MixerPrefs> }
@@ -268,6 +273,8 @@ export function emptyMixerPlayback(): MixerPlayback {
     crawlMusic: null,
     crawlMusicGeneration: 0,
     musicResumeAfterCrawl: false,
+    hyperspaceLoop: null,
+    hyperspaceLoopGeneration: 0,
     oneshot: null,
     error: null
   }
@@ -658,6 +665,30 @@ export function applyMixerCommand(state: MixerState, command: MixerCommand): Mix
       return armCrawlMusic(state)
     case 'stop-crawl-music':
       return stopCrawlMusic(state)
+    case 'play-hyperspace-loop': {
+      const path = posix(command.path.trim())
+      if (!path || (!findSfxTrack(state.library, path) && !isAudioPath(path))) {
+        return {
+          ...state,
+          playback: { ...state.playback, error: 'Pick an in-hyperspace loop under Audio/Sfx (or Load audio…).' }
+        }
+      }
+      return {
+        ...state,
+        playback: {
+          ...state.playback,
+          hyperspaceLoop: path,
+          hyperspaceLoopGeneration: state.playback.hyperspaceLoopGeneration + 1,
+          error: null
+        }
+      }
+    }
+    case 'stop-hyperspace-loop':
+      if (!state.playback.hyperspaceLoop) return state
+      return {
+        ...state,
+        playback: { ...state.playback, hyperspaceLoop: null }
+      }
     case 'stop-all':
       return {
         ...state,
