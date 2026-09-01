@@ -123,7 +123,7 @@ describe('SessionNoteMarkdown', () => {
     expect(screen.getByText('In an age before memory.')).toBeTruthy()
     expect(screen.getByText(/time of unrest/)).toBeTruthy()
     const play = screen.getByRole('button', { name: 'Play' })
-    expect(play).toBeDisabled()
+    expect((play as HTMLButtonElement).disabled).toBe(true)
     expect(screen.getByText('Sci-fi look required')).toBeTruthy()
   })
 
@@ -133,7 +133,7 @@ describe('SessionNoteMarkdown', () => {
     const md = ['[!crawl] The Siege of Kestrel', 'It is a time of unrest.', '[!/crawl]', ''].join('\n')
     renderNote(md, { theme: 'scifi', onPlayCrawl: vi.fn(), playCrawlCard })
     const play = screen.getByRole('button', { name: 'Play' })
-    expect(play).not.toBeDisabled()
+    expect((play as HTMLButtonElement).disabled).toBe(false)
     expect(screen.queryByText('Sci-fi look required')).toBeNull()
     await user.click(play)
     expect(playCrawlCard).toHaveBeenCalledTimes(1)
