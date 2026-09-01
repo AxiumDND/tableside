@@ -39,17 +39,13 @@ import {
   type NightEncounter
 } from '../lib/notes'
 import CalloutCard from './CalloutCard'
-import TreasureCard from './TreasureCard'
 import NoteWikiLink from './NoteWikiLink'
-import GmOnly from './GmOnly'
-import ReadAloud from './ReadAloud'
 import PartyCard from './PartyCard'
 import SceneCard from './SceneCard'
 import SheetArtFrame from './SheetArtFrame'
 import SheetBlockShell, { BLOCK_KIND_LABELS } from './SheetBlockShell'
 import BlockMarkdownEditor from './BlockMarkdownEditor'
 import LinksCard, { type BlockNavEntry } from './LinksCard'
-import { serializeTreasureCallout, type TreasureFields } from '../../../shared/treasureFields'
 import { renderBoxedCombatSection, renderCombatCalloutBlock } from './sessionNoteCombat'
 import {
   renderCrawlBlock as renderCrawlCalloutBlock,
@@ -57,6 +53,11 @@ import {
   renderLegendBlock as renderLegendCalloutBlock,
   renderVideoBlock as renderVideoCalloutBlock
 } from './sessionNoteOpening'
+import {
+  renderGmOnlyBlock as renderGmOnlyCalloutBlock,
+  renderReadAloudBlock as renderReadAloudCalloutBlock,
+  renderTreasureBlock as renderTreasureCalloutBlock
+} from './sessionNoteCards'
 
 export type SessionNoteMarkdownDeps = {
   markdown: string
@@ -346,18 +347,13 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
   }
 
   function renderReadAloudBlock(part: CalloutBlock, key: string, blockKey: string): ReactNode {
-    const read = (
-      <ReadAloud title={part.title}>
-        <Markdown remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform} components={markdownComponents}>
-          {part.markdown || ''}
-        </Markdown>
-      </ReadAloud>
-    )
-    return (
-      <div key={key}>
-        {wrapSheetBlock(blockKey, part, 'readaloud', read)}
-      </div>
-    )
+    return renderReadAloudCalloutBlock({
+      part,
+      key,
+      blockKey,
+      wrapSheetBlock,
+      markdownComponents
+    })
   }
 
   function renderCombatBlock(
@@ -608,19 +604,13 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
   }
 
   function renderGmOnlyBlock(part: CalloutBlock, key: string, blockKey: string): ReactNode {
-    if (/^what this page does$/i.test(part.title ?? '')) return null
-    const read = (
-      <GmOnly title={part.title}>
-        <Markdown remarkPlugins={[remarkGfm]} urlTransform={markdownUrlTransform} components={markdownComponents}>
-          {part.markdown || ''}
-        </Markdown>
-      </GmOnly>
-    )
-    return (
-      <div key={key}>
-        {wrapSheetBlock(blockKey, part, 'gmonly', read)}
-      </div>
-    )
+    return renderGmOnlyCalloutBlock({
+      part,
+      key,
+      blockKey,
+      wrapSheetBlock,
+      markdownComponents
+    })
   }
 
   function renderTreasureBlock(
@@ -629,30 +619,23 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
     blockKey: string,
     blockEditing: boolean
   ): ReactNode {
-    const rawTreasure = blockIndex?.get(blockKey)?.block ?? part
-    const card = (
-      <TreasureCard
-        title={rawTreasure.title}
-        body={rawTreasure.markdown}
-        currencies={currencies}
-        editing={blockEditing}
-        disabled={disabled}
-        onChange={(fields: TreasureFields) =>
-          onBlockSave?.(blockKey, serializeTreasureCallout(fields, currencies))
-        }
-        markdownComponents={markdownComponents}
-        urlTransform={markdownUrlTransform}
-        system={system}
-        sheetPath={path}
-        gearNotes={gearNotes ?? noteIndex}
-        onEnsureGear={onEnsureGear}
-      />
-    )
-    return (
-      <div key={key}>
-        {wrapSheetBlock(blockKey, part, 'treasure', card, blockEditing ? card : undefined)}
-      </div>
-    )
+    return renderTreasureCalloutBlock({
+      part,
+      key,
+      blockKey,
+      blockEditing,
+      wrapSheetBlock,
+      blockIndex,
+      disabled,
+      onBlockSave,
+      currencies,
+      markdownComponents,
+      system,
+      path,
+      noteIndex,
+      gearNotes,
+      onEnsureGear
+    })
   }
 
   function renderLinksBlock(part: CalloutBlock, key: string, blockKey: string): ReactNode {

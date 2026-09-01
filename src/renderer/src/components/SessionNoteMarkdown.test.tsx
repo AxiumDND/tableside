@@ -170,4 +170,49 @@ describe('SessionNoteMarkdown', () => {
     expect(screen.getByText('Vision at the Pale Well')).toBeTruthy()
     expect(screen.getByText('Clip.mp4')).toBeTruthy()
   })
+
+  it('renders a read-aloud card', () => {
+    const md = ['[!readaloud] Rain on the shutters', 'The mill wheel groans.', '[!/readaloud]', ''].join('\n')
+    renderNote(md)
+    expect(screen.getByText('Read aloud')).toBeTruthy()
+    expect(screen.getByText('Rain on the shutters')).toBeTruthy()
+    expect(screen.getByText(/mill wheel groans/)).toBeTruthy()
+  })
+
+  it('renders a treasure card with coin and a mundane item', () => {
+    const md = [
+      '[!treasure] Hearth cache',
+      '**Coin:** 40 gp',
+      '**Mundane:**',
+      '- [[Rope]]',
+      '[!/treasure]',
+      ''
+    ].join('\n')
+    renderNote(md)
+    expect(screen.getByText('Treasure')).toBeTruthy()
+    expect(screen.getByText('Hearth cache')).toBeTruthy()
+    expect(screen.getByText('40')).toBeTruthy()
+    expect(screen.getByText('gp')).toBeTruthy()
+    expect(screen.getByText('Mundane')).toBeTruthy()
+    expect(screen.getByText('Rope')).toBeTruthy()
+  })
+
+  it('renders a GM-only card and drops the stub help block', () => {
+    const md = [
+      '[!gmonly] What this page does',
+      'Ignore this stub.',
+      '[!/gmonly]',
+      '',
+      '[!gmonly] Behind the mill',
+      'The well is a lie.',
+      '[!/gmonly]',
+      ''
+    ].join('\n')
+    renderNote(md)
+    expect(screen.queryByText('What this page does')).toBeNull()
+    expect(screen.queryByText(/Ignore this stub/)).toBeNull()
+    expect(screen.getByText('GM only')).toBeTruthy()
+    expect(screen.getByText('Behind the mill')).toBeTruthy()
+    expect(screen.getByText(/well is a lie/)).toBeTruthy()
+  })
 })
