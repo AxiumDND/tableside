@@ -1,8 +1,9 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
 import type { PlayerMapView } from '../../../shared/types'
 import { campaignFileUrl, resolveImageRef, type CampaignImage } from '../lib/images'
 import { useMapCamera } from '../hooks/useMapCamera'
 import { useMapFog } from '../hooks/useMapFog'
+import { useMapLiveView } from '../hooks/useMapLiveView'
 import { useCreatureSpaces } from '../hooks/useCreatureSpaces'
 import { useMapTokens, type MapTokens } from '../hooks/useMapTokens'
 import { useMapPins, type MapPins } from '../hooks/useMapPins'
@@ -22,7 +23,6 @@ import MapStage, { imagePointFromElement } from './MapStage'
 import MapTokenMark from './MapTokenMark'
 import {
   catalogFromNotes,
-  liveView,
   primaryTool,
   type MapTool
 } from './MapViewHelpers'
@@ -64,21 +64,16 @@ export default function MapView({
   const pinDrag = useRef<{ id: string; moved: boolean } | null>(null)
   const tokenDrag = useRef<{ id: string; moved: boolean } | null>(null)
   const dragPosRef = useRef<{ id: string; x: number; y: number } | null>(null)
-  const liveTimer = useRef<number | null>(null)
-  const onLiveViewRef = useRef(onLiveView)
   const onChangeRef = useRef(onChange)
   const dataRef = useRef(data)
-  const imagesRef = useRef(images)
   const markdownRef = useRef(markdown)
   const catalog = useMemo(() => catalogFromNotes(notes, images), [notes, images])
   const catalogRef = useRef(catalog)
 
   toolRef.current = tool
-  onLiveViewRef.current = onLiveView
   onChangeRef.current = onChange
   dataRef.current = data
   catalogRef.current = catalog
-  imagesRef.current = images
   markdownRef.current = markdown
 
   const fogApiRef = useRef<ReturnType<typeof useMapFog> | null>(null)
@@ -163,23 +158,22 @@ export default function MapView({
       `No heading yet for **${selected.heading || selected.label}**. Edit the note to add \`## ${selected.heading || selected.label}\`.`
     : mapOverviewMarkdown(markdown)
 
-  const emitLive = useCallback((): void => {
-    if (!imagePath || !onLiveViewRef.current) return
-    if (liveTimer.current) window.cancelAnimationFrame(liveTimer.current)
-    liveTimer.current = window.requestAnimationFrame(() => {
-      onLiveViewRef.current?.(
-        imagePath,
-        liveView(
-          cameraRef.current,
-          fog.fogRef.current,
-          dataRef.current?.tokens ?? [],
-          imagesRef.current,
-          tokens.scaleDraftRef.current ?? dataRef.current?.tokenScale ?? TOKEN_SCALE_DEFAULT,
-          dragPosRef.current
-        )
-      )
-    })
-  }, [imagePath, cameraRef, fog.fogRef, tokens.scaleDraftRef])
+  useMapLiveView({
+    imagePath,
+    onLiveView,
+    camera,
+    cameraRef,
+    fogRef: fog.fogRef,
+    fogTick: fog.fogTick,
+    dataRef,
+    images,
+    tokens: data?.tokens,
+    tokenScale: data?.tokenScale,
+    scaleDraft: tokens.scaleDraft,
+    scaleDraftRef: tokens.scaleDraftRef,
+    dragPos,
+    dragPosRef
+  })
 
   useEffect(() => {
     fog.reset(data)
@@ -193,18 +187,8 @@ export default function MapView({
   }, [path, data?.image])
 
   useEffect(() => {
-    emitLive()
-  }, [camera, fog.fogTick, emitLive, data?.tokens, data?.tokenScale, dragPos, tokens.scaleDraft])
-
-  useEffect(() => {
     if (tool !== 'fog' && tool !== 'reveal' && tool !== 'token') fogApiRef.current?.setBrushPos(null)
   }, [tool])
-
-  useEffect(() => {
-    return () => {
-      if (liveTimer.current) window.cancelAnimationFrame(liveTimer.current)
-    }
-  }, [])
 
   function commit(next: MapNoteData, source = markdown): void {
     onChange(replaceMapFence(source, next))
