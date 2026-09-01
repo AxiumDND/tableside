@@ -108,4 +108,66 @@ describe('SessionNoteMarkdown', () => {
     expect(screen.getByRole('button', { name: 'Add to initiative' })).toBeTruthy()
     expect(screen.getByText(/tin cup/)).toBeTruthy()
   })
+
+  it('renders an opening crawl that needs the sci-fi look to play', () => {
+    const md = [
+      '[!crawl] The Siege of Kestrel',
+      'preface: In an age before memory.',
+      'It is a time of unrest.',
+      '[!/crawl]',
+      ''
+    ].join('\n')
+    renderNote(md)
+    expect(screen.getByText('Opening crawl')).toBeTruthy()
+    expect(screen.getByText('The Siege of Kestrel')).toBeTruthy()
+    expect(screen.getByText('In an age before memory.')).toBeTruthy()
+    expect(screen.getByText(/time of unrest/)).toBeTruthy()
+    const play = screen.getByRole('button', { name: 'Play' })
+    expect(play).toBeDisabled()
+    expect(screen.getByText('Sci-fi look required')).toBeTruthy()
+  })
+
+  it('plays a crawl when the sci-fi look is on', async () => {
+    const user = userEvent.setup()
+    const playCrawlCard = vi.fn()
+    const md = ['[!crawl] The Siege of Kestrel', 'It is a time of unrest.', '[!/crawl]', ''].join('\n')
+    renderNote(md, { theme: 'scifi', onPlayCrawl: vi.fn(), playCrawlCard })
+    const play = screen.getByRole('button', { name: 'Play' })
+    expect(play).not.toBeDisabled()
+    expect(screen.queryByText('Sci-fi look required')).toBeNull()
+    await user.click(play)
+    expect(playCrawlCard).toHaveBeenCalledTimes(1)
+    expect(playCrawlCard.mock.calls[0][1]).toMatchObject({
+      title: 'The Siege of Kestrel',
+      body: expect.stringMatching(/time of unrest/)
+    })
+  })
+
+  it('renders legend, gallery, and video cards', () => {
+    const md = [
+      '[!legend] The Pale Well',
+      'look: mist',
+      'Grain waits at the mill.',
+      '[!/legend]',
+      '',
+      '[!gallery] Faces on the ridge',
+      '![[Marta.webp]]',
+      '[!/gallery]',
+      '',
+      '[!video] Vision at the Pale Well',
+      '![[Clip.mp4]]',
+      '[!/video]',
+      ''
+    ].join('\n')
+    renderNote(md)
+    expect(screen.getByText('Campfire chronicle')).toBeTruthy()
+    expect(screen.getByText('The Pale Well')).toBeTruthy()
+    expect(screen.getByText(/Grain waits at the mill/)).toBeTruthy()
+    expect(screen.getByText('Gallery')).toBeTruthy()
+    expect(screen.getByText('Faces on the ridge')).toBeTruthy()
+    expect(screen.getByText(/1 slide/)).toBeTruthy()
+    expect(screen.getByText('Video')).toBeTruthy()
+    expect(screen.getByText('Vision at the Pale Well')).toBeTruthy()
+    expect(screen.getByText('Clip.mp4')).toBeTruthy()
+  })
 })

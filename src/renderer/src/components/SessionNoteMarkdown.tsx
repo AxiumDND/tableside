@@ -9,32 +9,11 @@ import {
   type BlockIndex
 } from '../../../shared/blockIndex'
 import type { CalloutBlock, CalloutKind } from '../../../shared/callouts'
-import {
-  crawlLogoRef,
-  crawlPlainText,
-  crawlPreface,
-  crawlMusicRef,
-  crawlEndImageRef,
-  type CrawlCalloutFields
-} from '../../../shared/openingCrawl'
-import {
-  legendLogoRef,
-  legendLook,
-  legendPlainText,
-  legendPreface,
-  legendMusicRef,
-  legendEndImageRef,
-  type LegendCalloutFields
-} from '../../../shared/openingLegend'
-import {
-  galleryImageRefs,
-  galleryIntervalSec,
-  galleryLoops,
-  galleryShowTitle,
-  type GalleryCalloutFields
-} from '../../../shared/playerGallery'
-import { parseVideoFields, type VideoCalloutFields } from '../../../shared/playerVideo'
-import { legendPlayEnabled, type ThemeId } from '../../../shared/theme'
+import type { CrawlCalloutFields } from '../../../shared/openingCrawl'
+import type { LegendCalloutFields } from '../../../shared/openingLegend'
+import type { GalleryCalloutFields } from '../../../shared/playerGallery'
+import type { VideoCalloutFields } from '../../../shared/playerVideo'
+import type { ThemeId } from '../../../shared/theme'
 import type { AudioTrack } from '../../../shared/audio'
 import type {
   PlayerCrawl,
@@ -60,10 +39,6 @@ import {
   type NightEncounter
 } from '../lib/notes'
 import CalloutCard from './CalloutCard'
-import CrawlCard from './CrawlCard'
-import LegendCard from './LegendCard'
-import GalleryCard from './GalleryCard'
-import VideoCard from './VideoCard'
 import TreasureCard from './TreasureCard'
 import NoteWikiLink from './NoteWikiLink'
 import GmOnly from './GmOnly'
@@ -76,6 +51,12 @@ import BlockMarkdownEditor from './BlockMarkdownEditor'
 import LinksCard, { type BlockNavEntry } from './LinksCard'
 import { serializeTreasureCallout, type TreasureFields } from '../../../shared/treasureFields'
 import { renderBoxedCombatSection, renderCombatCalloutBlock } from './sessionNoteCombat'
+import {
+  renderCrawlBlock as renderCrawlCalloutBlock,
+  renderGalleryBlock as renderGalleryCalloutBlock,
+  renderLegendBlock as renderLegendCalloutBlock,
+  renderVideoBlock as renderVideoCalloutBlock
+} from './sessionNoteOpening'
 
 export type SessionNoteMarkdownDeps = {
   markdown: string
@@ -510,47 +491,29 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
     blockEditing: boolean,
     crawlIndex: number
   ): ReactNode {
-    const logoRef = crawlLogoRef(raw.markdown)
-    const logoUrl = logoRef ? resolveMarkdownImageSrc(logoRef, path, images).url : null
-    const musicRef = crawlMusicRef(raw.markdown)
-    const endImageRef = crawlEndImageRef(raw.markdown)
-    const endImageUrl = endImageRef ? resolveMarkdownImageSrc(endImageRef, path, images).url : null
-    const crawlBody = crawlPlainText(raw.markdown)
-    const crawlTitle = raw.title
-    const isActiveCrawl =
-      activeCrawl != null &&
-      (activeCrawl.title ?? '') === (crawlTitle ?? '') &&
-      activeCrawl.body === crawlBody
-    const card = (
-      <CrawlCard
-        title={crawlTitle}
-        preface={crawlPreface(raw.markdown)}
-        body={crawlBody}
-        logoRef={logoRef}
-        logoUrl={logoUrl}
-        endImageRef={endImageRef}
-        endImageUrl={endImageUrl}
-        musicRef={musicRef}
-        musicTracks={musicTracks}
-        images={images}
-        canPlay={theme === 'scifi'}
-        disabled={disabled}
-        editing={blockEditing}
-        onChange={(fields) => void persistCrawl(crawlIndex, fields)}
-        onPlay={onPlayCrawl ? (fields) => void playCrawlCard(crawlIndex, fields) : undefined}
-        onStop={onStopCrawl}
-        crawlActive={isActiveCrawl && Boolean(playerCrawl)}
-        crawlStopping={isActiveCrawl && playerCrawl?.stoppingAt != null}
-        onLoadLogo={() => loadCrawlLogo()}
-        onLoadEndImage={() => loadCrawlEndImage()}
-        onLoadMusic={() => loadCrawlMusic()}
-      />
-    )
-    return (
-      <div key={key}>
-        {wrapSheetBlock(blockKey, part, 'crawl', card, blockEditing ? card : undefined)}
-      </div>
-    )
+    return renderCrawlCalloutBlock({
+      part,
+      raw,
+      key,
+      blockKey,
+      blockEditing,
+      crawlIndex,
+      wrapSheetBlock,
+      path,
+      images,
+      theme,
+      disabled,
+      musicTracks,
+      activeCrawl,
+      playerCrawl,
+      onStopCrawl,
+      onPlayCrawl,
+      persistCrawl,
+      playCrawlCard,
+      loadCrawlLogo,
+      loadCrawlEndImage,
+      loadCrawlMusic
+    })
   }
 
   function renderLegendBlock(
@@ -561,49 +524,29 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
     blockEditing: boolean,
     legendIndex: number
   ): ReactNode {
-    const logoRef = legendLogoRef(raw.markdown)
-    const logoUrl = logoRef ? resolveMarkdownImageSrc(logoRef, path, images).url : null
-    const musicRef = legendMusicRef(raw.markdown)
-    const endImageRef = legendEndImageRef(raw.markdown)
-    const endImageUrl = endImageRef ? resolveMarkdownImageSrc(endImageRef, path, images).url : null
-    const legendBody = legendPlainText(raw.markdown)
-    const legendTitle = raw.title
-    const look = legendLook(raw.markdown)
-    const isActiveLegend =
-      activeLegend != null &&
-      (activeLegend.title ?? '') === (legendTitle ?? '') &&
-      activeLegend.body === legendBody
-    const card = (
-      <LegendCard
-        title={legendTitle}
-        preface={legendPreface(raw.markdown)}
-        body={legendBody}
-        look={look}
-        logoRef={logoRef}
-        logoUrl={logoUrl}
-        endImageRef={endImageRef}
-        endImageUrl={endImageUrl}
-        musicRef={musicRef}
-        musicTracks={musicTracks}
-        images={images}
-        canPlay={legendPlayEnabled(theme)}
-        disabled={disabled}
-        editing={blockEditing}
-        onChange={(fields) => void persistLegend(legendIndex, fields)}
-        onPlay={onPlayLegend ? (fields) => void playLegendCard(legendIndex, fields) : undefined}
-        onStop={onStopLegend}
-        legendActive={isActiveLegend && Boolean(playerLegend)}
-        legendStopping={isActiveLegend && playerLegend?.stoppingAt != null}
-        onLoadLogo={() => loadLegendLogo()}
-        onLoadEndImage={() => loadLegendEndImage()}
-        onLoadMusic={() => loadLegendMusic()}
-      />
-    )
-    return (
-      <div key={key}>
-        {wrapSheetBlock(blockKey, part, 'legend', card, blockEditing ? card : undefined)}
-      </div>
-    )
+    return renderLegendCalloutBlock({
+      part,
+      raw,
+      key,
+      blockKey,
+      blockEditing,
+      legendIndex,
+      wrapSheetBlock,
+      path,
+      images,
+      theme,
+      disabled,
+      musicTracks,
+      activeLegend,
+      playerLegend,
+      onStopLegend,
+      onPlayLegend,
+      persistLegend,
+      playLegendCard,
+      loadLegendLogo,
+      loadLegendEndImage,
+      loadLegendMusic
+    })
   }
 
   function renderGalleryBlock(
@@ -614,40 +557,26 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
     blockEditing: boolean,
     galleryIndex: number
   ): ReactNode {
-    const refs = galleryImageRefs(raw.markdown)
-    const intervalSec = galleryIntervalSec(raw.markdown)
-    const urls = refs.map((ref) => resolveMarkdownImageSrc(ref, path, images).url || null)
-    const refsKey = refs.join('\n')
-    const isActiveGallery =
-      activeGallery != null &&
-      (activeGallery.title ?? '') === (raw.title ?? '') &&
-      activeGallery.imageRefs.join('\n') === refsKey
-    const card = (
-      <GalleryCard
-        title={raw.title}
-        intervalSec={intervalSec}
-        loop={galleryLoops(raw.markdown)}
-        showTitle={galleryShowTitle(raw.markdown)}
-        imageRefs={refs}
-        images={images}
-        imageUrls={urls}
-        disabled={disabled}
-        editing={blockEditing}
-        onChange={(fields) => void persistGallery(galleryIndex, fields)}
-        onPlay={onPlayGallery ? (fields) => void playGalleryCard(galleryIndex, fields) : undefined}
-        onStop={onStopGallery}
-        onPrev={onGalleryPrev}
-        onNext={onGalleryNext}
-        galleryActive={isActiveGallery && Boolean(playerGallery)}
-        slideIndex={isActiveGallery ? playerGallery?.index : undefined}
-        slideCount={isActiveGallery ? playerGallery?.slides.length : undefined}
-      />
-    )
-    return (
-      <div key={key}>
-        {wrapSheetBlock(blockKey, part, 'gallery', card, blockEditing ? card : undefined)}
-      </div>
-    )
+    return renderGalleryCalloutBlock({
+      part,
+      raw,
+      key,
+      blockKey,
+      blockEditing,
+      galleryIndex,
+      wrapSheetBlock,
+      path,
+      images,
+      disabled,
+      activeGallery,
+      playerGallery,
+      onStopGallery,
+      onGalleryPrev,
+      onGalleryNext,
+      onPlayGallery,
+      persistGallery,
+      playGalleryCard
+    })
   }
 
   function renderVideoBlock(
@@ -658,31 +587,24 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
     blockEditing: boolean,
     videoIndex: number
   ): ReactNode {
-    const fields = parseVideoFields(raw.title, raw.markdown)
-    const isActiveVideo =
-      activeVideo != null &&
-      (activeVideo.title ?? '') === (fields.title ?? '') &&
-      activeVideo.videoRef === (fields.videoRef ?? '')
-    const card = (
-      <VideoCard
-        title={fields.title}
-        videoRef={fields.videoRef}
-        muted={fields.muted}
-        videos={videos ?? []}
-        disabled={disabled}
-        editing={blockEditing}
-        onChange={(next) => void persistVideo(videoIndex, next)}
-        onPlay={onPlayVideo ? (next) => void playVideoCard(videoIndex, next) : undefined}
-        onStop={onStopVideo}
-        videoActive={isActiveVideo && Boolean(playerVideo)}
-        onLoadVideo={() => loadVideoFile()}
-      />
-    )
-    return (
-      <div key={key}>
-        {wrapSheetBlock(blockKey, part, 'video', card, blockEditing ? card : undefined)}
-      </div>
-    )
+    return renderVideoCalloutBlock({
+      part,
+      raw,
+      key,
+      blockKey,
+      blockEditing,
+      videoIndex,
+      wrapSheetBlock,
+      disabled,
+      videos,
+      activeVideo,
+      playerVideo,
+      onStopVideo,
+      onPlayVideo,
+      persistVideo,
+      playVideoCard,
+      loadVideoFile
+    })
   }
 
   function renderGmOnlyBlock(part: CalloutBlock, key: string, blockKey: string): ReactNode {
