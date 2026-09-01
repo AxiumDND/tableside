@@ -120,9 +120,15 @@ describe('useMapPins', () => {
 
   it('deletePin removes the pin and clears selection', () => {
     const existing = pin({ id: 'a', label: 'A' })
-    const { view, persist } = setup({ pins: [existing] })
+    const { view, persist, dataRef } = setup({ pins: [existing] })
     act(() => view.result.current.setSelectedId('a'))
-    act(() => view.result.current.deletePin('a'))
+    act(() => {
+      view.result.current.deletePin('a')
+      dataRef.current = mapData({ pins: [], pinsLocked: false })
+      // Parent would re-render with the persisted list in the same turn.
+      // Without that, the stale-selection effect re-picks pins[0].
+      view.rerender({ pins: [], tokenSelected: false })
+    })
     expect(persist).toHaveBeenCalledWith({ pins: [] })
     expect(view.result.current.selectedId).toBeNull()
   })
