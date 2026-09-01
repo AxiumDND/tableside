@@ -54,6 +54,7 @@ describe('MapView', () => {
     expect(screen.getByRole('button', { name: 'Pin' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Token' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Fog' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Fit' })).toBeTruthy()
   })
 
   it('covers the map with fog and persists it through onChange', async () => {
