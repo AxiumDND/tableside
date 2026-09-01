@@ -25,6 +25,10 @@ export function useDiceLog(): DiceLogApi {
   return useContext(DiceLogContext)
 }
 
+/** Latest roll plus this many previous lines in the tray. */
+export const DICE_HISTORY_SLOTS = 4
+const LOG_CAP = 1 + DICE_HISTORY_SLOTS
+
 export function DiceLogProvider({ children }: { children: ReactNode }) {
   const [entries, setEntries] = useState<DiceLogEntry[]>([])
 
@@ -32,7 +36,7 @@ export function DiceLogProvider({ children }: { children: ReactNode }) {
     () => ({
       entries,
       record(result, source) {
-        setEntries((prev) => [{ id: crypto.randomUUID(), source, result }, ...prev].slice(0, 16))
+        setEntries((prev) => [{ id: crypto.randomUUID(), source, result }, ...prev].slice(0, LOG_CAP))
       },
       recordMany(items) {
         if (items.length === 0) return
@@ -41,7 +45,7 @@ export function DiceLogProvider({ children }: { children: ReactNode }) {
           source: item.source,
           result: item.result
         }))
-        setEntries((prev) => [...next, ...prev].slice(0, 16))
+        setEntries((prev) => [...next, ...prev].slice(0, LOG_CAP))
       },
       clear() {
         setEntries([])
@@ -61,6 +65,10 @@ function dieTone(value: number, sides: number): string {
   return 'border-line bg-panel-2 text-amber'
 }
 
+function entryLabel(entry: DiceLogEntry): string {
+  return `${entry.source && entry.source !== 'Tray' ? `${entry.source} · ` : ''}${entry.result.expr}`
+}
+
 export default function DiceTray() {
   const { entries, record, clear } = useDiceLog()
   const [expr, setExpr] = useState('')
@@ -73,8 +81,8 @@ export default function DiceTray() {
   }
 
   return (
-    <section className="shrink-0 border-t border-line bg-panel px-2 py-2">
-      <header className="mb-1.5 flex items-center justify-between">
+    <section className="flex h-48 shrink-0 flex-col overflow-hidden border-t border-line bg-panel px-2 py-2">
+      <header className="mb-1 flex h-4 shrink-0 items-center justify-between">
         <h2 className="text-[10px] uppercase tracking-wider text-muted">Dice tray</h2>
         {entries.length > 0 ? (
           <button type="button" onClick={clear} className="text-[10px] text-muted hover:text-amber">
@@ -83,14 +91,14 @@ export default function DiceTray() {
         ) : null}
       </header>
 
-      <div className="flex flex-wrap gap-1">
+      <div className="flex shrink-0 flex-nowrap gap-0.5">
         {TRAY_DICE.map((sides) => (
           <button
             key={sides}
             type="button"
             title={`Roll 1d${sides}`}
             onClick={() => record(rollExpr(`1d${sides}`), 'Tray')}
-            className="min-w-8 rounded border border-line px-1.5 py-0.5 text-[11px] font-semibold hover:border-amber hover:text-amber"
+            className="min-w-0 flex-1 rounded border border-line px-0.5 py-0.5 text-[10px] font-semibold hover:border-amber hover:text-amber"
           >
             d{sides}
           </button>
@@ -98,7 +106,7 @@ export default function DiceTray() {
       </div>
 
       <form
-        className="mt-1.5 flex gap-1"
+        className="mt-1.5 flex shrink-0 gap-1"
         onSubmit={(e) => {
           e.preventDefault()
           rollFormula()
@@ -115,53 +123,52 @@ export default function DiceTray() {
         </button>
       </form>
 
-      {latest ? (
-        <div className="mt-2 rounded border border-amber-dim/60 bg-ink px-2 py-1.5">
-          <div className="flex items-baseline justify-between gap-2">
-            <p className="min-w-0 truncate text-[11px] text-muted">
-              {latest.source && latest.source !== 'Tray' ? `${latest.source} · ` : ''}
-              {latest.result.expr}
-            </p>
-            <p className="font-display text-xl leading-none text-amber">{latest.result.total}</p>
-          </div>
-          {latest.result.rolls.length > 0 ? (
-            <div className="mt-1 flex flex-wrap items-center gap-1">
-              {latest.result.rolls.map((value, i) => (
-                <span
-                  key={`${latest.id}-${i}`}
-                  className={`inline-flex h-6 min-w-6 items-center justify-center rounded border px-1 text-[11px] font-semibold ${dieTone(value, latest.result.sides)}`}
-                >
-                  {value}
-                </span>
-              ))}
-              {latest.result.bonus ? (
-                <span className="text-[11px] text-muted">
-                  {latest.result.bonus > 0 ? '+' : ''}
-                  {latest.result.bonus}
-                </span>
-              ) : null}
-            </div>
-          ) : (
-            <p className="mt-0.5 text-[11px] text-muted">{latest.result.detail}</p>
-          )}
-        </div>
-      ) : (
-        <p className="mt-2 text-[11px] text-muted">Roll a die, or click a score on a sheet.</p>
-      )}
+      <div className="mt-1.5 flex h-7 shrink-0 items-center gap-1.5 overflow-hidden rounded border border-amber-dim/60 bg-ink px-2">
+        {latest ? (
+          <>
+            <p className="min-w-0 shrink truncate text-[11px] text-muted">{entryLabel(latest)}</p>
+            {latest.result.rolls.length > 0 ? (
+              <div className="flex min-w-0 flex-1 items-center gap-0.5 overflow-hidden">
+                {latest.result.rolls.map((value, i) => (
+                  <span
+                    key={`${latest.id}-${i}`}
+                    className={`inline-flex h-5 min-w-5 shrink-0 items-center justify-center rounded border px-0.5 text-[10px] font-semibold ${dieTone(value, latest.result.sides)}`}
+                  >
+                    {value}
+                  </span>
+                ))}
+                {latest.result.bonus ? (
+                  <span className="shrink-0 text-[11px] text-muted">
+                    {latest.result.bonus > 0 ? '+' : ''}
+                    {latest.result.bonus}
+                  </span>
+                ) : null}
+              </div>
+            ) : (
+              <p className="min-w-0 flex-1 truncate text-[11px] text-muted">{latest.result.detail}</p>
+            )}
+            <p className="shrink-0 font-display text-lg leading-none text-amber">{latest.result.total}</p>
+          </>
+        ) : (
+          <p className="truncate text-[11px] text-muted">Roll a die, or click a score on a sheet.</p>
+        )}
+      </div>
 
-      {entries.length > 1 ? (
-        <ul className="mt-1 max-h-16 overflow-auto text-[11px] leading-snug text-muted">
-          {entries.slice(1, 6).map((entry) => (
-            <li key={entry.id} className="flex justify-between gap-2">
-              <span className="min-w-0 truncate">
-                {entry.source && entry.source !== 'Tray' ? `${entry.source} · ` : ''}
-                {entry.result.expr}
-              </span>
-              <span className="shrink-0 text-parchment">{entry.result.total}</span>
+      <ul className="mt-1 grid min-h-0 flex-1 grid-rows-4 text-[11px] leading-none text-muted">
+        {Array.from({ length: DICE_HISTORY_SLOTS }, (_, index) => {
+          const entry = entries[index + 1]
+          return (
+            <li key={entry?.id ?? `empty-${index}`} className="flex min-h-0 items-center justify-between gap-2">
+              {entry ? (
+                <>
+                  <span className="min-w-0 truncate">{entryLabel(entry)}</span>
+                  <span className="shrink-0 text-parchment">{entry.result.total}</span>
+                </>
+              ) : null}
             </li>
-          ))}
-        </ul>
-      ) : null}
+          )
+        })}
+      </ul>
     </section>
   )
 }

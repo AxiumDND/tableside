@@ -104,6 +104,7 @@ test('map note exposes fog tools and covers the map without error', async () => 
   await expect(dmWindow.getByRole('button', { name: 'Line' })).toBeVisible()
   await expect(dmWindow.getByRole('button', { name: 'Cone' })).toBeVisible()
   await expect(dmWindow.getByRole('button', { name: 'Round' })).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Square' })).toBeVisible()
   await dmWindow.getByRole('button', { name: 'Pin' }).click()
   await expect(dmWindow.getByRole('button', { name: 'Add pin' })).toBeVisible()
   await expect(dmWindow.getByRole('button', { name: 'Edit pin' })).toBeVisible()

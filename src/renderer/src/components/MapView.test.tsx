@@ -59,6 +59,7 @@ describe('MapView', () => {
     expect(screen.getByRole('button', { name: 'Line' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Cone' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Round' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Square' })).toBeTruthy()
     expect(screen.getByText(/Scale map sets 5 ft squares/)).toBeTruthy()
   })
 
@@ -67,6 +68,13 @@ describe('MapView', () => {
     renderMap()
     await user.click(screen.getByRole('button', { name: 'Round' }))
     expect(screen.getByText(/Click the center \(30 ft radius\)/)).toBeTruthy()
+  })
+
+  it('arms Square and asks for a center click in feet', async () => {
+    const user = userEvent.setup()
+    renderMap()
+    await user.click(screen.getByRole('button', { name: 'Square' }))
+    expect(screen.getByText(/Click the center \(30 ft square\)/)).toBeTruthy()
   })
 
   it('arms Cone with a drag-to-aim hint', async () => {
@@ -80,7 +88,7 @@ describe('MapView', () => {
     const user = userEvent.setup()
     renderMap()
     await user.click(screen.getByRole('button', { name: 'Scale map' }))
-    expect(screen.getByText(/Click two points that are 5 ft apart/)).toBeTruthy()
+    expect(screen.getByText(/Click a printed grid corner/)).toBeTruthy()
   })
 
   it('does not show an all-token Size slider', async () => {

@@ -8,7 +8,7 @@ Also read:
 - [TABLE.md](TABLE.md) — DM console, combat, Lookup, player display
 - [RECIPES.md](RECIPES.md) — game night sheet → initiative, Lookup → campaign note, music, crawl (also in-app **Help**)
 - [MARKDOWN.md](MARKDOWN.md) — wikilinks, callouts, `statblock` field reference
-- [AI-CAMPAIGN.md](AI-CAMPAIGN.md) — spec for an AI converting a vault into this layout (1.7.11: map 5 ft grid, measure templates, combat conditions)
+- [AI-CAMPAIGN.md](AI-CAMPAIGN.md) — spec for an AI converting a vault into this layout (1.7.12: map grid origin, square template, compact dice tray)
 - [Additional Books/README.md](../Additional%20Books/README.md) — optional book text for Lookup
 
 ## Folder layout

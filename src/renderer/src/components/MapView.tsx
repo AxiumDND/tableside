@@ -7,7 +7,8 @@ import { useMapLiveView } from '../hooks/useMapLiveView'
 import { useCreatureSpaces } from '../hooks/useCreatureSpaces'
 import { useMapTokens, type MapTokens } from '../hooks/useMapTokens'
 import { useMapPins, type MapPins } from '../hooks/useMapPins'
-import { cellFromSpan, clampScaleFeet, FEET_PER_SQUARE, imageAspect, snapTokenPoint } from '../lib/mapGrid'
+import { cellFromSpan, clampScaleFeet, FEET_PER_SQUARE, gridStepY, imageAspect, snapTokenPoint, spanWidthFraction } from '../lib/mapGrid'
+import { mapLayout, imagePointFromLayout } from '../lib/mapCamera'
 import {
   clampMeasureFeet,
   MEASURE_FEET_DEFAULT,
@@ -252,6 +253,8 @@ export default function MapView({
       pins: current?.pins ?? [],
       tokens: current?.tokens ?? [],
       tokenScale: current?.tokenScale ?? TOKEN_SCALE_DEFAULT,
+      gridX: current?.gridX ?? 0,
+      gridY: current?.gridY ?? 0,
       pinsLocked: current?.pinsLocked ?? true,
       ...partial,
       ...(fogApiRef.current?.fields() ?? { fog: '', fogSize: 0 })
@@ -264,11 +267,27 @@ export default function MapView({
   }
 
   function pointFromEvent(event: { clientX: number; clientY: number }): { x: number; y: number } | null {
+    const view = viewportRef.current
+    const size = imageSize
+    if (view && size && size.w > 0 && size.h > 0) {
+      const pane = view.getBoundingClientRect()
+      const layout = mapLayout(cameraRef.current, view.clientWidth, view.clientHeight, size.w, size.h)
+      const mapped = imagePointFromLayout(event.clientX, event.clientY, pane, layout, size)
+      if (mapped) return mapped
+    }
     return imagePointFromElement(contentRef.current, event.clientX, event.clientY)
   }
 
   function snapPoint(point: { x: number; y: number }, space: CreatureSpace): { x: number; y: number } {
-    return snapTokenPoint(point.x, point.y, tokens.tokenScale, space, imageAspect(imageSize))
+    return snapTokenPoint(
+      point.x,
+      point.y,
+      tokens.tokenScale,
+      space,
+      imageAspect(imageSize),
+      dataRef.current?.gridX ?? 0,
+      dataRef.current?.gridY ?? 0
+    )
   }
 
   function cancelScale(): void {
@@ -296,7 +315,9 @@ export default function MapView({
   }
 
   function applyScaleFromSpan(a: { x: number; y: number }, b: { x: number; y: number }): void {
-    tokens.applyScaleNow(cellFromSpan(a, b, clampScaleFeet(scaleFeet), imageAspect(imageSize)))
+    const aspect = imageAspect(imageSize)
+    const cell = cellFromSpan(a, b, clampScaleFeet(scaleFeet), aspect)
+    tokens.applyScaleNow(cell, a)
     cancelScale()
   }
 
@@ -430,13 +451,27 @@ export default function MapView({
   const canEditPins = !pinsLocked && pinCount > 0
   const tokensLocked = tool === 'fog' || tool === 'reveal' || tool === 'pin'
   const placingOnBoard = scaleArmed || Boolean(measureKind)
+  const aspect = imageAspect(imageSize)
+  const scaleHoverPoint = scaleHover ?? scaleFirst
+  const scalePreview =
+    scaleArmed && scaleFirst && scaleHoverPoint
+      ? spanWidthFraction(scaleFirst, scaleHoverPoint, aspect) > 0.004
+      : false
+  const gridCell = scalePreview && scaleFirst && scaleHoverPoint
+    ? cellFromSpan(scaleFirst, scaleHoverPoint, clampScaleFeet(scaleFeet), aspect)
+    : tokens.tokenScale
+  const gridOriginX = scaleArmed && scaleFirst ? scaleFirst.x : (data?.gridX ?? 0)
+  const gridOriginY = scaleArmed && scaleFirst ? scaleFirst.y : (data?.gridY ?? 0)
+  const previewStepY = gridStepY(gridCell, aspect)
   const scaleHint = scaleArmed
     ? scaleFirst
-      ? `Click the second point (${clampScaleFeet(scaleFeet)} ft)`
-      : `Click two points that are ${clampScaleFeet(scaleFeet)} ft apart`
+      ? `Click the opposite corner of that ${clampScaleFeet(scaleFeet)} ft span`
+      : `Click a printed grid corner, then another ${clampScaleFeet(scaleFeet)} ft away`
     : measureKind === 'round'
       ? `Click the center (${clampMeasureFeet(measureFeet)} ft radius)`
-      : measureKind === 'cone'
+      : measureKind === 'square'
+        ? `Click the center (${clampMeasureFeet(measureFeet)} ft square)`
+        : measureKind === 'cone'
         ? `Click origin, drag to aim (${clampMeasureFeet(measureFeet)} ft cone)`
         : measureKind === 'line'
           ? `Click origin, drag to aim (${clampMeasureFeet(measureFeet)} ft line)`
@@ -547,7 +582,12 @@ export default function MapView({
               onPointerUp={onBoardPointerUp}
               onPointerLeave={onBoardPointerLeave}
             >
-              <MapGridOverlay cell={tokens.tokenScale} aspect={imageAspect(imageSize)} />
+              <MapGridOverlay
+                cell={gridCell}
+                aspect={aspect}
+                originX={gridOriginX}
+                originY={gridOriginY}
+              />
               {scaleArmed && scaleFirst ? (
                 <svg
                   className="pointer-events-none absolute inset-0 z-[6] h-full w-full"
@@ -555,6 +595,21 @@ export default function MapView({
                   preserveAspectRatio="none"
                   aria-hidden
                 >
+                  {scalePreview ? (
+                    <rect
+                      x={scaleFirst.x}
+                      y={scaleFirst.y}
+                      width={
+                        (scaleHoverPoint && scaleHoverPoint.x < scaleFirst.x ? -1 : 1) * gridCell
+                      }
+                      height={
+                        (scaleHoverPoint && scaleHoverPoint.y < scaleFirst.y ? -1 : 1) * previewStepY
+                      }
+                      fill="rgb(232 201 140 / 0.18)"
+                      stroke="rgb(232 201 140 / 0.9)"
+                      strokeWidth={0.004}
+                    />
+                  ) : null}
                   <line
                     x1={scaleFirst.x}
                     y1={scaleFirst.y}

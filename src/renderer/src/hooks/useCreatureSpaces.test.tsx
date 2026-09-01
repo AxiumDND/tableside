@@ -6,7 +6,7 @@ import type { MapNoteData, MapToken } from '../lib/mapNote'
 import type { PickerTab, TokenPick } from '../components/MapViewHelpers'
 
 function mapData(overrides: Partial<MapNoteData> = {}): MapNoteData {
-  return { image: '', pins: [], tokens: [], tokenScale: 1, pinsLocked: true, fog: '', fogSize: 0, ...overrides }
+  return { image: '', pins: [], tokens: [], tokenScale: 1, gridX: 0, gridY: 0, pinsLocked: true, fog: '', fogSize: 0, ...overrides }
 }
 
 function statblock(size: string): string {

@@ -31,6 +31,9 @@ export interface MapNoteData {
   tokens: MapToken[]
   /** One 5 ft square as a fraction of map width (Medium token diameter). */
   tokenScale: number
+  /** Image point the 5 ft grid must pass through (first Scale-map click). */
+  gridX: number
+  gridY: number
   pinsLocked: boolean
   fog: string
   fogSize: number
@@ -38,10 +41,10 @@ export interface MapNoteData {
 
 /**
  * One 5 ft square as a fraction of map width (also the Medium token diameter).
- * Wide enough for a 4-square room or a ~125-square dungeon on one image.
+ * Wide enough for a 2-square close-up or a ~125-square dungeon on one image.
  */
 export const TOKEN_SCALE_MIN = 0.008
-export const TOKEN_SCALE_MAX = 0.25
+export const TOKEN_SCALE_MAX = 0.5
 export const TOKEN_SCALE_DEFAULT = 0.05
 
 export const SPACE_SQUARES: Record<CreatureSpace, number> = {
@@ -242,6 +245,8 @@ export function parseMapYaml(raw: string): MapNoteData {
     pins: [],
     tokens: [],
     tokenScale: TOKEN_SCALE_DEFAULT,
+    gridX: 0,
+    gridY: 0,
     pinsLocked: true,
     fog: '',
     fogSize: DEFAULT_FOG_SIZE
@@ -302,6 +307,16 @@ export function parseMapYaml(raw: string): MapNoteData {
       i += 1
       continue
     }
+    if (key === 'gridx') {
+      data.gridX = clamp01(Number(value))
+      i += 1
+      continue
+    }
+    if (key === 'gridy') {
+      data.gridY = clamp01(Number(value))
+      i += 1
+      continue
+    }
     if (key === 'pinslocked') {
       data.pinsLocked = !/^(false|no|0)$/i.test(value)
       i += 1
@@ -348,6 +363,10 @@ export function serializeMapYaml(data: MapNoteData): string {
     }
   }
   lines.push(`tokenScale: ${clampTokenScale(data.tokenScale ?? TOKEN_SCALE_DEFAULT)}`)
+  if ((data.gridX ?? 0) !== 0 || (data.gridY ?? 0) !== 0) {
+    lines.push(`gridX: ${clamp01(data.gridX ?? 0)}`)
+    lines.push(`gridY: ${clamp01(data.gridY ?? 0)}`)
+  }
   lines.push(`pinsLocked: ${data.pinsLocked ? 'true' : 'false'}`)
   if (data.fog) {
     lines.push(`fogSize: ${data.fogSize || DEFAULT_FOG_SIZE}`)

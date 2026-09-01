@@ -56,8 +56,30 @@ describe('map measure templates', () => {
     expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(Math.SQRT2 * 0.3, 2)
   })
 
+  it('builds a cube whose side is the template length, centered on the click', () => {
+    const shape = measureShape('square', { x: 0.5, y: 0.5 }, null, 20, 0.1, 1)
+    expect(shape.kind).toBe('polygon')
+    if (shape.kind !== 'polygon') return
+    const xs = shape.points.map((p) => p.x)
+    const ys = shape.points.map((p) => p.y)
+    expect(Math.min(...xs)).toBeCloseTo(0.3)
+    expect(Math.max(...xs)).toBeCloseTo(0.7)
+    expect(Math.min(...ys)).toBeCloseTo(0.3)
+    expect(Math.max(...ys)).toBeCloseTo(0.7)
+  })
+
+  it('keeps a square template square in pixels on a tall image', () => {
+    const shape = measureShape('square', { x: 0.4, y: 0.4 }, null, 10, 0.1, 2)
+    if (shape.kind !== 'polygon') throw new Error('expected polygon')
+    const xs = shape.points.map((p) => p.x)
+    const ys = shape.points.map((p) => p.y)
+    expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(0.2)
+    expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(0.1)
+  })
+
   it('labels templates in feet', () => {
     expect(measureLabel('round', 20)).toBe('20 ft radius')
+    expect(measureLabel('square', 15)).toBe('15 ft square')
     expect(measureLabel('cone', 30)).toBe('30 ft cone')
     expect(measureLabel('line', 60)).toBe('60 ft line')
   })

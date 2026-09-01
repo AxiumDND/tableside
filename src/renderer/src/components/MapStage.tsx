@@ -161,7 +161,7 @@ export default function MapStage({
             src={src}
             alt=""
             draggable={false}
-            className="pointer-events-none h-full w-full select-none"
+            className="pointer-events-none block h-full w-full select-none"
           />
           {underlay}
           {fogOnTop ? null : <canvas ref={canvasRef} className="map-fog" />}

@@ -1,7 +1,7 @@
 import { FEET_PER_SQUARE, gridStepY } from './mapGrid'
 import { clampTokenScale } from './mapNote'
 
-export type MeasureKind = 'line' | 'cone' | 'round'
+export type MeasureKind = 'line' | 'cone' | 'round' | 'square'
 
 export const MEASURE_FEET_DEFAULT = 30
 export const MEASURE_FEET_MIN = 5
@@ -63,6 +63,19 @@ export function measureShape(
       ry: length * stepY(safeCell, aspect)
     }
   }
+  if (kind === 'square') {
+    const o = toSquare(origin, safeCell, aspect)
+    const half = length / 2
+    return {
+      kind: 'polygon',
+      points: [
+        toImage({ x: o.x - half, y: o.y - half }, safeCell, aspect),
+        toImage({ x: o.x + half, y: o.y - half }, safeCell, aspect),
+        toImage({ x: o.x + half, y: o.y + half }, safeCell, aspect),
+        toImage({ x: o.x - half, y: o.y + half }, safeCell, aspect)
+      ]
+    }
+  }
   const angle = measureBearing(origin, aim ?? origin, safeCell, aspect)
   const o = toSquare(origin, safeCell, aspect)
   if (kind === 'line') {
@@ -99,6 +112,7 @@ export function measureShape(
 export function measureLabel(kind: MeasureKind, feet: number): string {
   const n = clampMeasureFeet(feet)
   if (kind === 'round') return `${n} ft radius`
+  if (kind === 'square') return `${n} ft square`
   if (kind === 'cone') return `${n} ft cone`
   return `${n} ft line`
 }

@@ -18,7 +18,7 @@ function token(overrides: Partial<MapToken> & { id: string; label: string }): Ma
 }
 
 function mapData(overrides: Partial<MapNoteData> = {}): MapNoteData {
-  return { image: '', pins: [], tokens: [], tokenScale: 1, pinsLocked: true, fog: '', fogSize: 0, ...overrides }
+  return { image: '', pins: [], tokens: [], tokenScale: 1, gridX: 0, gridY: 0, pinsLocked: true, fog: '', fogSize: 0, ...overrides }
 }
 
 function emptyCatalog(): Record<PickerTab, TokenPick[]> {
@@ -111,6 +111,12 @@ describe('useMapTokens', () => {
     act(() => view.result.current.applyScaleNow(0.08))
     expect(persist).toHaveBeenCalledWith({ tokenScale: 0.08 })
     expect(view.result.current.tokenScale).toBe(0.08)
+  })
+
+  it('applyScaleNow can pin the grid to the first click', () => {
+    const { view, persist } = setup()
+    act(() => view.result.current.applyScaleNow(0.08, { x: 0.12, y: 0.4 }))
+    expect(persist).toHaveBeenCalledWith({ tokenScale: 0.08, gridX: 0.12, gridY: 0.4 })
   })
 
   it('filters catalog picks by the query', () => {

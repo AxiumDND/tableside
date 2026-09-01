@@ -1,6 +1,6 @@
 # How to use Tableside
 
-Step-by-step for a night at the table. Current release: **1.7.11**.
+Step-by-step for a night at the table. Current release: **1.7.12**.
 
 Tableside is a **local Windows DM console**. Your laptop holds the notes. A second monitor (TV) shows players a clean picture — maps, art, initiative, or a sci-fi opening crawl. There is no account and no internet required once the app is installed.
 
@@ -8,7 +8,7 @@ Deeper reference: [TABLE.md](TABLE.md) (every control), [CAMPAIGN.md](CAMPAIGN.m
 
 ## Install
 
-1. Download **[Tableside-Setup-1.7.11.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
+1. Download **[Tableside-Setup-1.7.12.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
 2. Run it. Per-user install — Start Menu + desktop shortcut. No admin.
 3. If Windows says **Windows protected your PC**, click **More info**, then **Run anyway**. The installer is not code-signed. That is expected.
 4. Open **Tableside**.
@@ -64,7 +64,7 @@ PDFs open for you only. They are not sent to the TV. Use an image under `Maps/Ar
 1. Right-click **Maps/** → **New map…**. Pick an existing campaign image or **Load image…** (copied into `Maps/Art/` and named like the note).
 2. The map fills the center. Tools: **Pan**, **Pin**, **Token**, **Fog**. Extra options sit under the selected tool.
 3. On **Pan**, click **Scale map**, then two points that are 5 feet apart (or type another length). Tokens snap to that 5 ft grid.
-4. **Line**, **Cone**, and **Round** drop a feet-sized template on that grid (default 30 ft). Click origin and drag to aim; **Round** is a radius at the click. Esc clears. Templates stay on the DM map only.
+4. **Line**, **Cone**, **Round**, and **Square** drop a feet-sized template on that grid (default 30 ft). Click origin and drag to aim; **Round** is a radius at the click; **Square** is a cube centered on the click. Esc clears. Templates stay on the DM map only.
 5. Scroll to zoom. Drag to pan.
 6. **Pins** are DM-only. **Tokens** (Party / NPCs / Bestiary portraits) and **fog** show on the TV.
 7. **Show to players**. The TV follows as you zoom, pan, paint fog, or move tokens.

@@ -3,12 +3,16 @@ import { gridLinePositions } from '../lib/mapGrid'
 /** Faint 5 ft grid over the map image. Coordinates are 0–1 of the image box. */
 export default function MapGridOverlay({
   cell,
-  aspect
+  aspect,
+  originX = 0,
+  originY = 0
 }: {
   cell: number
   aspect: number
+  originX?: number
+  originY?: number
 }) {
-  const { vertical, horizontal } = gridLinePositions(cell, aspect)
+  const { vertical, horizontal } = gridLinePositions(cell, aspect, originX, originY)
   if (vertical.length === 0 && horizontal.length === 0) return null
   return (
     <svg

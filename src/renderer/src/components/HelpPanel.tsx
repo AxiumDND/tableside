@@ -550,9 +550,9 @@ export default function HelpPanel({
               <>
                 Map notes (<Code>```map</Code> fence) show <Action>Pan</Action> / <Action>Pin</Action> /{' '}
                 <Action>Token</Action> / <Action>Fog</Action>. Extra controls open as a submenu. On Pan,{' '}
-                <Action>Scale map</Action> — click two points that are 5 ft (or another length) apart. Tokens snap to
-                that grid. <Action>Line</Action> / <Action>Cone</Action> / <Action>Round</Action> drop a feet-sized
-                template (click origin, drag to aim; Round is a radius). Esc clears. Templates are DM-only.
+                <Action>Scale map</Action> — click two printed grid corners that are 5 ft (or another length) apart. Tokens snap to
+                that grid. <Action>Line</Action> / <Action>Cone</Action> / <Action>Round</Action> / <Action>Square</Action> drop a feet-sized
+                template (click origin, drag to aim; Round is a radius, Square is a cube). Esc clears. Templates are DM-only.
                 Large/Huge stay 2×/3× a Medium token.
               </>
             ]}
@@ -704,7 +704,7 @@ export default function HelpPanel({
         <Section id="keys" title="Dice & shortcuts" open={open} onToggle={toggle}>
           <Sub>Dice tray</Sub>
           <p>
-            Bottom of the left column: d4–d20 plus a custom expression such as <Code>2d6+3</Code>. Rolls feed the same
+            Bottom of the left column: d4–d100 plus a custom expression such as <Code>2d6+3</Code>. Rolls feed the same
             log as combat and statblock clicks.
           </p>
           <Sub>Keys</Sub>

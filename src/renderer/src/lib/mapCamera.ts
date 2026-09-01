@@ -64,6 +64,23 @@ export function mapLayout(
   }
 }
 
+/** Pointer → 0–1 image point using the camera layout (not the unscaled layout box). */
+export function imagePointFromLayout(
+  clientX: number,
+  clientY: number,
+  pane: { left: number; top: number },
+  layout: { tx: number; ty: number; scale: number },
+  natural: { w: number; h: number }
+): { x: number; y: number } | null {
+  const visW = natural.w * layout.scale
+  const visH = natural.h * layout.scale
+  if (visW <= 0 || visH <= 0) return null
+  return {
+    x: Math.min(1, Math.max(0, (clientX - pane.left - layout.tx) / visW)),
+    y: Math.min(1, Math.max(0, (clientY - pane.top - layout.ty) / visH))
+  }
+}
+
 /** Keep the image point under the cursor while zooming; the crop fills the pane. */
 export function zoomCameraAt(
   camera: MapCamera,

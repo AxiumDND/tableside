@@ -6,7 +6,7 @@ import { BRUSH_MAX, BRUSH_MIN } from '../lib/mapFog'
 import type { MapNoteData } from '../lib/mapNote'
 
 function mapData(overrides: Partial<MapNoteData> = {}): MapNoteData {
-  return { image: '', pins: [], tokens: [], tokenScale: 1, pinsLocked: true, fog: '', fogSize: 0, ...overrides }
+  return { image: '', pins: [], tokens: [], tokenScale: 1, gridX: 0, gridY: 0, pinsLocked: true, fog: '', fogSize: 0, ...overrides }
 }
 
 function setup() {

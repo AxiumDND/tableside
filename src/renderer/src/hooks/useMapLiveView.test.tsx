@@ -8,7 +8,7 @@ import type { MapNoteData, MapToken } from '../lib/mapNote'
 import type { PlayerMapView } from '../../../shared/types'
 
 function mapData(overrides: Partial<MapNoteData> = {}): MapNoteData {
-  return { image: 'cave.png', pins: [], tokens: [], tokenScale: 1, pinsLocked: true, fog: '', fogSize: 0, ...overrides }
+  return { image: 'cave.png', pins: [], tokens: [], tokenScale: 1, gridX: 0, gridY: 0, pinsLocked: true, fog: '', fogSize: 0, ...overrides }
 }
 
 function token(overrides: Partial<MapToken> & { id: string; label: string }): MapToken {

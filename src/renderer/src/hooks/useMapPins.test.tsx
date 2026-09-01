@@ -9,7 +9,7 @@ function pin(overrides: Partial<MapPin> & { id: string; label: string }): MapPin
 }
 
 function mapData(overrides: Partial<MapNoteData> = {}): MapNoteData {
-  return { image: '', pins: [], tokens: [], tokenScale: 1, pinsLocked: false, fog: '', fogSize: 0, ...overrides }
+  return { image: '', pins: [], tokens: [], tokenScale: 1, gridX: 0, gridY: 0, pinsLocked: false, fog: '', fogSize: 0, ...overrides }
 }
 
 function setup(overrides: { pins?: MapPin[]; pinsLocked?: boolean; tokenSelected?: boolean; markdown?: string } = {}) {

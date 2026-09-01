@@ -63,7 +63,7 @@ export function MapPanToolbar({
       <button
         type="button"
         onClick={onToggleScale}
-        title="Click two points on the map that are this many feet apart. Tokens snap to 5 ft squares."
+        title="Click two printed grid corners that are this many feet apart. The overlay lines up with the first click."
         className={toolButton(scaleArmed)}
       >
         Scale map
@@ -104,6 +104,14 @@ export function MapPanToolbar({
         className={toolButton(measureKind === 'round')}
       >
         Round
+      </button>
+      <button
+        type="button"
+        title="Cube — side length in feet, centered on the click"
+        onClick={() => onMeasureKind('square')}
+        className={toolButton(measureKind === 'square')}
+      >
+        Square
       </button>
       <label className="flex items-center gap-1" title="Template length or radius">
         <input

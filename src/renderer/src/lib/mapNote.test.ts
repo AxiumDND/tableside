@@ -12,6 +12,7 @@ import {
   parseCreatureSpace,
   parseMapYaml,
   replaceMapFence,
+  TOKEN_SCALE_MAX,
   tokenDiameter,
   tokenPortraitPath,
   uniquePinId
@@ -145,7 +146,7 @@ tokens:
     expect(data.tokens[2].space).toBe('medium')
     expect(tokenDiameter(data.tokenScale, 'large')).toBeCloseTo(0.12)
     expect(tokenDiameter(data.tokenScale, 'medium')).toBeCloseTo(0.06)
-    expect(clampTokenScale(0.5)).toBe(0.25)
+    expect(clampTokenScale(1)).toBe(TOKEN_SCALE_MAX)
     expect(clampTokenScale(0.001)).toBe(0.008)
     expect(parseCreatureSpace('Huge fiend')).toBe('huge')
     expect(creatureSpaceFromMarkdown('```statblock\nsize: Large\n```')).toBe('large')
@@ -154,6 +155,15 @@ tokens:
     expect(next).toContain('space: large')
     expect(next).not.toContain('size: 0.')
     expect(extractMapNote(next)?.tokens).toHaveLength(3)
+  })
+
+  it('round-trips the measured grid origin', () => {
+    const data = parseMapYaml('image: x.png\npins: []\ntokenScale: 0.08\ngridX: 0.03\ngridY: 0.11\n')
+    expect(data.gridX).toBeCloseTo(0.03)
+    expect(data.gridY).toBeCloseTo(0.11)
+    const next = replaceMapFence('# Map\n\n```map\nimage: x.png\npins: []\n```\n', data)
+    expect(next).toContain('gridX: 0.03')
+    expect(next).toContain('gridY: 0.11')
   })
 
   it('resolves a PC token portrait from the character name, not the PC — prefix', () => {

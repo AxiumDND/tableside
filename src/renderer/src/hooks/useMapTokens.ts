@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type Dispatch, type MutableRefObject, type SetStateAction } from 'react'
 import {
   TOKEN_SCALE_DEFAULT,
+  clamp01,
   clampTokenScale,
   creatureSpaceFromMarkdown,
   uniquePinId,
@@ -32,7 +33,7 @@ export interface MapTokens {
   /** Update the draft and persist after a short debounce. */
   setScale: (size: number) => void
   /** Update the draft and persist immediately (two-click scale / Shift+scroll). */
-  applyScaleNow: (size: number) => void
+  applyScaleNow: (size: number, anchor?: { x: number; y: number }) => void
   pickToken: (item: TokenPick) => void
   /** Clear placement / selection / scale draft (call when the open map changes). */
   reset: () => void
@@ -50,7 +51,7 @@ export function useMapTokens(opts: {
   catalog: Record<PickerTab, TokenPick[]>
   spaceBySource: Record<string, CreatureSpace>
   setSpaceBySource: Dispatch<SetStateAction<Record<string, CreatureSpace>>>
-  persist: (partial: { tokens?: MapToken[]; tokenScale?: number }) => void
+  persist: (partial: { tokens?: MapToken[]; tokenScale?: number; gridX?: number; gridY?: number }) => void
   onDeselectPins: () => void
 }): MapTokens {
   const {
@@ -145,13 +146,16 @@ export function useMapTokens(opts: {
     }, 150)
   }
 
-  function applyScaleNow(size: number): void {
+  function applyScaleNow(size: number, anchor?: { x: number; y: number }): void {
     const next = clampTokenScale(size)
     const current = dataRef.current
     if (!current) return
     if (scaleTimer.current) window.clearTimeout(scaleTimer.current)
     setScaleDraft(next)
-    persistRef.current({ tokenScale: next })
+    persistRef.current({
+      tokenScale: next,
+      ...(anchor ? { gridX: clamp01(anchor.x), gridY: clamp01(anchor.y) } : {})
+    })
   }
 
   function pickToken(item: TokenPick): void {

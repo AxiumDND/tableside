@@ -34,6 +34,22 @@ describe('map grid', () => {
     expect(cellFromSpan({ x: 0, y: 0 }, { x: 1, y: 0 }, 5, 1)).toBe(TOKEN_SCALE_MAX)
   })
 
+  it('ignores a slight off-axis wobble so a grid edge stays one square', () => {
+    expect(cellFromSpan({ x: 0.2, y: 0.5 }, { x: 0.3, y: 0.508 }, 5, 1)).toBeCloseTo(0.1)
+  })
+
+  it('aligns overlay lines to a measured grid origin', () => {
+    const { vertical } = gridLinePositions(0.1, 1, 0.03, 0)
+    expect(vertical[0]).toBeCloseTo(0.03)
+    expect(vertical[1]).toBeCloseTo(0.13)
+  })
+
+  it('snaps Medium tokens to centers of the origin-shifted grid', () => {
+    const snapped = snapTokenPoint(0.12, 0.11, 0.1, 'medium', 1, 0.03, 0.03)
+    expect(snapped.x).toBeCloseTo(0.08)
+    expect(snapped.y).toBeCloseTo(0.08)
+  })
+
   it('snaps Medium tokens to cell centers', () => {
     const snapped = snapTokenPoint(0.12, 0.11, 0.1, 'medium', 1)
     expect(snapped.x).toBeCloseTo(0.15)

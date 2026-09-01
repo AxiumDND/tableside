@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { clampCamera, FIT_CAMERA, mapLayout, panCamera, zoomCameraAt } from './mapCamera'
+import { clampCamera, FIT_CAMERA, imagePointFromLayout, mapLayout, panCamera, zoomCameraAt } from './mapCamera'
 import {
   createFog,
   decodeFog,
@@ -41,6 +41,16 @@ describe('map camera', () => {
     expect(next.zoom).toBe(2)
     expect(next.centerX).toBeCloseTo(0.5)
     expect(next.centerY).toBeCloseTo(0.5)
+  })
+
+  it('maps a click through letterboxed camera layout, not the unscaled box', () => {
+    const layout = mapLayout(FIT_CAMERA, 400, 300, 800, 400)
+    const pane = { left: 10, top: 20 }
+    const topLeft = imagePointFromLayout(10, 70, pane, layout, { w: 800, h: 400 })
+    const center = imagePointFromLayout(210, 170, pane, layout, { w: 800, h: 400 })
+    expect(topLeft).toEqual({ x: 0, y: 0 })
+    expect(center?.x).toBeCloseTo(0.5)
+    expect(center?.y).toBeCloseTo(0.5)
   })
 
   it('pans in image space from a pixel drag', () => {
