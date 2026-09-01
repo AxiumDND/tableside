@@ -4,6 +4,7 @@ import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { createSessionNoteMarkdown, type SessionNoteMarkdownDeps } from './SessionNoteMarkdown'
 import { linkWikiNotes, parseNightEncounters, type CampaignNote } from '../lib/notes'
+import { buildBlockIndex } from '../../../shared/blockIndex'
 
 const NOTES: CampaignNote[] = [
   { relativePath: 'NPCs/Ash.md', name: 'Ash.md', stem: 'Ash' },
@@ -251,5 +252,45 @@ describe('SessionNoteMarkdown', () => {
     expect(screen.getByText('Scene')).toBeTruthy()
     expect(screen.getByText('Opening — Hire at the Grey Mare')).toBeTruthy()
     expect(screen.getByText(/Rain on the shutters/)).toBeTruthy()
+  })
+
+  it('renders a links card that lists other blocks', () => {
+    const md = [
+      '[!links]',
+      '[!/links]',
+      '',
+      '[!warning] Trip-line',
+      'Watch your step.',
+      '[!/warning]',
+      ''
+    ].join('\n')
+    renderNote(md, { blockIndex: buildBlockIndex(md) })
+    expect(screen.getByText('Links')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'warning — Trip-line' })).toBeTruthy()
+  })
+
+  it('selects an inline image for the player screen', async () => {
+    const user = userEvent.setup()
+    const onSelectImage = vi.fn()
+    const images = [{ relativePath: 'Art/Mill.webp', name: 'Mill.webp', title: 'Mill' }]
+    renderNote('![The mill](Art/Mill.webp)\n', { images, onSelectImage })
+    const pick = screen.getByRole('button', { name: /The mill/ })
+    await user.click(pick)
+    expect(onSelectImage).toHaveBeenCalledWith('Art/Mill.webp')
+  })
+
+  it('shows Edit on a callout when block editing is enabled', async () => {
+    const user = userEvent.setup()
+    const onBlockEdit = vi.fn()
+    const md = ['[!warning] Trip-line', 'Watch your step.', '[!/warning]', ''].join('\n')
+    renderNote(md, {
+      blockEditEnabled: true,
+      onBlockEdit,
+      onBlockDone: vi.fn(),
+      blockIndex: buildBlockIndex(md)
+    })
+    const edit = screen.getByRole('button', { name: 'Edit' })
+    await user.click(edit)
+    expect(onBlockEdit).toHaveBeenCalledTimes(1)
   })
 })

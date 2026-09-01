@@ -1,6 +1,6 @@
 import { type ComponentProps, type ReactNode } from 'react'
 import Markdown from 'react-markdown'
-import type { CalloutBlock, CalloutKind } from '../../../shared/callouts'
+import type { CalloutBlock } from '../../../shared/callouts'
 import type { BlockIndex } from '../../../shared/blockIndex'
 import { serializeCombatCallout, type CombatFields } from '../../../shared/combatFields'
 import {
@@ -12,18 +12,12 @@ import {
 } from '../lib/notes'
 import { markdownUrlTransform } from '../lib/images'
 import CombatCard from './CombatCard'
+import type { WrapSheetBlock } from './sessionNoteShell'
 
 type MarkdownComponents = ComponentProps<typeof Markdown>['components']
 type CombatCardOnEnsure = ComponentProps<typeof CombatCard>['onEnsureMonster']
 
-export type WrapSheetBlock = (
-  blockKey: string,
-  part: CalloutBlock,
-  defaultKind: CalloutKind,
-  readContent: ReactNode,
-  editContent?: ReactNode,
-  headerRight?: ReactNode
-) => ReactNode
+export type { WrapSheetBlock }
 
 export type RenderNoteMarkdown = (
   text: string,

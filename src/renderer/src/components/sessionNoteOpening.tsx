@@ -34,7 +34,7 @@ import type {
   PlayerVideo
 } from '../../../shared/types'
 import { resolveMarkdownImageSrc, type CampaignImage, type CampaignVideo } from '../lib/images'
-import type { WrapSheetBlock } from './sessionNoteCombat'
+import type { WrapSheetBlock } from './sessionNoteShell'
 import CrawlCard from './CrawlCard'
 import LegendCard from './LegendCard'
 import GalleryCard from './GalleryCard'
