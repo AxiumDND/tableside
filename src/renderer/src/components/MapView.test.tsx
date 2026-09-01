@@ -55,6 +55,23 @@ describe('MapView', () => {
     expect(screen.getByRole('button', { name: 'Token' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Fog' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Fit' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Scale map' })).toBeTruthy()
+    expect(screen.getByText(/Scale map sets 5 ft squares/)).toBeTruthy()
+  })
+
+  it('arms Scale map and asks for two clicks', async () => {
+    const user = userEvent.setup()
+    renderMap()
+    await user.click(screen.getByRole('button', { name: 'Scale map' }))
+    expect(screen.getByText(/Click two points that are 5 ft apart/)).toBeTruthy()
+  })
+
+  it('does not show an all-token Size slider', async () => {
+    const user = userEvent.setup()
+    renderMap()
+    await user.click(screen.getByRole('button', { name: 'Token' }))
+    expect(screen.getByText(/Pick a creature, then click the map/)).toBeTruthy()
+    expect(screen.queryByText(/^Size$/)).toBeNull()
   })
 
   it('covers the map with fog and persists it through onChange', async () => {

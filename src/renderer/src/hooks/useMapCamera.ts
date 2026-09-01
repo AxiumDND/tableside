@@ -29,13 +29,13 @@ export interface MapCameraControls {
 /**
  * Owns the map camera (pan/zoom/fit) and the mount-only non-passive wheel
  * listener. Shift+wheel is delegated via `onShiftWheel` so fog-brush and
- * token-scale adjustments stay with those hooks.
+ * map-scale nudges stay with those tools.
  */
 export function useMapCamera(opts: {
   paneRef: RefObject<HTMLElement | null>
   contentRef: RefObject<HTMLElement | null>
   viewportRef: RefObject<HTMLElement | null>
-  /** Return true when Shift+wheel was handled (fog brush / token scale). */
+  /** Return true when Shift+wheel was handled (fog brush / map scale). */
   onShiftWheel?: (event: WheelEvent) => boolean
 }): MapCameraControls {
   const { paneRef, contentRef, viewportRef } = opts

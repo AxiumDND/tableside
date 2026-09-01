@@ -29,15 +29,19 @@ export interface MapNoteData {
   image: string
   pins: MapPin[]
   tokens: MapToken[]
+  /** One 5 ft square as a fraction of map width (Medium token diameter). */
   tokenScale: number
   pinsLocked: boolean
   fog: string
   fogSize: number
 }
 
-/** Medium token diameter as a fraction of map width. */
-export const TOKEN_SCALE_MIN = 0.02
-export const TOKEN_SCALE_MAX = 0.1
+/**
+ * One 5 ft square as a fraction of map width (also the Medium token diameter).
+ * Wide enough for a 4-square room or a ~125-square dungeon on one image.
+ */
+export const TOKEN_SCALE_MIN = 0.008
+export const TOKEN_SCALE_MAX = 0.25
 export const TOKEN_SCALE_DEFAULT = 0.05
 
 export const SPACE_SQUARES: Record<CreatureSpace, number> = {

@@ -1,9 +1,4 @@
-import {
-  TOKEN_SCALE_MAX,
-  TOKEN_SCALE_MIN,
-  clampTokenScale,
-  type MapPin
-} from '../lib/mapNote'
+import { type MapPin } from '../lib/mapNote'
 import { BRUSH_MAX, BRUSH_MIN } from '../lib/mapFog'
 import { MAX_ZOOM, MIN_ZOOM } from '../lib/mapCamera'
 import { toolButton, type MapTool, type PinAction, type PickerTab, type TokenPick } from './MapViewHelpers'
@@ -35,16 +30,46 @@ export function MapPrimaryToolbar({
 
 export function MapPanToolbar({
   zoom,
+  scaleArmed,
+  scaleFeet,
+  scaleHint,
   onZoomChange,
-  onFit
+  onFit,
+  onToggleScale,
+  onScaleFeetChange
 }: {
   zoom: number
+  scaleArmed: boolean
+  scaleFeet: number
+  scaleHint: string
   onZoomChange: (zoom: number) => void
   onFit: () => void
+  onToggleScale: () => void
+  onScaleFeetChange: (feet: number) => void
 }) {
   return (
     <div className="flex flex-wrap items-center gap-1.5 border-b border-line bg-panel px-3 py-1.5 text-[11px] text-muted">
-      <span>Drag to pan · players see tokens, not pins</span>
+      <span>{scaleHint}</span>
+      <button
+        type="button"
+        onClick={onToggleScale}
+        title="Click two points on the map that are this many feet apart. Tokens snap to 5 ft squares."
+        className={toolButton(scaleArmed)}
+      >
+        Scale map
+      </button>
+      <label className="flex items-center gap-1" title="Length of the span you will click">
+        <input
+          type="number"
+          min={5}
+          max={200}
+          step={5}
+          value={scaleFeet}
+          onChange={(event) => onScaleFeetChange(Number(event.target.value))}
+          className="h-6 w-12 rounded border border-line bg-ink px-1 text-parchment tabular-nums"
+        />
+        ft
+      </label>
       <label className="flex items-center gap-1.5" title="Scroll also zooms toward the cursor">
         Zoom
         <input
@@ -153,36 +178,16 @@ export function MapPinToolbar({
 
 export function MapTokenToolbar({
   pendingToken,
-  tokenScale,
   selectedTokenId,
-  onTokenScaleChange,
   onDeleteToken
 }: {
   pendingToken: TokenPick | null
-  tokenScale: number
   selectedTokenId: string | null
-  onTokenScaleChange: (scale: number) => void
   onDeleteToken: (id: string) => void
 }) {
   return (
     <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted">
       <span>{pendingToken ? `Click the map to place ${pendingToken.label}` : 'Pick a creature, then click the map'}</span>
-      <label
-        className="flex items-center gap-1.5"
-        title="Scales every token. Large is 2× Medium, Huge 3×, Gargantuan 4×. Shift+scroll."
-      >
-        Size
-        <input
-          type="range"
-          min={TOKEN_SCALE_MIN}
-          max={TOKEN_SCALE_MAX}
-          step={0.005}
-          value={tokenScale}
-          onChange={(event) => onTokenScaleChange(clampTokenScale(Number(event.target.value)))}
-          className="h-1 w-24 accent-amber"
-        />
-        <span className="w-8 tabular-nums text-parchment">{Math.round(tokenScale * 100)}%</span>
-      </label>
       {selectedTokenId ? (
         <button
           type="button"

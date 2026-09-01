@@ -93,6 +93,7 @@ test('map note exposes fog tools and covers the map without error', async () => 
   // MapView mounted for a map note → primary tool toolbar is present.
   await expect(dmWindow.getByRole('button', { name: 'Fog' })).toBeVisible({ timeout: 15_000 })
   await expect(dmWindow.getByRole('button', { name: 'Fit' })).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Scale map' })).toBeVisible()
   await dmWindow.getByRole('button', { name: 'Pin' }).click()
   await expect(dmWindow.getByRole('button', { name: 'Add pin' })).toBeVisible()
   await expect(dmWindow.getByRole('button', { name: 'Edit pin' })).toBeVisible()

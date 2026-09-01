@@ -29,9 +29,9 @@ export interface MapTokens {
   addToken: (point: { x: number; y: number }) => void
   moveToken: (id: string, x: number, y: number) => void
   deleteToken: (id: string) => void
-  /** Update the draft and persist after a short debounce (slider). */
+  /** Update the draft and persist after a short debounce. */
   setScale: (size: number) => void
-  /** Update the draft and persist immediately (Shift+scroll). */
+  /** Update the draft and persist immediately (two-click scale / Shift+scroll). */
   applyScaleNow: (size: number) => void
   pickToken: (item: TokenPick) => void
   /** Clear placement / selection / scale draft (call when the open map changes). */
@@ -39,7 +39,7 @@ export interface MapTokens {
 }
 
 /**
- * Owns map-token selection, the placement picker, token scale, and token CRUD.
+ * Owns map-token selection, the placement picker, 5 ft cell size, and token CRUD.
  * Persistence is injected so the caller can write tokens/scale through the
  * shared map-note commit path (including current fog).
  */
