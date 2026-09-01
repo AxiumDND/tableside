@@ -54,10 +54,8 @@ import {
   headingId,
   splitLeadingSceneArt,
   splitMarkdownSections,
-  splitCombatCardContent,
   splitCalloutBlocks,
   isCombatHeading,
-  missingCombatantTokens,
   type CampaignNote,
   type NightEncounter
 } from '../lib/notes'
@@ -66,7 +64,6 @@ import CrawlCard from './CrawlCard'
 import LegendCard from './LegendCard'
 import GalleryCard from './GalleryCard'
 import VideoCard from './VideoCard'
-import CombatCard from './CombatCard'
 import TreasureCard from './TreasureCard'
 import NoteWikiLink from './NoteWikiLink'
 import GmOnly from './GmOnly'
@@ -77,14 +74,8 @@ import SheetArtFrame from './SheetArtFrame'
 import SheetBlockShell, { BLOCK_KIND_LABELS } from './SheetBlockShell'
 import BlockMarkdownEditor from './BlockMarkdownEditor'
 import LinksCard, { type BlockNavEntry } from './LinksCard'
-import {
-  serializeTreasureCallout,
-  type TreasureFields
-} from '../../../shared/treasureFields'
-import {
-  serializeCombatCallout,
-  type CombatFields
-} from '../../../shared/combatFields'
+import { serializeTreasureCallout, type TreasureFields } from '../../../shared/treasureFields'
+import { renderBoxedCombatSection, renderCombatCalloutBlock } from './sessionNoteCombat'
 
 export type SessionNoteMarkdownDeps = {
   markdown: string
@@ -395,44 +386,29 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
     blockEditing: boolean,
     encounterScope?: string
   ): ReactNode {
-    const heading = part.title?.trim() || 'Combat'
-    const sectionId = encounterSectionId(heading, encounterScope)
-    const encounter = encounters.find((item) => item.id === sectionId)
-    const canAdd = Boolean(encounter && onAddEncounter)
-    const initiativeAction = canAdd ? (
-      <button
-        type="button"
-        title="Load these sheets plus every PC in PCs/party. Anyone already listed is skipped. NPCs/monsters at init 0 are rolled."
-        onClick={() => onAddEncounterClick(encounter!)}
-        className="rounded bg-amber px-2 py-0.5 text-[11px] font-semibold text-on-amber"
-      >
-        {addingId === encounter!.id ? 'Adding…' : 'Add to initiative'}
-      </button>
-    ) : null
-    const rawCombat = blockIndex?.get(blockKey)?.block ?? part
-    const card = (
-      <CombatCard
-        title={rawCombat.title}
-        body={rawCombat.markdown}
-        editing={blockEditing}
-        disabled={disabled}
-        onChange={(fields: CombatFields) => onBlockSave?.(blockKey, serializeCombatCallout(fields))}
-        adding={Boolean(encounter && addingId === encounter.id)}
-        onAdd={blockEditEnabled ? undefined : canAdd ? () => onAddEncounterClick(encounter!) : undefined}
-        missing={missingCombatantTokens(rawCombat.markdown, path, noteIndex)}
-        sheetPath={path}
-        notes={gearNotes ?? noteIndex}
-        system={system}
-        onEnsureMonster={onEnsureMonster}
-        markdownComponents={markdownComponents}
-        urlTransform={markdownUrlTransform}
-      />
-    )
-    return (
-      <div key={key}>
-        {wrapSheetBlock(blockKey, part, 'combat', card, blockEditing ? card : undefined, initiativeAction)}
-      </div>
-    )
+    return renderCombatCalloutBlock({
+      part,
+      key,
+      blockKey,
+      blockEditing,
+      encounterScope,
+      encounters,
+      addingId,
+      onAddEncounter,
+      onAddEncounterClick,
+      blockIndex,
+      disabled,
+      onBlockSave,
+      path,
+      noteIndex,
+      gearNotes,
+      system,
+      onEnsureMonster,
+      markdownComponents,
+      wrapSheetBlock,
+      blockEditEnabled,
+      encounterSectionId
+    })
   }
 
   function renderPartyBlock(
@@ -977,49 +953,25 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
           </div>
         )
       }
-      const { card, rest } = splitCombatCardContent(section.markdown)
-      const cardParts = splitCalloutBlocks(card)
-      const cardCrawls = cardParts.filter((block) => block.kind === 'crawl').length
-      const cardLegends = cardParts.filter((block) => block.kind === 'legend').length
-      const cardGalleries = cardParts.filter((block) => block.kind === 'gallery').length
-      const cardVideos = cardParts.filter((block) => block.kind === 'video').length
-      return (
-        <div key={key}>
-          <CombatCard
-            title={section.heading}
-            adding={Boolean(encounter && addingId === encounter.id)}
-            onAdd={encounter && onAddEncounter ? () => onAddEncounterClick(encounter) : undefined}
-            missing={missingCombatantTokens(section.markdown, path, noteIndex)}
-          >
-            {renderMarkdown(
-              card.replace(/^#{1,2}\s+[^\n]+\n?/, ''),
-              `${key}-card`,
-              crawlOff,
-              legendOff,
-              galleryOff,
-              videoOff,
-              encounterScope,
-              sectionIndex,
-              blockPathPrefix
-            )}
-          </CombatCard>
-          {rest.trim() ? (
-            <div className="markdown-body">
-              {renderMarkdown(
-                rest,
-                `${key}-rest`,
-                crawlOff + cardCrawls,
-                legendOff + cardLegends,
-                galleryOff + cardGalleries,
-                videoOff + cardVideos,
-                encounterScope,
-                sectionIndex,
-                blockPathPrefix
-              )}
-            </div>
-          ) : null}
-        </div>
-      )
+      return renderBoxedCombatSection({
+        key,
+        heading: section.heading,
+        markdown: section.markdown,
+        encounter,
+        addingId,
+        onAddEncounter,
+        onAddEncounterClick,
+        path,
+        noteIndex,
+        crawlOff,
+        legendOff,
+        galleryOff,
+        videoOff,
+        encounterScope,
+        sectionIndex,
+        blockPathPrefix,
+        renderMarkdown
+      })
     })
   }
 
@@ -1065,47 +1017,23 @@ export function createSessionNoteMarkdown(deps: SessionNoteMarkdownDeps): {
           </div>
         )
       }
-      const { card, rest } = splitCombatCardContent(section.markdown)
-      const cardParts = splitCalloutBlocks(card)
-      const cardCrawls = cardParts.filter((block) => block.kind === 'crawl').length
-      const cardLegends = cardParts.filter((block) => block.kind === 'legend').length
-      const cardGalleries = cardParts.filter((block) => block.kind === 'gallery').length
-      const cardVideos = cardParts.filter((block) => block.kind === 'video').length
-      return (
-        <div key={key}>
-          <CombatCard
-            title={section.heading}
-            adding={Boolean(encounter && addingId === encounter.id)}
-            onAdd={encounter && onAddEncounter ? () => onAddEncounterClick(encounter) : undefined}
-            missing={missingCombatantTokens(section.markdown, path, noteIndex)}
-          >
-            {renderMarkdown(
-              card.replace(/^#{1,2}\s+[^\n]+\n?/, ''),
-              `${key}-card`,
-              crawlOff,
-              legendOff,
-              galleryOff,
-              videoOff,
-              undefined,
-              index
-            )}
-          </CombatCard>
-          {rest.trim() ? (
-            <div className="markdown-body">
-              {renderMarkdown(
-                rest,
-                `${key}-rest`,
-                crawlOff + cardCrawls,
-                legendOff + cardLegends,
-                galleryOff + cardGalleries,
-                videoOff + cardVideos,
-                undefined,
-                index
-              )}
-            </div>
-          ) : null}
-        </div>
-      )
+      return renderBoxedCombatSection({
+        key,
+        heading: section.heading,
+        markdown: section.markdown,
+        encounter,
+        addingId,
+        onAddEncounter,
+        onAddEncounterClick,
+        path,
+        noteIndex,
+        crawlOff,
+        legendOff,
+        galleryOff,
+        videoOff,
+        sectionIndex: index,
+        renderMarkdown
+      })
     })
   }
 
