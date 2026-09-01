@@ -1,12 +1,13 @@
-/** Parchment legend scroll — original user text only. Reuses crawl music timing. */
+/** Parchment legend scroll — original user text only. Rise length follows the body. */
 
 import { replaceNthCallout, serializeFencedCallout } from './callouts'
 import {
   CRAWL_FADE_OUT_MS,
   CRAWL_MUSIC_LEAD_MS,
   CRAWL_SYNC_MS,
+  crawlEndImageRef,
   crawlMusicRef,
-  crawlEndImageRef
+  crawlWordCount
 } from './openingCrawl'
 import type { LegendLookId } from './types'
 
@@ -169,12 +170,23 @@ export function legendMusicStartDelayMs(_preface?: string | null): number {
   return Math.max(0, LEGEND_HOLD_MS - CRAWL_MUSIC_LEAD_MS)
 }
 
-export function legendBodyDurationMs(): number {
-  return Math.max(0, CRAWL_SYNC_MS - CRAWL_MUSIC_LEAD_MS)
+/** Shortest rise so a few paragraphs still travel the full frame. */
+export const LEGEND_SCROLL_MIN_MS = 24_000
+/** Cap so a long chronicle does not outlast typical campfire music. */
+export const LEGEND_SCROLL_MAX_MS = 88_000
+/** Reading pace for the rise (~175 wpm, plus time to enter and leave the frame). */
+export const LEGEND_MS_PER_WORD = 340
+
+export function legendDurationMs(title?: string, body?: string): number {
+  const words = crawlWordCount(title, body ?? '')
+  return Math.min(
+    LEGEND_SCROLL_MAX_MS,
+    Math.max(LEGEND_SCROLL_MIN_MS, Math.round(Math.max(1, words) * LEGEND_MS_PER_WORD))
+  )
 }
 
-export function legendDurationMs(_title?: string | undefined, _body?: string): number {
-  return legendBodyDurationMs()
+export function legendBodyDurationMs(title?: string, body?: string): number {
+  return legendDurationMs(title, body)
 }
 
 export interface LegendCalloutFields {

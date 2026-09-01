@@ -15,6 +15,8 @@ const campaign = {
 const noopHandlers = {
   onNewCampaign: () => {},
   onOpenCampaign: () => {},
+  onToggleSidebar: () => {},
+  onToggleRightPanel: () => {},
   onToggleLookup: () => {},
   onToggleCombat: () => {},
   onToggleMusic: () => {},
@@ -24,7 +26,14 @@ const noopHandlers = {
 describe('DmHeader', () => {
   it('renders the toolbar buttons and the open campaign name', () => {
     render(
-      <DmHeader campaign={campaign} rightPanel={null} combatCount={0} mixerActive={false} {...noopHandlers} />
+      <DmHeader
+        campaign={campaign}
+        rightPanel={null}
+        combatCount={0}
+        mixerActive={false}
+        sidebarOpen
+        {...noopHandlers}
+      />
     )
     expect(screen.getByText('Greystead')).toBeTruthy()
     for (const label of ['New campaign', 'Open campaign', 'Lookup', 'Combat', 'Music', 'Help']) {
@@ -34,14 +43,28 @@ describe('DmHeader', () => {
 
   it('shows a placeholder when no campaign is open', () => {
     render(
-      <DmHeader campaign={null} rightPanel={null} combatCount={0} mixerActive={false} {...noopHandlers} />
+      <DmHeader
+        campaign={null}
+        rightPanel={null}
+        combatCount={0}
+        mixerActive={false}
+        sidebarOpen
+        {...noopHandlers}
+      />
     )
     expect(screen.getByText('No campaign open')).toBeTruthy()
   })
 
   it('shows the combatant count and mixer indicator', () => {
     render(
-      <DmHeader campaign={campaign} rightPanel="combat" combatCount={3} mixerActive={true} {...noopHandlers} />
+      <DmHeader
+        campaign={campaign}
+        rightPanel="combat"
+        combatCount={3}
+        mixerActive={true}
+        sidebarOpen
+        {...noopHandlers}
+      />
     )
     expect(screen.getByRole('button', { name: /Combat \(3\)/ })).toBeTruthy()
     expect(screen.getByRole('button', { name: /Music ·/ })).toBeTruthy()
@@ -57,6 +80,7 @@ describe('DmHeader', () => {
         rightPanel={null}
         combatCount={0}
         mixerActive={false}
+        sidebarOpen
         {...noopHandlers}
         onToggleCombat={onToggleCombat}
         onToggleLookup={onToggleLookup}
@@ -66,5 +90,65 @@ describe('DmHeader', () => {
     await user.click(screen.getByRole('button', { name: 'Lookup' }))
     expect(onToggleCombat).toHaveBeenCalledOnce()
     expect(onToggleLookup).toHaveBeenCalledOnce()
+  })
+
+  it('toggles the sidebar from the header icon', async () => {
+    const user = userEvent.setup()
+    const onToggleSidebar = vi.fn()
+    const { rerender } = render(
+      <DmHeader
+        campaign={campaign}
+        rightPanel={null}
+        combatCount={0}
+        mixerActive={false}
+        sidebarOpen
+        {...noopHandlers}
+        onToggleSidebar={onToggleSidebar}
+      />
+    )
+    await user.click(screen.getByRole('button', { name: 'Hide sidebar' }))
+    expect(onToggleSidebar).toHaveBeenCalledOnce()
+    rerender(
+      <DmHeader
+        campaign={campaign}
+        rightPanel={null}
+        combatCount={0}
+        mixerActive={false}
+        sidebarOpen={false}
+        {...noopHandlers}
+        onToggleSidebar={onToggleSidebar}
+      />
+    )
+    expect(screen.getByRole('button', { name: 'Show sidebar' })).toBeTruthy()
+  })
+
+  it('toggles the right panel from the header icon', async () => {
+    const user = userEvent.setup()
+    const onToggleRightPanel = vi.fn()
+    const { rerender } = render(
+      <DmHeader
+        campaign={campaign}
+        rightPanel="combat"
+        combatCount={0}
+        mixerActive={false}
+        sidebarOpen
+        {...noopHandlers}
+        onToggleRightPanel={onToggleRightPanel}
+      />
+    )
+    await user.click(screen.getByRole('button', { name: 'Hide right panel' }))
+    expect(onToggleRightPanel).toHaveBeenCalledOnce()
+    rerender(
+      <DmHeader
+        campaign={campaign}
+        rightPanel={null}
+        combatCount={0}
+        mixerActive={false}
+        sidebarOpen
+        {...noopHandlers}
+        onToggleRightPanel={onToggleRightPanel}
+      />
+    )
+    expect(screen.getByRole('button', { name: 'Show right panel' })).toBeTruthy()
   })
 })

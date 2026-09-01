@@ -2,11 +2,12 @@ import { type ComponentProps, type ReactNode } from 'react'
 import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { CalloutBlock } from '../../../shared/callouts'
-import type { BlockIndex } from '../../../shared/blockIndex'
+import { serializeCalloutBlock, type BlockIndex } from '../../../shared/blockIndex'
 import type { CampaignCurrency } from '../../../shared/currencies'
 import { serializeTreasureCallout, type TreasureFields } from '../../../shared/treasureFields'
 import { markdownUrlTransform, resolveMarkdownImageSrc, type CampaignImage } from '../lib/images'
 import { splitLeadingSceneArt, type CampaignNote } from '../lib/notes'
+import { partyGlanceRemainder, appendPartyCompanionLink, removePartyGlanceLink } from '../lib/partyGlance'
 import type { WrapSheetBlock } from './sessionNoteShell'
 import GmOnly from './GmOnly'
 import PartyCard from './PartyCard'
@@ -133,12 +134,35 @@ export function renderPartyBlock(opts: {
   sectionIndex: number
   blockPath: number[]
   renderSectionedMarkdown: RenderSectionedMarkdown
+  path: string
+  images?: CampaignImage[]
+  noteIndex: CampaignNote[]
+  onOpenNote?: (path: string) => void
+  disabled?: boolean
+  onBlockSave?: (key: string, markdown: string) => void
+  blockIndex?: BlockIndex
 }): ReactNode {
-  const read = (
-    <PartyCard title={opts.part.title}>
-      {opts.part.markdown.trim() && !opts.blockEditing
+  const raw = opts.blockIndex?.get(opts.blockKey)?.block ?? opts.part
+  const remainder = partyGlanceRemainder(raw.markdown)
+  const saveBody = (body: string) => {
+    opts.onBlockSave?.(opts.blockKey, serializeCalloutBlock({ ...raw, markdown: body }))
+  }
+  const card = (
+    <PartyCard
+      title={raw.title}
+      markdown={raw.markdown}
+      fromPath={opts.path}
+      notes={opts.noteIndex}
+      images={opts.images}
+      onOpenNote={opts.onOpenNote}
+      editing={opts.blockEditing}
+      disabled={opts.disabled}
+      onAddNpc={(stem) => saveBody(appendPartyCompanionLink(raw.markdown, stem))}
+      onRemoveNpc={(stem) => saveBody(removePartyGlanceLink(raw.markdown, stem))}
+    >
+      {remainder
         ? opts.renderSectionedMarkdown(
-            opts.part.markdown,
+            remainder,
             `${opts.key}-body`,
             opts.part.title?.trim() || undefined,
             opts.crawlBase,
@@ -153,7 +177,7 @@ export function renderPartyBlock(opts: {
   )
   return (
     <div key={opts.key}>
-      {opts.wrapSheetBlock(opts.blockKey, opts.part, 'party', read)}
+      {opts.wrapSheetBlock(opts.blockKey, opts.part, 'party', card, opts.blockEditing ? card : undefined)}
     </div>
   )
 }

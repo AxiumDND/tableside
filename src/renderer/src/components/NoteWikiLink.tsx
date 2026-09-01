@@ -1,15 +1,18 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
-import { notePreviewFromMarkdown, type NotePreview } from '../lib/notePreview'
+import { notePreviewFromMarkdown, notePreviewImageUrl, type NotePreview } from '../lib/notePreview'
+import type { CampaignImage } from '../lib/images'
 
 const previewCache = new Map<string, NotePreview>()
 
 export default function NoteWikiLink({
   notePath,
   onOpenNote,
+  images,
   children
 }: {
   notePath: string
   onOpenNote?: (path: string) => void
+  images?: CampaignImage[]
   children?: ReactNode
 }) {
   const [open, setOpen] = useState(false)
@@ -46,7 +49,10 @@ export default function NoteWikiLink({
       void window.tabledm
         .readFile(notePath)
         .then((text) => {
-          const next = notePreviewFromMarkdown(notePath, text)
+          const next = {
+            ...notePreviewFromMarkdown(notePath, text),
+            imageUrl: notePreviewImageUrl(notePath, text, images)
+          }
           previewCache.set(notePath, next)
           if (aliveRef.current) setPreview(next)
         })
@@ -82,6 +88,13 @@ export default function NoteWikiLink({
         >
           {preview ? (
             <span className="block space-y-1.5 text-left">
+              {preview.imageUrl ? (
+                <img
+                  src={preview.imageUrl}
+                  alt=""
+                  className="mb-1 max-h-36 w-full rounded object-cover object-top"
+                />
+              ) : null}
               <span className="block font-display text-[15px] text-amber">{preview.title}</span>
               {preview.tagline ? (
                 <span className="block text-[11px] text-muted">{preview.tagline}</span>

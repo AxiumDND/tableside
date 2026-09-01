@@ -16,6 +16,61 @@ test.afterAll(async () => {
   await app?.close()
 })
 
+test('header panel icon hides and restores the left sidebar', async () => {
+  await expect(dmWindow.getByText('Players see')).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Show sidebar' })).toHaveCount(0)
+
+  await dmWindow.getByRole('button', { name: 'Hide sidebar' }).click()
+  await expect(dmWindow.getByText('Players see')).toHaveCount(0)
+  await expect(dmWindow.getByRole('button', { name: 'Show sidebar' })).toBeVisible()
+
+  await dmWindow.getByRole('button', { name: 'Show sidebar' }).click()
+  await expect(dmWindow.getByText('Players see')).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Hide sidebar' })).toBeVisible()
+})
+
+test('header panel icon hides and restores the right panel', async () => {
+  await dmWindow.getByRole('button', { name: 'Combat' }).click()
+  await expect(dmWindow.getByRole('heading', { name: 'Combat' })).toBeVisible()
+
+  await dmWindow.getByRole('button', { name: 'Hide right panel' }).click()
+  await expect(dmWindow.getByRole('heading', { name: 'Combat' })).toHaveCount(0)
+  await expect(dmWindow.getByRole('button', { name: 'Show right panel' })).toBeVisible()
+
+  await dmWindow.getByRole('button', { name: 'Show right panel' }).click()
+  await expect(dmWindow.getByRole('heading', { name: 'Combat' })).toBeVisible()
+  await dmWindow.getByRole('button', { name: 'Hide right panel' }).click()
+})
+
+test('Party folder creates a party roster note', async () => {
+  await dmWindow.getByText(/^Party$/).first().click({ button: 'right' })
+  await dmWindow.getByText('New party roster…').click()
+  await dmWindow.getByRole('heading', { name: 'New party roster' }).waitFor()
+  await dmWindow.getByPlaceholder('Name').fill('Party Roster')
+  await dmWindow.getByRole('button', { name: 'Create' }).click()
+
+  await expect(dmWindow.getByRole('heading', { name: 'Party Roster', level: 1 })).toBeVisible({
+    timeout: 15_000
+  })
+  await expect(dmWindow.getByText('Companions stay in NPCs/')).toBeVisible()
+  await expect(dmWindow.getByRole('columnheader', { name: 'Race' })).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Add to combat' })).toHaveCount(0)
+})
+
+test('Sessions folder creates a session recap note', async () => {
+  await dmWindow.getByText(/^Sessions$/).first().click({ button: 'right' })
+  await dmWindow.getByText('New session recap…').click()
+  await dmWindow.getByRole('heading', { name: 'New session recap' }).waitFor()
+  await dmWindow.getByPlaceholder('Name').fill('Session 9')
+  await dmWindow.getByRole('button', { name: 'Create' }).click()
+
+  await expect(dmWindow.getByRole('heading', { name: 'Session 9 — Recap', level: 1 })).toBeVisible({
+    timeout: 15_000
+  })
+  await expect(dmWindow.getByRole('heading', { name: 'What happened' })).toBeVisible()
+  await expect(dmWindow.getByRole('heading', { name: 'Who sat' })).toBeVisible()
+})
+
 test('combat tracker adds a combatant and starts a round', async () => {
   await dmWindow.getByRole('button', { name: 'Combat' }).click()
 

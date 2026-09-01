@@ -3,7 +3,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 import type { CampaignTreeNode } from '../shared/types'
-import { extOf, safeJoin, sortNodes, toPosix, uniqueFileName } from './campaignFolder'
+import { extOf, listPartyNoteStems, safeJoin, sortNodes, toPosix, uniqueFileName } from './campaignFolder'
 
 describe('safeJoin', () => {
   it('joins paths under the root', () => {
@@ -60,5 +60,17 @@ describe('uniqueFileName', () => {
     expect(uniqueFileName(dir, 'note.md')).toBe('note 2.md')
     writeFileSync(join(dir, 'note 2.md'), 'x', 'utf8')
     expect(uniqueFileName(dir, 'note.md')).toBe('note 3.md')
+  })
+})
+
+describe('listPartyNoteStems', () => {
+  it('skips roster notes when listing Party sheets', async () => {
+    const root = mkdtempSync(join(tmpdir(), 'tableside-party-'))
+    mkdirSync(join(root, 'Party'), { recursive: true })
+    writeFileSync(join(root, 'Party', 'PC — Aria.md'), '# Aria\n', 'utf8')
+    writeFileSync(join(root, 'Party', 'Party Roster.md'), '# Party Roster\n', 'utf8')
+    writeFileSync(join(root, 'Party', 'The Table — Roster.md'), '# The Table\n', 'utf8')
+    const stems = await listPartyNoteStems(root)
+    expect(stems).toEqual(['PC — Aria'])
   })
 })

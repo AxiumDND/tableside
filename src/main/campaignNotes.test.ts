@@ -47,6 +47,15 @@ describe('noteFileName', () => {
   it('uses the game-night sheet stem for nightsheet templates', () => {
     expect(noteFileName('Sessions', 'River Ambush', 'nightsheet')).toMatch(/Game Night Sheet\.md$/i)
   })
+
+  it('uses the recap stem for recap templates', () => {
+    expect(noteFileName('Sessions', 'River Ambush', 'recap')).toMatch(/Recap\.md$/i)
+  })
+
+  it('uses the roster stem for roster templates', () => {
+    expect(noteFileName('Party', 'Party Roster', 'roster')).toBe('Party Roster.md')
+    expect(noteFileName('Party', 'The Table', 'roster')).toBe('The Table — Roster.md')
+  })
 })
 
 describe('saveCampaignFile rename', () => {

@@ -10,6 +10,8 @@ export type SheetTemplateKind =
   | 'spell'
   | 'gear'
   | 'nightsheet'
+  | 'recap'
+  | 'roster'
   | 'map'
   | 'place'
   | 'shop'
@@ -256,7 +258,7 @@ const NIGHTSHEET = `<!--
   {{crawl}} is replaced on Sci-fi campaigns with an Opening crawl sample (Play on the player screen).
   {{legend}} is replaced on Classic, Light, and Vampire campaigns with an Opening legend sample.
   Scene blocks: [!scene] Title … [!/scene] — art, what could happen, nested [!readaloud] / [!gmonly] / [!combat] / [!treasure], optional secrets/NPCs, and table cues.
-  Party roster: [!party] … [!/party] wraps PC links and the Focus tonight note.
+  Party roster: [!party] … [!/party] wraps PC links, companion [[NPC]] lines, and the Focus tonight note. Read mode shows race / class / AC from those sheets.
   Copy a scene block to add another beat. Use // lines for notes that stay in the editor only.
   Combat blocks: [!combat] Title … [!/combat] (nest in a scene or at document level). Legacy ## Combat / Encounter / ⚔️ headings still work.
   party = all PCs. [[Name]] opens a sheet. ![[Art.webp]] then Show to players.
@@ -361,6 +363,70 @@ Hidden truth, rigged outcome, or NPC tell they must not hear yet.
 - Cut if running long:
 [!/combat]
 [!/scene]
+`
+
+const RECAP = `<!--
+  Session recap — notes after the table on what actually happened.
+  Right-click Sessions/ → New session recap…
+  {{party}} is replaced with wikilinks to every Party/ sheet (who sat).
+  Wrap that list in [!party] for the live race / class / AC table.
+  Prep stays on the game night sheet. Secrets stay in [!gmonly].
+-->
+# Session Name — Recap
+
+*After the table. Prep stays on [[Session Name — Game Night Sheet]].*
+
+[!abstract]
+One line: what happened.
+[!/abstract]
+
+## Who sat
+
+[!party]
+{{party}}
+[!/party]
+
+## What happened
+
+- 
+
+## Who and where
+
+- 
+
+## What they have
+
+- 
+
+## Threads
+
+- 
+
+[!gmonly]
+Missed clues, clocks, buried secrets, sheets to update, what to prep next.
+[!/gmonly]
+`
+
+const ROSTER = `<!--
+  Party roster — who is travelling together.
+  Right-click Party/ → New party roster…
+  Individual PCs stay as New player… sheets. Companions stay in NPCs/ and are linked here.
+  {{party}} is replaced with wikilinks to every Party/ sheet.
+  One [!party] lists PCs and any NPCs travelling with them. Read mode shows race / class / AC from those sheets.
+-->
+# Party Roster
+
+*PCs are Party sheets. Companions stay in NPCs/ — link them in the block below.*
+
+[!party]
+{{party}}
+
+- [[NPC Name]] — why they travel
+[!/party]
+
+[!gmonly]
+Who is actually with the group, who is away, and what would split them.
+[!/gmonly]
 `
 
 const MAP = `<!--
@@ -523,6 +589,8 @@ export const FALLBACK_TEMPLATES: Record<Exclude<SheetTemplateKind, 'blank'>, str
   spell: SPELL,
   gear: GEAR,
   nightsheet: NIGHTSHEET,
+  recap: RECAP,
+  roster: ROSTER,
   map: MAP,
   place: PLACE,
   shop: SHOP,
@@ -536,6 +604,8 @@ export const TEMPLATE_PLACEHOLDERS: Record<Exclude<SheetTemplateKind, 'blank'>, 
   spell: 'Spell Name',
   gear: 'Item Name',
   nightsheet: 'Session Name',
+  recap: 'Session Name',
+  roster: 'Party Roster',
   map: 'Map Name',
   place: 'Place Name',
   shop: 'Shop Name',
@@ -549,6 +619,8 @@ export const TEMPLATE_FILE_NAMES: Record<Exclude<SheetTemplateKind, 'blank'>, st
   spell: ['spell.md'],
   gear: ['gear.md', 'item.md', 'equipment.md'],
   nightsheet: ['game night sheet.md', 'gamenightsheet.md', 'night sheet.md', 'nightsheet.md'],
+  recap: ['session recap.md', 'recap.md', 'session log.md'],
+  roster: ['party roster.md', 'roster.md'],
   map: ['map.md'],
   place: ['place.md', 'location.md', 'settlement.md'],
   shop: ['shop.md', 'merchant.md', 'inn.md'],
@@ -577,12 +649,17 @@ export function isPlaceholderHeadingTitle(title: string): boolean {
   const folded = title.trim().toLowerCase()
   if (!folded) return true
   if (PLACEHOLDER_TITLES.has(folded)) return true
-  return PLACEHOLDER_TITLES.has(folded.replace(/\s*[—–-]\s*game\s*night\s*sheet$/i, '').trim())
+  const stripped = folded
+    .replace(/\s*[—–-]\s*game\s*night\s*sheet$/i, '')
+    .replace(/\s*[—–-]\s*recap$/i, '')
+    .replace(/\s*[—–-]\s*roster$/i, '')
+    .trim()
+  return PLACEHOLDER_TITLES.has(stripped)
 }
 
 /**
  * Filename stem that should match an edited `#` title, preserving Party `PC —`
- * and Session `— Game Night Sheet` conventions from the current path.
+ * and Session `— Game Night Sheet` / `— Recap` / Party `— Roster` conventions from the current path.
  */
 export function desiredNoteFileStem(relativePath: string, title: string): string | null {
   if (isPlaceholderHeadingTitle(title)) return null
@@ -597,6 +674,12 @@ export function desiredNoteFileStem(relativePath: string, title: string): string
   if (/game\s*night\s*sheet|night\s*sheet/i.test(currentStem)) {
     stem = gameNightSheetFileStem(stem)
   }
+  if (/\s*[—–-]\s*recap$/i.test(currentStem) || (/\brecap$/i.test(currentStem) && !/game\s*night/i.test(currentStem))) {
+    stem = sessionRecapFileStem(stem)
+  }
+  if (/roster/i.test(currentStem) && !/game\s*night/i.test(currentStem)) {
+    stem = partyRosterFileStem(stem)
+  }
   return stem
 }
 
@@ -606,6 +689,23 @@ export function gameNightSheetFileStem(name: string): string {
   if (/game\s*night\s*sheet/i.test(stem)) return stem
   if (/night\s*sheet/i.test(stem)) return stem.replace(/night\s*sheet/gi, 'Game Night Sheet')
   return `${stem} — Game Night Sheet`
+}
+
+/** `Session 4` → `Session 4 — Recap`. Leaves an existing recap name alone. */
+export function sessionRecapFileStem(name: string): string {
+  const stem = sanitizeFileName(name).replace(/\.md$/i, '')
+  if (/\s*[—–-]\s*recap$/i.test(stem)) return stem.replace(/\s*[—–-]\s*recap$/i, ' — Recap')
+  if (/\s+recap$/i.test(stem) && !/game\s*night/i.test(stem)) return stem.replace(/\s+recap$/i, ' — Recap')
+  return `${stem} — Recap`
+}
+
+/** `The Table` → `The Table — Roster`. `Party Roster` stays `Party Roster`. */
+export function partyRosterFileStem(name: string): string {
+  const stem = sanitizeFileName(name).replace(/\.md$/i, '')
+  if (/^party\s+roster$/i.test(stem)) return 'Party Roster'
+  if (/\s*[—–-]\s*roster$/i.test(stem)) return stem.replace(/\s*[—–-]\s*roster$/i, ' — Roster')
+  if (/\s+roster$/i.test(stem)) return stem.replace(/\s+roster$/i, ' — Roster')
+  return `${stem} — Roster`
 }
 
 export type FillTemplateExtras = {
@@ -636,15 +736,17 @@ export function fillTemplate(
   const placeholder = TEMPLATE_PLACEHOLDERS[kind]
   const title = displayTitle(name)
   let body = source.replace(/^<!--[\s\S]*?-->\s*/, '').split(placeholder).join(title)
-  if (kind === 'nightsheet') {
+  if (kind === 'nightsheet' || kind === 'recap' || kind === 'roster') {
     const stems = extras?.partyStems ?? []
     if (body.includes('{{party}}')) {
       body = body.replaceAll('{{party}}', partyLinkList(stems))
-    } else if (stems.length > 0 && !stems.some((stem) => body.includes(`[[${stem}`))) {
+    } else if (kind === 'nightsheet' && stems.length > 0 && !stems.some((stem) => body.includes(`[[${stem}`))) {
       body = body.replace(/^(# .+\r?\n)/, `$1\n## The characters\n\n${partyLinkList(stems)}\n\n`)
     }
-    body = applyNightsheetCrawl(body, extras?.theme)
-    body = applyNightsheetLegend(body, extras?.theme)
+    if (kind === 'nightsheet') {
+      body = applyNightsheetCrawl(body, extras?.theme)
+      body = applyNightsheetLegend(body, extras?.theme)
+    }
   }
   return body
 }

@@ -113,7 +113,7 @@ Campaigns are ordinary folders on disk. **New campaign** picks a system and a lo
 
 ```
 Start Here/       hub notes (Overview.md — opens first)
-Sessions/         run guides and game night sheets (+ Art/)
+Sessions/         run guides, game night sheets, and session recaps (+ Art/)
 Party/            PC sheets (+ Art/)
 NPCs/             named people (+ Art/)
 Bestiary/         creatures (+ Art/)

@@ -4,7 +4,11 @@ import { emptyPlayerState } from '../../../shared/types'
 import { buildPlayerHandout, isHandoutSheetPath } from '../../../shared/playerHandout'
 import type { MixerState } from '../../../shared/audio'
 import { crawlMusicStartDelayMs, CRAWL_SYNC_MS, CRAWL_FADE_OUT_MS } from '../../../shared/openingCrawl'
-import { legendMusicStartDelayMs, LEGEND_SYNC_MS } from '../../../shared/openingLegend'
+import {
+  LEGEND_HOLD_MS,
+  legendDurationMs,
+  legendMusicStartDelayMs
+} from '../../../shared/openingLegend'
 import { campaignFileUrl, type FileKind } from '../components/CampaignFiles'
 import { imageTitle } from '../lib/images'
 
@@ -171,6 +175,8 @@ export function usePlayerPlayback(setMixer: Dispatch<SetStateAction<MixerState>>
     setMixer(await window.tabledm.mixerArmCrawlMusic())
     const track = musicPath?.trim()
     const musicDelay = legendMusicStartDelayMs(preface)
+    const scrollMs = legendDurationMs(title, body)
+    const overlayMs = LEGEND_HOLD_MS + scrollMs
     if (track) {
       crawlMusicTimerRef.current = window.setTimeout(() => {
         crawlMusicTimerRef.current = null
@@ -180,14 +186,14 @@ export function usePlayerPlayback(setMixer: Dispatch<SetStateAction<MixerState>>
     crawlMusicEndTimerRef.current = window.setTimeout(() => {
       crawlMusicEndTimerRef.current = null
       void window.tabledm.mixerStopCrawlMusic().then(setMixer)
-    }, musicDelay + LEGEND_SYNC_MS)
+    }, overlayMs)
     crawlSettleTimerRef.current = window.setTimeout(() => {
       crawlSettleTimerRef.current = null
       setActiveLegend(null)
       if (!prologueHasEndImageRef.current) {
         void window.tabledm.clearPlayerOverlays().then(setPlayer)
       }
-    }, musicDelay + LEGEND_SYNC_MS + CRAWL_FADE_OUT_MS)
+    }, overlayMs + CRAWL_FADE_OUT_MS)
     setActiveLegend({ title, body })
     setPlayer(await window.tabledm.showLegend({ title, body, logoSrc, preface, endSrc, look }))
   }

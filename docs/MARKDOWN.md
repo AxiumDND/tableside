@@ -252,6 +252,8 @@ Right-click **New …** fills a built-in sheet from the campaign’s system pack
 | `Spell.md` | Spells note |
 | `Gear.md` / `Item.md` / `Equipment.md` | Gear note |
 | `Game Night Sheet.md` / `Night Sheet.md` / `nightsheet.md` | Game night sheet |
+| `Session Recap.md` / `Recap.md` / `Session Log.md` | Session recap |
+| `Party Roster.md` / `Roster.md` | Party roster (who is travelling together) |
 | `Map.md` | Map note (image + DM pins + tokens) |
 | `Place.md` / `Location.md` / `Settlement.md` | Place note (town, site, wilderness, dungeon) |
 | `Shop.md` / `Merchant.md` / `Inn.md` | Shop note (inn, stall, forge, temple) |
@@ -259,7 +261,7 @@ Right-click **New …** fills a built-in sheet from the campaign’s system pack
 
 Leading HTML comments (`<!-- … -->`) are stripped when filling a new note from a template.
 
-Placeholder text such as `Character Name` / `NPC Name` / `Monster Name` / `Place Name` / `Shop Name` / `Faction Name` is replaced with the name you enter. Game night sheets also replace `{{party}}` with wikilinks to every `Party/` sheet.
+Placeholder text such as `Character Name` / `NPC Name` / `Monster Name` / `Place Name` / `Shop Name` / `Faction Name` / `Party Roster` is replaced with the name you enter. Game night sheets, session recaps, and party rosters also replace `{{party}}` with wikilinks to every `Party/` sheet (roster notes skipped).
 
 ## Editing tips
 

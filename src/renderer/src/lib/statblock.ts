@@ -225,6 +225,8 @@ export function extractStatblock(markdown: string): { block: ParsedStatblock; re
 }
 
 export function isNpcSheet(markdown: string, path: string): boolean {
+  const stem = (path.replaceAll('\\', '/').split('/').pop() ?? path).replace(/\.[^.]+$/, '')
+  if (/roster/i.test(stem)) return false
   if (
     pathHasFolder(path, 'gear') ||
     pathHasFolder(path, 'spells') ||

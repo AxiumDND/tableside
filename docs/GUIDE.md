@@ -48,7 +48,7 @@ The left **Files** list is your campaign folder. Click a note to open it in the 
 - Click the search icon next to Files, or press `Ctrl+F` / `/`, to find a note by name. `Esc` clears, then hides the box.
 - **← Back**, `Alt+←`, or the mouse back button returns to the previous note.
 
-Right-click a folder to create a player, NPC, monster, spell, gear, game night sheet, map, place, shop, or faction. **Add art…** copies pictures into that folder’s `Art/`. Name art like the sheet (`Ghoul.webp`) so portraits attach.
+Right-click a folder to create a player, party roster, NPC, monster, spell, gear, game night sheet, session recap, map, place, shop, or faction. **Add art…** copies pictures into that folder’s `Art/`. Name art like the sheet (`Ghoul.webp`) so portraits attach.
 
 ### 2. Show a picture
 
@@ -73,7 +73,7 @@ Large and Huge tokens stay 2× / 3× a Medium token.
 
 Prep on a **game night sheet** (right-click **Sessions/** → **New game night sheet…**):
 
-1. **The Party** — a `[!party]` block with linked PC sheets plus a **Focus tonight** note.
+1. **The Party** — a `[!party]` block with linked PC sheets (and any companion `[[NPC]]` lines) plus a **Focus tonight** note. Read mode shows race, class, and AC from those sheets.
 2. **Scenes** — Opening scene block, then more `[!scene]` blocks (copy one to add a beat). Each can have art, read-aloud, GM-only notes, optional secrets/treasure/NPCs, nested `[!combat]` fights, and **At the table** cues (place, map, checks, music, sound, leads to).
 3. Combatants for a fight **inside a `[!combat]` block** nested in the scene (or at document level):
 
@@ -101,6 +101,8 @@ At the table:
 **Add all players** loads every `Party/` sheet. Lookup monsters can **Add to combat** for this fight only.
 
 Combat saves in hidden `combat.json` until you clear it.
+
+After the session, right-click **Sessions/** → **New session recap…** for notes on what actually happened. Secrets and next-prep go in `[!gmonly]`. Prep stays on the game night sheet. Right-click **Party/** → **New party roster…** for a standing list of who is travelling together (companions stay in `NPCs/` and are linked in the same `[!party]` block).
 
 ### 5. Play music
 

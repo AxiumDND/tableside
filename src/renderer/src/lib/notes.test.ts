@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  allPartyNotes,
   combatantLabel,
   isCombatHeading,
   missingCombatantTokens,
@@ -240,6 +241,15 @@ describe('campaign note lists', () => {
   it('lists npc sheets separately from party and bestiary', () => {
     expect(npcNotes(notes).map((n) => n.stem)).toEqual(['Hale'])
   })
+
+  it('skips roster notes when listing Party sheets', () => {
+    const mixed: CampaignNote[] = [
+      ...notes,
+      { relativePath: 'Party/Party Roster.md', name: 'Party Roster.md', stem: 'Party Roster' },
+      { relativePath: 'Party/The Table — Roster.md', name: 'The Table — Roster.md', stem: 'The Table — Roster' }
+    ]
+    expect(allPartyNotes(mixed).map((n) => n.stem)).toEqual(['PC — Mira'])
+  })
 })
 
 describe('isNpcSheet', () => {
@@ -250,11 +260,15 @@ describe('isNpcSheet', () => {
     expect(isNpcSheet('```statblock\nname: Wolf\n```', 'Bestiary/Wolf.md')).toBe(true)
   })
 
-  it('does not treat Places, Factions, Gear, or Spells as creature sheets', () => {
+  it('does not treat Places, Factions, Gear, Spells, or Party rosters as creature sheets', () => {
     expect(isNpcSheet(infobox, 'Places/The Grey Mare.md')).toBe(false)
     expect(isNpcSheet(infobox, 'Locations/Greystead.md')).toBe(false)
     expect(isNpcSheet(infobox, 'Factions/The Pale Well.md')).toBe(false)
     expect(isNpcSheet(infobox, 'Gear/Magic Items/Ring.md')).toBe(false)
+    expect(isNpcSheet('# Party Roster\n\n[!party]\n- [[Mira]]\n[!/party]\n', 'Party/Party Roster.md')).toBe(
+      false
+    )
+    expect(isNpcSheet('# The Table\n', 'Party/The Table — Roster.md')).toBe(false)
   })
 })
 

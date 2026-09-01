@@ -992,6 +992,7 @@ body,
   overflow: hidden;
   background: #030406;
   color: #d8cfc0;
+  container-type: size;
 }
 
 .opening-legend.is-done {
@@ -1116,18 +1117,20 @@ body,
 
 .opening-legend-tapestry-track {
   position: absolute;
-  left: 14%;
-  right: 14%;
+  left: 0;
+  right: 0;
   top: 0;
-  padding-bottom: 40cqh;
+  font-family: var(--font-display);
+  font-size: clamp(1.2rem, 2.4cqw, 2.1rem);
+  width: min(28em, 72cqw);
+  margin-inline: auto;
   animation: opening-legend-rise var(--legend-ms, 45s) linear forwards;
 }
 
 .opening-legend-para {
-  margin: 0 0 1.05em;
-  font-family: var(--font-display);
-  font-size: clamp(0.5rem, 2.15cqw, 1.05rem);
-  line-height: 1.7;
+  margin: 0 0 1.15em;
+  font-size: inherit;
+  line-height: 1.5;
   text-align: center;
   color: rgba(210, 200, 185, 0.9);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.75);
@@ -1139,10 +1142,10 @@ body,
 
 @keyframes opening-legend-rise {
   from {
-    transform: translateY(32%);
+    transform: translateY(92cqh);
   }
   to {
-    transform: translateY(-95%);
+    transform: translateY(calc(-100% - 10cqh));
   }
 }
 

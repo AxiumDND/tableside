@@ -98,7 +98,6 @@ function Ul({ items }: { items: ReactNode[] }) {
 }
 
 export default function HelpPanel({
-  onClose,
   updateNotice,
   onCheckUpdate,
   onStartUpdate,
@@ -111,7 +110,6 @@ export default function HelpPanel({
   currencies,
   onCurrenciesChange
 }: {
-  onClose?: () => void
   updateNotice?: AppUpdateNotice | null
   onCheckUpdate?: () => void
   onStartUpdate?: () => void
@@ -138,14 +136,7 @@ export default function HelpPanel({
   return (
     <aside className="flex min-h-0 w-[400px] shrink-0 flex-col border-l border-line bg-ink">
       <header className="border-b border-line px-3 py-2">
-        <div className="flex items-center justify-between">
-          <h2 className="font-display text-lg text-amber">Help & settings</h2>
-          {onClose ? (
-            <button type="button" onClick={onClose} className="text-xs text-muted hover:text-amber">
-              Hide
-            </button>
-          ) : null}
-        </div>
+        <h2 className="font-display text-lg text-amber">Help & settings</h2>
         <p className="mt-1 text-[11px] text-muted">
           Campaign look and how to run the table. Click a heading to open it.
         </p>
@@ -316,15 +307,18 @@ export default function HelpPanel({
           <Ul
             items={[
               <>
-                Header: campaign name, New / Open, Lookup, Combat, Music, <strong>Help & settings</strong>. Campaign look
-                lives under Settings (also on <Code>Start Here</Code>). DM-only — the player TV stays black.
+                Header: left and right panel icons, campaign name, New / Open, Lookup, Combat, Music,{' '}
+                <strong>Help & settings</strong>. Campaign look lives under Settings (also on <Code>Start Here</Code>).
+                DM-only — the player TV stays black.
               </>,
               <>
-                Left: <strong>Players see</strong> preview, file tree, dice tray — open by default; <Action>Hide</Action>{' '}
-                collapses it. Hide the preview if you need height inside the sidebar.
+                Left: <strong>Players see</strong> preview, file tree, dice tray — open by default. The panel icon at
+                the left of the header hides it so notes get the full width; click it again to bring the sidebar back.
+                Hide the preview if you need height inside the sidebar.
               </>,
               <>Center: the open note, image, or PDF.</>,
-              <>Right: Combat, Music, Lookup, or this panel — one at a time.</>
+              <>Right: Combat, Music, Lookup, or this panel — one at a time. The panel icon at the right of the
+                header hides it; click it again to bring back the last tool.</>
             ]}
           />
           <Sub>Show maps and art</Sub>
@@ -461,7 +455,7 @@ export default function HelpPanel({
                 art by name. <Code>Esc</Code> clears, then hides the box.
               </>,
               <>
-                Right-click a folder to add a player, NPC, monster, spell, gear, game night sheet, map, place, shop, or
+                Right-click a folder to add a player, party roster, NPC, monster, spell, gear, game night sheet, session recap, map, place, shop, or
                 faction — the sheet comes in ready to fill. <Action>Add art…</Action> on Party, NPCs, Bestiary, Places, Factions, Spells, Sessions,
                 Maps, Handouts, a Gear subsection, or the <Code>Art/</Code> folder itself — pictures go in that
                 folder’s <Code>Art/</Code>. Name them like the sheet (<Code>Ghoul.webp</Code>) so portraits attach.{' '}
@@ -514,6 +508,12 @@ export default function HelpPanel({
                 spell) are sheet headers — portrait and facts for the sheet view. Close with <Code>[!/pc]</Code> etc.
               </>,
               <>
+                <Code>[!party]…[!/party]</Code> is one list of PCs and companion NPCs. Read mode shows a live PC table
+                (name, race, class, AC, HP). Companions appear as links under the table — hover for their sheet.
+                <Action>Edit</Action> → <Action>Add NPC…</Action> pulls from <Code>NPCs/</Code>. Right-click{' '}
+                <Code>Party/</Code> for <Action>New party roster…</Action>.
+              </>,
+              <>
                 <Code>[!scene]…[!/scene]</Code> wraps a beat (nested read-aloud / GM-only allowed). <Code>//</Code> line
                 comments are editor-only.
               </>,
@@ -549,8 +549,10 @@ export default function HelpPanel({
                 Aliases: <Code>encounter</Code>, <Code>fight</Code>. Legacy headings with <Code>Combat</Code>,{' '}
                 <Code>Encounter</Code>, or ⚔️ still work — skip titles that say <Code>no combat</Code>. Right-click
                 Sessions for <Action>New game night sheet…</Action> — Party roster, scene blocks, nested combat, and
-                table cues. Copy a <Code>[!scene]…[!/scene]</Code> block to add another beat. Wrap PC links in{' '}
-                <Code>[!party]…[!/party]</Code>.
+                table cues. Copy a <Code>[!scene]…[!/scene]</Code> block to add another beat. Wrap PC and companion{' '}
+                <Code>[[NPC]]</Code> links in <Code>[!party]…[!/party]</Code> (live race / class / AC from those sheets).
+                After the session, <Action>New session recap…</Action> is notes on what actually happened (plus{' '}
+                <Code>[!gmonly]</Code> for you).
               </>,
               <>
                 Prefer a <Code>[!combat]</Code> block with{" "}

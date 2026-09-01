@@ -19,8 +19,7 @@ export default function CombatTracker({
   system,
   onAddParty,
   onAddBestiary,
-  onChange,
-  onClose
+  onChange
 }: {
   combat: CombatState
   bestiary?: { path: string; name: string }[]
@@ -29,7 +28,6 @@ export default function CombatTracker({
   onAddParty?: () => void
   onAddBestiary?: (path: string) => void
   onChange: (next: CombatState) => void
-  onClose?: () => void
 }) {
   const profile = combatProfileFor(system)
   const [draft, setDraft] = useState({ name: '', initiative: '', hp: '', ac: '', willpower: '', hunger: '' })
@@ -182,16 +180,7 @@ export default function CombatTracker({
   return (
     <section className="flex min-h-0 w-[400px] shrink-0 flex-col border-l border-line bg-ink">
       <header className="border-b border-line px-3 py-2">
-        <div className="flex items-center justify-between">
-          <h2 className="font-display text-lg text-amber">Combat</h2>
-          <div className="flex items-center gap-3">
-            {onClose ? (
-              <button type="button" onClick={onClose} className="text-xs text-muted hover:text-amber">
-                Hide
-              </button>
-            ) : null}
-          </div>
-        </div>
+        <h2 className="font-display text-lg text-amber">Combat</h2>
         <div className="mt-2 flex flex-wrap items-center gap-2">
           {started ? (
             <div className="flex items-center gap-1">

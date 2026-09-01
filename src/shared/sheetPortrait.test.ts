@@ -40,5 +40,7 @@ describe('sheetAcceptsPortrait', () => {
     expect(sheetAcceptsPortrait('faction')).toBe(true)
     expect(sheetAcceptsPortrait('map')).toBe(false)
     expect(sheetAcceptsPortrait('nightsheet')).toBe(false)
+    expect(sheetAcceptsPortrait('recap')).toBe(false)
+    expect(sheetAcceptsPortrait('roster')).toBe(false)
   })
 })

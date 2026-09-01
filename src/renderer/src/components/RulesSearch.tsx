@@ -346,14 +346,12 @@ export default function RulesSearch({
   onAddMonster,
   onSaveToCampaign,
   canSaveToCampaign,
-  system,
-  onClose
+  system
 }: {
   onAddMonster?: (record: SrdRecord) => void
   onSaveToCampaign?: (record: SrdRecord) => Promise<'added' | 'exists' | void> | 'added' | 'exists' | void
   canSaveToCampaign?: boolean
   system?: string | null
-  onClose?: () => void
 }) {
   const pack = getSystemPack(system)
   const [query, setQuery] = useState('')
@@ -419,11 +417,6 @@ export default function RulesSearch({
                   }`
                 : `${pack.lookupSourceLabel} · ${packCount} entries`}
             </span>
-            {onClose ? (
-              <button type="button" onClick={onClose} className="text-xs text-muted hover:text-amber">
-                Hide
-              </button>
-            ) : null}
           </div>
         </div>
         <input

@@ -39,6 +39,12 @@ import { useCampaignNavigation } from '../hooks/useCampaignNavigation'
 
 const SIDE_PANEL_WIDTH = 'w-[400px]'
 
+type RightPanelId = 'combat' | 'lookup' | 'help' | 'music'
+
+function asRightPanelId(value: unknown): RightPanelId | null {
+  return value === 'combat' || value === 'lookup' || value === 'help' || value === 'music' ? value : null
+}
+
 function findTreeNode(nodes: CampaignTreeNode[], path: string): CampaignTreeNode | null {
   for (const node of nodes) {
     if (node.relativePath === path) return node
@@ -100,7 +106,8 @@ export default function DmApp() {
   } = usePlayerPlayback(setMixer)
   const [mixerClock, setMixerClock] = useState(() => emptyMixerClock())
   const [displays, setDisplays] = useState<DisplayInfo[]>([])
-  const [rightPanel, setRightPanel] = useState<'combat' | 'lookup' | 'help' | 'music' | null>(null)
+  const [rightPanel, setRightPanel] = useState<RightPanelId | null>(null)
+  const [lastRightPanel, setLastRightPanel] = useState<RightPanelId>('combat')
   const {
     openPath,
     openKind,
@@ -152,15 +159,9 @@ export default function DmApp() {
     setTheme(nextTheme)
     applyThemeToDocument(nextTheme)
     setRecentCampaigns(prefs.recentCampaigns ?? [])
-    if (
-      prefs.rightPanel === 'combat' ||
-      prefs.rightPanel === 'lookup' ||
-      prefs.rightPanel === 'help' ||
-      prefs.rightPanel === 'music' ||
-      prefs.rightPanel === null
-    ) {
-      setRightPanel(prefs.rightPanel ?? null)
-    }
+    const restoredPanel = asRightPanelId(prefs.rightPanel)
+    setRightPanel(restoredPanel)
+    setLastRightPanel(asRightPanelId(prefs.lastRightPanel) ?? restoredPanel ?? 'combat')
     if (info && !openPath) {
       const remembered =
         prefs.lastOpenPath && findTreeNode(info.tree, prefs.lastOpenPath)
@@ -321,10 +322,15 @@ export default function DmApp() {
     })
   }, [campaign, campaign?.combat])
 
-  function changeRightPanel(next: typeof rightPanel | ((prev: typeof rightPanel) => typeof rightPanel)): void {
+  function changeRightPanel(next: RightPanelId | null | ((prev: RightPanelId | null) => RightPanelId | null)): void {
     setRightPanel((prev) => {
       const value = typeof next === 'function' ? next(prev) : next
-      void window.tabledm.saveSettings({ rightPanel: value })
+      if (value) {
+        setLastRightPanel(value)
+        void window.tabledm.saveSettings({ rightPanel: value, lastRightPanel: value })
+      } else {
+        void window.tabledm.saveSettings({ rightPanel: null })
+      }
       return value
     })
   }
@@ -353,8 +359,19 @@ export default function DmApp() {
         rightPanel={rightPanel}
         combatCount={combat.combatants.length}
         mixerActive={mixerIsActive(mixer)}
+        sidebarOpen={showLeftSidebar}
         onNewCampaign={() => void newCampaign()}
         onOpenCampaign={openFolder}
+        onToggleSidebar={() => {
+          setShowLeftSidebar((open) => {
+            const next = !open
+            void window.tabledm.saveSettings({ showLeftSidebar: next })
+            return next
+          })
+        }}
+        onToggleRightPanel={() => {
+          changeRightPanel((open) => (open ? null : lastRightPanel))
+        }}
         onToggleLookup={() => changeRightPanel((open) => (open === 'lookup' ? null : 'lookup'))}
         onToggleCombat={() => changeRightPanel((open) => (open === 'combat' ? null : 'combat'))}
         onToggleMusic={() => {
@@ -380,19 +397,6 @@ export default function DmApp() {
         {digitalRainEnabled(theme, campaign?.digitalRain) ? <DigitalRain /> : null}
         {showLeftSidebar ? (
           <div className="relative z-[1] flex w-64 shrink-0 flex-col border-r border-line">
-            <div className="flex items-center justify-between border-b border-line px-2 py-1">
-              <span className="text-[10px] uppercase tracking-wider text-muted">Sidebar</span>
-              <button
-                type="button"
-                onClick={() => {
-                  setShowLeftSidebar(false)
-                  void window.tabledm.saveSettings({ showLeftSidebar: false })
-                }}
-                className="text-[11px] text-muted hover:text-amber"
-              >
-                Hide
-              </button>
-            </div>
             <PlayerPreview
               state={player}
               hidden={!showPlayerPreview}
@@ -444,22 +448,7 @@ export default function DmApp() {
             )}
             <DiceTray />
           </div>
-        ) : (
-          <div className="relative z-[1] flex w-9 shrink-0 flex-col items-center border-r border-line py-2">
-            <button
-              type="button"
-              onClick={() => {
-                setShowLeftSidebar(true)
-                void window.tabledm.saveSettings({ showLeftSidebar: true })
-              }}
-              className="rounded border border-line px-1 py-2 text-[11px] hover:border-amber"
-              style={{ writingMode: 'vertical-rl' }}
-              title="Show sidebar"
-            >
-              Show sidebar
-            </button>
-          </div>
-        )}
+        ) : null}
         <div className="relative z-[1] flex min-h-0 min-w-0 flex-1">
         <SessionNotes
           path={openPath}
@@ -538,7 +527,6 @@ export default function DmApp() {
             state={mixer}
             clock={mixerClock}
             disabled={!campaign}
-            onClose={() => changeRightPanel(null)}
           />
         ) : null}
         {rightPanel === 'combat' ? (
@@ -557,7 +545,6 @@ export default function DmApp() {
             onAddParty={addPartyToCombat}
             onAddBestiary={(path) => void addBestiaryToCombat(path)}
             onChange={(next) => void saveCombat(next)}
-            onClose={() => changeRightPanel(null)}
           />
         ) : null}
         {rightPanel === 'lookup' ? (
@@ -567,13 +554,11 @@ export default function DmApp() {
               onAddMonster={addMonster}
               onSaveToCampaign={saveLookupToCampaign}
               canSaveToCampaign={Boolean(campaign)}
-              onClose={() => changeRightPanel(null)}
             />
           </div>
         ) : null}
         {rightPanel === 'help' ? (
           <HelpPanel
-            onClose={() => changeRightPanel(null)}
             updateNotice={updateNotice}
             onCheckUpdate={() => void window.tabledm.checkForUpdate(true)}
             onStartUpdate={() => void window.tabledm.startUpdate()}

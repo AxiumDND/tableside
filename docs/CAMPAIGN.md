@@ -22,9 +22,9 @@ audio.json        mixer volumes and last playlists (hidden)
 
 Start Here/       hub notes — opens first if present
   Overview.md     campaign hook and links
-Sessions/         run guides and game night sheets
+Sessions/         run guides, game night sheets, and session recaps
   Art/            establishing shots
-Party/            PC sheets (Add all players)
+Party/            PC sheets (Add all players) and optional party roster
   Art/            PC portraits
 NPCs/             named people
   Art/            NPC portraits
@@ -84,7 +84,7 @@ Book text for Lookup is **not** part of a campaign. Put PHB / DMG exports in the
 
 Right-click a folder in the file tree:
 
-- **New player / NPC / monster / spell / gear / game night sheet / map / place / shop / faction** — fills the built-in sheet for that type and substitutes the name
+- **New player / NPC / monster / spell / gear / game night sheet / session recap / party roster / map / place / shop / faction** — fills the built-in sheet for that type and substitutes the name
 - **New note** — empty markdown
 - **Add art…** — import images into that folder’s `Art/` (creates `Art/` if needed). Name files like the sheet so portraits attach
 - **Add files…** — import notes, PDFs, or other files into the folder you clicked
@@ -160,7 +160,7 @@ Supported image types: `.png`, `.jpg`, `.jpeg`, `.webp`, `.gif`, `.svg`, `.bmp`.
 | --- | --- | --- |
 | `readaloud` | `flavor` | Player-facing text to speak |
 | `scene` | `beat` | Scene card — art, what could happen, nested read-aloud, cues. Copy a block to add another beat. |
-| `party` | `roster`, `pcs` | Party roster card on a game night sheet — PC links and Focus tonight. |
+| `party` | `roster`, `pcs` | Party card — PC and companion NPC links; read mode shows race / class / AC / HP from those sheets. |
 | `crawl` | `opening` | Opening crawl. Play (Sci-fi look only) shows a starfield, a far-off line (`preface:`), a generic emblem (or the first `![[image]]`), then a perspective prologue. Optional `music:` path under `Audio/Music/` overrides the mood playlist while that track plays, then resumes it. Write your own words. |
 | `gmonly` | `secret` | Collapsed GM-only block |
 | `infobox` | — | Sheet header / portrait card |
@@ -201,7 +201,11 @@ You can also **Add to campaign** from Lookup (monster → Bestiary, spell → Sp
 
 A **game night sheet** is a session note with a Party roster block and scene blocks that hold the night's beats. Right-click **Sessions** → **New game night sheet…** for The Party and Scenes. Existing `Party/` sheets are linked in automatically. New files are named `Session N — Game Night Sheet.md`. Sci-fi campaigns also get an Opening crawl sample — rewrite it, then **Play**.
 
-Wrap PC links in `[!party]…[!/party]` (optional Focus tonight note inside). Scene blocks use `[!scene] Title` … `[!/scene]`. Put optional art with `![[…]]`, a short “what could happen” note, nested `[!readaloud]` for spoken text, nested `[!gmonly]` for hidden prep, nested `[!combat]` for fights, optional secrets/treasure/NPC bullets, and an **At the table** cue list (place, map, checks, if they miss, music, sound, leads to). Copy a whole scene block to add another beat.
+A **session recap** is notes after the table on what actually happened. Right-click **Sessions** → **New session recap…**. New files are named `Session N — Recap.md`. The open note is what the table knows; `[!gmonly]` is yours. Prep stays on the game night sheet.
+
+A **party roster** is who is travelling together. Right-click **Party** → **New party roster…**. `Party Roster` stays `Party Roster.md`; other names become `The Table — Roster.md`. Player sheets stay as **New player…**; companions stay in `NPCs/` and are linked in the same `[!party]` block. Combat still skips notes whose name matches `roster`.
+
+Wrap PC and companion NPC links in `[!party]…[!/party]`. Read mode shows a live PC table (name, race, class, AC, HP); companions sit as links under the table (hover for the sheet). **Edit** → **Add NPC…** to pick from `NPCs/`. Scene blocks use `[!scene] Title` … `[!/scene]`. Put optional art with `![[…]]`, a short “what could happen” note, nested `[!readaloud]` for spoken text, nested `[!gmonly]` for hidden prep, nested `[!combat]` for fights, optional secrets/treasure/NPC bullets, and an **At the table** cue list (place, map, checks, if they miss, music, sound, leads to). Copy a whole scene block to add another beat.
 
 1. Prefer a combat block inside a scene (or at document level). Aliases: `encounter`, `fight`. New blocks default to `**Combatants:** party`. Add foes with real Bestiary / NPC stems, or use **Edit → Add combatant…** at the table (SRD/book monsters copy into `Bestiary/`).
 

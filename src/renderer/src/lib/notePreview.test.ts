@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { notePreviewFromMarkdown } from './notePreview'
+import { notePreviewFromMarkdown, notePreviewImageUrl, firstSheetImageRef } from './notePreview'
 
 describe('notePreviewFromMarkdown', () => {
   it('pulls title, tagline, facts, and blurb from a gear sheet', () => {
@@ -27,5 +27,16 @@ describe('notePreviewFromMarkdown', () => {
       ])
     )
     expect(preview.blurb).toContain('hemp or silk')
+    expect(preview.imageUrl).toBeNull()
+  })
+
+  it('resolves a sheet portrait from the embed and Art folder', () => {
+    const markdown = ['# *Ash*', '', '[!npc]', '![[Ash.webp]]', '[!/npc]', ''].join('\n')
+    expect(firstSheetImageRef(markdown)).toBe('Ash.webp')
+    expect(
+      notePreviewImageUrl('NPCs/Ash.md', markdown, [
+        { relativePath: 'NPCs/Art/Ash.webp', name: 'Ash.webp', title: 'Ash' }
+      ])
+    ).toContain('NPCs%2FArt%2FAsh.webp')
   })
 })

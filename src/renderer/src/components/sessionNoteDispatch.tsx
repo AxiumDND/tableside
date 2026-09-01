@@ -72,6 +72,7 @@ export function createSessionNoteRenderers(
     encounters,
     addingId,
     onSelectImage,
+    onOpenNote,
     onAddEncounter,
     onAddEncounterClick,
     activeCrawl,
@@ -197,7 +198,14 @@ export function createSessionNoteRenderers(
           videoBase: videoOffset + videoLocal,
           sectionIndex,
           blockPath,
-          renderSectionedMarkdown
+          renderSectionedMarkdown,
+          path,
+          images,
+          noteIndex,
+          onOpenNote,
+          disabled,
+          onBlockSave,
+          blockIndex
         })
       }
       if (part.kind === 'scene') {

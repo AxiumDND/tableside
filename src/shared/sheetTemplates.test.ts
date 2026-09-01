@@ -7,6 +7,8 @@ import {
   headingTitleFromMarkdown,
   isPlaceholderHeadingTitle,
   partyLinkList,
+  partyRosterFileStem,
+  sessionRecapFileStem,
   wikiLinkForSheet
 } from './sheetTemplates'
 import { templatesFor } from './systemTemplates'
@@ -39,6 +41,22 @@ describe('game night sheet names', () => {
   })
 })
 
+describe('session recap names', () => {
+  it('appends Recap to a session title', () => {
+    expect(sessionRecapFileStem('Session 4')).toBe('Session 4 — Recap')
+    expect(sessionRecapFileStem('Session 4 Recap')).toBe('Session 4 — Recap')
+    expect(sessionRecapFileStem('Session 4 — Recap')).toBe('Session 4 — Recap')
+  })
+})
+
+describe('party roster names', () => {
+  it('keeps Party Roster and appends Roster to other titles', () => {
+    expect(partyRosterFileStem('Party Roster')).toBe('Party Roster')
+    expect(partyRosterFileStem('The Table')).toBe('The Table — Roster')
+    expect(partyRosterFileStem('The Table — Roster')).toBe('The Table — Roster')
+  })
+})
+
 describe('heading title → filename', () => {
   it('reads # and # *Title* headings', () => {
     expect(headingTitleFromMarkdown('# Potion of Healing\n\nBody')).toBe('Potion of Healing')
@@ -49,6 +67,8 @@ describe('heading title → filename', () => {
   it('treats template placeholders as non-renaming titles', () => {
     expect(isPlaceholderHeadingTitle('Item Name')).toBe(true)
     expect(isPlaceholderHeadingTitle('Session Name — Game Night Sheet')).toBe(true)
+    expect(isPlaceholderHeadingTitle('Session Name — Recap')).toBe(true)
+    expect(isPlaceholderHeadingTitle('Party Roster')).toBe(true)
     expect(isPlaceholderHeadingTitle('Cloak of Shadows')).toBe(false)
   })
 
@@ -60,6 +80,8 @@ describe('heading title → filename', () => {
     expect(desiredNoteFileStem('Sessions/test — Game Night Sheet.md', 'River Ambush')).toBe(
       'River Ambush — Game Night Sheet'
     )
+    expect(desiredNoteFileStem('Sessions/test — Recap.md', 'River Ambush')).toBe('River Ambush — Recap')
+    expect(desiredNoteFileStem('Party/The Table — Roster.md', 'The Table')).toBe('The Table — Roster')
     expect(desiredNoteFileStem('Gear/Item.md', 'Item Name')).toBeNull()
   })
 })
@@ -237,6 +259,44 @@ describe('game night sheet template', () => {
   })
 })
 
+describe('session recap template', () => {
+  it('fills the session name, Party links, and recap headings', () => {
+    const body = fillTemplate(FALLBACK_TEMPLATES.recap, 'recap', 'Session 4', {
+      partyStems: ['PC — Jasper Alderwick', 'PC — Lucian Radu']
+    })
+    expect(body).toContain('# Session 4 — Recap')
+    expect(body).toContain('Prep stays on [[Session 4 — Game Night Sheet]]')
+    expect(body).toContain('[[PC — Jasper Alderwick|Jasper Alderwick]]')
+    expect(body).toContain('[[PC — Lucian Radu|Lucian Radu]]')
+    expect(body).not.toContain('{{party}}')
+    expect(body).toContain('[!party]')
+    expect(body).toContain('## What happened')
+    expect(body).toContain('## Who and where')
+    expect(body).toContain('## What they have')
+    expect(body).toContain('## Threads')
+    expect(body).toContain('[!gmonly]')
+    expect(body).not.toContain('[!readaloud]')
+    expect(body).not.toContain('[!scene]')
+    expect(body).not.toContain('[!combat]')
+  })
+})
+
+describe('party roster template', () => {
+  it('fills Party links in one [!party] block', () => {
+    const body = fillTemplate(FALLBACK_TEMPLATES.roster, 'roster', 'Party Roster', {
+      partyStems: ['PC — Jasper Alderwick', 'PC — Lucian Radu']
+    })
+    expect(body).toContain('# Party Roster')
+    expect(body).toContain('[!party]')
+    expect(body).toContain('[[PC — Jasper Alderwick|Jasper Alderwick]]')
+    expect(body).toContain('[[PC — Lucian Radu|Lucian Radu]]')
+    expect(body).toContain('[[NPC Name]]')
+    expect(body).not.toContain('{{party}}')
+    expect(body).toContain('[!gmonly]')
+    expect(body.split('[!party]').length - 1).toBe(1)
+  })
+})
+
 describe('place, shop, and faction templates', () => {
   it('fills place, shop, and faction names and keeps cross-links', () => {
     const place = fillTemplate(FALLBACK_TEMPLATES.place, 'place', 'Greystead')
@@ -268,7 +328,8 @@ describe('system packs', () => {
   })
 
   it('keeps 5e templates as the default fallback', () => {
-    expect(templatesFor('dnd5e').player).toBe(FALLBACK_TEMPLATES.player)
+    expect(templatesFor('dnd5e').recap).toBe(FALLBACK_TEMPLATES.recap)
+    expect(templatesFor('dnd5e').roster).toBe(FALLBACK_TEMPLATES.roster)
     expect(templatesFor('dnd5e').player).toContain('layout: Basic 5e Layout')
   })
 

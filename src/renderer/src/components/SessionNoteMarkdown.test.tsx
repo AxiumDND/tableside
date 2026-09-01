@@ -217,8 +217,13 @@ describe('SessionNoteMarkdown', () => {
     expect(screen.getByText(/well is a lie/)).toBeTruthy()
   })
 
-  it('renders a party roster with nested note and wiki link', async () => {
+  it('renders a party roster with nested note and NPC link', async () => {
     const user = userEvent.setup()
+    ;(window.tabledm.readFile as ReturnType<typeof vi.fn>).mockResolvedValue(
+      ['# *Ash*', '', '[!npc]', '![[Ash.webp]]', '', '| **Role** | Guide |', '| **Location** | The mill |', '[!/npc]'].join(
+        '\n'
+      )
+    )
     const md = [
       '[!party] The table',
       '- [[Ash]]',
@@ -229,12 +234,20 @@ describe('SessionNoteMarkdown', () => {
       '[!/party]',
       ''
     ].join('\n')
-    const { onOpenNote } = renderNote(md)
+    const { onOpenNote } = renderNote(md, {
+      images: [{ relativePath: 'NPCs/Art/Ash.webp', name: 'Ash.webp', title: 'Ash' }]
+    })
     expect(screen.getByText('Party')).toBeTruthy()
     expect(screen.getByText('The table')).toBeTruthy()
     expect(screen.getByText('Focus tonight')).toBeTruthy()
     expect(screen.getByText(/The well/)).toBeTruthy()
+    expect(screen.queryByText('Race')).toBeNull()
+    expect(screen.getByText('Travelling with')).toBeTruthy()
     const link = screen.getByRole('button', { name: 'Ash' })
+    await user.hover(link)
+    expect(await screen.findByText('Guide')).toBeTruthy()
+    expect(screen.getByText('The mill')).toBeTruthy()
+    expect(screen.getByRole('tooltip').querySelector('img')).toBeTruthy()
     await user.click(link)
     expect(onOpenNote).toHaveBeenCalledWith('NPCs/Ash.md')
   })
@@ -277,6 +290,31 @@ describe('SessionNoteMarkdown', () => {
     const pick = screen.getByRole('button', { name: /The mill/ })
     await user.click(pick)
     expect(onSelectImage).toHaveBeenCalledWith('Art/Mill.webp')
+  })
+
+  it('adds an NPC from the collection while editing a party card', async () => {
+    const user = userEvent.setup()
+    const onBlockSave = vi.fn()
+    const notes: CampaignNote[] = [
+      { relativePath: 'NPCs/Ash.md', name: 'Ash.md', stem: 'Ash' },
+      { relativePath: 'NPCs/Hale.md', name: 'Hale.md', stem: 'Hale' }
+    ]
+    const md = ['[!party] The table', '- [[Ash]]', '[!/party]', ''].join('\n')
+    renderNote(md, {
+      noteIndex: notes,
+      blockEditEnabled: true,
+      editingBlocks: new Set(['0:0']),
+      onBlockEdit: vi.fn(),
+      onBlockDone: vi.fn(),
+      onBlockSave,
+      blockIndex: buildBlockIndex(md)
+    })
+    await user.click(screen.getByRole('button', { name: 'Add NPC…' }))
+    await user.click(screen.getByRole('button', { name: /Hale/ }))
+    expect(onBlockSave).toHaveBeenCalled()
+    const saved = String(onBlockSave.mock.calls[0]?.[1] ?? '')
+    expect(saved).toContain('[[Hale]]')
+    expect(saved).toContain('[[Ash]]')
   })
 
   it('shows Edit on a callout when block editing is enabled', async () => {

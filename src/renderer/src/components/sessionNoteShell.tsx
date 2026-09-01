@@ -79,7 +79,7 @@ export function createNoteMarkdownComponents(opts: {
       if (href?.startsWith('#note:')) {
         const notePath = decodeURIComponent(href.slice(6))
         return (
-          <NoteWikiLink notePath={notePath} onOpenNote={opts.onOpenNote}>
+          <NoteWikiLink notePath={notePath} onOpenNote={opts.onOpenNote} images={opts.images}>
             {children}
           </NoteWikiLink>
         )

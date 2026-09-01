@@ -236,20 +236,23 @@ export async function seedNewCampaignFiles(
     digitalRain: nextTheme === 'matrix' ? options?.digitalRain !== false : prior.digitalRain
   })
   await refreshStockNightSheetTemplate(root)
+  await refreshStockCreatureTemplates(root)
 }
 
 export async function listPartyNoteStems(root: string): Promise<string[]> {
   const dir = await existingCanonicalDir(root, 'party')
   if (!dir || !existsSync(dir)) return []
   const entries = await readdir(dir, { withFileTypes: true })
-  const stems: string[] = []
-  for (const entry of entries) {
-    if (!entry.isFile() || isHiddenCampaignFile(entry.name)) continue
-    const ext = extname(entry.name).toLowerCase()
-    if (ext !== '.md' && ext !== '.markdown' && ext !== '.txt') continue
-    stems.push(basename(entry.name, ext))
-  }
-  return stems
+    const stems: string[] = []
+    for (const entry of entries) {
+      if (!entry.isFile() || isHiddenCampaignFile(entry.name)) continue
+      const ext = extname(entry.name).toLowerCase()
+      if (ext !== '.md' && ext !== '.markdown' && ext !== '.txt') continue
+      const stem = basename(entry.name, ext)
+      if (/roster/i.test(stem)) continue
+      stems.push(stem)
+    }
+    return stems
 }
 
 export async function refreshStockNightSheetTemplate(root: string): Promise<void> {
@@ -327,7 +330,11 @@ export async function refreshStockCreatureTemplates(root: string): Promise<void>
   const templatesDir = await existingCanonicalDir(root, 'templates')
   if (!templatesDir) return
   const entries = await readdir(templatesDir)
-  const jobs: { kind: 'player' | 'npc' | 'monster' | 'gear' | 'spell' | 'place' | 'shop' | 'faction'; dest: string; stock: string }[] = [
+  const jobs: {
+    kind: 'player' | 'npc' | 'monster' | 'gear' | 'spell' | 'place' | 'shop' | 'faction' | 'recap' | 'roster'
+    dest: string
+    stock: string
+  }[] = [
     { kind: 'player', dest: 'Player.md', stock: '# *Character Name*' },
     { kind: 'npc', dest: 'NPC.md', stock: '# *NPC Name*' },
     { kind: 'monster', dest: 'Monster.md', stock: '# Monster Name' },
@@ -335,7 +342,9 @@ export async function refreshStockCreatureTemplates(root: string): Promise<void>
     { kind: 'spell', dest: 'Spell.md', stock: '# Spell Name' },
     { kind: 'place', dest: 'Place.md', stock: '# Place Name' },
     { kind: 'shop', dest: 'Shop.md', stock: '# Shop Name' },
-    { kind: 'faction', dest: 'Faction.md', stock: '# Faction Name' }
+    { kind: 'faction', dest: 'Faction.md', stock: '# Faction Name' },
+    { kind: 'recap', dest: 'Session Recap.md', stock: '# Session Name — Recap' },
+    { kind: 'roster', dest: 'Party Roster.md', stock: '# Party Roster' }
   ]
   for (const job of jobs) {
     const wanted = new Set(TEMPLATE_FILE_NAMES[job.kind])

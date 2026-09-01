@@ -50,8 +50,8 @@ Create these names (case-insensitive). The app fills missing empty folders on op
 ```
 campaign.json
 Start Here/          hub — Overview.md opens first
-Sessions/            prep + game night sheets (+ Art/)
-Party/               PC sheets (+ Art/)
+Sessions/            prep, game night sheets, session recaps (+ Art/)
+Party/               PC sheets and optional party roster (+ Art/)
 NPCs/                named people (+ Art/)
 Bestiary/            creatures (+ Art/)
 Places/              towns, sites, shops (+ Art/)
@@ -128,7 +128,8 @@ Sheet header fences may also be `[!npc]`, `[!monster]`, `[!place]`, `[!shop]`, `
 | Weapon / armor / mundane gear | `Gear/Weapons` · `Armor` · `Equipment` · `Trade Goods` | gear |
 | Magic item | `Gear/Magic Items` | gear |
 | Tonight’s run (scenes + fight list) | `Sessions/` | nightsheet or plain note |
-| Recap, transcript, YouTube blurb | `Archive/` | plain note |
+| What actually happened (after the table) | `Sessions/` | recap |
+| Transcript, YouTube blurb, old drafts | `Archive/` | plain note |
 | Haze rules, house rules | `Reference/` | plain note |
 | Hub, flowchart, live hooks | `Start Here/` | plain note + `Overview.md` |
 
@@ -174,6 +175,8 @@ Pins/tokens/fog can be added in the app. Do not invent pin coordinates unless yo
 ## Game night sheets
 
 A **game night sheet** is Party + Scenes (not a wall of prose). Right-click **Sessions** → **New game night sheet…**. Split long story into `Session N.md`; keep numbers on `Session N — Game Night Sheet.md`.
+
+A **session recap** is notes after the table (`Session N — Recap.md`). What the table knows goes in the open note; secrets and next-prep go in `[!gmonly]`. Do not use scene/combat/read-aloud blocks on a recap.
 
 ### Scene block
 
@@ -262,7 +265,7 @@ Under the hearth.
 
 | Fence | Use |
 | --- | --- |
-| `[!party]` | Night-sheet PC list (`- [[PC — Name\|Alias]]`) |
+| `[!party]` | One list of PCs and companion NPCs (`- [[PC — Name\|Alias]]`). Read mode shows race / class / AC / HP from those sheets. |
 | `[!links]` | Auto TOC of other blocks on the sheet |
 | `[!note]` / `[!abstract]` | Short text / summary |
 | `[!crawl]` / `[!legend]` | Player TV openings (Sci-fi / campfire) |

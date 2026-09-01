@@ -331,7 +331,7 @@ export default function CampaignFiles({
     event.preventDefault()
     event.stopPropagation()
     const x = Math.min(event.clientX, window.innerWidth - 200)
-    const y = Math.min(event.clientY, window.innerHeight - 360)
+    const y = Math.min(event.clientY, window.innerHeight - 400)
     setMenu(node ? { kind: 'node', x, y, node } : { kind: 'root', x, y })
   }
 
@@ -344,6 +344,8 @@ export default function CampaignFiles({
       spell: 'New spell',
       gear: 'New gear',
       nightsheet: 'New game night sheet',
+      recap: 'New session recap',
+      roster: 'New party roster',
       map: 'New map',
       place: 'New place',
       shop: 'New shop',
@@ -557,7 +559,10 @@ export default function CampaignFiles({
           ) : (
             <>
               {folderHint === 'party' || !folderHint ? (
-                <MenuItem label="New player…" onClick={() => startCreate(folderPath, 'player')} />
+                <>
+                  <MenuItem label="New player…" onClick={() => startCreate(folderPath, 'player')} />
+                  <MenuItem label="New party roster…" onClick={() => startCreate(folderPath, 'roster')} />
+                </>
               ) : null}
               {folderHint === 'npcs' || !folderHint ? (
                 <MenuItem label="New NPC…" onClick={() => startCreate(folderPath, 'npc')} />
@@ -572,7 +577,10 @@ export default function CampaignFiles({
                 <MenuItem label="New gear…" onClick={() => startCreate(folderPath, 'gear')} />
               ) : null}
               {folderHint === 'sessions' || !folderHint ? (
-                <MenuItem label="New game night sheet…" onClick={() => startCreate(folderPath, 'nightsheet')} />
+                <>
+                  <MenuItem label="New game night sheet…" onClick={() => startCreate(folderPath, 'nightsheet')} />
+                  <MenuItem label="New session recap…" onClick={() => startCreate(folderPath, 'recap')} />
+                </>
               ) : null}
               {folderHint === 'maps' || !folderHint ? (
                 <MenuItem label="New map…" onClick={() => startCreate(folderPath, 'map')} />
@@ -622,6 +630,10 @@ export default function CampaignFiles({
                 ? `Remove ${prompt.fileName} from this campaign. This cannot be undone.`
                 : prompt.kind === 'create' && prompt.template === 'nightsheet'
                   ? 'Party and Scenes — each [!party]…[!/party] wraps PC links; each [!scene]…[!/scene] can hold read-aloud, GM-only notes, secrets, treasure, NPCs, combat, and table cues. Existing Party characters are linked in. Copy a scene block to add another beat. Sci-fi campaigns include an Opening crawl sample.'
+                  : prompt.kind === 'create' && prompt.template === 'recap'
+                  ? 'Notes after the table on what actually happened. Party sheets are listed under Who sat. Secrets stay in [!gmonly]. Prep stays on the game night sheet.'
+                  : prompt.kind === 'create' && prompt.template === 'roster'
+                  ? 'Who is travelling together. Player sheets stay in Party/; companions stay in NPCs/ and are linked in the same [!party] list. Read mode shows race, class, and AC from those sheets.'
                   : prompt.kind === 'create' && prompt.template === 'map'
                   ? 'Pick a campaign image, or load one — loaded files go in this folder’s Art/ and are named after the map.'
                   : prompt.kind === 'create' && prompt.template === 'place'

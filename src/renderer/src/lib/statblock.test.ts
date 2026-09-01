@@ -84,9 +84,10 @@ describe('isNpcSheet', () => {
     expect(isNpcSheet('[!npc]\nA shady fence.', 'NPCs/Bob.md')).toBe(true)
   })
 
-  it('excludes gear and spell sheets even with statblock-like text', () => {
+  it('excludes gear, spell, and party roster notes', () => {
     expect(isNpcSheet('Damage: 1d8', 'Gear/Longsword.md')).toBe(false)
     expect(isNpcSheet('Level 1 spell', 'Spells/Bless.md')).toBe(false)
+    expect(isNpcSheet('[!party]\n- [[Bob]]\n[!/party]\n', 'Party/Party Roster.md')).toBe(false)
   })
 })
 

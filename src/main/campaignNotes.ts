@@ -22,6 +22,8 @@ import {
   headingTitleFromMarkdown,
   rewriteDuplicatedMarkdown,
   sanitizeFileName,
+  partyRosterFileStem,
+  sessionRecapFileStem,
   type SheetTemplateKind
 } from '../shared/sheetTemplates'
 import { getSystemPack } from '../shared/systemPack'
@@ -175,6 +177,8 @@ export function noteFileName(folder: string, name: string, template: SheetTempla
     stem = `PC — ${stem}`
   }
   if (template === 'nightsheet') stem = gameNightSheetFileStem(stem)
+  if (template === 'recap') stem = sessionRecapFileStem(stem)
+  if (template === 'roster') stem = partyRosterFileStem(stem)
   return `${stem}.md`
 }
 
@@ -262,7 +266,7 @@ export async function createCampaignNote(
   if (template !== 'blank') {
     if (template === 'nightsheet') await refreshStockNightSheetTemplate(campaignFolder)
     const extras =
-      template === 'nightsheet'
+      template === 'nightsheet' || template === 'recap' || template === 'roster'
         ? {
             partyStems: await listPartyNoteStems(campaignFolder),
             theme: (await readJson<{ theme?: string }>(join(campaignFolder, 'campaign.json'), {})).theme

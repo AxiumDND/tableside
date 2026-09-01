@@ -11,13 +11,41 @@ function buttonClass(active: boolean): string {
   }`
 }
 
+function iconButtonClass(active: boolean): string {
+  return `rounded border p-1.5 ${
+    active ? 'border-amber text-amber' : 'border-line text-muted hover:border-amber hover:text-amber'
+  }`
+}
+
+function PanelGlyph({ side }: { side: 'left' | 'right' }) {
+  const filled =
+    side === 'left'
+      ? 'M5.5 5.75h5.25v12.5H5.5A.75.75 0 0 1 4.75 18V6a.75.75 0 0 1 .75-.75z'
+      : 'M13.25 5.75H18.5A.75.75 0 0 1 19.25 6v12a.75.75 0 0 1-.75.75h-5.25V5.75z'
+  return (
+    <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
+      <path
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="1.75"
+        strokeLinejoin="round"
+        d="M5.5 4.5h13a1.5 1.5 0 0 1 1.5 1.5v12a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 18V6a1.5 1.5 0 0 1 1.5-1.5z"
+      />
+      <path fill="currentColor" d={filled} />
+    </svg>
+  )
+}
+
 export default function DmHeader({
   campaign,
   rightPanel,
   combatCount,
   mixerActive,
+  sidebarOpen,
   onNewCampaign,
   onOpenCampaign,
+  onToggleSidebar,
+  onToggleRightPanel,
   onToggleLookup,
   onToggleCombat,
   onToggleMusic,
@@ -27,15 +55,31 @@ export default function DmHeader({
   rightPanel: RightPanel
   combatCount: number
   mixerActive: boolean
+  sidebarOpen: boolean
   onNewCampaign: () => void
   onOpenCampaign: () => void
+  onToggleSidebar: () => void
+  onToggleRightPanel: () => void
   onToggleLookup: () => void
   onToggleCombat: () => void
   onToggleMusic: () => void
   onToggleHelp: () => void
 }) {
+  const sidebarLabel = sidebarOpen ? 'Hide sidebar' : 'Show sidebar'
+  const rightOpen = rightPanel !== null
+  const rightLabel = rightOpen ? 'Hide right panel' : 'Show right panel'
   return (
     <header className="flex items-center gap-3 border-b border-line bg-panel px-4 py-2">
+      <button
+        type="button"
+        onClick={onToggleSidebar}
+        className={iconButtonClass(sidebarOpen)}
+        title={sidebarLabel}
+        aria-label={sidebarLabel}
+        aria-pressed={sidebarOpen}
+      >
+        <PanelGlyph side="left" />
+      </button>
       <div>
         <div className="flex items-center gap-2">
           <img src={appIcon} alt="" className="h-7 w-7 rounded-sm" />
@@ -73,6 +117,16 @@ export default function DmHeader({
       </button>
       <button type="button" onClick={onToggleHelp} className={buttonClass(rightPanel === 'help')}>
         Help &amp; settings
+      </button>
+      <button
+        type="button"
+        onClick={onToggleRightPanel}
+        className={iconButtonClass(rightOpen)}
+        title={rightLabel}
+        aria-label={rightLabel}
+        aria-pressed={rightOpen}
+      >
+        <PanelGlyph side="right" />
       </button>
     </header>
   )

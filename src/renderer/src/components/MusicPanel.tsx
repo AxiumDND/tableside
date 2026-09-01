@@ -123,13 +123,11 @@ function Slider({
 export default function MusicPanel({
   state,
   clock = emptyMixerClock(),
-  disabled,
-  onClose
+  disabled
 }: {
   state: MixerState
   clock?: MixerClock
   disabled?: boolean
-  onClose?: () => void
 }) {
   const { library, prefs, playback } = state
   const { outputs, refresh } = useAudioOutputs()
@@ -180,11 +178,6 @@ export default function MusicPanel({
             >
               Stop all
             </button>
-            {onClose ? (
-              <button type="button" onClick={onClose} className="text-xs text-muted hover:text-amber">
-                Hide
-              </button>
-            ) : null}
           </div>
         </div>
         <div className="mt-2 space-y-1.5">

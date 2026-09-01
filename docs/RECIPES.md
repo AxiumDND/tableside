@@ -34,7 +34,7 @@ Rules of thumb:
 
 Skip titles/headings that say `no combat`.
 
-A short **game night sheet** is enough for Party focus, scene beats, and combatant lines; longer campaigns can keep prose in `Session N.md`. Greystead runs from **Session 1 — Game Night Sheet** with prose in **Session 1**. **New game night sheet…** starts from the Party + Scenes template and links existing Party files.
+A short **game night sheet** is enough for Party focus, scene beats, and combatant lines; longer campaigns can keep prose in `Session N.md`. Greystead runs from **Session 1 — Game Night Sheet** with prose in **Session 1**. **New game night sheet…** starts from the Party + Scenes template and links existing Party files. After the table, **New session recap…** is notes on what happened (`Session N — Recap.md`). **New party roster…** on `Party/` is who is travelling together.
 
 ### At the table
 

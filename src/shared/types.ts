@@ -257,6 +257,8 @@ export interface AppSettings {
   lastOpenPath?: string
   lastOpenKind?: string
   rightPanel?: 'combat' | 'lookup' | 'help' | 'music' | null
+  /** Last tool in the right column, restored when the panel icon shows it again. */
+  lastRightPanel?: 'combat' | 'lookup' | 'help' | 'music'
   showPlayerPreview?: boolean
   /** Left column (preview, files, dice). Default open. */
   showLeftSidebar?: boolean
