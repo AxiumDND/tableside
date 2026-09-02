@@ -4,7 +4,7 @@ import { renderHook, act } from '@testing-library/react'
 import { useCombatActions } from './useCombatActions'
 import type { SrdRecord } from '../lib/srd'
 import type { CampaignInfo, Combatant } from '../../../shared/types'
-import type { EncounterAddItem } from '../components/SessionNotes'
+import type { EncounterAddItem } from '../lib/sessionNoteEncounter'
 
 const saveCombat = vi.fn()
 const readFile = vi.fn()
