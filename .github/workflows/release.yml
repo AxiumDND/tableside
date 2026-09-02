@@ -9,7 +9,29 @@ permissions:
   contents: write
 
 jobs:
+  # Same Ubuntu gate as pull requests (build.yml `checks`). xvfb e2e is Linux-only,
+  # so the installer job waits on this instead of trying to run it on windows-latest.
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+      # Ensure the Electron binary was downloaded (npm cache can restore the package without dist/).
+      - run: node ./node_modules/electron/install.js
+      # End-to-end smoke test drives the real Electron app under a virtual
+      # display; install the shared system libraries it needs, then run headless.
+      - run: npx playwright install-deps
+      - run: xvfb-run -a npm run test:e2e
+
   windows:
+    needs: checks
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v6

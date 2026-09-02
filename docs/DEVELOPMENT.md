@@ -94,13 +94,16 @@ Format and placement of personal PHB/DMG text files: [Additional Books/README.md
 
 ## CI
 
-[`.github/workflows/build.yml`](../.github/workflows/build.yml) runs `npm ci`, `npm test`, and `npm run build` on `windows-latest` for pushes and pull requests to `main`.
+[`.github/workflows/build.yml`](../.github/workflows/build.yml) on pushes and pull requests to `main`:
+
+- `build` on `windows-latest`: `npm ci`, `npm test`, `npm run build`
+- `checks` on `ubuntu-latest`: lint, typecheck, tests, then `xvfb-run` e2e (the same gate a tag must pass)
 
 Scripts that shell out to `tsc` / `vitest` / `playwright` use `node ./node_modules/...` so paths with `&` (for example `D&D gaming`) do not break `cmd.exe` on Windows.
 
 Hermetic Electron smoke: `npm run test:e2e` (builds first). The suite sets `TABLESIDE_E2E=1` so `migrateLegacyUserData` does not copy a real `%APPDATA%\table-dm` profile into the temp userData dir.
 
-[`.github/workflows/release.yml`](../.github/workflows/release.yml) builds the Windows NSIS installer and publishes a GitHub Release when you push a `v*` tag (for example `git tag v1.2.0 && git push origin v1.2.0`). The release must include `latest.yml` (and the `.exe`) so installed copies can check for updates.
+[`.github/workflows/release.yml`](../.github/workflows/release.yml) publishes a GitHub Release when you push a `v*` tag (for example `git tag v1.2.0 && git push origin v1.2.0`). The Ubuntu `checks` job is the same lint / typecheck / test / e2e sequence as pull requests; the Windows installer job (`npm run dist`) waits for it, so a tag cannot ship what PR CI would have blocked. The release must include `latest.yml` (and the `.exe`) so installed copies can check for updates.
 
 ## Packaging notes
 
