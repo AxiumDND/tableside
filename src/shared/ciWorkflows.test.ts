@@ -11,7 +11,7 @@ function workflow(name: string): string {
 
 /** Body of a top-level job (`  jobId:`) through the next job or EOF. */
 function jobBody(yaml: string, jobId: string): string {
-  const lines = yaml.split('\n')
+  const lines = yaml.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n')
   const start = lines.findIndex((line) => line === `  ${jobId}:`)
   if (start < 0) throw new Error(`missing job ${jobId}`)
   let end = lines.length
@@ -35,5 +35,11 @@ describe('CI workflows', () => {
     expect(runCommands(releaseChecks)).toEqual(runCommands(prChecks))
     expect(releaseChecks).toMatch(/node-version: 22/)
     expect(jobBody(workflow('release.yml'), 'windows')).toMatch(/needs: checks/)
+  })
+
+  it('finds jobs when workflow YAML uses CRLF line endings', () => {
+    const crlf = workflow('release.yml').replace(/\n/g, '\r\n')
+    expect(runCommands(jobBody(crlf, 'checks'))).toContain('npm run lint')
+    expect(jobBody(crlf, 'windows')).toMatch(/needs: checks/)
   })
 })
