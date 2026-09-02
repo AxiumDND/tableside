@@ -19,6 +19,7 @@ describe('IPC channels', () => {
       appDisplaysChanged: 'app:displays-changed',
       appFolders: 'app:folders',
       appOpenFolder: 'app:open-folder',
+      appOpenDndBeyond: 'app:open-dnd-beyond',
       appCheckUpdate: 'app:check-update',
       appStartUpdate: 'app:start-update',
       appDismissUpdate: 'app:dismiss-update',

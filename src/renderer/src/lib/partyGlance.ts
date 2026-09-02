@@ -1,3 +1,4 @@
+import { dndBeyondUrlFromMarkdown } from '../../../shared/dndBeyond'
 import { wikiLinkForSheet } from '../../../shared/sheetTemplates'
 import { maskFencedCalloutBodies } from '../../../shared/callouts'
 import { pathHasFolder } from '../../../shared/campaignLayout'
@@ -20,6 +21,7 @@ export type PartyGlanceRow = {
   className: string
   ac: string
   hp: string
+  beyondUrl: string | null
 }
 
 const INFOBOX_ROW = /^\s*\|\s*\*\*(.+?)\*\*\s*\|\s*(.*?)\s*\|\s*$/
@@ -132,6 +134,7 @@ export function partyGlanceRows(
       notePath: note.relativePath,
       stem: note.stem,
       companion: pathHasFolder(note.relativePath, 'npcs'),
+      beyondUrl: dndBeyondUrlFromMarkdown(sheets[note.relativePath] ?? ''),
       ...stats
     })
   }

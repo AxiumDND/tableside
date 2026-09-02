@@ -44,6 +44,12 @@ const player = vi.hoisted(() => ({
 
 vi.mock('./playerOutput', () => player)
 
+const beyond = vi.hoisted(() => ({
+  openDndBeyondSheet: vi.fn(() => true)
+}))
+
+vi.mock('./dndBeyondWindow', () => beyond)
+
 const mixer = vi.hoisted(() => ({
   broadcastMixerState: vi.fn(),
   getMixerState: vi.fn(() => ({ playing: false })),
@@ -165,5 +171,10 @@ describe('main IPC registration', () => {
   it('saves app settings through patchSettings', () => {
     invoke(IPC.appSaveSettings, { theme: 'scifi' })
     expect(settings.patchSettings).toHaveBeenCalledWith({ theme: 'scifi' })
+  })
+
+  it('opens a D&D Beyond character sheet in the browser window', () => {
+    expect(invoke(IPC.appOpenDndBeyond, 'https://www.dndbeyond.com/characters/12')).toBe(true)
+    expect(beyond.openDndBeyondSheet).toHaveBeenCalledWith('https://www.dndbeyond.com/characters/12')
   })
 })

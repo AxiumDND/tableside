@@ -223,6 +223,8 @@ const api = {
   openAppFolder: (
     kind: 'app' | 'userData' | 'books' | 'campaign' | 'convert'
   ): Promise<string> => ipcRenderer.invoke(IPC.appOpenFolder, kind),
+  openDndBeyondSheet: (url: string): Promise<boolean> =>
+    ipcRenderer.invoke(IPC.appOpenDndBeyond, url),
   checkForUpdate: (fromHelp?: boolean): Promise<void> =>
     ipcRenderer.invoke(IPC.appCheckUpdate, fromHelp ?? false),
   startUpdate: (): Promise<void> => ipcRenderer.invoke(IPC.appStartUpdate),

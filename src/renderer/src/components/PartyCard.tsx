@@ -45,9 +45,24 @@ function GlanceTable({
           {rows.map((row) => (
             <tr key={row.notePath} className="text-fg">
               <td className="border-b border-line/60 py-1.5 pr-3">
-                <NoteWikiLink notePath={row.notePath} onOpenNote={onOpenNote} images={images}>
-                  {row.name}
-                </NoteWikiLink>
+                <span className="inline-flex flex-wrap items-baseline gap-2">
+                  <NoteWikiLink notePath={row.notePath} onOpenNote={onOpenNote} images={images}>
+                    {row.name}
+                  </NoteWikiLink>
+                  {row.beyondUrl ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        const url = row.beyondUrl
+                        if (url) void window.tabledm.openDndBeyondSheet(url)
+                      }}
+                      className="text-[10px] uppercase tracking-wider text-amber hover:underline"
+                      title="Open D&D Beyond sheet in a browser"
+                    >
+                      Beyond
+                    </button>
+                  ) : null}
+                </span>
               </td>
               <td className="border-b border-line/60 py-1.5 pr-3">{row.race}</td>
               <td className="border-b border-line/60 py-1.5 pr-3">{row.className}</td>

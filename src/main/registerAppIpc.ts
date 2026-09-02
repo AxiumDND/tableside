@@ -2,6 +2,7 @@ import { ipcMain } from 'electron'
 import type { AppSettings } from '../shared/types'
 import { IPC } from '../shared/ipc'
 import { appFolders, getSettings, openAppFolder, patchSettings } from './appSettings'
+import { openDndBeyondSheet } from './dndBeyondWindow'
 import { listDisplays } from './playerOutput'
 
 export type AppIpcDeps = {
@@ -14,6 +15,7 @@ export function registerAppIpc(deps: AppIpcDeps): void {
   ipcMain.handle(IPC.appSaveSettings, (_e, partial: AppSettings) => patchSettings(partial ?? {}))
   ipcMain.handle(IPC.appFolders, () => appFolders())
   ipcMain.handle(IPC.appOpenFolder, (_e, kind: string) => openAppFolder(kind))
+  ipcMain.handle(IPC.appOpenDndBeyond, (_e, url: unknown) => openDndBeyondSheet(url))
   ipcMain.on(IPC.appConfirmClose, () => {
     deps.confirmClose()
   })

@@ -240,7 +240,10 @@ NPC / PC sheet view looks for:
 > | **Role** | … |
 > | **AC** | 15 |
 > | **HP** | 44 |
+> | **D&D Beyond** | https://www.dndbeyond.com/characters/12345678 |
 ```
+
+A **D&D Beyond** row (also accepted as `Dnd Beyond`) stores the official character URL. The PC sheet shows **Open D&D Beyond sheet**, which opens that page in a browser window. Right-click **Party/** → **D&D Beyond sheet…** writes the row for you. Tableside does not import stats from Beyond.
 
 Facts in that table surface in the sheet chrome. Keep the combat numbers in sync with the `statblock`.
 

@@ -63,7 +63,7 @@ The left **Files** list is your campaign folder. Click a note to open it in the 
 - Click the search icon next to Files, or press `Ctrl+F` / `/`, to find a note by name. `Esc` clears, then hides the box.
 - **← Back**, `Alt+←`, or the mouse back button returns to the previous note.
 
-Right-click a folder to create a player, party roster, NPC, monster, spell, gear, game night sheet, session recap, map, place, shop, or faction. **Add art…** copies pictures into that folder’s `Art/`. Name art like the sheet (`Ghoul.webp`) so portraits attach.
+Right-click a folder to create a player, party roster, NPC, monster, spell, gear, game night sheet, session recap, map, place, shop, or faction. On **Party/**, **D&D Beyond sheet…** pastes a character link and opens the live sheet in a browser window (log into D&D Beyond there if asked). **Add art…** copies pictures into that folder’s `Art/`. Name art like the sheet (`Ghoul.webp`) so portraits attach.
 
 ### 2. Show a picture
 

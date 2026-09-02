@@ -85,6 +85,7 @@ Book text for Lookup is **not** part of a campaign. Put PHB / DMG exports in the
 Right-click a folder in the file tree:
 
 - **New player / NPC / monster / spell / gear / game night sheet / session recap / party roster / map / place / shop / faction** — fills the built-in sheet for that type and substitutes the name
+- **D&D Beyond sheet…** on `Party/` — adds a player sheet with a `| **D&D Beyond** | url |` row and opens the official character page in a browser window. **Link D&D Beyond…** on an existing Party note does the same without creating a new file. Tableside does not import stats from Beyond.
 - **New note** — empty markdown
 - **Add art…** — import images into that folder’s `Art/` (creates `Art/` if needed). Name files like the sheet so portraits attach
 - **Add files…** — import notes, PDFs, or other files into the folder you clicked

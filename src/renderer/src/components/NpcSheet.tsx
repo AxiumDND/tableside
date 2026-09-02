@@ -12,6 +12,7 @@ import {
   type CampaignImage
 } from '../lib/images'
 import { extractFacts, extractHook, extractTagline, type ParsedStatblock } from '../lib/statblock'
+import { dndBeyondUrlFromMarkdown, isDndBeyondFactLabel } from '../../../shared/dndBeyond'
 import { stripSheetHeader } from '../../../shared/sheetBlock'
 import RollableStatBlock from './RollableStatBlock'
 import SheetArtFrame from './SheetArtFrame'
@@ -104,7 +105,10 @@ export default function NpcSheet({
   const title = titleFrom(path, markdown)
   const tagline = extractTagline(markdown)
   const hook = extractHook(markdown)
-  const facts = extractFacts(markdown).slice(0, 8)
+  const facts = extractFacts(markdown)
+    .filter((fact) => !isDndBeyondFactLabel(fact.label))
+    .slice(0, 8)
+  const beyondUrl = dndBeyondUrlFromMarkdown(markdown)
   const imagePath = firstImage(markdown, path, images)
   const srdSrc = !imagePath && pathHasFolder(path, 'bestiary') ? srdPortraitUrl(title) : null
   const imageSrc = imagePath ? campaignFileUrl(imagePath) : srdSrc
@@ -123,6 +127,18 @@ export default function NpcSheet({
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-5 pb-6">
+      {beyondUrl ? (
+        <div className="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={() => void window.tabledm.openDndBeyondSheet(beyondUrl)}
+            className="rounded bg-amber px-3 py-1.5 text-xs font-semibold text-on-amber hover:brightness-110"
+          >
+            Open D&D Beyond sheet
+          </button>
+          <span className="text-[11px] text-muted">Live character sheet in a browser window.</span>
+        </div>
+      ) : null}
       <RollableStatBlock
         block={block}
         onAddToCombat={onAddToCombat}

@@ -38,6 +38,7 @@ import {
   watchDisplays
 } from './playerOutput'
 import { parseThemeId, THEME_WINDOW_BACKGROUND } from '../shared/theme'
+import { disposeDndBeyondWindow } from './dndBeyondWindow'
 import { isAllowedExternalUrl } from '../shared/externalLinks'
 import { IPC } from '../shared/ipc'
 import { APP_NAME, APP_VERSION } from '../shared/version'
@@ -202,6 +203,7 @@ function createDmWindow(): void {
   dmWindow.on('closed', () => {
     dmWindow = null
     disposePlayerWindow()
+    disposeDndBeyondWindow()
   })
   applyWindowSecurity(dmWindow.webContents)
   attachSpellChecker(dmWindow, app.getLocale())
