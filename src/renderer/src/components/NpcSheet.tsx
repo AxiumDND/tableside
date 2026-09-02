@@ -12,6 +12,7 @@ import {
   type CampaignImage
 } from '../lib/images'
 import { extractFacts, extractHook, extractTagline, type ParsedStatblock } from '../lib/statblock'
+import { dndBeyondUrlFromMarkdown, isDndBeyondFactLabel, parseDndBeyondCharacterUrl } from '../../../shared/dndBeyond'
 import { stripSheetHeader } from '../../../shared/sheetBlock'
 import RollableStatBlock from './RollableStatBlock'
 import SheetArtFrame from './SheetArtFrame'
@@ -87,6 +88,7 @@ export default function NpcSheet({
   onSelectImage,
   onAddToCombat,
   onSetPortrait,
+  onLinkBeyond,
   renderNotes,
   holo = false
 }: {
@@ -98,13 +100,25 @@ export default function NpcSheet({
   onSelectImage?: (path: string) => void
   onAddToCombat?: () => void
   onSetPortrait?: (image: CreateNoteMapImage) => Promise<void>
+  onLinkBeyond?: (url: string) => Promise<string | null>
   renderNotes?: (markdown: string) => ReactNode
   holo?: boolean
 }) {
   const title = titleFrom(path, markdown)
   const tagline = extractTagline(markdown)
   const hook = extractHook(markdown)
-  const facts = extractFacts(markdown).slice(0, 8)
+  const facts = extractFacts(markdown)
+    .filter((fact) => !isDndBeyondFactLabel(fact.label))
+    .slice(0, 8)
+  const beyondUrl = dndBeyondUrlFromMarkdown(markdown)
+  const canLinkBeyond =
+    pathHasFolder(path, 'party') || pathHasFolder(path, 'npcs') || pathHasFolder(path, 'bestiary')
+  const beyondPlaceholder = pathHasFolder(path, 'party')
+    ? 'https://www.dndbeyond.com/characters/…'
+    : 'https://www.dndbeyond.com/monsters/…'
+  const [beyondDraft, setBeyondDraft] = useState('')
+  const [beyondError, setBeyondError] = useState('')
+  const [beyondBusy, setBeyondBusy] = useState(false)
   const imagePath = firstImage(markdown, path, images)
   const srdSrc = !imagePath && pathHasFolder(path, 'bestiary') ? srdPortraitUrl(title) : null
   const imageSrc = imagePath ? campaignFileUrl(imagePath) : srdSrc
@@ -118,8 +132,71 @@ export default function NpcSheet({
   }, [srdSrc])
 
   useEffect(() => {
+    setBeyondDraft(beyondUrl ?? '')
+    setBeyondError('')
+  }, [beyondUrl, path])
+
+  useEffect(() => {
     if (selectValue && onSelectImage) onSelectImage(selectValue)
   }, [selectValue, onSelectImage])
+
+  async function submitBeyondLink(): Promise<void> {
+    if (!onLinkBeyond || beyondBusy) return
+    const parsed = parseDndBeyondCharacterUrl(beyondDraft)
+    if (!parsed) {
+      setBeyondError(
+        pathHasFolder(path, 'party')
+          ? 'Paste a D&D Beyond character link (dndbeyond.com/characters/…).'
+          : 'Paste a D&D Beyond monster link (dndbeyond.com/monsters/…).'
+      )
+      return
+    }
+    setBeyondBusy(true)
+    try {
+      const error = await onLinkBeyond(parsed.canonicalUrl)
+      if (error) setBeyondError(error)
+      else setBeyondError('')
+    } finally {
+      setBeyondBusy(false)
+    }
+  }
+
+  const beyondUnchanged =
+    Boolean(beyondUrl) && parseDndBeyondCharacterUrl(beyondDraft)?.canonicalUrl === beyondUrl
+
+  const beyondControls =
+    canLinkBeyond && onLinkBeyond ? (
+      <form
+        className="flex flex-col gap-2"
+        onSubmit={(event) => {
+          event.preventDefault()
+          void submitBeyondLink()
+        }}
+      >
+        <label className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+          {beyondUrl ? 'D&D Beyond link' : 'Add D&D Beyond link'}
+        </label>
+        <div className="flex flex-wrap items-center gap-2">
+          <input
+            value={beyondDraft}
+            onChange={(event) => {
+              setBeyondDraft(event.target.value)
+              setBeyondError('')
+            }}
+            placeholder={beyondPlaceholder}
+            className="min-w-[16rem] flex-1 rounded border border-line bg-ink px-2 py-1.5 text-sm outline-none focus:border-amber"
+          />
+          <button
+            type="submit"
+            disabled={beyondBusy || !beyondDraft.trim() || beyondUnchanged}
+            className="rounded bg-amber px-3 py-1.5 text-xs font-semibold text-on-amber disabled:bg-line"
+          >
+            {beyondBusy ? 'Saving…' : beyondUrl ? 'Update link' : 'Add link'}
+          </button>
+        </div>
+        {beyondError ? <p className="text-[11px] text-blood">{beyondError}</p> : null}
+      </form>
+    ) : null
 
   return (
     <div className="mx-auto flex max-w-4xl flex-col gap-5 pb-6">
@@ -143,8 +220,9 @@ export default function NpcSheet({
         }
       />
 
-      {tagline || hook || facts.length > 0 || notes ? (
+      {tagline || hook || facts.length > 0 || notes || beyondControls ? (
         <section className="space-y-4">
+          {beyondControls}
           {tagline ? <p className="text-sm italic text-muted">{tagline}</p> : null}
           {hook ? <p className="text-base leading-relaxed text-parchment/95">{hook}</p> : null}
           {facts.length > 0 ? (

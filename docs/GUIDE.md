@@ -1,6 +1,6 @@
 # How to use Tableside
 
-Step-by-step for a night at the table. Current release: **1.7.14**.
+Step-by-step for a night at the table. Current release: **1.7.15**.
 
 Tableside is a **local Windows DM console**. Your laptop holds the notes. A second monitor (TV) shows players a clean picture — maps, art, initiative, or a sci-fi opening crawl. There is no account and no internet required once the app is installed.
 
@@ -23,7 +23,7 @@ Deeper reference: [TABLE.md](TABLE.md) (every control), [CAMPAIGN.md](CAMPAIGN.m
 
 ## Install
 
-1. Download **[Tableside-Setup-1.7.14.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
+1. Download **[Tableside-Setup-1.7.15.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
 2. Run it. Per-user install — Start Menu + desktop shortcut. No admin.
 3. If Windows says **Windows protected your PC**, click **More info**, then **Run anyway**. The installer is not code-signed. That is expected.
 4. Open **Tableside**.
@@ -63,7 +63,7 @@ The left **Files** list is your campaign folder. Click a note to open it in the 
 - Click the search icon next to Files, or press `Ctrl+F` / `/`, to find a note by name. `Esc` clears, then hides the box.
 - **← Back**, `Alt+←`, or the mouse back button returns to the previous note.
 
-Right-click a folder to create a player, party roster, NPC, monster, spell, gear, game night sheet, session recap, map, place, shop, or faction. **Add art…** copies pictures into that folder’s `Art/`. Name art like the sheet (`Ghoul.webp`) so portraits attach.
+Right-click a folder to create a player, party roster, NPC, monster, spell, gear, game night sheet, session recap, map, place, shop, or faction. On a Party, NPC, or monster sheet, **Add D&D Beyond link** stores a character or monster URL; **Show D&D Beyond** / **Show note** flip between the live page and the campaign note (log into D&D Beyond there if asked). **Add art…** copies pictures into that folder’s `Art/`. Name art like the sheet (`Ghoul.webp`) so portraits attach.
 
 ### 2. Show a picture
 

@@ -110,7 +110,7 @@ describe('main IPC registration', () => {
     ipc.ons.clear()
     vi.clearAllMocks()
     player.getPlayerState.mockReturnValue(emptyPlayerState())
-    registerAppIpc({ confirmClose: vi.fn() })
+    registerAppIpc({ confirmClose: vi.fn(), getDmWindow: () => null })
     registerPlayerIpc()
     registerMixerIpc({ getCampaignFolder: () => null })
     registerCampaignIpc({
@@ -166,4 +166,5 @@ describe('main IPC registration', () => {
     invoke(IPC.appSaveSettings, { theme: 'scifi' })
     expect(settings.patchSettings).toHaveBeenCalledWith({ theme: 'scifi' })
   })
+
 })

@@ -51,4 +51,24 @@ describe('sessionNoteView', () => {
     expect(flags.sheetChrome).toBe(true)
     expect(flags.parsedNpc?.block.name).toBe('Bren Oak')
   })
+
+  it('surfaces a D&D Beyond character URL from the Party sheet', () => {
+    const flags = sessionNoteFlags({
+      kind: 'note',
+      path: 'Party/PC — Aria.md',
+      markdown: '| **D&D Beyond** | https://www.dndbeyond.com/characters/99-aria |\n',
+      editing: false
+    })
+    expect(flags.beyondUrl).toBe('https://www.dndbeyond.com/characters/99')
+  })
+
+  it('surfaces a D&D Beyond monster URL from an NPC or Bestiary sheet', () => {
+    const flags = sessionNoteFlags({
+      kind: 'note',
+      path: 'Bestiary/Goblin.md',
+      markdown: '| **D&D Beyond** | https://www.dndbeyond.com/monsters/16780-goblin |\n',
+      editing: false
+    })
+    expect(flags.beyondUrl).toBe('https://www.dndbeyond.com/monsters/16780-goblin')
+  })
 })

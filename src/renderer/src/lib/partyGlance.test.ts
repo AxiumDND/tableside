@@ -121,9 +121,23 @@ describe('partyGlanceRows', () => {
       }
     )
     expect(rows.map((row) => row.name)).toEqual(['Bren Oak', 'Mira'])
-    expect(rows[0]).toMatchObject({ race: 'Human', className: 'Fighter 5', ac: '18', hp: '44' })
+    expect(rows[0]).toMatchObject({
+      race: 'Human',
+      className: 'Fighter 5',
+      ac: '18',
+      hp: '44',
+      beyondUrl: null
+    })
     expect(rows[1]).toMatchObject({ className: 'Guide', ac: '12', hp: '9', companion: true })
     expect(rows[0].companion).toBe(false)
+  })
+
+  it('surfaces a D&D Beyond link from the Party sheet', () => {
+    const notes = [{ relativePath: 'Party/PC — Aria.md', name: 'PC — Aria.md', stem: 'PC — Aria' }]
+    const rows = partyGlanceRows('- [[Aria]]\n', 'Sessions/Night.md', notes, {
+      'Party/PC — Aria.md': '| **D&D Beyond** | https://www.dndbeyond.com/characters/99-aria |\n| **AC** | 15 |'
+    })
+    expect(rows[0]?.beyondUrl).toBe('https://www.dndbeyond.com/characters/99')
   })
 })
 

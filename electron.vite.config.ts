@@ -16,7 +16,7 @@ const PRODUCTION_CSP = [
   "media-src 'self' file: tabledm: data: blob: https: http:",
   "font-src 'self' file: data:",
   "connect-src 'self' file: tabledm: data:",
-  "frame-src 'self' file: tabledm:",
+  "frame-src 'self' file: tabledm: https://www.dndbeyond.com https://dndbeyond.com https://ddb.ac https://www.ddb.ac",
   "worker-src 'self' file: blob:",
   "object-src 'none'",
   "base-uri 'self'",

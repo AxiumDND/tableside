@@ -10,7 +10,7 @@ Prep combatants in Markdown once; load them at the table in one click.
 
 ### Prep
 
-1. Create sheets under `Party/`, `NPCs/`, and `Bestiary/` (right-click the folder, or save from Lookup).
+1. Create sheets under `Party/`, `NPCs/`, and `Bestiary/` (right-click the folder, or save from Lookup). For a D&D Beyond character or monster, open the Party / NPC / Bestiary sheet and use **Add D&D Beyond link** — then flip to the live page in the note pane. Copy AC/HP onto the campaign sheet if you want them in Combat.
 2. Each combatant sheet needs a fenced `statblock` with at least `name`, `hp`, and `ac`.
 3. In a session or night-sheet note, add a combat block (nest inside a scene when the fight belongs to that beat):
 
