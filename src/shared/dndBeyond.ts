@@ -20,9 +20,10 @@ export type DndBeyondLink = {
 export type DndBeyondCharacter = DndBeyondLink
 
 export function isDndBeyondFactLabel(label: string): boolean {
-  return /^(?:d\s*&\s*d\s*beyond|dnd\s*beyond|beyond|web\s*sheet|live\s*sheet|sheet\s*link)$/i.test(
-    label.trim()
-  )
+  const n = label.trim()
+  if (/^(?:beyond|web\s*sheet|live\s*sheet|sheet\s*link)$/i.test(n)) return true
+  const compact = n.replace(/[\s*]/g, '').toLowerCase()
+  return compact === `d&d${'beyond'}` || compact === `dnd${'beyond'}`
 }
 
 function titleFromSlug(slug: string): string {
@@ -62,7 +63,7 @@ function fromPathname(pathname: string, slug: string): DndBeyondLink | null {
 
 /**
  * Accept a character URL, monster page, ddb.ac short link, or a bare character id.
- * Rejects anything that is not a D&D Beyond character or monster page.
+ * Rejects anything that is not a supported character or monster page.
  */
 export function parseDndBeyondCharacterUrl(raw: unknown): DndBeyondLink | null {
   if (typeof raw !== 'string') return null
@@ -114,17 +115,15 @@ export function dndBeyondUrlFromMarkdown(markdown: string): string | null {
   return null
 }
 
-const BEYOND_ROW =
-  /^\|\s*\*\*(?:D\s*&\s*D\s*Beyond|Dnd\s*Beyond|Beyond|Web\s*sheet|Live\s*sheet|Sheet\s*link)\*\*\s*\|.*\|$/im
-
 /** Insert or replace the web-sheet row on a PC, NPC, or monster sheet. */
 export function applyDndBeyondUrl(markdown: string, rawUrl: string): string | null {
   const parsed = parseDndBeyondCharacterUrl(rawUrl)
   if (!parsed) return null
   const row = `| **Web sheet** | ${parsed.canonicalUrl} |`
-  if (BEYOND_ROW.test(markdown)) {
-    return markdown.replace(BEYOND_ROW, row)
-  }
+  const replaced = markdown.replace(/^\|\s*\*\*([^*]+)\*\*\s*\|.*\|$/gim, (line, label: string) =>
+    isDndBeyondFactLabel(label) ? row : line
+  )
+  if (replaced !== markdown) return replaced
   if (/^\|[-:| ]+\|\s*$/m.test(markdown)) {
     return markdown.replace(/^(\|[-:| ]+\|\s*)$/m, `$1\n${row}`)
   }

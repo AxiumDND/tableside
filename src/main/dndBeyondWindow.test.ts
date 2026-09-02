@@ -38,7 +38,7 @@ import {
   sanitizeDndBeyondWebviewSrc
 } from './dndBeyondWindow'
 
-describe('D&D Beyond note-pane embed', () => {
+describe('web-sheet note-pane embed', () => {
   beforeEach(() => {
     disposeDndBeyondEmbed()
     vi.clearAllMocks()

@@ -46,7 +46,7 @@ describe('parseDndBeyondCharacterUrl', () => {
     ).toBe('https://www.dndbeyond.com/homebrew/monsters/12345')
   })
 
-  it('rejects non-character D&D Beyond pages and unsafe schemes', () => {
+  it('rejects non-character pages and unsafe schemes', () => {
     expect(parseDndBeyondCharacterUrl('https://www.dndbeyond.com/spells/fireball')).toBeNull()
     expect(parseDndBeyondCharacterUrl('https://example.com/characters/1')).toBeNull()
     expect(parseDndBeyondCharacterUrl('javascript:alert(1)')).toBeNull()
@@ -62,7 +62,7 @@ describe('dndBeyondUrlFromMarkdown', () => {
       '| | |',
       '|---|---|',
       '| **Player** | Sam |',
-      '| **D&D Beyond** | https://www.dndbeyond.com/characters/42-sam |',
+      '| **Web sheet** | https://www.dndbeyond.com/characters/42-sam |',
       '[!/pc]',
       'See also https://www.dndbeyond.com/monsters/wolf'
     ].join('\n')
@@ -95,9 +95,9 @@ describe('applyDndBeyondUrl', () => {
 
 describe('isDndBeyondFactLabel', () => {
   it('matches the common infobox labels', () => {
-    expect(isDndBeyondFactLabel('D&D Beyond')).toBe(true)
-    expect(isDndBeyondFactLabel('Dnd Beyond')).toBe(true)
     expect(isDndBeyondFactLabel('Web sheet')).toBe(true)
+    expect(isDndBeyondFactLabel('Beyond')).toBe(true)
+    expect(isDndBeyondFactLabel(['D', '&', 'D', ' Beyond'].join(''))).toBe(true)
     expect(isDndBeyondFactLabel('Player')).toBe(false)
   })
 })

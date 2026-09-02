@@ -39,8 +39,8 @@ Restart Lookup (close and open the panel, or restart the app) after adding files
 
 HOW TO MAKE THE FILES
 ---------------------
-Copy from your books or D&D Beyond, then save one entry per ## heading.
-Strip art credits, page headers, image captions, and the D&D Beyond footer.
+Copy from your books or a digital source, then save one entry per ## heading.
+Strip art credits, page headers, image captions, and website footers.
 
 Use a blank line between the header block and the description. Keep field
 names exactly as shown (Casting Time:, Rarity:, and so on).

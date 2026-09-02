@@ -26,7 +26,7 @@ Restart Lookup (close and open the panel, or restart the app) after adding files
 
 ## How to make the files
 
-Copy from your books or D&D Beyond, then save **one entry per `##` heading**. Strip art credits, page headers, image captions, and the D&D Beyond website footer.
+Copy from your books or a digital source, then save **one entry per `##` heading**. Strip art credits, page headers, image captions, and website footers.
 
 Use a blank line between the header block and the description. Keep field names exactly as shown (`Casting Time:`, `Rarity:`, and so on).
 
@@ -189,7 +189,7 @@ Hollow Step. The husk ignores difficult terrain made of rubble.
 Grasp. Melee Attack Roll: +3, reach 5 ft. Hit: 5 (1d6+2) Necrotic damage.
 ```
 
-A messy D&D Beyond paste as `.txt` can be tidied with `node scripts/tidy-books-bestiary.mjs --remove-src` (pass the source path if it is not the Ravenloft dump).
+A messy website paste as `.txt` can be tidied with `node scripts/tidy-books-bestiary.mjs --remove-src` (pass the source path if it is not the Ravenloft dump).
 
 ## Checklist
 
