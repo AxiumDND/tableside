@@ -44,12 +44,6 @@ const player = vi.hoisted(() => ({
 
 vi.mock('./playerOutput', () => player)
 
-const beyond = vi.hoisted(() => ({
-  openDndBeyondSheet: vi.fn(() => true)
-}))
-
-vi.mock('./dndBeyondWindow', () => beyond)
-
 const mixer = vi.hoisted(() => ({
   broadcastMixerState: vi.fn(),
   getMixerState: vi.fn(() => ({ playing: false })),
@@ -116,7 +110,7 @@ describe('main IPC registration', () => {
     ipc.ons.clear()
     vi.clearAllMocks()
     player.getPlayerState.mockReturnValue(emptyPlayerState())
-    registerAppIpc({ confirmClose: vi.fn() })
+    registerAppIpc({ confirmClose: vi.fn(), getDmWindow: () => null })
     registerPlayerIpc()
     registerMixerIpc({ getCampaignFolder: () => null })
     registerCampaignIpc({
@@ -173,8 +167,4 @@ describe('main IPC registration', () => {
     expect(settings.patchSettings).toHaveBeenCalledWith({ theme: 'scifi' })
   })
 
-  it('opens a D&D Beyond character sheet in the browser window', () => {
-    expect(invoke(IPC.appOpenDndBeyond, 'https://www.dndbeyond.com/characters/12')).toBe(true)
-    expect(beyond.openDndBeyondSheet).toHaveBeenCalledWith('https://www.dndbeyond.com/characters/12')
-  })
 })

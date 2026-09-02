@@ -503,9 +503,9 @@ export default function HelpPanel({
               </>,
               <>
                 Right-click a folder to add a player, party roster, NPC, monster, spell, gear, game night sheet, session recap, map, place, shop, or
-                faction — the sheet comes in ready to fill. On <Code>Party/</Code>, <Action>D&D Beyond sheet…</Action> pastes a character
-                link, stores it on a Party sheet, and opens the live sheet in a browser window (log into D&D Beyond there if asked). Right-click
-                an existing PC note for <Action>Link D&D Beyond…</Action>. Tableside does not import stats from Beyond.{' '}
+                faction — the sheet comes in ready to fill. On a Party, NPC, or monster sheet, <Action>Add D&D Beyond link</Action> stores
+                a character or monster URL and lets you flip between the note and the live page in this pane (log into D&D Beyond
+                there if asked). Tableside does not import stats from Beyond.{' '}
                 <Action>Add art…</Action> on Party, NPCs, Bestiary, Places, Factions, Spells, Sessions,
                 Maps, Handouts, a Gear subsection, or the <Code>Art/</Code> folder itself — pictures go in that
                 folder’s <Code>Art/</Code>. Name them like the sheet (<Code>Ghoul.webp</Code>) so portraits attach.{' '}

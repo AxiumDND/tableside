@@ -9,6 +9,7 @@ import {
 describe('parseDndBeyondCharacterUrl', () => {
   it('accepts a standard character URL and a slug', () => {
     expect(parseDndBeyondCharacterUrl('https://www.dndbeyond.com/characters/12345678-aria-vale')).toEqual({
+      kind: 'character',
       characterId: '12345678',
       canonicalUrl: 'https://www.dndbeyond.com/characters/12345678',
       suggestedName: 'Aria Vale'
@@ -25,6 +26,24 @@ describe('parseDndBeyondCharacterUrl', () => {
     expect(parseDndBeyondCharacterUrl('44556677')?.canonicalUrl).toBe(
       'https://www.dndbeyond.com/characters/44556677'
     )
+  })
+
+  it('accepts official and homebrew monster pages', () => {
+    expect(parseDndBeyondCharacterUrl('https://www.dndbeyond.com/monsters/16780-goblin')).toEqual({
+      kind: 'monster',
+      characterId: '16780-goblin',
+      canonicalUrl: 'https://www.dndbeyond.com/monsters/16780-goblin',
+      suggestedName: 'Goblin'
+    })
+    expect(parseDndBeyondCharacterUrl('https://www.dndbeyond.com/monsters/adult-black-dragon')?.canonicalUrl).toBe(
+      'https://www.dndbeyond.com/monsters/adult-black-dragon'
+    )
+    expect(parseDndBeyondCharacterUrl('https://www.dndbeyond.com/monsters/4775812-dire-wolf')?.canonicalUrl).toBe(
+      'https://www.dndbeyond.com/monsters/4775812-dire-wolf'
+    )
+    expect(
+      parseDndBeyondCharacterUrl('https://www.dndbeyond.com/homebrew/monsters/12345')?.canonicalUrl
+    ).toBe('https://www.dndbeyond.com/homebrew/monsters/12345')
   })
 
   it('rejects non-character D&D Beyond pages and unsafe schemes', () => {
@@ -63,6 +82,14 @@ describe('applyDndBeyondUrl', () => {
 
   it('returns null for a non-character URL', () => {
     expect(applyDndBeyondUrl('# Aria', 'https://www.dndbeyond.com/spells/fireball')).toBeNull()
+  })
+
+  it('writes a monster link onto an NPC sheet fence', () => {
+    const patched = applyDndBeyondUrl(
+      '[!npc] Hale\nA fence in Greystead.\n',
+      'https://www.dndbeyond.com/monsters/scout'
+    )
+    expect(patched).toContain('| **D&D Beyond** | https://www.dndbeyond.com/monsters/scout |')
   })
 })
 

@@ -1,4 +1,5 @@
 import { pathHasFolder } from '../../../shared/campaignLayout'
+import { dndBeyondUrlFromMarkdown } from '../../../shared/dndBeyond'
 import { isMapNote } from './mapNote'
 import { extractStatblock, fallbackStatblock, isNpcSheet, type ParsedStatblock } from './statblock'
 
@@ -10,6 +11,7 @@ export type SessionNoteFlags = {
   itemMode: boolean
   mapMode: boolean
   sheetChrome: boolean
+  beyondUrl: string | null
 }
 
 export function isItemSheetPath(path: string): boolean {
@@ -41,12 +43,14 @@ export function sessionNoteFlags({
   const npcMode = Boolean(parsedNpc && kind === 'note' && !editing && isNpcSheet(markdown, path))
   const itemMode = kind === 'note' && Boolean(path) && !editing && isItemSheetPath(path)
   const mapMode = kind === 'note' && !editing && isMapNote(markdown)
+  const beyondUrl = kind === 'note' ? dndBeyondUrlFromMarkdown(markdown) : null
   return {
     parsedNpc,
     npcMode,
     itemMode,
     mapMode,
-    sheetChrome: npcMode || itemMode
+    sheetChrome: npcMode || itemMode,
+    beyondUrl
   }
 }
 

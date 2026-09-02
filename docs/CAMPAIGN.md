@@ -8,7 +8,7 @@ Also read:
 - [TABLE.md](TABLE.md) — DM console, combat, Lookup, player display
 - [RECIPES.md](RECIPES.md) — game night sheet → initiative, Lookup → campaign note, music, crawl (also in-app **Help**)
 - [MARKDOWN.md](MARKDOWN.md) — wikilinks, callouts, `statblock` field reference
-- [AI-CAMPAIGN.md](AI-CAMPAIGN.md) — spec for an AI converting a vault into this layout (1.7.14: phone overlay, hyperspace jump)
+- [AI-CAMPAIGN.md](AI-CAMPAIGN.md) — spec for an AI converting a vault into this layout (1.7.15: D&D Beyond sheets in the note pane)
 - [Additional Books/README.md](../Additional%20Books/README.md) — optional book text for Lookup
 
 ## Folder layout
@@ -85,7 +85,7 @@ Book text for Lookup is **not** part of a campaign. Put PHB / DMG exports in the
 Right-click a folder in the file tree:
 
 - **New player / NPC / monster / spell / gear / game night sheet / session recap / party roster / map / place / shop / faction** — fills the built-in sheet for that type and substitutes the name
-- **D&D Beyond sheet…** on `Party/` — adds a player sheet with a `| **D&D Beyond** | url |` row and opens the official character page in a browser window. **Link D&D Beyond…** on an existing Party note does the same without creating a new file. Tableside does not import stats from Beyond.
+- **Add D&D Beyond link** on a Party, NPC, or Bestiary sheet — writes a `| **D&D Beyond** | url |` row (character or monster page). **Show D&D Beyond** / **Show note** flip between the official page and the campaign note. Tableside does not import stats from Beyond.
 - **New note** — empty markdown
 - **Add art…** — import images into that folder’s `Art/` (creates `Art/` if needed). Name files like the sheet so portraits attach
 - **Add files…** — import notes, PDFs, or other files into the folder you clicked

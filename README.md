@@ -2,7 +2,7 @@
 
 A local Windows app for running **in-person** tabletop games. Your laptop is the DM console. The second monitor is a clean player view for maps and art — image only, plus an optional initiative overlay.
 
-This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table. Current release: **1.7.14**.
+This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table. Current release: **1.7.15**.
 
 Tableside is a table app. It is not an official Wizards, Paizo, or Paradox product.
 
@@ -25,7 +25,7 @@ About two minutes on the bundled **Greystead** one-shot: files, a game night she
 
 ## Install (Windows)
 
-**[Download the latest installer](https://github.com/AxiumDND/tableside/releases/latest)** — look for `Tableside-Setup-1.7.14.exe`. No account, no admin.
+**[Download the latest installer](https://github.com/AxiumDND/tableside/releases/latest)** — look for `Tableside-Setup-1.7.15.exe`. No account, no admin.
 
 1. Run the installer. It is a per-user install: Start Menu + desktop shortcuts. You can pick the folder.
 2. Open **Tableside** from the Start Menu.
@@ -99,7 +99,7 @@ npm start
 npm run dist
 ```
 
-Writes `dist/Tableside-Setup-1.7.14.exe`. Pushing a `v1.7.14` tag builds that file and attaches it to the [GitHub Release](https://github.com/AxiumDND/tableside/releases/latest).
+Writes `dist/Tableside-Setup-1.7.15.exe`. Pushing a `v1.7.15` tag builds that file and attaches it to the [GitHub Release](https://github.com/AxiumDND/tableside/releases/latest).
 
 `npm run fetch-srd` is only needed if you want to refresh the bundled SRD snapshot from the [Open5e API](https://api.open5e.com/) (`srd-2024`).
 

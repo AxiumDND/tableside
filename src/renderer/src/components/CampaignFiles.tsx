@@ -19,7 +19,6 @@ import {
   isSpellsFolderName
 } from '../../../shared/campaignLayout'
 import { mapArtRelativeFolder } from '../../../shared/mapCreate'
-import { applyDndBeyondUrl, parseDndBeyondCharacterUrl } from '../../../shared/dndBeyond'
 import { sanitizeFileName, type SheetTemplateKind } from '../../../shared/sheetTemplates'
 import { sheetAcceptsPortrait } from '../../../shared/sheetPortrait'
 import { stockArtForTemplate, stockArtUrl } from '../../../shared/stockArt'
@@ -95,7 +94,6 @@ type MenuTarget =
 
 type PromptState =
   | { kind: 'create'; folder: string; template: SheetTemplateKind; title: string }
-  | { kind: 'beyond'; folder: string; title: string; path?: string }
   | { kind: 'duplicate'; from: string; title: string; defaultName: string }
   | { kind: 'delete'; path: string; title: string; fileName: string }
 
@@ -251,8 +249,6 @@ export default function CampaignFiles({
   const [menu, setMenu] = useState<MenuTarget | null>(null)
   const [prompt, setPrompt] = useState<PromptState | null>(null)
   const [name, setName] = useState('')
-  const [beyondUrl, setBeyondUrl] = useState('')
-  const [beyondError, setBeyondError] = useState('')
   const [mapImage, setMapImage] = useState<CreateNoteMapImage | null>(null)
   const [busy, setBusy] = useState(false)
   const [query, setQuery] = useState('')
@@ -361,19 +357,6 @@ export default function CampaignFiles({
     setMenu(null)
   }
 
-  function startBeyond(folder: string, path?: string): void {
-    setPrompt({
-      kind: 'beyond',
-      folder,
-      path,
-      title: path ? 'Link D&D Beyond' : 'D&D Beyond sheet'
-    })
-    setName('')
-    setBeyondUrl('')
-    setBeyondError('')
-    setMenu(null)
-  }
-
   function startDuplicate(node: CampaignTreeNode): void {
     const ext = node.ext ?? ''
     const stem = node.name.replace(new RegExp(`${ext.replace('.', '\\.')}$`, 'i'), '')
@@ -421,50 +404,6 @@ export default function CampaignFiles({
           onTreeChange?.(result.campaign, closed)
         }
         setPrompt(null)
-      } finally {
-        setBusy(false)
-      }
-      return
-    }
-    if (prompt.kind === 'beyond') {
-      const parsed = parseDndBeyondCharacterUrl(beyondUrl)
-      if (!parsed) {
-        setBeyondError('Paste a D&D Beyond character link (dndbeyond.com/characters/…).')
-        return
-      }
-      if (prompt.path) {
-        setBusy(true)
-        try {
-          const current = await window.tabledm.readFile(prompt.path)
-          const patched = applyDndBeyondUrl(current, parsed.canonicalUrl)
-          if (!patched) {
-            setBeyondError('Could not add that link to this note.')
-            return
-          }
-          const saved = await window.tabledm.saveFile(prompt.path, patched)
-          if (saved) onTreeChange?.(saved.campaign, saved.path)
-          setPrompt(null)
-          void window.tabledm.openDndBeyondSheet(parsed.canonicalUrl)
-        } finally {
-          setBusy(false)
-        }
-        return
-      }
-      const title = name.trim() || parsed.suggestedName
-      if (!title) {
-        setBeyondError('Add a character name — this link has no name in it.')
-        return
-      }
-      setBusy(true)
-      try {
-        const result = await window.tabledm.createNote(prompt.folder, title, 'player')
-        if (!result) return
-        const current = await window.tabledm.readFile(result.path)
-        const patched = applyDndBeyondUrl(current, parsed.canonicalUrl)
-        const saved = patched ? await window.tabledm.saveFile(result.path, patched) : null
-        onTreeChange?.(saved?.campaign ?? result.campaign, saved?.path ?? result.path)
-        setPrompt(null)
-        void window.tabledm.openDndBeyondSheet(parsed.canonicalUrl)
       } finally {
         setBusy(false)
       }
@@ -604,12 +543,6 @@ export default function CampaignFiles({
         >
           {menu.kind === 'node' && menu.node.type === 'file' ? (
             <>
-              {fileKind(menu.node) === 'note' && folderKindForPath(menu.node.relativePath) === 'party' ? (
-                <MenuItem
-                  label="Link D&D Beyond…"
-                  onClick={() => startBeyond(fileParent, menu.node.relativePath)}
-                />
-              ) : null}
               <MenuItem label="Duplicate…" onClick={() => startDuplicate(menu.node)} />
               {fileParentUsesArt ? (
                 <MenuItem label="Add art here…" onClick={() => void addFiles(fileParent, 'art')} />
@@ -628,7 +561,6 @@ export default function CampaignFiles({
               {folderHint === 'party' || !folderHint ? (
                 <>
                   <MenuItem label="New player…" onClick={() => startCreate(folderPath, 'player')} />
-                  <MenuItem label="D&D Beyond sheet…" onClick={() => startBeyond(folderPath)} />
                   <MenuItem label="New party roster…" onClick={() => startCreate(folderPath, 'roster')} />
                 </>
               ) : null}
@@ -696,10 +628,6 @@ export default function CampaignFiles({
             <p className="mt-1 text-[11px] text-muted">
               {prompt.kind === 'delete'
                 ? `Remove ${prompt.fileName} from this campaign. This cannot be undone.`
-                : prompt.kind === 'beyond' && prompt.path
-                  ? 'Paste the character’s D&D Beyond link. Tableside stores it on this Party sheet and opens the live sheet in a browser window — log into D&D Beyond there if asked.'
-                : prompt.kind === 'beyond'
-                  ? 'Paste the character’s D&D Beyond link. Tableside adds a Party sheet and opens the live sheet in a browser window — log into D&D Beyond there if asked. Copy AC and HP onto the Party sheet if you want them in Combat.'
                 : prompt.kind === 'create' && prompt.template === 'nightsheet'
                   ? 'Party and Scenes — each [!party]…[!/party] wraps PC links; each [!scene]…[!/scene] can hold read-aloud, GM-only notes, secrets, treasure, NPCs, combat, and table cues. Existing Party characters are linked in. Copy a scene block to add another beat. Sci-fi campaigns include an Opening crawl sample.'
                   : prompt.kind === 'create' && prompt.template === 'recap'
@@ -722,7 +650,7 @@ export default function CampaignFiles({
                       ? 'Creates a copy next to the original.'
                       : 'Creates an empty markdown note.'}
             </p>
-            {prompt.kind === 'delete' || (prompt.kind === 'beyond' && prompt.path) ? null : (
+            {prompt.kind === 'delete' ? null : (
               <input
                 ref={promptInputRef}
                 value={name}
@@ -730,34 +658,10 @@ export default function CampaignFiles({
                 onKeyDown={(event) => {
                   if (event.key === 'Escape') setPrompt(null)
                 }}
-                placeholder={
-                  prompt.kind === 'duplicate'
-                    ? prompt.defaultName
-                    : prompt.kind === 'beyond'
-                      ? 'Character name (optional if the link has one)'
-                      : 'Name'
-                }
+                placeholder={prompt.kind === 'duplicate' ? prompt.defaultName : 'Name'}
                 className="mt-3 w-full rounded border border-line bg-ink px-2 py-1.5 text-sm outline-none focus:border-amber"
               />
             )}
-            {prompt.kind === 'beyond' ? (
-              <>
-                <input
-                  ref={prompt.path ? promptInputRef : undefined}
-                  value={beyondUrl}
-                  onChange={(event) => {
-                    setBeyondUrl(event.target.value)
-                    setBeyondError('')
-                  }}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Escape') setPrompt(null)
-                  }}
-                  placeholder="https://www.dndbeyond.com/characters/…"
-                  className="mt-2 w-full rounded border border-line bg-ink px-2 py-1.5 text-sm outline-none focus:border-amber"
-                />
-                {beyondError ? <p className="mt-1 text-[11px] text-blood">{beyondError}</p> : null}
-              </>
-            ) : null}
             {prompt.kind === 'create' && createWantsArt ? (
               <div className="mt-3 space-y-2">
                 {stockArt.length > 0 ? (
@@ -861,12 +765,7 @@ export default function CampaignFiles({
               </button>
               <button
                 type="submit"
-                disabled={
-                  busy ||
-                  (prompt.kind === 'beyond'
-                    ? !beyondUrl.trim()
-                    : prompt.kind !== 'delete' && !name.trim())
-                }
+                disabled={busy || (prompt.kind !== 'delete' && !name.trim())}
                 className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-on-amber disabled:bg-line"
               >
                 {busy
@@ -875,9 +774,7 @@ export default function CampaignFiles({
                     ? 'Delete'
                     : prompt.kind === 'duplicate'
                       ? 'Duplicate'
-                      : prompt.kind === 'beyond'
-                        ? 'Add & open'
-                        : 'Create'}
+                      : 'Create'}
               </button>
             </div>
           </form>

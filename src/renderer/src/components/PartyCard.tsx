@@ -52,12 +52,9 @@ function GlanceTable({
                   {row.beyondUrl ? (
                     <button
                       type="button"
-                      onClick={() => {
-                        const url = row.beyondUrl
-                        if (url) void window.tabledm.openDndBeyondSheet(url)
-                      }}
+                      onClick={() => onOpenNote?.(row.notePath)}
                       className="text-[10px] uppercase tracking-wider text-amber hover:underline"
-                      title="Open D&D Beyond sheet in a browser"
+                      title="Open the live D&D Beyond sheet"
                     >
                       Beyond
                     </button>

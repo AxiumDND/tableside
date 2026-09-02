@@ -30,7 +30,10 @@ export function SessionNotesHeader({
   canShowItem,
   itemMode,
   onShowToPlayers,
-  handoutLabel
+  handoutLabel,
+  beyondUrl,
+  beyondPane,
+  onToggleBeyond
 }: {
   path: string
   kind: FileKind
@@ -62,6 +65,9 @@ export function SessionNotesHeader({
     mode?: 'art' | 'handout'
   }) => void
   handoutLabel: string
+  beyondUrl?: string | null
+  beyondPane?: boolean
+  onToggleBeyond?: () => void
 }) {
   return (
     <>
@@ -100,7 +106,7 @@ export function SessionNotesHeader({
             )}
           </div>
           <div className="flex items-center gap-2">
-            {kind === 'note' && path && headings.length > 0 && !editing && !sheetChrome && !mapMode ? (
+            {kind === 'note' && path && headings.length > 0 && !editing && !sheetChrome && !mapMode && !beyondPane ? (
               <button
                 type="button"
                 onClick={onToggleLinks}
@@ -150,6 +156,19 @@ export function SessionNotesHeader({
                   >
                     Edit
                   </button>
+                  {beyondUrl && onToggleBeyond ? (
+                    <button
+                      type="button"
+                      onClick={onToggleBeyond}
+                      className={`rounded px-2.5 py-1 text-xs ${
+                        beyondPane
+                          ? 'border border-line hover:border-amber'
+                          : 'bg-amber font-semibold text-on-amber'
+                      }`}
+                    >
+                      {beyondPane ? 'Show note' : 'Show D&D Beyond'}
+                    </button>
+                  ) : null}
                 </>
               )
             ) : null}
@@ -184,7 +203,7 @@ export function SessionNotesHeader({
         {path && !sheetChrome ? <div className="truncate text-[11px] text-muted">{path}</div> : null}
       </header>
 
-      {kind === 'note' && headings.length > 0 && !editing && !sheetChrome && !mapMode && showLinks ? (
+      {kind === 'note' && headings.length > 0 && !editing && !sheetChrome && !mapMode && !beyondPane && showLinks ? (
         <nav className="max-h-28 overflow-auto border-b border-line px-3 py-2 text-xs">
           {headings.map((heading) => (
             <button

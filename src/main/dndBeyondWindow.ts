@@ -1,7 +1,6 @@
-import { BrowserWindow, shell } from 'electron'
+import { app, BrowserView, shell, type BrowserWindow, type WebContents } from 'electron'
 import { parseDndBeyondCharacterUrl } from '../shared/dndBeyond'
 import { isAllowedExternalUrl } from '../shared/externalLinks'
-import { APP_NAME } from '../shared/version'
 
 const ALLOWED_HOST_SUFFIXES = [
   'dndbeyond.com',
@@ -14,14 +13,59 @@ const ALLOWED_HOST_SUFFIXES = [
   'apple.com'
 ]
 
-let sheetWindow: BrowserWindow | null = null
+export type DndBeyondBounds = {
+  x: number
+  y: number
+  width: number
+  height: number
+}
 
-function hostAllowed(hostname: string): boolean {
+let sheetView: BrowserView | null = null
+let attachedWindow: BrowserWindow | null = null
+let lastUrl = ''
+
+export function dndBeyondHostAllowed(hostname: string): boolean {
   const host = hostname.replace(/^www\./i, '').toLowerCase()
   return ALLOWED_HOST_SUFFIXES.some((suffix) => host === suffix || host.endsWith(`.${suffix}`))
 }
 
-function attachBrowserGuards(contents: Electron.WebContents): void {
+/** Canonical D&D Beyond character or monster URL, or null if the src is not a sheet. */
+export function sanitizeDndBeyondWebviewSrc(raw: unknown): string | null {
+  const parsed = parseDndBeyondCharacterUrl(typeof raw === 'string' ? raw : '')
+  if (!parsed || !isAllowedExternalUrl(parsed.canonicalUrl)) return null
+  return parsed.canonicalUrl
+}
+
+export function asDndBeyondBounds(raw: unknown): DndBeyondBounds | null {
+  if (!raw || typeof raw !== 'object') return null
+  const rec = raw as Record<string, unknown>
+  const x = rec.x
+  const y = rec.y
+  const width = rec.width
+  const height = rec.height
+  if (
+    typeof x !== 'number' ||
+    typeof y !== 'number' ||
+    typeof width !== 'number' ||
+    typeof height !== 'number' ||
+    !Number.isFinite(x) ||
+    !Number.isFinite(y) ||
+    !Number.isFinite(width) ||
+    !Number.isFinite(height) ||
+    width < 8 ||
+    height < 8
+  ) {
+    return null
+  }
+  return {
+    x: Math.round(x),
+    y: Math.round(y),
+    width: Math.round(width),
+    height: Math.round(height)
+  }
+}
+
+function attachBrowserGuards(contents: WebContents): void {
   contents.setWindowOpenHandler((details) => {
     let parsed: URL
     try {
@@ -29,7 +73,7 @@ function attachBrowserGuards(contents: Electron.WebContents): void {
     } catch {
       return { action: 'deny' }
     }
-    if ((parsed.protocol === 'https:' || parsed.protocol === 'http:') && hostAllowed(parsed.hostname)) {
+    if ((parsed.protocol === 'https:' || parsed.protocol === 'http:') && dndBeyondHostAllowed(parsed.hostname)) {
       return {
         action: 'allow',
         overrideBrowserWindowOptions: {
@@ -57,7 +101,7 @@ function attachBrowserGuards(contents: Electron.WebContents): void {
       event.preventDefault()
       return
     }
-    if ((parsed.protocol === 'https:' || parsed.protocol === 'http:') && hostAllowed(parsed.hostname)) {
+    if ((parsed.protocol === 'https:' || parsed.protocol === 'http:') && dndBeyondHostAllowed(parsed.hostname)) {
       return
     }
     event.preventDefault()
@@ -67,23 +111,41 @@ function attachBrowserGuards(contents: Electron.WebContents): void {
   })
 }
 
-function stripElectronUserAgent(contents: Electron.WebContents): void {
+function stripElectronUserAgent(contents: WebContents): void {
   const current = contents.getUserAgent()
   const next = current.replace(/\sElectron\/\S+/i, '').replace(/\sTableside\/\S+/i, '')
   if (next !== current) contents.setUserAgent(next)
 }
 
-function ensureWindow(): BrowserWindow {
-  if (sheetWindow && !sheetWindow.isDestroyed()) return sheetWindow
+function hardenWebviewAttach(
+  event: Electron.Event,
+  webPreferences: Electron.WebPreferences,
+  params: Record<string, string>
+): void {
+  const src = sanitizeDndBeyondWebviewSrc(params.src)
+  if (!src) {
+    event.preventDefault()
+    return
+  }
+  params.src = src
+  webPreferences.nodeIntegration = false
+  webPreferences.contextIsolation = true
+  webPreferences.sandbox = true
+  webPreferences.partition = 'persist:dndbeyond'
+  delete webPreferences.preload
+}
 
-  const win = new BrowserWindow({
-    width: 1200,
-    height: 900,
-    minWidth: 800,
-    minHeight: 600,
-    autoHideMenuBar: true,
-    title: `${APP_NAME} — D&D Beyond`,
-    backgroundColor: '#0e0c0a',
+function ensureView(win: BrowserWindow): BrowserView {
+  if (sheetView && !sheetView.webContents.isDestroyed()) {
+    if (attachedWindow !== win) {
+      attachedWindow?.removeBrowserView(sheetView)
+      win.addBrowserView(sheetView)
+      attachedWindow = win
+    }
+    return sheetView
+  }
+
+  const view = new BrowserView({
     webPreferences: {
       sandbox: true,
       contextIsolation: true,
@@ -91,33 +153,63 @@ function ensureWindow(): BrowserWindow {
       partition: 'persist:dndbeyond'
     }
   })
-  attachBrowserGuards(win.webContents)
-  stripElectronUserAgent(win.webContents)
-  win.on('closed', () => {
-    if (sheetWindow === win) sheetWindow = null
-  })
-  sheetWindow = win
-  return win
+  attachBrowserGuards(view.webContents)
+  stripElectronUserAgent(view.webContents)
+  win.addBrowserView(view)
+  sheetView = view
+  attachedWindow = win
+  lastUrl = ''
+  return view
 }
 
-/** Open (or reuse) a Chromium window on the official D&D Beyond character sheet. */
-export function openDndBeyondSheet(rawUrl: unknown): boolean {
-  const parsed = parseDndBeyondCharacterUrl(typeof rawUrl === 'string' ? rawUrl : '')
-  if (!parsed || !isAllowedExternalUrl(parsed.canonicalUrl)) return false
-  const win = ensureWindow()
-  win.setTitle(`${APP_NAME} — D&D Beyond`)
-  void win.loadURL(parsed.canonicalUrl)
-  if (win.isMinimized()) win.restore()
-  win.show()
-  win.focus()
+/** Full Chromium page clipped to the note pane (same cookies as later visits). */
+export function embedDndBeyondSheet(
+  win: BrowserWindow | null,
+  rawUrl: unknown,
+  rawBounds: unknown
+): boolean {
+  const src = sanitizeDndBeyondWebviewSrc(rawUrl)
+  const bounds = asDndBeyondBounds(rawBounds)
+  if (!win || win.isDestroyed() || !src || !bounds) return false
+  const view = ensureView(win)
+  view.setBounds(bounds)
+  view.setAutoResize({ width: false, height: false })
+  if (lastUrl !== src) {
+    lastUrl = src
+    void view.webContents.loadURL(src)
+  }
   return true
 }
 
-export function disposeDndBeyondWindow(): void {
-  if (!sheetWindow || sheetWindow.isDestroyed()) {
-    sheetWindow = null
-    return
+export function setDndBeyondEmbedBounds(rawBounds: unknown): boolean {
+  const bounds = asDndBeyondBounds(rawBounds)
+  if (!bounds || !sheetView || sheetView.webContents.isDestroyed()) return false
+  sheetView.setBounds(bounds)
+  return true
+}
+
+export function hideDndBeyondEmbed(): void {
+  if (!sheetView) return
+  attachedWindow?.removeBrowserView(sheetView)
+  attachedWindow = null
+}
+
+export function disposeDndBeyondEmbed(): void {
+  hideDndBeyondEmbed()
+  if (sheetView && !sheetView.webContents.isDestroyed()) {
+    sheetView.webContents.close()
   }
-  sheetWindow.close()
-  sheetWindow = null
+  sheetView = null
+  lastUrl = ''
+}
+
+/** Guest popups from D&D Beyond login: only character/monster URLs, sandboxed session. */
+export function registerDndBeyondWebview(): void {
+  app.on('web-contents-created', (_event, contents) => {
+    contents.on('will-attach-webview', hardenWebviewAttach)
+    contents.on('did-attach-webview', (_attached, guest) => {
+      attachBrowserGuards(guest)
+      stripElectronUserAgent(guest)
+    })
+  })
 }

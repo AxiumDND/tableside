@@ -223,8 +223,11 @@ const api = {
   openAppFolder: (
     kind: 'app' | 'userData' | 'books' | 'campaign' | 'convert'
   ): Promise<string> => ipcRenderer.invoke(IPC.appOpenFolder, kind),
-  openDndBeyondSheet: (url: string): Promise<boolean> =>
-    ipcRenderer.invoke(IPC.appOpenDndBeyond, url),
+  embedDndBeyondSheet: (url: string, bounds: { x: number; y: number; width: number; height: number }): Promise<boolean> =>
+    ipcRenderer.invoke(IPC.appEmbedDndBeyond, url, bounds),
+  setDndBeyondBounds: (bounds: { x: number; y: number; width: number; height: number }): Promise<boolean> =>
+    ipcRenderer.invoke(IPC.appDndBeyondBounds, bounds),
+  hideDndBeyondSheet: (): Promise<void> => ipcRenderer.invoke(IPC.appHideDndBeyond),
   checkForUpdate: (fromHelp?: boolean): Promise<void> =>
     ipcRenderer.invoke(IPC.appCheckUpdate, fromHelp ?? false),
   startUpdate: (): Promise<void> => ipcRenderer.invoke(IPC.appStartUpdate),
