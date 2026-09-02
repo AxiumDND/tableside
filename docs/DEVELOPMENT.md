@@ -128,7 +128,10 @@ Hermetic Electron smoke: `npm run test:e2e` (builds first). The suite sets `TABL
 | DM UI shell | `src/renderer/src/windows/DmApp.tsx` |
 | DM player playback orchestration | `src/renderer/src/hooks/usePlayerPlayback.ts` |
 | Session notes panel | `src/renderer/src/components/SessionNotes.tsx` |
+| Session note chrome | `SessionNotesHeader.tsx`, `SessionNotesEditor.tsx`, `SessionNotesPreview.tsx`, `SessionNotesDiscardDialog.tsx` |
 | Session note markdown / callouts | `src/renderer/src/components/SessionNoteMarkdown.tsx` |
+| Session note dispatch / sections / routing | `sessionNoteDispatch.tsx`, `sessionNoteSections.tsx`, `sessionNoteCallouts.tsx` |
+| Session note view flags / headings / encounters | `src/renderer/src/lib/sessionNoteView.ts`, `noteHeadings.ts`, `sessionNoteEncounter.ts` |
 | Map board (state / stage) | `src/renderer/src/components/MapView.tsx` |
 | Map helpers / toolbars | `src/renderer/src/components/MapViewHelpers.ts`, `MapViewPanels.tsx` |
 | Player fullscreen view | `src/renderer/src/windows/PlayerApp.tsx` |

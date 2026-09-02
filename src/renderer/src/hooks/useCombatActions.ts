@@ -1,7 +1,7 @@
 import { useCallback } from 'react'
 import type { CampaignInfo, CombatState, Combatant } from '../../../shared/types'
 import { emptyCombat } from '../../../shared/types'
-import type { EncounterAddItem } from '../components/SessionNotes'
+import type { EncounterAddItem } from '../lib/sessionNoteEncounter'
 import { monsterToStatBlock, type SrdRecord } from '../lib/srd'
 import {
   extractStatblock,
