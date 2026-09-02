@@ -65,7 +65,7 @@ docs/             Authoring and contributor docs
 - **DM window** — campaign tree, notes, combat, dice, Lookup
 - **Player window** — fullscreen image (and optional initiative overlay) on the second display when available
 
-Main process entry is `src/main/index.ts` (windows + IPC wiring). Sample campaign copy lives in `src/main/sampleCampaign.ts`; folder load/tree/templates in `src/main/campaignFolder.ts`; note/file mutations in `src/main/campaignNotes.ts`; mixer/library in `src/main/campaignMixer.ts`; player window/state in `src/main/playerOutput.ts`; settings/folders in `src/main/appSettings.ts`. Shared campaign folder rules live in `src/shared/campaignLayout.ts`.
+Main process entry is `src/main/index.ts` (windows + app lifecycle). IPC handlers live in `registerAppIpc.ts`, `registerPlayerIpc.ts`, `registerMixerIpc.ts`, and `registerCampaignIpc.ts`. Sample campaign copy lives in `src/main/sampleCampaign.ts`; folder load/tree/templates in `src/main/campaignFolder.ts`; note/file mutations in `src/main/campaignNotes.ts`; mixer/library in `src/main/campaignMixer.ts`; player window/state in `src/main/playerOutput.ts`; settings/folders in `src/main/appSettings.ts`. Shared campaign folder rules live in `src/shared/campaignLayout.ts`.
 
 ## Campaign I/O
 
@@ -110,7 +110,11 @@ Hermetic Electron smoke: `npm run test:e2e` (builds first). The suite sets `TABL
 
 | Concern | Start here |
 | --- | --- |
-| Window creation, IPC wiring | `src/main/index.ts` |
+| Window creation, app lifecycle | `src/main/index.ts` |
+| App / settings IPC | `src/main/registerAppIpc.ts` |
+| Player TV IPC | `src/main/registerPlayerIpc.ts` |
+| Mixer IPC | `src/main/registerMixerIpc.ts` |
+| Campaign / books IPC | `src/main/registerCampaignIpc.ts` |
 | Sample campaign copy / refresh | `src/main/sampleCampaign.ts` |
 | Campaign folder load / tree / templates | `src/main/campaignFolder.ts` |
 | Note create / duplicate / art / delete | `src/main/campaignNotes.ts` |

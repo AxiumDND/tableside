@@ -1,17 +1,8 @@
-import { app, BrowserWindow, dialog, ipcMain, protocol, screen, session, shell } from 'electron'
+import { app, BrowserWindow, dialog, protocol, session, shell } from 'electron'
 import { existsSync } from 'node:fs'
-import { readFile } from 'node:fs/promises'
-import { join, relative, basename, dirname } from 'node:path'
+import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
-import type {
-  AppSettings,
-  CampaignInfo,
-  CombatState,
-  CreateNoteMapImage,
-  PlayerState,
-  RecentCampaign
-} from '../shared/types'
-import { type MixerPrefs } from '../shared/audio'
+import type { CampaignInfo, RecentCampaign } from '../shared/types'
 import { setupAppUpdater, scheduleLaunchUpdateCheck } from './appUpdater'
 import { attachSpellChecker } from './spellcheck'
 import { registerMediaProtocol } from './mediaAssets'
@@ -21,81 +12,41 @@ import {
   removeDroppedAppSamples,
   sampleSourcePath
 } from './sampleCampaign'
-import {
-  type CampaignFile,
-  ensureCampaignLayout,
-  loadCampaign,
-  prepareCampaignFolder,
-  readJson,
-  safeJoin,
-  seedNewCampaignFiles,
-  toPosix,
-  writeJson
-} from './campaignFolder'
-import {
-  addCampaignFiles,
-  configureCampaignNotes,
-  copyImageToArtFolder,
-  createCampaignNote,
-  deleteCampaignFile,
-  duplicateCampaignFile,
-  saveCampaignFile,
-  saveToCampaignLibrary,
-  setNotePortrait
-} from './campaignNotes'
+import { loadCampaign, prepareCampaignFolder, safeJoin } from './campaignFolder'
+import { configureCampaignNotes } from './campaignNotes'
 import {
   broadcastMixerState,
   configureCampaignMixer,
-  getMixerState,
   loadMixerForCampaign,
   refreshMixerLibrary,
-  resetMixer,
-  runMixer
+  resetMixer
 } from './campaignMixer'
 import {
-  appFolders,
   appIconPath,
   configureAppSettings,
   getSettings,
   migrateLegacyUserData,
-  openAppFolder,
   patchSettings,
   readSettings,
   samePath
 } from './appSettings'
 import {
-  clearPlayerMedia,
-  clearPlayerOverlays,
-  closePlayerWindow,
   configurePlayerOutput,
   disposePlayerWindow,
-  getPlayerState,
-  hasSecondDisplay,
-  hidePlayerWindow,
-  listDisplays,
-  playerWindowVisible,
   resetPlayerState,
-  setPlayerState,
-  showPlayerWindow,
-  stopPlayerCrawl,
-  stopPlayerGallery,
-  stopPlayerLegend,
-  stopPlayerPhone,
-  arrivePlayerHyperspace,
-  stopPlayerHyperspace,
   syncPlayerWindow,
   watchDisplays
 } from './playerOutput'
 import { parseThemeId, THEME_WINDOW_BACKGROUND } from '../shared/theme'
-import { normalizeCurrencies } from '../shared/currencies'
 import { isAllowedExternalUrl } from '../shared/externalLinks'
 import { IPC } from '../shared/ipc'
 import { APP_NAME, APP_VERSION } from '../shared/version'
-import { type CampaignLibraryFolder } from '../shared/campaignLayout'
-import { sanitizeFileName, type SheetTemplateKind } from '../shared/sheetTemplates'
-import { parseSystemId } from '../shared/systemPack'
-import { ensureBooksHome, loadBookLibrary, openBooksFolder } from './bookLibrary'
+import { ensureBooksHome } from './bookLibrary'
 import { ensureConvertGuide } from './convertGuide'
+import { registerAppIpc } from './registerAppIpc'
+import { registerCampaignIpc } from './registerCampaignIpc'
+import { registerMixerIpc } from './registerMixerIpc'
+import { registerPlayerIpc } from './registerPlayerIpc'
 
 protocol.registerSchemesAsPrivileged([
   {
@@ -281,560 +232,19 @@ async function setCampaignFolder(folder: string | null): Promise<CampaignInfo | 
 }
 
 function registerIpc(): void {
-  ipcMain.handle(IPC.appDisplays, () => listDisplays())
-
-  ipcMain.handle(
-    IPC.playerShowImage,
-    (_e, payload: {
-      src: string
-      title: string
-      mapView?: PlayerState['mapView']
-      handout?: PlayerState['handout']
-    }) => {
-      return setPlayerState(
-        {
-          ...getPlayerState(),
-          imageSrc: payload.src || null,
-          imageTitle: payload.title,
-          mapView: payload.mapView ?? null,
-          handout: payload.handout ?? null,
-          crawl: null,
-          legend: null,
-          gallery: null,
-          video: null,
-          phone: null,
-          hyperspace: null
-        },
-        { show: true }
-      )
+  registerAppIpc({
+    confirmClose: () => {
+      allowQuit = true
+      dmWindow?.close()
     }
-  )
-
-  ipcMain.handle(
-    IPC.playerShowCrawl,
-    (_e, payload: {
-      title?: string
-      body?: string
-      logoSrc?: string | null
-      endSrc?: string | null
-      preface?: string | null
-    }) => {
-    const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
-    const body = typeof payload?.body === 'string' ? payload.body : ''
-    const logoSrc = typeof payload?.logoSrc === 'string' && payload.logoSrc.trim() ? payload.logoSrc.trim() : null
-    const endSrc = typeof payload?.endSrc === 'string' && payload.endSrc.trim() ? payload.endSrc.trim() : null
-    const preface = payload?.preface === null ? null : typeof payload?.preface === 'string' ? payload.preface : undefined
-    return setPlayerState(
-      {
-        ...getPlayerState(),
-        imageSrc: null,
-        imageTitle: title || 'Opening crawl',
-        mapView: null,
-        crawl: {
-          title: title || undefined,
-          body,
-          logoSrc,
-          endSrc,
-          preface,
-          startedAt: Date.now()
-        },
-        legend: null,
-        gallery: null,
-        video: null,
-        phone: null,
-        hyperspace: null,
-        handout: null
-      },
-      { show: true }
-    )
   })
-
-  ipcMain.handle(
-    IPC.playerShowLegend,
-    (_e, payload: {
-      title?: string
-      body?: string
-      logoSrc?: string | null
-      endSrc?: string | null
-      preface?: string | null
-      look?: string | null
-    }) => {
-    const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
-    const body = typeof payload?.body === 'string' ? payload.body : ''
-    const logoSrc = typeof payload?.logoSrc === 'string' && payload.logoSrc.trim() ? payload.logoSrc.trim() : null
-    const endSrc = typeof payload?.endSrc === 'string' && payload.endSrc.trim() ? payload.endSrc.trim() : null
-    const preface = payload?.preface === null ? null : typeof payload?.preface === 'string' ? payload.preface : undefined
-    const lookRaw = typeof payload?.look === 'string' ? payload.look.trim().toLowerCase() : ''
-    const look =
-      lookRaw === 'embers' || lookRaw === 'crimson' || lookRaw === 'neon' || lookRaw === 'mist'
-        ? lookRaw
-        : 'mist'
-    const prev = getPlayerState()
-    return setPlayerState(
-      {
-        ...prev,
-        imageTitle: prev.imageSrc ? prev.imageTitle : title || 'Campfire chronicle',
-        crawl: null,
-        legend: {
-          title: title || undefined,
-          body,
-          logoSrc,
-          endSrc,
-          preface,
-          look,
-          startedAt: Date.now()
-        },
-        gallery: null,
-        video: null,
-        phone: null,
-        hyperspace: null,
-        handout: null
-      },
-      { show: true }
-    )
+  registerPlayerIpc()
+  registerMixerIpc({ getCampaignFolder: () => campaignFolder })
+  registerCampaignIpc({
+    getCampaignFolder: () => campaignFolder,
+    setCampaignFolder,
+    showOpenDialog: showAppOpenDialog
   })
-
-  ipcMain.handle(IPC.playerClear, () => clearPlayerMedia())
-
-  ipcMain.handle(IPC.playerClearOverlays, () => clearPlayerOverlays())
-
-  ipcMain.handle(IPC.playerStopCrawl, () => stopPlayerCrawl())
-
-  ipcMain.handle(IPC.playerStopLegend, () => stopPlayerLegend())
-
-  ipcMain.handle(
-    IPC.playerShowGallery,
-    (
-      _e,
-      payload: {
-        title?: string
-        slides?: { src: string; label?: string }[]
-        intervalSec?: number | null
-        loop?: boolean
-        showTitle?: boolean
-      }
-    ) => {
-      const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
-      const slides = Array.isArray(payload?.slides)
-        ? payload.slides
-            .filter((s) => s && typeof s.src === 'string' && s.src.trim())
-            .map((s) => ({
-              src: s.src.trim(),
-              label: typeof s.label === 'string' && s.label.trim() ? s.label.trim() : undefined
-            }))
-        : []
-      if (slides.length === 0) return getPlayerState()
-      const intervalRaw = payload?.intervalSec
-      const intervalSec =
-        typeof intervalRaw === 'number' && Number.isFinite(intervalRaw) && intervalRaw > 0
-          ? Math.min(120, Math.round(intervalRaw))
-          : null
-      const loop = payload?.loop !== false
-      const showTitle = Boolean(payload?.showTitle) && Boolean(title)
-      const prev = getPlayerState()
-      return setPlayerState(
-        {
-          ...prev,
-          imageTitle: prev.imageSrc ? prev.imageTitle : title || 'Gallery',
-          crawl: null,
-          legend: null,
-          gallery: {
-            title: title || undefined,
-            slides,
-            index: 0,
-            startedAt: Date.now(),
-            intervalSec,
-            loop,
-            showTitle
-          },
-          video: null,
-          phone: null,
-          hyperspace: null,
-          handout: null
-        },
-        { show: true }
-      )
-    }
-  )
-
-  ipcMain.handle(IPC.playerGallerySetIndex, (_e, index: number) => {
-    const gallery = getPlayerState().gallery
-    if (!gallery) return getPlayerState()
-    const next = Math.max(0, Math.min(gallery.slides.length - 1, Math.floor(Number(index) || 0)))
-    if (next === gallery.index) return getPlayerState()
-    return setPlayerState({ ...getPlayerState(), gallery: { ...gallery, index: next } })
-  })
-
-  ipcMain.handle(IPC.playerStopGallery, () => stopPlayerGallery())
-
-  ipcMain.handle(
-    IPC.playerShowVideo,
-    (_e, payload: { title?: string; src?: string; muted?: boolean }) => {
-      const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
-      const src = typeof payload?.src === 'string' ? payload.src.trim() : ''
-      if (!src) return getPlayerState()
-      return setPlayerState(
-        {
-          ...getPlayerState(),
-          imageSrc: null,
-          imageTitle: title || 'Video',
-          mapView: null,
-          crawl: null,
-          legend: null,
-          gallery: null,
-          video: {
-            title: title || undefined,
-            src,
-            muted: Boolean(payload?.muted),
-            startedAt: Date.now()
-          },
-          phone: null,
-          hyperspace: null,
-          handout: null
-        },
-        { show: true }
-      )
-    }
-  )
-
-  ipcMain.handle(IPC.playerStopVideo, () => {
-    if (!getPlayerState().video) return getPlayerState()
-    return setPlayerState({ ...getPlayerState(), video: null, imageTitle: '' })
-  })
-
-  ipcMain.handle(
-    IPC.playerShowPhone,
-    (
-      _e,
-      payload: { title?: string; photoSrc?: string | null; ringSrc?: string | null }
-    ) => {
-      const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
-      const photoSrc =
-        typeof payload?.photoSrc === 'string' && payload.photoSrc.trim() ? payload.photoSrc.trim() : null
-      const ringSrc =
-        typeof payload?.ringSrc === 'string' && payload.ringSrc.trim() ? payload.ringSrc.trim() : null
-      return setPlayerState(
-        {
-          ...getPlayerState(),
-          imageSrc: null,
-          imageTitle: title || 'Incoming call',
-          mapView: null,
-          crawl: null,
-          legend: null,
-          gallery: null,
-          video: null,
-          phone: {
-            title: title || undefined,
-            photoSrc,
-            ringSrc,
-            startedAt: Date.now()
-          },
-          hyperspace: null,
-          handout: null
-        },
-        { show: true }
-      )
-    }
-  )
-
-  ipcMain.handle(IPC.playerAnswerPhone, () => {
-    const phone = getPlayerState().phone
-    if (!phone || phone.answeredAt || phone.stoppingAt) return getPlayerState()
-    return setPlayerState({ ...getPlayerState(), phone: { ...phone, answeredAt: Date.now() } })
-  })
-
-  ipcMain.handle(IPC.playerStopPhone, () => stopPlayerPhone())
-
-  ipcMain.handle(
-    IPC.playerShowHyperspace,
-    (
-      _e,
-      payload: { title?: string; shipSrc?: string | null; planetSrc?: string | null }
-    ) => {
-      const title = typeof payload?.title === 'string' ? payload.title.trim() : ''
-      const shipSrc =
-        typeof payload?.shipSrc === 'string' && payload.shipSrc.trim() ? payload.shipSrc.trim() : null
-      const planetSrc =
-        typeof payload?.planetSrc === 'string' && payload.planetSrc.trim() ? payload.planetSrc.trim() : null
-      return setPlayerState(
-        {
-          ...getPlayerState(),
-          imageSrc: null,
-          imageTitle: title || 'Hyperspace',
-          mapView: null,
-          crawl: null,
-          legend: null,
-          gallery: null,
-          video: null,
-          phone: null,
-          hyperspace: {
-            title: title || undefined,
-            shipSrc,
-            planetSrc,
-            startedAt: Date.now()
-          },
-          handout: null
-        },
-        { show: true }
-      )
-    }
-  )
-
-  ipcMain.handle(IPC.playerArriveHyperspace, () => arrivePlayerHyperspace())
-
-  ipcMain.handle(IPC.playerStopHyperspace, () => stopPlayerHyperspace())
-
-  ipcMain.handle(
-    IPC.playerSetInitiative,
-    (
-      _e,
-      payload: { entries: PlayerState['initiative']; show: boolean; round?: number }
-    ) => {
-      return setPlayerState({
-        ...getPlayerState(),
-        initiative: payload.entries ?? [],
-        showInitiative: Boolean(payload.show),
-        initiativeRound: Number(payload.round ?? 0)
-      })
-    }
-  )
-
-  ipcMain.handle(IPC.playerGetState, () => getPlayerState())
-
-  ipcMain.handle(IPC.mixerGet, async () => {
-    if (campaignFolder) await refreshMixerLibrary()
-    broadcastMixerState()
-    return getMixerState()
-  })
-  ipcMain.handle(IPC.mixerPlayMusic, (_e, playlistId: string) =>
-    runMixer({ type: 'play-music', playlistId: String(playlistId ?? '') })
-  )
-  ipcMain.handle(IPC.mixerPauseMusic, () => runMixer({ type: 'pause-music' }))
-  ipcMain.handle(IPC.mixerSkipMusic, () => runMixer({ type: 'skip-music' }))
-  ipcMain.handle(IPC.mixerStopMusic, () => runMixer({ type: 'stop-music' }))
-  ipcMain.handle(IPC.mixerPlayAmbience, (_e, playlistId: string) =>
-    runMixer({ type: 'play-ambience', playlistId: String(playlistId ?? '') })
-  )
-  ipcMain.handle(IPC.mixerStopAmbience, () => runMixer({ type: 'stop-ambience' }))
-  ipcMain.handle(IPC.mixerOneshot, (_e, path: string) => runMixer({ type: 'oneshot', path: String(path ?? '') }))
-  ipcMain.handle(IPC.mixerPlayCrawlMusic, (_e, path: string) =>
-    runMixer({ type: 'play-crawl-music', path: String(path ?? '') })
-  )
-  ipcMain.handle(IPC.mixerArmCrawlMusic, () => runMixer({ type: 'arm-crawl-music' }))
-  ipcMain.handle(IPC.mixerStopCrawlMusic, () => runMixer({ type: 'stop-crawl-music' }))
-  ipcMain.handle(IPC.mixerPlayHyperspaceLoop, (_e, path: string) =>
-    runMixer({ type: 'play-hyperspace-loop', path: String(path ?? '') })
-  )
-  ipcMain.handle(IPC.mixerStopHyperspaceLoop, () => runMixer({ type: 'stop-hyperspace-loop' }))
-  ipcMain.handle(IPC.mixerStopAll, () => runMixer({ type: 'stop-all' }))
-  ipcMain.handle(IPC.mixerSetPrefs, (_e, prefs: Partial<MixerPrefs>) =>
-    runMixer({ type: 'set-prefs', prefs: prefs ?? {} })
-  )
-  ipcMain.handle(IPC.mixerEnded, (_e, layer: 'music' | 'ambience' | 'crawl') =>
-    runMixer({
-      type: 'ended',
-      layer: layer === 'ambience' ? 'ambience' : layer === 'crawl' ? 'crawl' : 'music'
-    })
-  )
-  ipcMain.handle(IPC.mixerError, (_e, message: string | null) =>
-    runMixer({ type: 'error', message: typeof message === 'string' && message ? message : null })
-  )
-
-  ipcMain.handle(IPC.playerWindowOpen, () => playerWindowVisible())
-
-  ipcMain.handle(IPC.playerCloseWindow, () => {
-    closePlayerWindow()
-    return playerWindowVisible()
-  })
-
-  ipcMain.handle(IPC.playerPlaceOnDisplay, async (_e, displayId: number) => {
-    const display = screen.getAllDisplays().find((d) => d.id === displayId)
-    if (!display) return listDisplays()
-    await patchSettings({ playerDisplayId: displayId })
-    if (hasSecondDisplay()) showPlayerWindow(display, true)
-    else hidePlayerWindow()
-    return listDisplays()
-  })
-
-  ipcMain.handle(IPC.appGetSettings, () => getSettings())
-
-  ipcMain.handle(IPC.appSaveSettings, (_e, partial: AppSettings) => patchSettings(partial ?? {}))
-
-  ipcMain.handle(IPC.appFolders, () => appFolders())
-
-  ipcMain.handle(IPC.appOpenFolder, (_e, kind: string) => openAppFolder(kind))
-
-  ipcMain.on(IPC.appConfirmClose, () => {
-    allowQuit = true
-    dmWindow?.close()
-  })
-
-  ipcMain.handle(IPC.campaignPickFolder, async () => {
-    const result = await showAppOpenDialog({
-      title: 'Open campaign folder',
-      properties: ['openDirectory', 'createDirectory']
-    })
-    if (result.canceled || !result.filePaths[0]) return null
-    return setCampaignFolder(result.filePaths[0])
-  })
-
-  ipcMain.handle(IPC.campaignOpenPath, async (_e, folder: string) => {
-    if (!folder || !existsSync(folder)) return null
-    return setCampaignFolder(folder)
-  })
-
-  ipcMain.handle(
-    IPC.campaignNew,
-    async (
-      _e,
-      systemId?: string,
-      themeId?: string,
-      options?: { holoPortraits?: boolean; digitalRain?: boolean }
-    ) => {
-    const system = parseSystemId(systemId)
-    const theme = parseThemeId(themeId)
-    const result = await showAppOpenDialog({
-      title: 'New campaign folder',
-      properties: ['openDirectory', 'createDirectory']
-    })
-    if (result.canceled || !result.filePaths[0]) return null
-    await ensureCampaignLayout(result.filePaths[0])
-    await seedNewCampaignFiles(result.filePaths[0], system, theme, options)
-    return setCampaignFolder(result.filePaths[0])
-  })
-
-  ipcMain.handle(IPC.campaignSetTheme, async (_e, themeId?: string) => {
-    if (!campaignFolder) return null
-    const campaignPath = join(campaignFolder, 'campaign.json')
-    const campaign = await readJson<CampaignFile>(campaignPath, {})
-    const theme = parseThemeId(themeId)
-    await writeJson(campaignPath, {
-      ...campaign,
-      theme,
-      ...(theme === 'scifi' ? { holoPortraits: true } : {}),
-      ...(theme === 'matrix' ? { digitalRain: true } : {})
-    })
-    return loadCampaign(campaignFolder)
-  })
-
-  ipcMain.handle(IPC.campaignSetHoloPortraits, async (_e, enabled?: boolean) => {
-    if (!campaignFolder) return null
-    const campaignPath = join(campaignFolder, 'campaign.json')
-    const campaign = await readJson<CampaignFile>(campaignPath, {})
-    await writeJson(campaignPath, { ...campaign, holoPortraits: enabled === true })
-    return loadCampaign(campaignFolder)
-  })
-
-  ipcMain.handle(IPC.campaignSetDigitalRain, async (_e, enabled?: boolean) => {
-    if (!campaignFolder) return null
-    const campaignPath = join(campaignFolder, 'campaign.json')
-    const campaign = await readJson<CampaignFile>(campaignPath, {})
-    await writeJson(campaignPath, { ...campaign, digitalRain: enabled === true })
-    return loadCampaign(campaignFolder)
-  })
-
-  ipcMain.handle(IPC.campaignSetCurrencies, async (_e, currencies?: unknown) => {
-    if (!campaignFolder) return null
-    const campaignPath = join(campaignFolder, 'campaign.json')
-    const campaign = await readJson<CampaignFile>(campaignPath, {})
-    await writeJson(campaignPath, { ...campaign, currencies: normalizeCurrencies(currencies) })
-    return loadCampaign(campaignFolder)
-  })
-
-  ipcMain.handle(IPC.campaignOpenSample, async () =>
-    setCampaignFolder(await ensureSampleWorkingCopy())
-  )
-
-  ipcMain.handle(IPC.campaignGet, async () => {
-    if (!campaignFolder) return null
-    await prepareCampaignFolder(campaignFolder)
-    return loadCampaign(campaignFolder)
-  })
-
-  ipcMain.handle(IPC.campaignReadFile, async (_e, relativePath: string) => {
-    if (!campaignFolder) return ''
-    return readFile(safeJoin(campaignFolder, relativePath), 'utf8')
-  })
-
-  ipcMain.handle(IPC.campaignSaveFile, async (_e, relativePath: string, markdown: string) => {
-    return saveCampaignFile(relativePath, markdown)
-  })
-
-  ipcMain.handle(IPC.campaignSaveCombat, async (_e, combat: CombatState) => {
-    if (!campaignFolder) return null
-    await writeJson(join(campaignFolder, 'combat.json'), combat)
-    return loadCampaign(campaignFolder)
-  })
-
-  ipcMain.handle(
-    IPC.campaignCreateNote,
-    async (
-      _e,
-      folder: string,
-      name: string,
-      template: SheetTemplateKind = 'blank',
-      mapImage?: CreateNoteMapImage | null
-    ) => createCampaignNote(folder ?? '', name, template, mapImage)
-  )
-
-  ipcMain.handle(IPC.campaignPickImage, async () => {
-    const result = await showAppOpenDialog({
-      title: 'Load image',
-      properties: ['openFile'],
-      filters: [
-        { name: 'Images', extensions: ['png', 'jpg', 'jpeg', 'webp', 'gif', 'bmp', 'svg'] },
-        { name: 'All files', extensions: ['*'] }
-      ]
-    })
-    if (result.canceled || !result.filePaths[0]) return null
-    const filePath = result.filePaths[0]
-    return { filePath, fileName: basename(filePath) }
-  })
-
-  ipcMain.handle(
-    IPC.campaignSaveToLibrary,
-    async (_e, folder: CampaignLibraryFolder, name: string, contents: string, subfolder?: string | null) =>
-      saveToCampaignLibrary(folder, name, contents, subfolder)
-  )
-
-  ipcMain.handle(IPC.campaignSetPortrait, async (_e, relativePath: string, image: CreateNoteMapImage) =>
-    setNotePortrait(relativePath, image)
-  )
-
-  ipcMain.handle(
-    IPC.campaignCopyArt,
-    async (_e, relativePath: string, image: CreateNoteMapImage, name?: string) => {
-      if (!campaignFolder) return null
-      const dest = safeJoin(campaignFolder, relativePath)
-      if (!existsSync(dest)) return null
-      const folder = toPosix(relative(campaignFolder, dirname(dest)))
-      const fallback =
-        image.kind === 'existing'
-          ? basename(image.path)
-          : image.kind === 'import'
-            ? basename(image.filePath)
-            : image.id
-      const title = sanitizeFileName((name || fallback).replace(/\.[^.]+$/, ''))
-      const fileName = await copyImageToArtFolder(folder, title, image)
-      if (!fileName) return null
-      return { campaign: await loadCampaign(campaignFolder), fileName }
-    }
-  )
-
-  ipcMain.handle(IPC.campaignDuplicateFile, async (_e, relativePath: string, name?: string) =>
-    duplicateCampaignFile(relativePath, name)
-  )
-
-  ipcMain.handle(IPC.campaignAddFiles, async (_e, folder: string, mode?: 'files' | 'art') =>
-    addCampaignFiles(folder ?? '', mode === 'art' ? 'art' : 'files')
-  )
-
-  ipcMain.handle(IPC.campaignDeleteFile, async (_e, relativePath: string) =>
-    deleteCampaignFile(relativePath)
-  )
-
-  ipcMain.handle(IPC.booksLoad, () => loadBookLibrary())
-  ipcMain.handle(IPC.booksOpenFolder, () => openBooksFolder())
 }
 
 app.whenReady().then(async () => {
