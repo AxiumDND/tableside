@@ -2,11 +2,26 @@
 
 A local Windows app for running **in-person** tabletop games. Your laptop is the DM console. The second monitor is a clean player view for maps and art — image only, plus an optional initiative overlay.
 
-This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table.
-
-**New campaign** asks which system pack to use: **D&D 5e** (bundled SRD 5.2.1), **Pathfinder 2e** (small original core), or **Vampire 5th Edition** (Health / Willpower / Hunger tracker and original table procedures). Existing folders without a `system` field keep working as D&D 5e. Sample is still the 5e Greystead one-shot. Current release: **1.7.14**.
+This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table. Current release: **1.7.14**.
 
 Tableside is a table app. It is not an official Wizards, Paizo, or Paradox product.
+
+## Watch how to use it
+
+About two minutes on the bundled **Greystead** one-shot: files, a game night sheet, a map, Combat, and Lookup.
+
+[![How to use Tableside](docs/media/how-to-use.jpg)](docs/media/how-to-use.mp4)
+
+[Watch the video](docs/media/how-to-use.mp4) (~2 min). GitHub’s README does not play MP4 files inline — click the picture or the link. Pause-and-read steps: **[docs/GUIDE.md](docs/GUIDE.md)**.
+
+| Time | What you see |
+| --- | --- |
+| 0:03 | Map tools on Pale Well Caves |
+| 0:19 | Open tonight’s game night sheet from Files |
+| 0:38 | Read-aloud, combat, and treasure on the sheet |
+| 0:58 | Combat roster, then back to the map |
+| 1:18 | Show the map to the player TV |
+| 1:33 | Lookup wolf in the offline system pack |
 
 ## Install (Windows)
 
@@ -32,22 +47,20 @@ Uninstall from Windows Settings. Campaign folders on disk and `%APPDATA%\Tablesi
 
 Older builds used `%APPDATA%\table-dm`. First launch copies settings and optional book files from there if they exist.
 
+## How to use
+
+The video above is the first night. **[docs/GUIDE.md](docs/GUIDE.md)** is the same night written out: first launch, show a picture, run a map, start a fight, play music, play a sci-fi crawl, and look up rules.
+
+1. Install, then **Sample** (Greystead) or **Open** / **New** a campaign folder. **New campaign** asks which system pack to use: **D&D 5e** (bundled SRD 5.2.1), **Pathfinder 2e** (small original core), or **Vampire 5th Edition**.
+2. Click **Players see** to put the player window on the table TV.
+3. Open a note, click a picture, **Show to players** (`Alt+S`). **Clear** (`Alt+X`) blanks the TV.
+4. **Combat** loads a game night sheet’s combatants. **Music** plays your files from `Audio/`. **Lookup** searches the system pack offline.
+
 ## Who made this
 
 I'm one person — a DM first, and only a basic coder. Tableside would not exist without AI as a pair programmer. I decide what the app should do at the table, and I review what goes into the repo. This is a hobby tool for in-person games, not a studio product. If you want something built by a full team, this isn't that. If you want something a single GM made so the laptop and the player TV just work, this is it.
 
 Questions or thanks: [tableside.gm@gmail.com](mailto:tableside.gm@gmail.com). If it helped at your table, you can [buy me a coffee](https://ko-fi.com/tablesidegm).
-
-## How to use
-
-**[docs/GUIDE.md](docs/GUIDE.md)** is the how-to: first launch, show a picture, run a map, start a fight, play music, play a sci-fi crawl, and look up rules.
-
-Short version:
-
-1. Install, then **Sample** (Greystead) or **Open** / **New** a campaign folder.
-2. Click **Players see** to put the player window on the table TV.
-3. Open a note, click a picture, **Show to players** (`Alt+S`). **Clear** (`Alt+X`) blanks the TV.
-4. **Combat** loads a game night sheet’s combatants. **Music** plays your files from `Audio/`. **Lookup** searches the system pack offline.
 
 ## Features
 
@@ -96,7 +109,7 @@ The bundled sample is **[examples/greystead](examples/greystead)**. Tableside co
 
 | Doc | Audience |
 | --- | --- |
-| [docs/GUIDE.md](docs/GUIDE.md) | DMs — how to use the current app at the table |
+| [docs/GUIDE.md](docs/GUIDE.md) | DMs — first night (video + written steps) |
 | [docs/TABLE.md](docs/TABLE.md) | DMs — every console control |
 | [docs/RECIPES.md](docs/RECIPES.md) | DMs — short workflows (combat, Lookup, music, crawl, maps) |
 | [docs/CAMPAIGN.md](docs/CAMPAIGN.md) | DMs — folder layout, game night sheets, combatants, audio, images |
