@@ -8,7 +8,7 @@ import type { ParsedStatblock } from '../lib/statblock'
 import { isMapNote, mapImagePath } from '../lib/mapNote'
 import { headingsFrom } from '../lib/noteHeadings'
 import { collectEncounterAddItems, type EncounterAddItem } from '../lib/sessionNoteEncounter'
-import { applyDndBeyondUrl } from '../../../shared/dndBeyond'
+import { applyWebSheetUrl } from '../../../shared/webSheet'
 import { handoutButtonLabel, sessionNoteFlags } from '../lib/sessionNoteView'
 import MapView from './MapView'
 import { createSessionNoteMarkdown } from './SessionNoteMarkdown'
@@ -16,7 +16,7 @@ import { SessionNotesDiscardDialog } from './SessionNotesDiscardDialog'
 import { SessionNotesEditor } from './SessionNotesEditor'
 import { SessionNotesHeader } from './SessionNotesHeader'
 import { SessionNotesPreview } from './SessionNotesPreview'
-import DndBeyondPane from './DndBeyondPane'
+import WebSheetPane from './WebSheetPane'
 import { useOpeningSequenceCards } from '../hooks/useOpeningSequenceCards'
 import { useNoteBlockEditing } from '../hooks/useNoteBlockEditing'
 import { useShopStock } from '../hooks/useShopStock'
@@ -250,18 +250,18 @@ export default function SessionNotes({
     const withImages = prepareNoteMarkdown(markdown, path, images)
     return linkWikiNotes(withImages, path, noteIndex)
   }, [markdown, path, images, noteIndex])
-  const { parsedNpc, npcMode, itemMode, mapMode, sheetChrome, beyondUrl } = useMemo(
+  const { parsedNpc, npcMode, itemMode, mapMode, sheetChrome, webSheetUrl } = useMemo(
     () => sessionNoteFlags({ kind, path, markdown, editing }),
     [kind, path, markdown, editing]
   )
-  const [beyondPane, setBeyondPane] = useState(false)
+  const [webSheetPane, setWebSheetPane] = useState(false)
   useEffect(() => {
-    setBeyondPane(false)
+    setWebSheetPane(false)
   }, [path])
-  const showBeyondPane = Boolean(beyondUrl && beyondPane && !editing && !mapMode)
+  const showWebSheetPane = Boolean(webSheetUrl && webSheetPane && !editing && !mapMode)
 
-  async function linkDndBeyond(rawUrl: string): Promise<string | null> {
-    const patched = applyDndBeyondUrl(markdown, rawUrl)
+  async function linkWebSheet(rawUrl: string): Promise<string | null> {
+    const patched = applyWebSheetUrl(markdown, rawUrl)
     if (!patched) return 'Paste a character or monster page link.'
     try {
       const savedPath = await commitSave(path, patched)
@@ -271,7 +271,7 @@ export default function SessionNotes({
       originalRef.current = patched
       setOriginal(patched)
       setSaveError('')
-      setBeyondPane(true)
+      setWebSheetPane(true)
       return null
     } catch {
       return 'Could not save this file.'
@@ -482,7 +482,7 @@ export default function SessionNotes({
       <SessionNotesHeader
         path={path}
         kind={kind}
-        sheetChrome={sheetChrome && !showBeyondPane}
+        sheetChrome={sheetChrome && !showWebSheetPane}
         mapMode={mapMode}
         editing={editing}
         dirty={dirty}
@@ -501,14 +501,14 @@ export default function SessionNotes({
         onSave={() => void save()}
         onEdit={() => setEditing(true)}
         onRerollStock={() => void rerollShopStock()}
-        canShowArt={canShowArt && !showBeyondPane}
-        canShowItem={canShowItem && !showBeyondPane}
+        canShowArt={canShowArt && !showWebSheetPane}
+        canShowItem={canShowItem && !showWebSheetPane}
         itemMode={itemMode}
         onShowToPlayers={onShowToPlayers}
         handoutLabel={handoutButtonLabel(path)}
-        beyondUrl={beyondUrl}
-        beyondPane={showBeyondPane}
-        onToggleBeyond={() => setBeyondPane((open) => !open)}
+        webSheetUrl={webSheetUrl}
+        webSheetPane={showWebSheetPane}
+        onToggleWebSheet={() => setWebSheetPane((open) => !open)}
       />
 
       {editing ? (
@@ -518,8 +518,8 @@ export default function SessionNotes({
           saveError={saveError}
           onChange={setMarkdown}
         />
-      ) : showBeyondPane && beyondUrl ? (
-        <DndBeyondPane src={beyondUrl} />
+      ) : showWebSheetPane && webSheetUrl ? (
+        <WebSheetPane src={webSheetUrl} />
       ) : mapMode ? (
         <MapView
           key={path}
@@ -573,7 +573,7 @@ export default function SessionNotes({
             onHoloPortraitsChange={onHoloPortraitsChange}
             onDigitalRainChange={onDigitalRainChange}
             onSetPortrait={setNotePortrait}
-            onLinkBeyond={(url) => linkDndBeyond(url)}
+            onLinkWebSheet={(url) => linkWebSheet(url)}
             onRerollStock={rerollShopStock}
             onChangeStock={changeShopStock}
             onChangeStanding={changeShopStanding}

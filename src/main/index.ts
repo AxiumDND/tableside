@@ -38,7 +38,7 @@ import {
   watchDisplays
 } from './playerOutput'
 import { parseThemeId, THEME_WINDOW_BACKGROUND } from '../shared/theme'
-import { disposeDndBeyondEmbed, registerDndBeyondWebview } from './dndBeyondWindow'
+import { disposeWebSheetEmbed, registerWebSheetWebview } from './webSheetWindow'
 import { isAllowedExternalUrl } from '../shared/externalLinks'
 import { IPC } from '../shared/ipc'
 import { APP_NAME, APP_VERSION } from '../shared/version'
@@ -204,7 +204,7 @@ function createDmWindow(): void {
   dmWindow.on('closed', () => {
     dmWindow = null
     disposePlayerWindow()
-    disposeDndBeyondEmbed()
+    disposeWebSheetEmbed()
   })
   applyWindowSecurity(dmWindow.webContents)
   attachSpellChecker(dmWindow, app.getLocale())
@@ -253,7 +253,7 @@ function registerIpc(): void {
 
 app.whenReady().then(async () => {
   app.setAppUserModelId('com.tabledm.app')
-  registerDndBeyondWebview()
+  registerWebSheetWebview()
   session.defaultSession.setPermissionRequestHandler((_contents, _permission, callback) => {
     callback(true)
   })

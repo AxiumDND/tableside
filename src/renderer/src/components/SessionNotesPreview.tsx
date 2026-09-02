@@ -43,7 +43,7 @@ export function SessionNotesPreview({
   onHoloPortraitsChange,
   onDigitalRainChange,
   onSetPortrait,
-  onLinkBeyond,
+  onLinkWebSheet,
   onRerollStock,
   onChangeStock,
   onChangeStanding,
@@ -77,7 +77,7 @@ export function SessionNotesPreview({
   onHoloPortraitsChange?: (enabled: boolean) => void
   onDigitalRainChange?: (enabled: boolean) => void
   onSetPortrait: (image: CreateNoteMapImage) => Promise<void>
-  onLinkBeyond?: (url: string) => Promise<string | null>
+  onLinkWebSheet?: (url: string) => Promise<string | null>
   onRerollStock?: () => Promise<void>
   onChangeStock?: (stock: ShopStockOffer[]) => Promise<void>
   onChangeStanding?: (standing: ShopStanding) => Promise<void>
@@ -150,7 +150,7 @@ export function SessionNotesPreview({
         onSelectImage={onSelectImage}
         onAddToCombat={onAddNpcToCombat ? () => onAddNpcToCombat(parsedNpc.block, path) : undefined}
         onSetPortrait={onSetPortrait}
-        onLinkBeyond={onLinkBeyond}
+        onLinkWebSheet={onLinkWebSheet}
         holo={holoPortraitsEnabled(theme, holoPortraits) && isHoloPortraitPath(path)}
         renderNotes={renderSheetNotes}
       />

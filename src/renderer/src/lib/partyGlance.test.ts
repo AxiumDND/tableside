@@ -126,7 +126,7 @@ describe('partyGlanceRows', () => {
       className: 'Fighter 5',
       ac: '18',
       hp: '44',
-      beyondUrl: null
+      webSheetUrl: null
     })
     expect(rows[1]).toMatchObject({ className: 'Guide', ac: '12', hp: '9', companion: true })
     expect(rows[0].companion).toBe(false)
@@ -137,7 +137,7 @@ describe('partyGlanceRows', () => {
     const rows = partyGlanceRows('- [[Aria]]\n', 'Sessions/Night.md', notes, {
       'Party/PC — Aria.md': '| **Web sheet** | https://www.dndbeyond.com/characters/99-aria |\n| **AC** | 15 |'
     })
-    expect(rows[0]?.beyondUrl).toBe('https://www.dndbeyond.com/characters/99')
+    expect(rows[0]?.webSheetUrl).toBe('https://www.dndbeyond.com/characters/99')
   })
 })
 

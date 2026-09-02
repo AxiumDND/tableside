@@ -11,7 +11,7 @@ function boundsOf(el: HTMLElement): { x: number; y: number; width: number; heigh
 }
 
 /** Live web sheet clipped to the DM note pane (Chromium BrowserView). */
-export default function DndBeyondPane({ src }: { src: string }) {
+export default function WebSheetPane({ src }: { src: string }) {
   const hostRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -21,10 +21,10 @@ export default function DndBeyondPane({ src }: { src: string }) {
 
     const place = (): void => {
       if (cancelled) return
-      void window.tabledm.setDndBeyondBounds(boundsOf(host))
+      void window.tabledm.setWebSheetBounds(boundsOf(host))
     }
 
-    void window.tabledm.embedDndBeyondSheet(src, boundsOf(host))
+    void window.tabledm.embedWebSheet(src, boundsOf(host))
     const observer = new ResizeObserver(place)
     observer.observe(host)
     window.addEventListener('resize', place)
@@ -32,7 +32,7 @@ export default function DndBeyondPane({ src }: { src: string }) {
       cancelled = true
       observer.disconnect()
       window.removeEventListener('resize', place)
-      void window.tabledm.hideDndBeyondSheet()
+      void window.tabledm.hideWebSheet()
     }
   }, [src])
 

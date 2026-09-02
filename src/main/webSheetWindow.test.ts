@@ -31,29 +31,29 @@ vi.mock('electron', () => {
 })
 
 import {
-  asDndBeyondBounds,
-  disposeDndBeyondEmbed,
-  embedDndBeyondSheet,
-  hideDndBeyondEmbed,
-  sanitizeDndBeyondWebviewSrc
-} from './dndBeyondWindow'
+  asWebSheetBounds,
+  disposeWebSheetEmbed,
+  embedWebSheet,
+  hideWebSheetEmbed,
+  sanitizeWebSheetSrc
+} from './webSheetWindow'
 
 describe('web-sheet note-pane embed', () => {
   beforeEach(() => {
-    disposeDndBeyondEmbed()
+    disposeWebSheetEmbed()
     vi.clearAllMocks()
     isDestroyed.mockReturnValue(false)
   })
 
   it('accepts character and monster URLs and rejects everything else', () => {
-    expect(sanitizeDndBeyondWebviewSrc('https://www.dndbeyond.com/characters/42-aria')).toBe(
+    expect(sanitizeWebSheetSrc('https://www.dndbeyond.com/characters/42-aria')).toBe(
       'https://www.dndbeyond.com/characters/42'
     )
-    expect(sanitizeDndBeyondWebviewSrc('https://www.dndbeyond.com/monsters/4775812-dire-wolf')).toBe(
+    expect(sanitizeWebSheetSrc('https://www.dndbeyond.com/monsters/4775812-dire-wolf')).toBe(
       'https://www.dndbeyond.com/monsters/4775812-dire-wolf'
     )
-    expect(sanitizeDndBeyondWebviewSrc('https://www.dndbeyond.com/spells/fireball')).toBeNull()
-    expect(sanitizeDndBeyondWebviewSrc('javascript:alert(1)')).toBeNull()
+    expect(sanitizeWebSheetSrc('https://www.dndbeyond.com/spells/fireball')).toBeNull()
+    expect(sanitizeWebSheetSrc('javascript:alert(1)')).toBeNull()
   })
 
   it('embeds a monster page on the DM window and can hide it', () => {
@@ -63,7 +63,7 @@ describe('web-sheet note-pane embed', () => {
       removeBrowserView
     }
     expect(
-      embedDndBeyondSheet(win as never, 'https://www.dndbeyond.com/monsters/4775812-dire-wolf', {
+      embedWebSheet(win as never, 'https://www.dndbeyond.com/monsters/4775812-dire-wolf', {
         x: 10,
         y: 20,
         width: 800,
@@ -73,12 +73,12 @@ describe('web-sheet note-pane embed', () => {
     expect(addBrowserView).toHaveBeenCalled()
     expect(loadURL).toHaveBeenCalledWith('https://www.dndbeyond.com/monsters/4775812-dire-wolf')
     expect(setBounds).toHaveBeenCalledWith({ x: 10, y: 20, width: 800, height: 600 })
-    hideDndBeyondEmbed()
+    hideWebSheetEmbed()
     expect(removeBrowserView).toHaveBeenCalled()
   })
 
   it('rejects tiny or junk bounds', () => {
-    expect(asDndBeyondBounds({ x: 0, y: 0, width: 2, height: 2 })).toBeNull()
-    expect(asDndBeyondBounds(null)).toBeNull()
+    expect(asWebSheetBounds({ x: 0, y: 0, width: 2, height: 2 })).toBeNull()
+    expect(asWebSheetBounds(null)).toBeNull()
   })
 })

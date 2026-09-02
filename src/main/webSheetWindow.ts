@@ -1,5 +1,5 @@
 import { app, BrowserView, shell, type BrowserWindow, type WebContents } from 'electron'
-import { parseDndBeyondCharacterUrl } from '../shared/dndBeyond'
+import { parseWebSheetUrl } from '../shared/webSheet'
 import { isAllowedExternalUrl } from '../shared/externalLinks'
 
 const ALLOWED_HOST_SUFFIXES = [
@@ -13,7 +13,7 @@ const ALLOWED_HOST_SUFFIXES = [
   'apple.com'
 ]
 
-export type DndBeyondBounds = {
+export type WebSheetBounds = {
   x: number
   y: number
   width: number
@@ -24,19 +24,19 @@ let sheetView: BrowserView | null = null
 let attachedWindow: BrowserWindow | null = null
 let lastUrl = ''
 
-export function dndBeyondHostAllowed(hostname: string): boolean {
+export function webSheetHostAllowed(hostname: string): boolean {
   const host = hostname.replace(/^www\./i, '').toLowerCase()
   return ALLOWED_HOST_SUFFIXES.some((suffix) => host === suffix || host.endsWith(`.${suffix}`))
 }
 
 /** Canonical character or monster page URL, or null if the src is not a sheet. */
-export function sanitizeDndBeyondWebviewSrc(raw: unknown): string | null {
-  const parsed = parseDndBeyondCharacterUrl(typeof raw === 'string' ? raw : '')
+export function sanitizeWebSheetSrc(raw: unknown): string | null {
+  const parsed = parseWebSheetUrl(typeof raw === 'string' ? raw : '')
   if (!parsed || !isAllowedExternalUrl(parsed.canonicalUrl)) return null
   return parsed.canonicalUrl
 }
 
-export function asDndBeyondBounds(raw: unknown): DndBeyondBounds | null {
+export function asWebSheetBounds(raw: unknown): WebSheetBounds | null {
   if (!raw || typeof raw !== 'object') return null
   const rec = raw as Record<string, unknown>
   const x = rec.x
@@ -73,7 +73,7 @@ function attachBrowserGuards(contents: WebContents): void {
     } catch {
       return { action: 'deny' }
     }
-    if ((parsed.protocol === 'https:' || parsed.protocol === 'http:') && dndBeyondHostAllowed(parsed.hostname)) {
+    if ((parsed.protocol === 'https:' || parsed.protocol === 'http:') && webSheetHostAllowed(parsed.hostname)) {
       return {
         action: 'allow',
         overrideBrowserWindowOptions: {
@@ -82,7 +82,7 @@ function attachBrowserGuards(contents: WebContents): void {
             sandbox: true,
             contextIsolation: true,
             nodeIntegration: false,
-            partition: 'persist:dndbeyond'
+            partition: 'persist:websheet'
           }
         }
       }
@@ -101,7 +101,7 @@ function attachBrowserGuards(contents: WebContents): void {
       event.preventDefault()
       return
     }
-    if ((parsed.protocol === 'https:' || parsed.protocol === 'http:') && dndBeyondHostAllowed(parsed.hostname)) {
+    if ((parsed.protocol === 'https:' || parsed.protocol === 'http:') && webSheetHostAllowed(parsed.hostname)) {
       return
     }
     event.preventDefault()
@@ -122,7 +122,7 @@ function hardenWebviewAttach(
   webPreferences: Electron.WebPreferences,
   params: Record<string, string>
 ): void {
-  const src = sanitizeDndBeyondWebviewSrc(params.src)
+  const src = sanitizeWebSheetSrc(params.src)
   if (!src) {
     event.preventDefault()
     return
@@ -131,7 +131,7 @@ function hardenWebviewAttach(
   webPreferences.nodeIntegration = false
   webPreferences.contextIsolation = true
   webPreferences.sandbox = true
-  webPreferences.partition = 'persist:dndbeyond'
+  webPreferences.partition = 'persist:websheet'
   delete webPreferences.preload
 }
 
@@ -150,7 +150,7 @@ function ensureView(win: BrowserWindow): BrowserView {
       sandbox: true,
       contextIsolation: true,
       nodeIntegration: false,
-      partition: 'persist:dndbeyond'
+      partition: 'persist:websheet'
     }
   })
   attachBrowserGuards(view.webContents)
@@ -163,13 +163,13 @@ function ensureView(win: BrowserWindow): BrowserView {
 }
 
 /** Full Chromium page clipped to the note pane (same cookies as later visits). */
-export function embedDndBeyondSheet(
+export function embedWebSheet(
   win: BrowserWindow | null,
   rawUrl: unknown,
   rawBounds: unknown
 ): boolean {
-  const src = sanitizeDndBeyondWebviewSrc(rawUrl)
-  const bounds = asDndBeyondBounds(rawBounds)
+  const src = sanitizeWebSheetSrc(rawUrl)
+  const bounds = asWebSheetBounds(rawBounds)
   if (!win || win.isDestroyed() || !src || !bounds) return false
   const view = ensureView(win)
   view.setBounds(bounds)
@@ -181,21 +181,21 @@ export function embedDndBeyondSheet(
   return true
 }
 
-export function setDndBeyondEmbedBounds(rawBounds: unknown): boolean {
-  const bounds = asDndBeyondBounds(rawBounds)
+export function setWebSheetEmbedBounds(rawBounds: unknown): boolean {
+  const bounds = asWebSheetBounds(rawBounds)
   if (!bounds || !sheetView || sheetView.webContents.isDestroyed()) return false
   sheetView.setBounds(bounds)
   return true
 }
 
-export function hideDndBeyondEmbed(): void {
+export function hideWebSheetEmbed(): void {
   if (!sheetView) return
   attachedWindow?.removeBrowserView(sheetView)
   attachedWindow = null
 }
 
-export function disposeDndBeyondEmbed(): void {
-  hideDndBeyondEmbed()
+export function disposeWebSheetEmbed(): void {
+  hideWebSheetEmbed()
   if (sheetView && !sheetView.webContents.isDestroyed()) {
     sheetView.webContents.close()
   }
@@ -204,7 +204,7 @@ export function disposeDndBeyondEmbed(): void {
 }
 
 /** Guest popups from web-sheet login: only character/monster URLs, sandboxed session. */
-export function registerDndBeyondWebview(): void {
+export function registerWebSheetWebview(): void {
   app.on('web-contents-created', (_event, contents) => {
     contents.on('will-attach-webview', hardenWebviewAttach)
     contents.on('did-attach-webview', (_attached, guest) => {

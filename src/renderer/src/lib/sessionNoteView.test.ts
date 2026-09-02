@@ -59,7 +59,7 @@ describe('sessionNoteView', () => {
       markdown: '| **Web sheet** | https://www.dndbeyond.com/characters/99-aria |\n',
       editing: false
     })
-    expect(flags.beyondUrl).toBe('https://www.dndbeyond.com/characters/99')
+    expect(flags.webSheetUrl).toBe('https://www.dndbeyond.com/characters/99')
   })
 
   it('surfaces a web-sheet monster URL from an NPC or Bestiary sheet', () => {
@@ -69,6 +69,6 @@ describe('sessionNoteView', () => {
       markdown: '| **Web sheet** | https://www.dndbeyond.com/monsters/16780-goblin |\n',
       editing: false
     })
-    expect(flags.beyondUrl).toBe('https://www.dndbeyond.com/monsters/16780-goblin')
+    expect(flags.webSheetUrl).toBe('https://www.dndbeyond.com/monsters/16780-goblin')
   })
 })

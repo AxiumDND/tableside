@@ -49,7 +49,7 @@ function GlanceTable({
                   <NoteWikiLink notePath={row.notePath} onOpenNote={onOpenNote} images={images}>
                     {row.name}
                   </NoteWikiLink>
-                  {row.beyondUrl ? (
+                  {row.webSheetUrl ? (
                     <button
                       type="button"
                       onClick={() => onOpenNote?.(row.notePath)}

@@ -10,16 +10,16 @@ const CHARACTER_PATH =
 const MONSTER_PATH = /^\/(?:homebrew\/)?monsters\/([A-Za-z0-9][A-Za-z0-9_-]*)(?:\/[A-Za-z0-9_-]+)?\/?$/i
 const SHEET_FENCE = /\[!(?:pc|npc|monster|creature|bestiary|player|character|infobox)\][^\n]*\n/i
 
-export type DndBeyondLink = {
+export type WebSheetLink = {
   kind: 'character' | 'monster'
   characterId: string
   canonicalUrl: string
   suggestedName: string
 }
 
-export type DndBeyondCharacter = DndBeyondLink
+export type WebSheetRef = WebSheetLink
 
-export function isDndBeyondFactLabel(label: string): boolean {
+export function isWebSheetFactLabel(label: string): boolean {
   const n = label.trim()
   if (/^(?:beyond|web\s*sheet|live\s*sheet|sheet\s*link)$/i.test(n)) return true
   const compact = n.replace(/[\s*]/g, '').toLowerCase()
@@ -35,7 +35,7 @@ function titleFromSlug(slug: string): string {
   return words.map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')
 }
 
-function fromPathname(pathname: string, slug: string): DndBeyondLink | null {
+function fromPathname(pathname: string, slug: string): WebSheetLink | null {
   const character = CHARACTER_PATH.exec(pathname)
   if (character) {
     const characterId = character[1]
@@ -65,7 +65,7 @@ function fromPathname(pathname: string, slug: string): DndBeyondLink | null {
  * Accept a character URL, monster page, ddb.ac short link, or a bare character id.
  * Rejects anything that is not a supported character or monster page.
  */
-export function parseDndBeyondCharacterUrl(raw: unknown): DndBeyondLink | null {
+export function parseWebSheetUrl(raw: unknown): WebSheetLink | null {
   if (typeof raw !== 'string') return null
   const trimmed = raw.trim()
   // Reject control characters that can smuggle payloads into a pasted URL.
@@ -98,30 +98,30 @@ export function parseDndBeyondCharacterUrl(raw: unknown): DndBeyondLink | null {
   return fromPathname(parsed.pathname.replace(/\/+$/, '') || '/', slug)
 }
 
-export function dndBeyondUrlFromMarkdown(markdown: string): string | null {
+export function webSheetUrlFromMarkdown(markdown: string): string | null {
   const table = /\|\s*\*\*([^*]+)\*\*\s*\|\s*([^|]+)\|/g
   let match: RegExpExecArray | null
   while ((match = table.exec(markdown))) {
-    if (!isDndBeyondFactLabel(match[1])) continue
-    const parsed = parseDndBeyondCharacterUrl(match[2].trim())
+    if (!isWebSheetFactLabel(match[1])) continue
+    const parsed = parseWebSheetUrl(match[2].trim())
     if (parsed) return parsed.canonicalUrl
   }
 
   const bare = /https?:\/\/(?:www\.)?(?:dndbeyond\.com|ddb\.ac)\/[^\s)<>]+/gi
   while ((match = bare.exec(markdown))) {
-    const parsed = parseDndBeyondCharacterUrl(match[0].replace(/[.,;]+$/, ''))
+    const parsed = parseWebSheetUrl(match[0].replace(/[.,;]+$/, ''))
     if (parsed) return parsed.canonicalUrl
   }
   return null
 }
 
 /** Insert or replace the web-sheet row on a PC, NPC, or monster sheet. */
-export function applyDndBeyondUrl(markdown: string, rawUrl: string): string | null {
-  const parsed = parseDndBeyondCharacterUrl(rawUrl)
+export function applyWebSheetUrl(markdown: string, rawUrl: string): string | null {
+  const parsed = parseWebSheetUrl(rawUrl)
   if (!parsed) return null
   const row = `| **Web sheet** | ${parsed.canonicalUrl} |`
   const replaced = markdown.replace(/^\|\s*\*\*([^*]+)\*\*\s*\|.*\|$/gim, (line, label: string) =>
-    isDndBeyondFactLabel(label) ? row : line
+    isWebSheetFactLabel(label) ? row : line
   )
   if (replaced !== markdown) return replaced
   if (/^\|[-:| ]+\|\s*$/m.test(markdown)) {

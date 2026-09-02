@@ -12,7 +12,7 @@ import {
   type CampaignImage
 } from '../lib/images'
 import { extractFacts, extractHook, extractTagline, type ParsedStatblock } from '../lib/statblock'
-import { dndBeyondUrlFromMarkdown, isDndBeyondFactLabel, parseDndBeyondCharacterUrl } from '../../../shared/dndBeyond'
+import { webSheetUrlFromMarkdown, isWebSheetFactLabel, parseWebSheetUrl } from '../../../shared/webSheet'
 import { stripSheetHeader } from '../../../shared/sheetBlock'
 import RollableStatBlock from './RollableStatBlock'
 import SheetArtFrame from './SheetArtFrame'
@@ -88,7 +88,7 @@ export default function NpcSheet({
   onSelectImage,
   onAddToCombat,
   onSetPortrait,
-  onLinkBeyond,
+  onLinkWebSheet,
   renderNotes,
   holo = false
 }: {
@@ -100,7 +100,7 @@ export default function NpcSheet({
   onSelectImage?: (path: string) => void
   onAddToCombat?: () => void
   onSetPortrait?: (image: CreateNoteMapImage) => Promise<void>
-  onLinkBeyond?: (url: string) => Promise<string | null>
+  onLinkWebSheet?: (url: string) => Promise<string | null>
   renderNotes?: (markdown: string) => ReactNode
   holo?: boolean
 }) {
@@ -108,17 +108,17 @@ export default function NpcSheet({
   const tagline = extractTagline(markdown)
   const hook = extractHook(markdown)
   const facts = extractFacts(markdown)
-    .filter((fact) => !isDndBeyondFactLabel(fact.label))
+    .filter((fact) => !isWebSheetFactLabel(fact.label))
     .slice(0, 8)
-  const beyondUrl = dndBeyondUrlFromMarkdown(markdown)
-  const canLinkBeyond =
+  const webSheetUrl = webSheetUrlFromMarkdown(markdown)
+  const canLinkWebSheet =
     pathHasFolder(path, 'party') || pathHasFolder(path, 'npcs') || pathHasFolder(path, 'bestiary')
-  const beyondPlaceholder = pathHasFolder(path, 'party')
+  const webSheetPlaceholder = pathHasFolder(path, 'party')
     ? 'https://www.dndbeyond.com/characters/…'
     : 'https://www.dndbeyond.com/monsters/…'
-  const [beyondDraft, setBeyondDraft] = useState('')
-  const [beyondError, setBeyondError] = useState('')
-  const [beyondBusy, setBeyondBusy] = useState(false)
+  const [webSheetDraft, setWebSheetDraft] = useState('')
+  const [webSheetError, setWebSheetError] = useState('')
+  const [webSheetBusy, setWebSheetBusy] = useState(false)
   const imagePath = firstImage(markdown, path, images)
   const srdSrc = !imagePath && pathHasFolder(path, 'bestiary') ? srdPortraitUrl(title) : null
   const imageSrc = imagePath ? campaignFileUrl(imagePath) : srdSrc
@@ -132,69 +132,69 @@ export default function NpcSheet({
   }, [srdSrc])
 
   useEffect(() => {
-    setBeyondDraft(beyondUrl ?? '')
-    setBeyondError('')
-  }, [beyondUrl, path])
+    setWebSheetDraft(webSheetUrl ?? '')
+    setWebSheetError('')
+  }, [webSheetUrl, path])
 
   useEffect(() => {
     if (selectValue && onSelectImage) onSelectImage(selectValue)
   }, [selectValue, onSelectImage])
 
-  async function submitBeyondLink(): Promise<void> {
-    if (!onLinkBeyond || beyondBusy) return
-    const parsed = parseDndBeyondCharacterUrl(beyondDraft)
+  async function submitWebSheetLink(): Promise<void> {
+    if (!onLinkWebSheet || webSheetBusy) return
+    const parsed = parseWebSheetUrl(webSheetDraft)
     if (!parsed) {
-      setBeyondError(
+      setWebSheetError(
         pathHasFolder(path, 'party')
           ? 'Paste a character sheet link (…/characters/…).'
           : 'Paste a monster page link (…/monsters/…).'
       )
       return
     }
-    setBeyondBusy(true)
+    setWebSheetBusy(true)
     try {
-      const error = await onLinkBeyond(parsed.canonicalUrl)
-      if (error) setBeyondError(error)
-      else setBeyondError('')
+      const error = await onLinkWebSheet(parsed.canonicalUrl)
+      if (error) setWebSheetError(error)
+      else setWebSheetError('')
     } finally {
-      setBeyondBusy(false)
+      setWebSheetBusy(false)
     }
   }
 
-  const beyondUnchanged =
-    Boolean(beyondUrl) && parseDndBeyondCharacterUrl(beyondDraft)?.canonicalUrl === beyondUrl
+  const webSheetUnchanged =
+    Boolean(webSheetUrl) && parseWebSheetUrl(webSheetDraft)?.canonicalUrl === webSheetUrl
 
-  const beyondControls =
-    canLinkBeyond && onLinkBeyond ? (
+  const webSheetControls =
+    canLinkWebSheet && onLinkWebSheet ? (
       <form
         className="flex flex-col gap-2"
         onSubmit={(event) => {
           event.preventDefault()
-          void submitBeyondLink()
+          void submitWebSheetLink()
         }}
       >
         <label className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-          {beyondUrl ? 'Web sheet link' : 'Add web sheet'}
+          {webSheetUrl ? 'Web sheet link' : 'Add web sheet'}
         </label>
         <div className="flex flex-wrap items-center gap-2">
           <input
-            value={beyondDraft}
+            value={webSheetDraft}
             onChange={(event) => {
-              setBeyondDraft(event.target.value)
-              setBeyondError('')
+              setWebSheetDraft(event.target.value)
+              setWebSheetError('')
             }}
-            placeholder={beyondPlaceholder}
+            placeholder={webSheetPlaceholder}
             className="min-w-[16rem] flex-1 rounded border border-line bg-ink px-2 py-1.5 text-sm outline-none focus:border-amber"
           />
           <button
             type="submit"
-            disabled={beyondBusy || !beyondDraft.trim() || beyondUnchanged}
+            disabled={webSheetBusy || !webSheetDraft.trim() || webSheetUnchanged}
             className="rounded bg-amber px-3 py-1.5 text-xs font-semibold text-on-amber disabled:bg-line"
           >
-            {beyondBusy ? 'Saving…' : beyondUrl ? 'Update link' : 'Add link'}
+            {webSheetBusy ? 'Saving…' : webSheetUrl ? 'Update link' : 'Add link'}
           </button>
         </div>
-        {beyondError ? <p className="text-[11px] text-blood">{beyondError}</p> : null}
+        {webSheetError ? <p className="text-[11px] text-blood">{webSheetError}</p> : null}
       </form>
     ) : null
 
@@ -220,9 +220,9 @@ export default function NpcSheet({
         }
       />
 
-      {tagline || hook || facts.length > 0 || notes || beyondControls ? (
+      {tagline || hook || facts.length > 0 || notes || webSheetControls ? (
         <section className="space-y-4">
-          {beyondControls}
+          {webSheetControls}
           {tagline ? <p className="text-sm italic text-muted">{tagline}</p> : null}
           {hook ? <p className="text-base leading-relaxed text-parchment/95">{hook}</p> : null}
           {facts.length > 0 ? (

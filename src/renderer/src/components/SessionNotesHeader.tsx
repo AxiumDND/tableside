@@ -31,9 +31,9 @@ export function SessionNotesHeader({
   itemMode,
   onShowToPlayers,
   handoutLabel,
-  beyondUrl,
-  beyondPane,
-  onToggleBeyond
+  webSheetUrl,
+  webSheetPane,
+  onToggleWebSheet
 }: {
   path: string
   kind: FileKind
@@ -65,9 +65,9 @@ export function SessionNotesHeader({
     mode?: 'art' | 'handout'
   }) => void
   handoutLabel: string
-  beyondUrl?: string | null
-  beyondPane?: boolean
-  onToggleBeyond?: () => void
+  webSheetUrl?: string | null
+  webSheetPane?: boolean
+  onToggleWebSheet?: () => void
 }) {
   return (
     <>
@@ -106,7 +106,7 @@ export function SessionNotesHeader({
             )}
           </div>
           <div className="flex items-center gap-2">
-            {kind === 'note' && path && headings.length > 0 && !editing && !sheetChrome && !mapMode && !beyondPane ? (
+            {kind === 'note' && path && headings.length > 0 && !editing && !sheetChrome && !mapMode && !webSheetPane ? (
               <button
                 type="button"
                 onClick={onToggleLinks}
@@ -156,17 +156,17 @@ export function SessionNotesHeader({
                   >
                     Edit
                   </button>
-                  {beyondUrl && onToggleBeyond ? (
+                  {webSheetUrl && onToggleWebSheet ? (
                     <button
                       type="button"
-                      onClick={onToggleBeyond}
+                      onClick={onToggleWebSheet}
                       className={`rounded px-2.5 py-1 text-xs ${
-                        beyondPane
+                        webSheetPane
                           ? 'border border-line hover:border-amber'
                           : 'bg-amber font-semibold text-on-amber'
                       }`}
                     >
-                      {beyondPane ? 'Show note' : 'Show web sheet'}
+                      {webSheetPane ? 'Show note' : 'Show web sheet'}
                     </button>
                   ) : null}
                 </>
@@ -203,7 +203,7 @@ export function SessionNotesHeader({
         {path && !sheetChrome ? <div className="truncate text-[11px] text-muted">{path}</div> : null}
       </header>
 
-      {kind === 'note' && headings.length > 0 && !editing && !sheetChrome && !mapMode && !beyondPane && showLinks ? (
+      {kind === 'note' && headings.length > 0 && !editing && !sheetChrome && !mapMode && !webSheetPane && showLinks ? (
         <nav className="max-h-28 overflow-auto border-b border-line px-3 py-2 text-xs">
           {headings.map((heading) => (
             <button

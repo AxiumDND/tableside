@@ -223,11 +223,11 @@ const api = {
   openAppFolder: (
     kind: 'app' | 'userData' | 'books' | 'campaign' | 'convert'
   ): Promise<string> => ipcRenderer.invoke(IPC.appOpenFolder, kind),
-  embedDndBeyondSheet: (url: string, bounds: { x: number; y: number; width: number; height: number }): Promise<boolean> =>
-    ipcRenderer.invoke(IPC.appEmbedDndBeyond, url, bounds),
-  setDndBeyondBounds: (bounds: { x: number; y: number; width: number; height: number }): Promise<boolean> =>
-    ipcRenderer.invoke(IPC.appDndBeyondBounds, bounds),
-  hideDndBeyondSheet: (): Promise<void> => ipcRenderer.invoke(IPC.appHideDndBeyond),
+  embedWebSheet: (url: string, bounds: { x: number; y: number; width: number; height: number }): Promise<boolean> =>
+    ipcRenderer.invoke(IPC.appEmbedWebSheet, url, bounds),
+  setWebSheetBounds: (bounds: { x: number; y: number; width: number; height: number }): Promise<boolean> =>
+    ipcRenderer.invoke(IPC.appWebSheetBounds, bounds),
+  hideWebSheet: (): Promise<void> => ipcRenderer.invoke(IPC.appHideWebSheet),
   checkForUpdate: (fromHelp?: boolean): Promise<void> =>
     ipcRenderer.invoke(IPC.appCheckUpdate, fromHelp ?? false),
   startUpdate: (): Promise<void> => ipcRenderer.invoke(IPC.appStartUpdate),
