@@ -1,8 +1,8 @@
 /**
- * D&D Beyond links stored on Party, NPC, and Bestiary notes.
+ * Web-sheet links stored on Party, NPC, and Bestiary notes.
  *
- * Tableside does not import stats from Beyond. The live page is the official
- * web sheet, shown in the note pane when the DM pastes a link.
+ * Tableside does not import stats from the remote page. The live page is shown
+ * in the note pane when the DM pastes a supported character or monster URL.
  */
 
 const CHARACTER_PATH =
@@ -20,7 +20,9 @@ export type DndBeyondLink = {
 export type DndBeyondCharacter = DndBeyondLink
 
 export function isDndBeyondFactLabel(label: string): boolean {
-  return /^(?:d\s*&\s*d\s*beyond|dnd\s*beyond|beyond)$/i.test(label.trim())
+  return /^(?:d\s*&\s*d\s*beyond|dnd\s*beyond|beyond|web\s*sheet|live\s*sheet|sheet\s*link)$/i.test(
+    label.trim()
+  )
 }
 
 function titleFromSlug(slug: string): string {
@@ -112,13 +114,14 @@ export function dndBeyondUrlFromMarkdown(markdown: string): string | null {
   return null
 }
 
-const BEYOND_ROW = /^\|\s*\*\*(?:D\s*&\s*D\s*Beyond|Dnd\s*Beyond|Beyond)\*\*\s*\|.*\|$/im
+const BEYOND_ROW =
+  /^\|\s*\*\*(?:D\s*&\s*D\s*Beyond|Dnd\s*Beyond|Beyond|Web\s*sheet|Live\s*sheet|Sheet\s*link)\*\*\s*\|.*\|$/im
 
-/** Insert or replace the D&D Beyond row on a PC, NPC, or monster sheet. */
+/** Insert or replace the web-sheet row on a PC, NPC, or monster sheet. */
 export function applyDndBeyondUrl(markdown: string, rawUrl: string): string | null {
   const parsed = parseDndBeyondCharacterUrl(rawUrl)
   if (!parsed) return null
-  const row = `| **D&D Beyond** | ${parsed.canonicalUrl} |`
+  const row = `| **Web sheet** | ${parsed.canonicalUrl} |`
   if (BEYOND_ROW.test(markdown)) {
     return markdown.replace(BEYOND_ROW, row)
   }

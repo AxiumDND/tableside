@@ -10,7 +10,7 @@ function boundsOf(el: HTMLElement): { x: number; y: number; width: number; heigh
   }
 }
 
-/** Live D&D Beyond page clipped to the DM note pane (Chromium BrowserView). */
+/** Live web sheet clipped to the DM note pane (Chromium BrowserView). */
 export default function DndBeyondPane({ src }: { src: string }) {
   const hostRef = useRef<HTMLDivElement>(null)
 
@@ -41,7 +41,7 @@ export default function DndBeyondPane({ src }: { src: string }) {
       <div
         ref={hostRef}
         className="absolute inset-0 min-h-[240px] bg-ink"
-        aria-label="D&D Beyond sheet"
+        aria-label="Web sheet"
       />
     </div>
   )

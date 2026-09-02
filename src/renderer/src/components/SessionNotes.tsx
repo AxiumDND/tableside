@@ -262,7 +262,7 @@ export default function SessionNotes({
 
   async function linkDndBeyond(rawUrl: string): Promise<string | null> {
     const patched = applyDndBeyondUrl(markdown, rawUrl)
-    if (!patched) return 'Paste a D&D Beyond character or monster link.'
+    if (!patched) return 'Paste a character or monster page link.'
     try {
       const savedPath = await commitSave(path, patched)
       if (!savedPath) return 'Could not save this file.'

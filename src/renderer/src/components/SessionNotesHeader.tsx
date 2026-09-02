@@ -166,7 +166,7 @@ export function SessionNotesHeader({
                           : 'bg-amber font-semibold text-on-amber'
                       }`}
                     >
-                      {beyondPane ? 'Show note' : 'Show D&D Beyond'}
+                      {beyondPane ? 'Show note' : 'Show web sheet'}
                     </button>
                   ) : null}
                 </>

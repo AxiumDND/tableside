@@ -146,8 +146,8 @@ export default function NpcSheet({
     if (!parsed) {
       setBeyondError(
         pathHasFolder(path, 'party')
-          ? 'Paste a D&D Beyond character link (dndbeyond.com/characters/…).'
-          : 'Paste a D&D Beyond monster link (dndbeyond.com/monsters/…).'
+          ? 'Paste a character sheet link (…/characters/…).'
+          : 'Paste a monster page link (…/monsters/…).'
       )
       return
     }
@@ -174,7 +174,7 @@ export default function NpcSheet({
         }}
       >
         <label className="text-[11px] font-semibold uppercase tracking-wider text-muted">
-          {beyondUrl ? 'D&D Beyond link' : 'Add D&D Beyond link'}
+          {beyondUrl ? 'Web sheet link' : 'Add web sheet'}
         </label>
         <div className="flex flex-wrap items-center gap-2">
           <input

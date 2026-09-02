@@ -74,9 +74,9 @@ describe('applyDndBeyondUrl', () => {
   it('inserts a row after the infobox header and replaces an existing one', () => {
     const base = ['[!pc]', '| | |', '|---|---|', '| **Player** | Name |', '[!/pc]'].join('\n')
     const first = applyDndBeyondUrl(base, 'https://www.dndbeyond.com/characters/7')
-    expect(first).toContain('| **D&D Beyond** | https://www.dndbeyond.com/characters/7 |')
+    expect(first).toContain('| **Web sheet** | https://www.dndbeyond.com/characters/7 |')
     const next = applyDndBeyondUrl(first ?? '', '88')
-    expect(next?.match(/D&D Beyond/g)?.length).toBe(1)
+    expect(next?.match(/Web sheet/g)?.length).toBe(1)
     expect(next).toContain('https://www.dndbeyond.com/characters/88')
   })
 
@@ -89,7 +89,7 @@ describe('applyDndBeyondUrl', () => {
       '[!npc] Hale\nA fence in Greystead.\n',
       'https://www.dndbeyond.com/monsters/scout'
     )
-    expect(patched).toContain('| **D&D Beyond** | https://www.dndbeyond.com/monsters/scout |')
+    expect(patched).toContain('| **Web sheet** | https://www.dndbeyond.com/monsters/scout |')
   })
 })
 
@@ -97,6 +97,7 @@ describe('isDndBeyondFactLabel', () => {
   it('matches the common infobox labels', () => {
     expect(isDndBeyondFactLabel('D&D Beyond')).toBe(true)
     expect(isDndBeyondFactLabel('Dnd Beyond')).toBe(true)
+    expect(isDndBeyondFactLabel('Web sheet')).toBe(true)
     expect(isDndBeyondFactLabel('Player')).toBe(false)
   })
 })

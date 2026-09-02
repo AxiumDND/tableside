@@ -54,9 +54,9 @@ function GlanceTable({
                       type="button"
                       onClick={() => onOpenNote?.(row.notePath)}
                       className="text-[10px] uppercase tracking-wider text-amber hover:underline"
-                      title="Open the live D&D Beyond sheet"
+                      title="Open the live web sheet"
                     >
-                      Beyond
+                      Web
                     </button>
                   ) : null}
                 </span>

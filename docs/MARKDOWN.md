@@ -240,10 +240,10 @@ NPC / PC sheet view looks for:
 > | **Role** | … |
 > | **AC** | 15 |
 > | **HP** | 44 |
-> | **D&D Beyond** | https://www.dndbeyond.com/characters/12345678 |
+> | **Web sheet** | https://www.dndbeyond.com/characters/12345678 |
 ```
 
-A **D&D Beyond** row (also accepted as `Dnd Beyond`) stores an official character or monster URL. On a Party, NPC, or Bestiary sheet, **Add D&D Beyond link** writes the row (change it later with **Update link**); then **Show D&D Beyond** (next to Edit) / **Show note** flip between the live page and the campaign note. Tableside does not import stats from Beyond.
+A **Web sheet** row (also accepted as `D&D Beyond` or `Beyond` on older notes) stores a character or monster page URL. On a Party, NPC, or Bestiary sheet, **Add web sheet** writes the row (change it later with **Update link**); then **Show web sheet** (next to Edit) / **Show note** flip between the live page and the campaign note. Tableside does not import stats from that page.
 
 Facts in that table surface in the sheet chrome. Keep the combat numbers in sync with the `statblock`.
 

@@ -29,7 +29,7 @@ export function dndBeyondHostAllowed(hostname: string): boolean {
   return ALLOWED_HOST_SUFFIXES.some((suffix) => host === suffix || host.endsWith(`.${suffix}`))
 }
 
-/** Canonical D&D Beyond character or monster URL, or null if the src is not a sheet. */
+/** Canonical character or monster page URL, or null if the src is not a sheet. */
 export function sanitizeDndBeyondWebviewSrc(raw: unknown): string | null {
   const parsed = parseDndBeyondCharacterUrl(typeof raw === 'string' ? raw : '')
   if (!parsed || !isAllowedExternalUrl(parsed.canonicalUrl)) return null
@@ -203,7 +203,7 @@ export function disposeDndBeyondEmbed(): void {
   lastUrl = ''
 }
 
-/** Guest popups from D&D Beyond login: only character/monster URLs, sandboxed session. */
+/** Guest popups from web-sheet login: only character/monster URLs, sandboxed session. */
 export function registerDndBeyondWebview(): void {
   app.on('web-contents-created', (_event, contents) => {
     contents.on('will-attach-webview', hardenWebviewAttach)
