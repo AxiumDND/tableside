@@ -20,7 +20,8 @@ Thanks for helping with Tableside.
 
 | Doc | Role |
 | --- | --- |
-| [README.md](README.md) | Product overview + quick start |
+| [README.md](README.md) | Product overview, installer, and first-night video |
+| [docs/GUIDE.md](docs/GUIDE.md) | DMs — first night at the table |
 | [docs/TABLE.md](docs/TABLE.md) | Running a session in the UI |
 | [docs/RECIPES.md](docs/RECIPES.md) | Game night sheet + Lookup save recipes |
 | [docs/CAMPAIGN.md](docs/CAMPAIGN.md) | Campaign folder contract |

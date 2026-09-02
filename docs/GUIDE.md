@@ -4,6 +4,21 @@ Step-by-step for a night at the table. Current release: **1.7.14**.
 
 Tableside is a **local Windows DM console**. Your laptop holds the notes. A second monitor (TV) shows players a clean picture — maps, art, initiative, or a sci-fi opening crawl. There is no account and no internet required once the app is installed.
 
+**Watch first** (about two minutes, Greystead sample):
+
+[![How to use Tableside](media/how-to-use.jpg)](media/how-to-use.mp4)
+
+[Watch the video](media/how-to-use.mp4) (~2 min). GitHub does not play MP4 files inline on markdown pages — click the picture or the link. The sections below are the same night, pause-and-read.
+
+| Time | What you see |
+| --- | --- |
+| 0:03 | Map tools on Pale Well Caves |
+| 0:19 | Open tonight’s game night sheet from Files |
+| 0:38 | Read-aloud, combat, and treasure on the sheet |
+| 0:58 | Combat roster, then back to the map |
+| 1:18 | Show the map to the player TV |
+| 1:33 | Lookup wolf in the offline system pack |
+
 Deeper reference: [TABLE.md](TABLE.md) (every control), [CAMPAIGN.md](CAMPAIGN.md) (folder layout), [RECIPES.md](RECIPES.md) (short workflows), [MARKDOWN.md](MARKDOWN.md) (note syntax).
 
 ## Install

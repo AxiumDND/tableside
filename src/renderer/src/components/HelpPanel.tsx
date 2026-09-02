@@ -253,7 +253,7 @@ export default function HelpPanel({
           />
           <p className="text-[12px] text-muted">
             This is not a VTT. There is no account and no internet at the table. Notes are ordinary Markdown on disk
-            (Obsidian-friendly).
+            (Obsidian-friendly). A two-minute first-night walkthrough is on the GitHub README.
           </p>
           <Sub>Convert a vault</Sub>
           <p>
