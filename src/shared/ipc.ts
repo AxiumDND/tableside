@@ -16,6 +16,7 @@ export const IPC = {
   appDisplaysChanged: 'app:displays-changed',
   appFolders: 'app:folders',
   appOpenFolder: 'app:open-folder',
+  appReadConvertGuide: 'app:read-convert-guide',
   appEmbedWebSheet: 'app:embed-web-sheet',
   appWebSheetBounds: 'app:web-sheet-bounds',
   appHideWebSheet: 'app:hide-web-sheet',

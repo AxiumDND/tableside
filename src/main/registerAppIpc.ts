@@ -2,6 +2,7 @@ import { ipcMain, type BrowserWindow } from 'electron'
 import type { AppSettings } from '../shared/types'
 import { IPC } from '../shared/ipc'
 import { appFolders, getSettings, openAppFolder, patchSettings } from './appSettings'
+import { readConvertGuide } from './convertGuide'
 import {
   embedWebSheet,
   hideWebSheetEmbed,
@@ -20,6 +21,7 @@ export function registerAppIpc(deps: AppIpcDeps): void {
   ipcMain.handle(IPC.appSaveSettings, (_e, partial: AppSettings) => patchSettings(partial ?? {}))
   ipcMain.handle(IPC.appFolders, () => appFolders())
   ipcMain.handle(IPC.appOpenFolder, (_e, kind: string) => openAppFolder(kind))
+  ipcMain.handle(IPC.appReadConvertGuide, () => readConvertGuide())
   ipcMain.handle(IPC.appEmbedWebSheet, (_e, url: unknown, bounds: unknown) =>
     embedWebSheet(deps.getDmWindow(), url, bounds)
   )

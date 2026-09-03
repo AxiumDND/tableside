@@ -1,6 +1,6 @@
 # Tableside — AI campaign import
 
-Hand this file to an agent converting a vault, Obsidian folder, or loose notes into a Tableside campaign. Tableside copies it to `%APPDATA%\Tableside\AI-CAMPAIGN.md` — **Help & settings → Quick start** (or **Files**) has the path and **Open in File Explorer**. Humans: [CAMPAIGN.md](CAMPAIGN.md) and [MARKDOWN.md](MARKDOWN.md).
+Hand this file to an agent converting a vault, Obsidian folder, or loose notes into a Tableside campaign. Tableside copies it to `%APPDATA%\Tableside\AI-CAMPAIGN.md` — **Help & settings → Quick start** (or **Files**) has **Copy to clipboard** and **Open in File Explorer**. Humans: [CAMPAIGN.md](CAMPAIGN.md) and [MARKDOWN.md](MARKDOWN.md).
 
 Tableside is a **local folder of Markdown**. No account. The DM laptop is the console; a second monitor shows images only.
 
