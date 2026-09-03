@@ -1,5 +1,5 @@
 import { canonicalFolder } from './campaignLayout'
-import { BUILTIN_DICE_ROLL_PATH, isBuiltinSfx } from './diceRollSound'
+import { BUILTIN_DICE_ROLL_MULTI_PATH, BUILTIN_DICE_ROLL_PATH, isBuiltinSfx } from './diceRollSound'
 
 export const AUDIO_EXT = new Set(['.mp3', '.ogg', '.wav', '.m4a', '.flac', '.webm', '.aac'])
 
@@ -189,27 +189,34 @@ function comparePlaylists(a: AudioPlaylist, b: AudioPlaylist): number {
 
 export const BUILTIN_DICE_SFX_TRACK: AudioTrack = {
   relativePath: BUILTIN_DICE_ROLL_PATH,
-  name: 'Dice'
+  name: 'Dice (one)'
+}
+
+export const BUILTIN_DICE_MULTI_SFX_TRACK: AudioTrack = {
+  relativePath: BUILTIN_DICE_ROLL_MULTI_PATH,
+  name: 'Dice (handful)'
 }
 
 const BUILTIN_SFX_GROUP_ID = 'Audio/Sfx'
 
 export function withBuiltinSfx(library: AudioLibrary): AudioLibrary {
-  const dice = BUILTIN_DICE_SFX_TRACK
+  const builtins = [BUILTIN_DICE_SFX_TRACK, BUILTIN_DICE_MULTI_SFX_TRACK]
   const groups = library.sfx.filter((group) => group.id !== 'builtin:sfx')
   const rootIndex = groups.findIndex((group) => group.id === BUILTIN_SFX_GROUP_ID)
   if (rootIndex >= 0) {
     const root = groups[rootIndex]
-    if (!root || root.tracks.some((track) => track.relativePath === dice.relativePath)) {
-      return { ...library, sfx: groups }
-    }
+    if (!root) return { ...library, sfx: groups }
+    const missing = builtins.filter(
+      (track) => !root.tracks.some((existing) => existing.relativePath === track.relativePath)
+    )
+    if (!missing.length) return { ...library, sfx: groups }
     const next = groups.slice()
-    next[rootIndex] = { ...root, tracks: [dice, ...root.tracks] }
+    next[rootIndex] = { ...root, tracks: [...missing, ...root.tracks] }
     return { ...library, sfx: next }
   }
   return {
     ...library,
-    sfx: [{ id: BUILTIN_SFX_GROUP_ID, name: 'Sfx', tracks: [dice] }, ...groups]
+    sfx: [{ id: BUILTIN_SFX_GROUP_ID, name: 'Sfx', tracks: builtins }, ...groups]
   }
 }
 

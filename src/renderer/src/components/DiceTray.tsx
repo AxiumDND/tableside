@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { BUILTIN_DICE_ROLL_PATH } from '../../../shared/diceRollSound'
+import { builtinDiceRollPath } from '../../../shared/diceRollSound'
 import { SKIP_PLAYER_DICE_SOURCES } from '../../../shared/playerDiceShow'
-import { rollExpr, type DiceMode, type DiceResult, formatDiceRollSummary } from '../lib/dice'
+import { dicePhysicalCount, rollExpr, type DiceMode, type DiceResult, formatDiceRollSummary } from '../lib/dice'
 
 export interface DiceLogEntry {
   id: string
@@ -42,7 +42,7 @@ const LOG_CAP = 1 + DICE_HISTORY_SLOTS
 function announceRoll(result: DiceResult, source: string | undefined, opts: { show: boolean; sound: boolean }): void {
   if (SKIP_PLAYER_DICE_SOURCES.has(source ?? '')) return
   if (opts.sound) {
-    void window.tabledm?.mixerOneshot?.(BUILTIN_DICE_ROLL_PATH)
+    void window.tabledm?.mixerOneshot?.(builtinDiceRollPath(dicePhysicalCount(result.groups)))
   }
   if (!opts.show || !window.tabledm?.showPlayerDice) return
   void window.tabledm.showPlayerDice({

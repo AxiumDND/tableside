@@ -276,7 +276,7 @@ export default function AudioEngine({
     if (shot && shot.at !== oneshotAt.current) {
       oneshotAt.current = shot.at
       playOneshot(
-        isBuiltinSfx(shot.path) ? diceRollSoundUrl() : audioFileUrl(shot.path),
+        isBuiltinSfx(shot.path) ? diceRollSoundUrl(shot.path) : audioFileUrl(shot.path),
         mixerLayerGain(state.prefs, 'sfx'),
         sink
       ).catch(() => reportPlaybackError('Could not play that sound. Check the file and Output device.'))

@@ -40,16 +40,22 @@ describe('audio library', () => {
     expect(library.sfx.map((item) => item.name)).toEqual(['Doors', 'Sfx'])
     expect(library.sfx.find((group) => group.name === 'Doors')?.tracks[0]?.name).toBe('Slam')
     expect(library.sfx.find((group) => group.name === 'Sfx')?.tracks.map((track) => track.name)).toEqual([
-      'Dice',
+      'Dice (one)',
+      'Dice (handful)',
       'Thunder'
     ])
     expect(library.skipped).toBe(0)
   })
 
-  it('always includes the built-in dice oneshot on the Sfx board', () => {
-    expect(emptyMixerState().library.sfx[0]?.tracks[0]).toMatchObject({
-      name: 'Dice',
+  it('always includes built-in dice oneshots on the Sfx board', () => {
+    const tracks = emptyMixerState().library.sfx[0]?.tracks ?? []
+    expect(tracks[0]).toMatchObject({
+      name: 'Dice (one)',
       relativePath: 'builtin:dice-roll'
+    })
+    expect(tracks[1]).toMatchObject({
+      name: 'Dice (handful)',
+      relativePath: 'builtin:dice-roll-multi'
     })
   })
 

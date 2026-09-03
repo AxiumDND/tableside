@@ -40,8 +40,8 @@ export default function OpeningBoxOfDoom({
 
   useEffect(() => {
     if (suppressSound || roll.rolledAt == null || roll.sound === false) return
-    playDiceRollSound(0.95, outputDeviceId)
-  }, [outputDeviceId, roll.rolledAt, roll.sound, suppressSound])
+    playDiceRollSound(0.95, outputDeviceId, pair ? 'multi' : 'single')
+  }, [outputDeviceId, pair, roll.rolledAt, roll.sound, suppressSound])
 
   useEffect(() => {
     if (roll.rolledAt == null) return

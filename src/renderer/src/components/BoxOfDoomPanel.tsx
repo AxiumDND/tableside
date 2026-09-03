@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { resolveBoxOfDoom, type BoxOfDoomMode } from '../../../shared/boxOfDoom'
-import { BUILTIN_DICE_ROLL_PATH } from '../../../shared/diceRollSound'
+import { builtinDiceRollPath } from '../../../shared/diceRollSound'
 import type { PlayerBoxOfDoom } from '../../../shared/types'
 import type { DiceResult } from '../lib/dice'
 import { useDiceLog } from './DiceTray'
@@ -86,7 +86,7 @@ export default function BoxOfDoomPanel({
     setLast(resolved)
     setBusy(true)
     try {
-      if (soundEnabled) void window.tabledm.mixerOneshot(BUILTIN_DICE_ROLL_PATH)
+      if (soundEnabled) void window.tabledm.mixerOneshot(builtinDiceRollPath(resolved.rolls.length))
       await window.tabledm.rollBoxOfDoom({
         dc: resolved.dc,
         modifier: resolved.modifier,

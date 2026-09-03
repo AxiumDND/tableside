@@ -242,3 +242,7 @@ export function d20NaturalLabel(result: Pick<DiceResult, 'nat20' | 'nat1'>): str
   if (result.nat1) return 'Crit fail'
   return null
 }
+
+export function dicePhysicalCount(groups: DiceGroup[]): number {
+  return groups.reduce((sum, group) => sum + group.rolls.length, 0)
+}
