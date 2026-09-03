@@ -1,4 +1,4 @@
-import { useCallback } from 'react'
+import { useCallback, useRef, type Dispatch, type SetStateAction } from 'react'
 import type { CampaignInfo, CombatState, Combatant } from '../../../shared/types'
 import { emptyCombat } from '../../../shared/types'
 import type { EncounterAddItem } from '../lib/sessionNoteEncounter'
@@ -34,14 +34,23 @@ export function useCombatActions({
   onOpenCombatPanel
 }: {
   campaign: CampaignInfo | null
-  setCampaign: (info: CampaignInfo) => void
+  setCampaign: Dispatch<SetStateAction<CampaignInfo | null>>
   getPartyFromNote: () => string
   onOpenCombatPanel: () => void
 }): CombatActions {
+  const combatWriteId = useRef(0)
   const saveCombat = useCallback(
     async (next: CombatState): Promise<void> => {
+      const writeId = ++combatWriteId.current
+      setCampaign((prev) => (prev ? { ...prev, combat: next } : prev))
       const info = await window.tabledm.saveCombat(next)
-      if (info) setCampaign(info)
+      if (!info) return
+      setCampaign((prev) => {
+        if (writeId !== combatWriteId.current) {
+          return prev ? { ...info, combat: prev.combat } : info
+        }
+        return info
+      })
     },
     [setCampaign]
   )
