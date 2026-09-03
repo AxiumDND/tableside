@@ -85,7 +85,10 @@ test('combat tracker adds a combatant and starts a round', async () => {
   await expect(dmWindow.getByText(/Round/).first()).toBeVisible()
 
   await dmWindow.getByRole('button', { name: 'Conditions for Dire Wolf' }).click()
-  const poisoned = dmWindow.getByRole('dialog').getByRole('button', { name: 'Poisoned', exact: true })
+  const dialog = dmWindow.getByRole('dialog')
+  await expect(dialog.getByRole('heading', { name: 'Dire Wolf' })).toBeVisible()
+  const poisoned = dialog.getByRole('button', { name: 'Poisoned', exact: true })
+  await expect(poisoned).toHaveAttribute('aria-pressed', 'false')
   await poisoned.click()
   await expect(poisoned).toHaveAttribute('aria-pressed', 'true')
   await dmWindow.getByRole('button', { name: 'Done' }).click()

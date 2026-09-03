@@ -49,12 +49,23 @@ function monsterItem(sourceId: string, name: string): EncounterAddItem {
   }
 }
 
-function campaignWith(combatants: Combatant[]): CampaignInfo {
+function campaignWith(combatants: Combatant[], combat?: Partial<CampaignInfo['combat']>): CampaignInfo {
   return {
     tree: [],
     party: [],
-    combat: { combatants, activeId: null, round: 0, showOrderToPlayers: false }
+    combat: { combatants, activeId: null, round: 0, showOrderToPlayers: false, ...combat }
   } as unknown as CampaignInfo
+}
+
+function statefulCampaign(initial: CampaignInfo | null) {
+  let campaign = initial
+  const setCampaign = vi.fn((update: CampaignInfo | null | ((prev: CampaignInfo | null) => CampaignInfo | null)) => {
+    campaign = typeof update === 'function' ? update(campaign) : update
+  })
+  return {
+    setCampaign,
+    getCampaign: () => campaign
+  }
 }
 
 describe('useCombatActions', () => {
@@ -103,5 +114,92 @@ describe('useCombatActions', () => {
       await result.current.addEncounterItems([monsterItem('orc-1', 'Orc')], undefined, false)
     })
     expect(saveCombat).not.toHaveBeenCalled()
+  })
+
+  it('applies combat locally before the IPC save returns', async () => {
+    const wolf: Combatant = {
+      id: 'w',
+      name: 'Dire Wolf',
+      kind: 'npc',
+      initiative: 15,
+      hp: 37,
+      maxHp: 37,
+      ac: 14
+    }
+    const started = {
+      combatants: [wolf],
+      activeId: 'w',
+      round: 1,
+      showOrderToPlayers: false
+    }
+    let finish!: (info: CampaignInfo) => void
+    saveCombat.mockImplementationOnce(() => new Promise((resolve) => { finish = resolve }))
+    const { setCampaign, getCampaign } = statefulCampaign(campaignWith([wolf]))
+    const { result } = renderHook(() =>
+      useCombatActions({
+        campaign: campaignWith([wolf]),
+        setCampaign,
+        getPartyFromNote: () => '',
+        onOpenCombatPanel: vi.fn()
+      })
+    )
+
+    await act(async () => {
+      void result.current.saveCombat(started)
+    })
+    expect(getCampaign()?.combat?.round).toBe(1)
+    expect(getCampaign()?.combat?.activeId).toBe('w')
+
+    await act(async () => {
+      finish(campaignWith([wolf], { activeId: 'w', round: 1 }))
+    })
+  })
+
+  it('does not let a stale save overwrite a newer combat', async () => {
+    const wolf: Combatant = {
+      id: 'w',
+      name: 'Dire Wolf',
+      kind: 'npc',
+      initiative: 15,
+      hp: 37,
+      maxHp: 37,
+      ac: 14
+    }
+    const started = {
+      combatants: [wolf],
+      activeId: 'w',
+      round: 1,
+      showOrderToPlayers: false
+    }
+    const poisoned = {
+      combatants: [{ ...wolf, conditions: ['poisoned'] }],
+      activeId: 'w',
+      round: 1,
+      showOrderToPlayers: false
+    }
+    let finishStart!: (info: CampaignInfo) => void
+    saveCombat
+      .mockImplementationOnce(() => new Promise((resolve) => { finishStart = resolve }))
+      .mockImplementationOnce(async (next) => campaignWith(next.combatants, next))
+
+    const { setCampaign, getCampaign } = statefulCampaign(campaignWith([wolf]))
+    const { result } = renderHook(() =>
+      useCombatActions({
+        campaign: campaignWith([wolf]),
+        setCampaign,
+        getPartyFromNote: () => '',
+        onOpenCombatPanel: vi.fn()
+      })
+    )
+
+    await act(async () => {
+      const startWrite = result.current.saveCombat(started)
+      const poisonWrite = result.current.saveCombat(poisoned)
+      finishStart(campaignWith([wolf], { activeId: 'w', round: 1 }))
+      await Promise.all([startWrite, poisonWrite])
+    })
+
+    expect(getCampaign()?.combat?.combatants[0]?.conditions).toEqual(['poisoned'])
+    expect(getCampaign()?.combat?.round).toBe(1)
   })
 })
