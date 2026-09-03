@@ -42,7 +42,8 @@ import {
   findSrdItemFile,
   findSrdPortraitFile,
   findSrdSchoolFile,
-  findStockArtFile
+  findStockArtFile,
+  findNpcPortraitFile
 } from './mediaAssets'
 import {
   ensureDir,
@@ -91,7 +92,9 @@ export async function copyImageToArtFolder(
       ? safeJoin(campaignFolder, toPosix(choice.path).replace(/^\/+/, ''))
       : choice.kind === 'stock'
         ? findStockArtFile(choice.id)
-        : choice.filePath
+        : choice.kind === 'npc-portrait'
+          ? findNpcPortraitFile(choice.race, choice.gender, choice.id)
+          : choice.filePath
   if (!source) return null
   const ext = extname(source).toLowerCase()
   if (!existsSync(source) || !IMAGE_EXT.has(ext)) return null
@@ -136,7 +139,12 @@ export async function resolveCreateMapImage(
     const rel = toPosix(choice.path).replace(/^\/+/, '')
     return rel || null
   }
-  const source = choice.kind === 'stock' ? findStockArtFile(choice.id) : choice.filePath
+  const source =
+    choice.kind === 'stock'
+      ? findStockArtFile(choice.id)
+      : choice.kind === 'npc-portrait'
+        ? findNpcPortraitFile(choice.race, choice.gender, choice.id)
+        : choice.filePath
   if (!source) return null
   const ext = extname(source).toLowerCase()
   if (!existsSync(source) || !IMAGE_EXT.has(ext)) return null

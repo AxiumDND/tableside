@@ -43,3 +43,28 @@ export const DAMAGE_SEVERITY: DamageSeverityRow[] = [
   { levels: '11–16', setback: '4d10', dangerous: '10d10', deadly: '18d10' },
   { levels: '17–20', setback: '10d10', dangerous: '18d10', deadly: '24d10' }
 ]
+
+export const FALLING_DAMAGE_MAX_DICE = 20
+
+/** 1d6 bludgeoning per 10 feet fallen, maximum 20d6. */
+export function fallingDamageExpr(feet: unknown): {
+  expr: string
+  diceCount: number
+  capped: boolean
+  feet: number
+} {
+  const n = Number(feet)
+  if (!Number.isFinite(n) || n <= 0) {
+    return { expr: '', diceCount: 0, capped: false, feet: 0 }
+  }
+  const rounded = Math.round(n)
+  let diceCount = Math.floor(rounded / 10)
+  const capped = diceCount > FALLING_DAMAGE_MAX_DICE
+  diceCount = Math.min(FALLING_DAMAGE_MAX_DICE, Math.max(0, diceCount))
+  return {
+    expr: diceCount > 0 ? `${diceCount}d6` : '',
+    diceCount,
+    capped,
+    feet: rounded
+  }
+}

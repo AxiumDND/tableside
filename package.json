@@ -1,6 +1,6 @@
 {
   "name": "tableside",
-  "version": "1.8.1",
+  "version": "1.8.2",
   "description": "Tableside — in-person dual-monitor DM tool (D&D 5e, Pathfinder 2e, Vampire 5th)",
   "main": "./out/main/index.js",
   "author": "James",
@@ -97,6 +97,10 @@
       {
         "from": "resources/stock-art",
         "to": "stock-art"
+      },
+      {
+        "from": "resources/npc-portraits",
+        "to": "npc-portraits"
       },
       {
         "from": "resources/icon.ico",

@@ -369,7 +369,7 @@ export default function HelpPanel({
               </>,
               <>Center: the open note, image, or PDF.</>,
               <>Right: Combat, Music, Tools, or this panel — one at a time. The panel icon at the right of the
-                header hides it; click it again to bring back the last tool. Tools holds Lookup, Names, Improvise, and Dice.</>
+                header hides it; click it again to bring back the last tool. Tools holds Lookup, NPC, Improvise, and Dice.</>
             ]}
           />
           <Sub>Show maps and art</Sub>
@@ -764,11 +764,13 @@ export default function HelpPanel({
               </>
             ]}
           />
-          <Sub>Names</Sub>
+          <Sub>NPC</Sub>
           <p>
-            In <Action>Tools</Action>, pick <Action>Names</Action>. Choose a race (5e), ancestry (Pathfinder 2e), or
-            name tradition (Vampire). Roll a few original table names, copy one, or <Action>New NPC…</Action> to write
-            a sheet under <Code>NPCs/</Code>.
+            In <Action>Tools</Action>, pick <Action>NPC</Action>. Choose a race (5e), ancestry (Pathfinder 2e), or
+            name tradition (Vampire). Roll names, pick an AI-generated portrait (or hide them with{' '}
+            <Action>Hide AI portrait picks</Action>
+            ), choose a simple SRD stat block, then <Action>New NPC…</Action> to write a sheet under <Code>NPCs/</Code>{' '}
+            with name, species, art, and stats.
           </p>
           <Sub>Improvise</Sub>
           <p>

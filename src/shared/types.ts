@@ -301,14 +301,16 @@ export interface AppSettings {
   rightPanel?: 'combat' | 'tools' | 'help' | 'music' | null
   /** Last tool in the right column, restored when the panel icon shows it again. */
   lastRightPanel?: 'combat' | 'tools' | 'help' | 'music'
-  /** Last page inside Tools (Lookup or Names). */
-  toolsTab?: 'lookup' | 'names' | 'improvise' | 'dice'
+  /** Last page inside Tools (Lookup, NPC, Improvise, or Dice). */
+  toolsTab?: 'lookup' | 'npc' | 'names' | 'improvise' | 'dice'
   /** Play roll sound on the mixer Sfx layer. Default on. */
   diceCheckSound?: boolean
   /** Send tray and sheet rolls to the player TV strip. Default on. */
   showDiceToPlayers?: boolean
   /** Seconds to hold a Box of Doom result before auto fade-out. Default 15. */
   boxOfDoomHoldSec?: number
+  /** Hide bundled NPC portrait picks in Tools → NPC. Default off (portraits shown). */
+  hideNpcPortraits?: boolean
   showPlayerPreview?: boolean
   /** Left column (preview, files, dice). Default open. */
   showLeftSidebar?: boolean
@@ -322,6 +324,7 @@ export type CreateNoteMapImage =
   | { kind: 'existing'; path: string }
   | { kind: 'import'; filePath: string }
   | { kind: 'stock'; id: string }
+  | { kind: 'npc-portrait'; race: string; gender: 'feminine' | 'masculine'; id: string }
 
 export const emptyCombat = (): CombatState => ({
   combatants: [],

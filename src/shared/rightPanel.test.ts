@@ -25,8 +25,9 @@ describe('asToolsTabId', () => {
     expect(asToolsTabId('lookup')).toBe('lookup')
   })
 
-  it('restores Names and Improvise', () => {
-    expect(asToolsTabId('names')).toBe('names')
+  it('restores NPC, Improvise, and Dice tabs', () => {
+    expect(asToolsTabId('names')).toBe('npc')
+    expect(asToolsTabId('npc')).toBe('npc')
     expect(asToolsTabId('improvise')).toBe('improvise')
     expect(asToolsTabId('dice')).toBe('dice')
     expect(asToolsTabId('doom')).toBe('dice')

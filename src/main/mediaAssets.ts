@@ -31,6 +31,7 @@ let srdPortraitCache: Map<string, string> | null = null
 let srdItemCache: Map<string, string> | null = null
 let srdSchoolCache: Map<string, string> | null = null
 let stockArtCache: Map<string, string> | null = null
+let npcPortraitCache: Map<string, string> | null = null
 
 function foldPortraitStem(name: string): string {
   return name
@@ -64,6 +65,12 @@ function stockArtDir(): string {
   return app.isPackaged
     ? join(process.resourcesPath, 'stock-art')
     : join(__dirname, '../../resources/stock-art')
+}
+
+function npcPortraitsDir(): string {
+  return app.isPackaged
+    ? join(process.resourcesPath, 'npc-portraits')
+    : join(__dirname, '../../resources/npc-portraits')
 }
 
 function loadSrdImageCache(cache: Map<string, string> | null, dir: string): Map<string, string> {
@@ -130,6 +137,38 @@ export function findStockArtFile(name: string): string | null {
   return loadStockArtCache().get(foldPortraitStem(name)) ?? null
 }
 
+function loadNpcPortraitCache(): Map<string, string> {
+  if (npcPortraitCache) return npcPortraitCache
+  const next = new Map<string, string>()
+  const root = npcPortraitsDir()
+  if (!existsSync(root)) {
+    npcPortraitCache = next
+    return next
+  }
+  for (const race of readdirSync(root, { withFileTypes: true })) {
+    if (!race.isDirectory()) continue
+    const raceDir = join(root, race.name)
+    for (const gender of readdirSync(raceDir, { withFileTypes: true })) {
+      if (!gender.isDirectory()) continue
+      const genderDir = join(raceDir, gender.name)
+      for (const file of readdirSync(genderDir)) {
+        const ext = extname(file).toLowerCase()
+        if (!IMAGE_EXT.has(ext)) continue
+        const stem = file.slice(0, -ext.length)
+        next.set(`${race.name}/${gender.name}/${stem}`, join(genderDir, file))
+      }
+    }
+  }
+  npcPortraitCache = next
+  return next
+}
+
+export function findNpcPortraitFile(race: string, gender: string, id: string): string | null {
+  const stem = id.trim().padStart(2, '0')
+  if (!race.trim() || !gender.trim() || !stem) return null
+  return loadNpcPortraitCache().get(`${race}/${gender}/${stem}`) ?? null
+}
+
 /**
  * Register the app's `tabledm://` protocol, which serves bundled SRD/stock
  * artwork and — for `media`/`file` hosts — images and files from inside the
@@ -148,11 +187,18 @@ export function registerMediaProtocol(deps: {
         url.hostname === 'srd-portrait' ||
         url.hostname === 'srd-item' ||
         url.hostname === 'srd-school' ||
-        url.hostname === 'stock-art'
+        url.hostname === 'stock-art' ||
+        url.hostname === 'npc-portrait'
       ) {
         const name = url.searchParams.get('name') ?? ''
         const full =
-          url.hostname === 'srd-item'
+          url.hostname === 'npc-portrait'
+            ? findNpcPortraitFile(
+                url.searchParams.get('race') ?? '',
+                url.searchParams.get('gender') ?? '',
+                url.searchParams.get('id') ?? ''
+              )
+            : url.hostname === 'srd-item'
             ? findSrdItemFile(name)
             : url.hostname === 'srd-school'
               ? findSrdSchoolFile(name)

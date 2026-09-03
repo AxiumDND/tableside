@@ -3,12 +3,12 @@ import type { PlayerBoxOfDoom } from '../../../shared/types'
 import type { SrdRecord } from '../lib/srd'
 import BoxOfDoomPanel from './BoxOfDoomPanel'
 import ImprovisePanel from './ImprovisePanel'
-import NpcNamesPanel from './NpcNamesPanel'
+import NpcPanel, { type NpcQuickCreateInput } from './NpcPanel'
 import RulesSearch from './RulesSearch'
 
 const TOOLS: { id: ToolsTabId; label: string }[] = [
   { id: 'lookup', label: 'Lookup' },
-  { id: 'names', label: 'Names' },
+  { id: 'npc', label: 'NPC' },
   { id: 'improvise', label: 'Improvise' },
   { id: 'dice', label: 'Dice' }
 ]
@@ -19,6 +19,8 @@ export default function ToolsPanel({
   system,
   canCreateNpc,
   onCreateNpc,
+  hideNpcPortraits,
+  onHideNpcPortraits,
   onAddMonster,
   onSaveToCampaign,
   canSaveToCampaign,
@@ -30,7 +32,9 @@ export default function ToolsPanel({
   onTabChange: (tab: ToolsTabId) => void
   system?: string | null
   canCreateNpc: boolean
-  onCreateNpc: (name: string, species: string) => void | Promise<void>
+  onCreateNpc: (input: NpcQuickCreateInput) => void | Promise<void>
+  hideNpcPortraits: boolean
+  onHideNpcPortraits: (hide: boolean) => void
   onAddMonster?: (record: SrdRecord) => void
   onSaveToCampaign?: (record: SrdRecord) => Promise<'added' | 'exists' | void> | 'added' | 'exists' | void
   canSaveToCampaign?: boolean
@@ -65,8 +69,14 @@ export default function ToolsPanel({
           onSaveToCampaign={onSaveToCampaign}
           canSaveToCampaign={canSaveToCampaign}
         />
-      ) : tab === 'names' ? (
-        <NpcNamesPanel system={system} canCreate={canCreateNpc} onCreateNpc={onCreateNpc} />
+      ) : tab === 'npc' ? (
+        <NpcPanel
+          system={system}
+          canCreate={canCreateNpc}
+          hidePortraits={hideNpcPortraits}
+          onHidePortraitsChange={onHideNpcPortraits}
+          onCreateNpc={onCreateNpc}
+        />
       ) : tab === 'improvise' ? (
         <ImprovisePanel />
       ) : (

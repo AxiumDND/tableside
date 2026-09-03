@@ -1,6 +1,6 @@
 export type RightPanelId = 'combat' | 'tools' | 'help' | 'music'
 
-export type ToolsTabId = 'lookup' | 'names' | 'improvise' | 'dice'
+export type ToolsTabId = 'lookup' | 'npc' | 'improvise' | 'dice'
 
 /** Map saved prefs, including the old Lookup panel id. */
 export function asRightPanelId(value: unknown): RightPanelId | null {
@@ -10,5 +10,6 @@ export function asRightPanelId(value: unknown): RightPanelId | null {
 
 export function asToolsTabId(value: unknown): ToolsTabId {
   if (value === 'doom' || value === 'dice') return 'dice'
-  return value === 'names' || value === 'improvise' ? value : 'lookup'
+  if (value === 'names') return 'npc'
+  return value === 'npc' || value === 'improvise' ? value : 'lookup'
 }

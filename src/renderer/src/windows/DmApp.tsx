@@ -32,7 +32,8 @@ import DmHeader from '../components/DmHeader'
 import ToolsPanel from '../components/ToolsPanel'
 import { adjacentCampaignFile, canonicalFolder } from '../../../shared/campaignLayout'
 import { asRightPanelId, asToolsTabId, type RightPanelId, type ToolsTabId } from '../../../shared/rightPanel'
-import { applyNpcSpecies } from '../../../shared/npcNames'
+import { enrichNpcSheet } from '../lib/npcCreate'
+import type { NpcQuickCreateInput } from '../components/NpcPanel'
 import { usePlayerPlayback } from '../hooks/usePlayerPlayback'
 import { useConsoleHotkeys } from '../hooks/useConsoleHotkeys'
 import { useCombatActions } from '../hooks/useCombatActions'
@@ -114,6 +115,7 @@ export default function DmApp() {
   const [lastRightPanel, setLastRightPanel] = useState<RightPanelId>('combat')
   const [toolsTab, setToolsTab] = useState<ToolsTabId>('lookup')
   const [diceCheckSound, setDiceCheckSound] = useState(true)
+  const [hideNpcPortraits, setHideNpcPortraits] = useState(false)
   const {
     openPath,
     openKind,
@@ -171,6 +173,7 @@ export default function DmApp() {
     setLastRightPanel(asRightPanelId(prefs.lastRightPanel) ?? restoredPanel ?? 'combat')
     setToolsTab(asToolsTabId(prefs.toolsTab))
     setDiceCheckSound(prefs.diceCheckSound !== false)
+    setHideNpcPortraits(prefs.hideNpcPortraits === true)
     if (info && !openPath) {
       const remembered =
         prefs.lastOpenPath && findTreeNode(info.tree, prefs.lastOpenPath)
@@ -285,13 +288,13 @@ export default function DmApp() {
     return result.existed ? 'exists' : 'added'
   }
 
-  async function createNpcFromName(name: string, species: string): Promise<void> {
-    const created = await window.tabledm.createNote('NPCs', name, 'npc')
+  async function createNpcFromQuickCreate(input: NpcQuickCreateInput): Promise<void> {
+    const created = await window.tabledm.createNote('NPCs', input.name, 'npc', input.portrait ?? null)
     if (!created) return
     let campaignInfo = created.campaign
     let path = created.path
     const current = await window.tabledm.readFile(path)
-    const next = applyNpcSpecies(current, species)
+    const next = enrichNpcSheet(current, input.name, input.species, input.statBlockId ?? null)
     if (next !== current) {
       const saved = await window.tabledm.saveFile(path, next)
       if (saved) {
@@ -620,7 +623,12 @@ export default function DmApp() {
               }}
               system={campaign?.system}
               canCreateNpc={Boolean(campaign)}
-              onCreateNpc={(name, species) => void createNpcFromName(name, species)}
+              onCreateNpc={(input) => void createNpcFromQuickCreate(input)}
+              hideNpcPortraits={hideNpcPortraits}
+              onHideNpcPortraits={(hide) => {
+                setHideNpcPortraits(hide)
+                void window.tabledm.saveSettings({ hideNpcPortraits: hide })
+              }}
               onAddMonster={addMonster}
               onSaveToCampaign={saveLookupToCampaign}
               canSaveToCampaign={Boolean(campaign)}
