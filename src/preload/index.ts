@@ -251,6 +251,7 @@ const api = {
   openAppFolder: (
     kind: 'app' | 'userData' | 'books' | 'campaign' | 'convert'
   ): Promise<string> => ipcRenderer.invoke(IPC.appOpenFolder, kind),
+  readConvertGuide: (): Promise<string> => ipcRenderer.invoke(IPC.appReadConvertGuide),
   embedWebSheet: (url: string, bounds: { x: number; y: number; width: number; height: number }): Promise<boolean> =>
     ipcRenderer.invoke(IPC.appEmbedWebSheet, url, bounds),
   setWebSheetBounds: (bounds: { x: number; y: number; width: number; height: number }): Promise<boolean> =>

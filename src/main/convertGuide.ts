@@ -1,6 +1,6 @@
 import { app, shell } from 'electron'
 import { existsSync } from 'node:fs'
-import { copyFile, mkdir } from 'node:fs/promises'
+import { copyFile, mkdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import { CONVERT_GUIDE_NAME, resolveConvertGuideSource } from '../shared/convertGuidePath'
 
@@ -33,4 +33,13 @@ export async function revealConvertGuide(): Promise<string> {
   }
   await shell.openPath(app.getPath('userData'))
   return dest
+}
+
+/** Full AI-CAMPAIGN.md text for Help → copy to clipboard. */
+export async function readConvertGuide(): Promise<string> {
+  const dest = await ensureConvertGuide()
+  if (existsSync(dest)) return readFile(dest, 'utf8')
+  const src = convertGuideSourcePath()
+  if (existsSync(src)) return readFile(src, 'utf8')
+  throw new Error('Conversion spec not found')
 }

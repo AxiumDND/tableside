@@ -83,6 +83,50 @@ function FolderOpen({
   )
 }
 
+function ConvertGuideBlock({
+  label,
+  path,
+  onOpen
+}: {
+  label: string
+  path: string
+  onOpen: () => void
+}) {
+  const [copied, setCopied] = useState(false)
+
+  async function copyToClipboard(): Promise<void> {
+    const text = await window.tabledm.readConvertGuide()
+    await navigator.clipboard.writeText(text)
+    setCopied(true)
+    window.setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className="space-y-1.5">
+      <p>{label}</p>
+      <p className="break-all">
+        <Code>{path}</Code>
+      </p>
+      <div className="flex flex-wrap gap-2">
+        <button
+          type="button"
+          onClick={() => void copyToClipboard()}
+          className="rounded border border-amber/60 bg-amber/10 px-3 py-1.5 text-sm text-amber hover:border-amber"
+        >
+          {copied ? 'Copied!' : 'Copy to clipboard'}
+        </button>
+        <button
+          type="button"
+          onClick={onOpen}
+          className="rounded border border-line px-3 py-1.5 text-sm hover:border-amber"
+        >
+          Open in File Explorer
+        </button>
+      </div>
+    </div>
+  )
+}
+
 function Ol({ items }: { items: ReactNode[] }) {
   return (
     <ol className="list-decimal space-y-1.5 pl-4">
@@ -334,11 +378,12 @@ export default function HelpPanel({
           <Sub>Convert a vault</Sub>
           <p>
             Hand <Code>AI-CAMPAIGN.md</Code> to an agent converting Obsidian notes or a folder of Markdown into a
-            Tableside campaign. Help copies the current spec next to your app settings.
+            Tableside campaign. <Action>Copy to clipboard</Action> below to paste into ChatGPT, Cursor, or Claude — or
+            open the file from the folder.
           </p>
           {folders?.convertGuidePath ? (
-            <FolderOpen
-              label="Conversion spec (open this folder, then drop the file into ChatGPT, Cursor, or Claude):"
+            <ConvertGuideBlock
+              label="Conversion spec:"
               path={folders.convertGuidePath}
               onOpen={() => void window.tabledm.openAppFolder('convert')}
             />
@@ -543,7 +588,7 @@ export default function HelpPanel({
               ) : (
                 <p className="text-muted">Open a campaign to see its folder here.</p>
               )}
-              <FolderOpen
+              <ConvertGuideBlock
                 label="Conversion spec for an AI (AI-CAMPAIGN.md):"
                 path={folders.convertGuidePath}
                 onOpen={() => void window.tabledm.openAppFolder('convert')}
