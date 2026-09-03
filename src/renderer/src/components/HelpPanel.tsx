@@ -157,6 +157,8 @@ export default function HelpPanel({
   onHoloPortraitsChange,
   digitalRain = false,
   onDigitalRainChange,
+  hideNpcPortraits = false,
+  onHideNpcPortraitsChange,
   currencies,
   onCurrenciesChange
 }: {
@@ -169,6 +171,8 @@ export default function HelpPanel({
   onHoloPortraitsChange?: (enabled: boolean) => void
   digitalRain?: boolean
   onDigitalRainChange?: (enabled: boolean) => void
+  hideNpcPortraits?: boolean
+  onHideNpcPortraitsChange?: (hide: boolean) => void
   currencies?: CampaignCurrency[]
   onCurrenciesChange?: (currencies: CampaignCurrency[]) => void
 }) {
@@ -282,6 +286,33 @@ export default function HelpPanel({
               ) : (
                 <p className="text-muted">Open a campaign to edit treasure currencies.</p>
               )}
+            </div>
+
+            <div className="space-y-2 border-t border-line/60 pt-4">
+              <Sub>Artwork</Sub>
+              <p className="text-[12px] leading-snug text-muted">
+                Bundled artwork includes AI-generated NPC portrait picks in <Action>Tools → NPC</Action> and SRD
+                monster, gear, and spell-school illustrations in Lookup and on sheets. Your own uploaded campaign art
+                and stock place/shop art are not affected.
+              </p>
+              {onHideNpcPortraitsChange ? (
+                <label className="flex items-start gap-2 text-[13px] text-parchment/90">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5"
+                    checked={hideNpcPortraits}
+                    onChange={(event) => onHideNpcPortraitsChange(event.target.checked)}
+                  />
+                  <span>
+                    <span className="font-semibold text-parchment">Hide bundled artwork</span>
+                    <span className="mt-0.5 block text-[12px] leading-snug text-muted">
+                      Hides bundled AI portrait picks, SRD illustrations in Lookup, and default portraits on
+                      bestiary/gear/spell sheets that use bundled art. Turn off AI picks in Tools → NPC and skip bundled
+                      art when creating new notes.
+                    </span>
+                  </span>
+                </label>
+              ) : null}
             </div>
 
             <div className="space-y-2 border-t border-line/60 pt-4">
@@ -849,10 +880,9 @@ export default function HelpPanel({
           <Sub>NPC</Sub>
           <p>
             In <Action>Tools</Action>, pick <Action>NPC</Action>. Choose a race (5e), ancestry (Pathfinder 2e), or
-            name tradition (Vampire). Roll names, pick an AI-generated portrait (or hide them with{' '}
-            <Action>Hide AI portrait picks</Action>
-            ), choose a simple SRD stat block, then <Action>New NPC…</Action> to write a sheet under <Code>NPCs/</Code>{' '}
-            with name, species, art, and stats.
+            name tradition (Vampire). Roll names, pick an AI-generated portrait, then <Action>New NPC…</Action> to write a
+            sheet under <Code>NPCs/</Code> with name, species, art, and stats. Turn off bundled AI art in{' '}
+            <strong>Help & settings → Settings → Artwork</strong>.
           </p>
           <Sub>Improvise</Sub>
           <p>

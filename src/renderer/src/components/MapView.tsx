@@ -4,6 +4,7 @@ import { campaignFileUrl, resolveImageRef, type CampaignImage } from '../lib/ima
 import { useMapCamera } from '../hooks/useMapCamera'
 import { useMapFog } from '../hooks/useMapFog'
 import { useMapLiveView } from '../hooks/useMapLiveView'
+import { useHideBundledArtwork } from '../hooks/useBundledArtwork'
 import { useCreatureSpaces } from '../hooks/useCreatureSpaces'
 import { useMapTokens, type MapTokens } from '../hooks/useMapTokens'
 import { useMapPins, type MapPins } from '../hooks/useMapPins'
@@ -91,6 +92,7 @@ export default function MapView({
   const dataRef = useRef(data)
   const markdownRef = useRef(markdown)
   const catalog = useMemo(() => catalogFromNotes(notes, images), [notes, images])
+  const hideBundled = useHideBundledArtwork()
   const catalogRef = useRef(catalog)
 
   toolRef.current = tool
@@ -201,7 +203,8 @@ export default function MapView({
     scaleDraft: tokens.scaleDraft,
     scaleDraftRef: tokens.scaleDraftRef,
     dragPos,
-    dragPosRef
+    dragPosRef,
+    hideBundled
   })
 
   useEffect(() => {
@@ -630,7 +633,7 @@ export default function MapView({
                 return (
                   <MapTokenMark
                     key={token.id}
-                    token={toPlayerMapToken(live, images, tokens.tokenScale)}
+                    token={toPlayerMapToken(live, images, tokens.tokenScale, hideBundled)}
                     selected={token.id === tokens.selectedTokenId}
                     interactive={!tokensLocked && !placingOnBoard}
                     onPointerDown={(event) => {

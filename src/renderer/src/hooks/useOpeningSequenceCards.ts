@@ -1,6 +1,7 @@
 import type { MutableRefObject } from 'react'
 import type { CampaignInfo, LegendLookId } from '../../../shared/types'
 import { campaignFileUrl, imageTitle, portraitSrcForNote, resolveMarkdownImageSrc, type CampaignImage } from '../lib/images'
+import { useHideBundledArtwork } from './useBundledArtwork'
 import { hyperspacePlanetSrc, hyperspaceShipSrc } from '../lib/hyperspaceDefaults'
 import { resolveNoteRef, sheetDisplayName, type CampaignNote } from '../lib/notes'
 import { replaceNthCrawlCallout, type CrawlCalloutFields } from '../../../shared/openingCrawl'
@@ -115,6 +116,8 @@ export function useOpeningSequenceCards({
   onPlayPhone?: PlayPhone
   onPlayHyperspace?: PlayHyperspace
 }): OpeningSequenceCards {
+  const hideBundled = useHideBundledArtwork()
+
   async function loadCrawlLogo(): Promise<string | null> {
     if (!path) return null
     const picked = await window.tabledm.pickImageFile()
@@ -221,7 +224,7 @@ export function useOpeningSequenceCards({
     if (!npc) return
     const sheet = resolveNoteRef(npc, path, notes ?? [])
     const title = sheet ? sheetDisplayName(sheet.stem) : npc
-    const photo = sheet ? portraitSrcForNote(sheet.relativePath, images) : null
+    const photo = sheet ? portraitSrcForNote(sheet.relativePath, images, undefined, { hideBundled }) : null
     const ring = fields.ringRef?.trim() ? campaignFileUrl(fields.ringRef.trim()) : null
     onPlayPhone?.(title, photo, ring, npc)
   }

@@ -39,4 +39,9 @@ describe('notePreviewFromMarkdown', () => {
       ])
     ).toContain('NPCs%2FArt%2FAsh.webp')
   })
+
+  it('hides marked bundled portraits when hideBundled is set', () => {
+    const markdown = '---\ntablesidePortrait: bundled-ai\n---\n\n# Guard\n'
+    expect(notePreviewImageUrl('NPCs/Guard.md', markdown, [], { hideBundled: true })).toBeNull()
+  })
 })

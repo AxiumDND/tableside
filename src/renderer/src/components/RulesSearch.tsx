@@ -15,6 +15,7 @@ import { LIBRARY_FOLDER_NAMES } from '../../../shared/campaignLayout'
 import { getSystemPack } from '../../../shared/systemPack'
 import { statBlockToParsed } from '../lib/statblock'
 import RollableStatBlock from './RollableStatBlock'
+import { useHideBundledArtwork } from '../hooks/useBundledArtwork'
 
 const NAMED_LEAD = /^([A-Z][\w'’ /-]{0,48}\.)(\s+)/
 
@@ -109,8 +110,9 @@ function SaveToCampaignButton({
 }
 
 function MonsterPortrait({ name }: { name: string }) {
+  const hideBundled = useHideBundledArtwork()
   const [failed, setFailed] = useState(false)
-  if (failed) return null
+  if (hideBundled || failed) return null
   return (
     <img
       src={srdPortraitUrl(name)}
@@ -122,8 +124,9 @@ function MonsterPortrait({ name }: { name: string }) {
 }
 
 function ItemPortrait({ name }: { name: string }) {
+  const hideBundled = useHideBundledArtwork()
   const [failed, setFailed] = useState(false)
-  if (failed) return null
+  if (hideBundled || failed) return null
   return (
     <div className="w-36 shrink-0">
       <img
@@ -137,8 +140,9 @@ function ItemPortrait({ name }: { name: string }) {
 }
 
 function SpellPortrait({ school }: { school: string }) {
+  const hideBundled = useHideBundledArtwork()
   const [failed, setFailed] = useState(false)
-  if (failed || !school.trim()) return null
+  if (hideBundled || failed || !school.trim()) return null
   return (
     <div className="w-36 shrink-0">
       <img
@@ -152,8 +156,9 @@ function SpellPortrait({ school }: { school: string }) {
 }
 
 function ResultThumb({ record }: { record: SrdRecord }) {
+  const hideBundled = useHideBundledArtwork()
   const [failed, setFailed] = useState(false)
-  if (failed) return null
+  if (hideBundled || failed) return null
   const school = String(record.data.school ?? '').trim()
   const src =
     record.kind === 'monster'

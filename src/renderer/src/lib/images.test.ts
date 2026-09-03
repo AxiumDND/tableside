@@ -62,4 +62,16 @@ describe('portraitSrcForNote', () => {
       'tabledm://srd-item/?name=Longsword'
     )
   })
+
+  it('skips bundled SRD fallbacks when hideBundled is set', () => {
+    expect(portraitSrcForNote('Bestiary/Owlbear.md', [], undefined, { hideBundled: true })).toBeNull()
+    expect(portraitSrcForNote('Gear/Weapons/Longsword.md', [], undefined, { hideBundled: true })).toBeNull()
+  })
+
+  it('skips marked bundled campaign portraits when hideBundled is set', () => {
+    const markdown = '---\ntablesidePortrait: bundled-srd\n---\n\n# Ghoul\n'
+    expect(
+      portraitSrcForNote('Bestiary/Ghoul.md', images, undefined, { hideBundled: true, markdown })
+    ).toBeNull()
+  })
 })

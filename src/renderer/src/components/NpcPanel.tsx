@@ -173,9 +173,10 @@ export default function NpcPanel({
             onChange={(event) => onHidePortraitsChange(event.target.checked)}
           />
           <span>
-            <span className="font-semibold text-parchment">Hide AI portrait picks</span>
+            <span className="font-semibold text-parchment">Hide bundled artwork here</span>
             <span className="mt-0.5 block text-[11px] leading-snug text-muted">
-              Turn off the bundled AI-generated portrait art in this panel.
+              Same as <strong>Help & settings → Settings → Artwork</strong>. Hides AI picks, Lookup SRD art, and bundled
+              sheet portraits.
             </span>
           </span>
         </label>

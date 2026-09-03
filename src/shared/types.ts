@@ -309,7 +309,7 @@ export interface AppSettings {
   showDiceToPlayers?: boolean
   /** Seconds to hold a Box of Doom result before auto fade-out. Default 15. */
   boxOfDoomHoldSec?: number
-  /** Hide bundled NPC portrait picks in Tools → NPC. Default off (portraits shown). */
+  /** Hide bundled AI-generated NPC portrait picks app-wide. Default off (shown). */
   hideNpcPortraits?: boolean
   showPlayerPreview?: boolean
   /** Left column (preview, files, dice). Default open. */

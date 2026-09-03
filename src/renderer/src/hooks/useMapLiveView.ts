@@ -25,6 +25,7 @@ export function useMapLiveView(opts: {
   scaleDraftRef: MutableRefObject<number | null>
   dragPos: { id: string; x: number; y: number } | null
   dragPosRef: MutableRefObject<{ id: string; x: number; y: number } | null>
+  hideBundled?: boolean
 }): void {
   const {
     imagePath,
@@ -40,16 +41,19 @@ export function useMapLiveView(opts: {
     scaleDraft,
     scaleDraftRef,
     dragPos,
-    dragPosRef
+    dragPosRef,
+    hideBundled = false
   } = opts
 
   const liveTimer = useRef<number | null>(null)
   const onLiveViewRef = useRef(onLiveView)
   const imagePathRef = useRef(imagePath)
   const imagesRef = useRef(images)
+  const hideBundledRef = useRef(hideBundled)
   onLiveViewRef.current = onLiveView
   imagePathRef.current = imagePath
   imagesRef.current = images
+  hideBundledRef.current = hideBundled
 
   useEffect(() => {
     if (!imagePathRef.current || !onLiveViewRef.current) return
@@ -66,11 +70,12 @@ export function useMapLiveView(opts: {
           dataRef.current?.tokens ?? [],
           imagesRef.current,
           scaleDraftRef.current ?? dataRef.current?.tokenScale ?? TOKEN_SCALE_DEFAULT,
-          dragPosRef.current
+          dragPosRef.current,
+          hideBundledRef.current
         )
       )
     })
-  }, [imagePath, camera, fogTick, tokens, tokenScale, dragPos, scaleDraft, cameraRef, fogRef, dataRef, scaleDraftRef, dragPosRef])
+  }, [imagePath, camera, fogTick, tokens, tokenScale, dragPos, scaleDraft, hideBundled, cameraRef, fogRef, dataRef, scaleDraftRef, dragPosRef])
 
   useEffect(() => {
     return () => {
