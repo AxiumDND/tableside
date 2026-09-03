@@ -406,7 +406,7 @@ export default function HelpPanel({
               </>,
               <>Center: the open note, image, or PDF.</>,
               <>Right: Combat, Music, Tools, or this panel — one at a time. The panel icon at the right of the
-                header hides it; click it again to bring back the last tool. Tools holds Lookup, NPC, Improvise, and Dice.</>
+                header hides it; click it again to bring back the last tool. Tools holds Lookup, NPC, Improvise, Dice, and Links.</>
             ]}
           />
           <Sub>Show maps and art</Sub>
@@ -813,6 +813,11 @@ export default function HelpPanel({
           <p>
             <Action>Tools</Action> → <Action>Improvise</Action> has 2024 healing potions (dice and average) and a d10
             ladder for hazard damage, plus how hard that is by level.
+          </p>
+          <Sub>Links</Sub>
+          <p>
+            <Action>Tools</Action> → <Action>Links</Action> opens curated D&amp;D sites in your browser — official tools,
+            map makers, GM blogs, and improvisation generators grouped by category.
           </p>
         </Section>
 

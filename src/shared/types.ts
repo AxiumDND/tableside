@@ -301,8 +301,8 @@ export interface AppSettings {
   rightPanel?: 'combat' | 'tools' | 'help' | 'music' | null
   /** Last tool in the right column, restored when the panel icon shows it again. */
   lastRightPanel?: 'combat' | 'tools' | 'help' | 'music'
-  /** Last page inside Tools (Lookup, NPC, Improvise, or Dice). */
-  toolsTab?: 'lookup' | 'npc' | 'names' | 'improvise' | 'dice'
+  /** Last page inside Tools (Lookup, NPC, Improvise, Dice, or Links). */
+  toolsTab?: 'lookup' | 'npc' | 'names' | 'improvise' | 'dice' | 'links'
   /** Play roll sound on the mixer Sfx layer. Default on. */
   diceCheckSound?: boolean
   /** Send tray and sheet rolls to the player TV strip. Default on. */
