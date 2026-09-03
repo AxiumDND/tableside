@@ -73,6 +73,7 @@ export function boxOfDoomPhase(
 }
 
 export function tumbleFace(startedAt: number, now = Date.now(), salt = 0): number {
+  // Cosmetic animation only — cycles faces deterministically, not a random roll.
   const tick = Math.floor(Math.max(0, now - startedAt) / 70)
   return 1 + ((tick * 7 + 3 + salt * 11) % 20)
 }

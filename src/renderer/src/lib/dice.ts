@@ -1,5 +1,8 @@
 export type DiceMode = 'normal' | 'advantage' | 'disadvantage' | 'crit'
 
+/** Uniform random unit in [0, 1). Production uses `Math.random`. */
+export type DiceRng = () => number
+
 export interface DiceGroup {
   sides: number
   rolls: number[]
@@ -35,9 +38,17 @@ export function emptyDiceResult(expr = ''): DiceResult {
   return { expr, total: 0, detail: expr, rolls: [], sides: 0, bonus: 0, groups: [] }
 }
 
-function rollDie(sides: number): number {
+/**
+ * Roll one die with faces 1..sides (inclusive).
+ * Uses uniform `rng` on [0, 1): each face has equal probability 1/sides.
+ * Tableside uses the browser/Electron `Math.random` (not player-seeded or predictable).
+ */
+export function rollDie(sides: number, rng: DiceRng = Math.random): number {
   const safe = Number.isFinite(sides) && sides > 0 ? Math.round(sides) : 1
-  return 1 + Math.floor(Math.random() * safe)
+  let u = rng()
+  if (u >= 1) u = 1 - Number.EPSILON
+  if (u < 0) u = 0
+  return 1 + Math.floor(u * safe)
 }
 
 export function expandCritExpr(expr: string): string {
@@ -104,7 +115,7 @@ function finishResult(
   }
 }
 
-export function rollExpr(expr: string, mode: DiceMode = 'normal'): DiceResult {
+export function rollExpr(expr: string, mode: DiceMode = 'normal', rng: DiceRng = Math.random): DiceResult {
   const working = mode === 'crit' ? expandCritExpr(expr) : expr
   const cleaned = working.replace(/\s/g, '')
   const groups: DiceGroup[] = []
@@ -118,7 +129,7 @@ export function rollExpr(expr: string, mode: DiceMode = 'normal'): DiceResult {
     const rolls: number[] = []
     const n = Math.min(MAX_DICE - diceCount, Math.max(1, count))
     for (let i = 0; i < n; i += 1) {
-      rolls.push(rollDie(sides) * sign)
+      rolls.push(rollDie(sides, rng) * sign)
     }
     diceCount += n
     groups.push({ sides, rolls })
@@ -143,7 +154,7 @@ export function rollExpr(expr: string, mode: DiceMode = 'normal'): DiceResult {
     (d20.rolls[0] ?? 0) > 0
   ) {
     const first = Math.abs(d20.rolls[0] ?? 1)
-    const second = rollDie(20)
+    const second = rollDie(20, rng)
     const kept = mode === 'advantage' ? Math.max(first, second) : Math.min(first, second)
     const next = [{ sides: 20, rolls: [first, second] }, ...groups.slice(1)]
     return finishResult(expr, next, bonus, mode, kept)
@@ -151,10 +162,25 @@ export function rollExpr(expr: string, mode: DiceMode = 'normal'): DiceResult {
   return finishResult(mode === 'crit' ? working : expr, groups, bonus, mode)
 }
 
-export function rollD20(mod: number, label = 'Check', mode: DiceMode = 'normal'): DiceResult {
+export function rollD20(
+  mod: number,
+  label = 'Check',
+  mode: DiceMode = 'normal',
+  rng: DiceRng = Math.random
+): DiceResult {
   const signed = mod >= 0 ? `+${mod}` : String(mod)
-  const result = rollExpr(`1d20${mod === 0 ? '' : signed}`, mode === 'crit' ? 'normal' : mode)
+  const result = rollExpr(`1d20${mod === 0 ? '' : signed}`, mode === 'crit' ? 'normal' : mode, rng)
   return { ...result, expr: `${label} ${signed}` }
+}
+
+/** Box of Doom (Tools): fair d20(s) for normal / advantage / disadvantage. */
+export function rollBoxOfDoomD20s(
+  mode: 'normal' | 'advantage' | 'disadvantage',
+  rng: DiceRng = Math.random
+): { first: number; second?: number } {
+  const first = rollDie(20, rng)
+  if (mode === 'normal') return { first }
+  return { first, second: rollDie(20, rng) }
 }
 
 export function abilityMod(score: number): number {

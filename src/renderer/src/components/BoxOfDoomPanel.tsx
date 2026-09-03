@@ -3,6 +3,7 @@ import { resolveBoxOfDoom, type BoxOfDoomMode } from '../../../shared/boxOfDoom'
 import { builtinDiceRollPath } from '../../../shared/diceRollSound'
 import type { PlayerBoxOfDoom } from '../../../shared/types'
 import type { DiceResult } from '../lib/dice'
+import { rollBoxOfDoomD20s } from '../lib/dice'
 import { useDiceLog } from './DiceTray'
 
 const MODES: { id: BoxOfDoomMode; label: string }[] = [
@@ -76,8 +77,7 @@ export default function BoxOfDoomPanel({
   }
 
   async function roll(): Promise<void> {
-    const first = 1 + Math.floor(Math.random() * 20)
-    const second = 1 + Math.floor(Math.random() * 20)
+    const { first, second } = rollBoxOfDoomD20s(mode)
     const resolved = resolveBoxOfDoom(Number(dc), first, Number(mod), {
       mode,
       d20b: second
@@ -113,8 +113,9 @@ export default function BoxOfDoomPanel({
     <div className="space-y-3 overflow-auto px-3 py-2 text-sm">
       <p className="text-[11px] text-muted">
         Fade the check over whatever is on the player TV, roll when you are ready, then fade back
-        to that picture. If you do not click Fade out, the result auto-fades after the hold time in
-        Help & settings. Advantage and disadvantage show two dice. Natural 20 always succeeds,
+        to that picture. If you do not click Fade out, the result auto-fades after the timer under{' '}
+        <strong>Help & settings → Settings → Dice</strong>. Advantage and disadvantage show two dice. Natural 20 always
+        succeeds,
         natural 1 always fails. Roll sound plays on the Music panel Sfx layer.
       </p>
       <div className="flex flex-wrap gap-2">

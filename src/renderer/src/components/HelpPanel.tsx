@@ -158,100 +158,137 @@ export default function HelpPanel({
       <header className="border-b border-line px-3 py-2">
         <h2 className="font-display text-lg text-amber">Help & settings</h2>
         <p className="mt-1 text-[11px] text-muted">
-          Campaign look and how to run the table. Click a heading to open it.
+          Campaign look, dice fairness, and how to run the table. Click a heading to open it.
         </p>
       </header>
 
       <div className="min-h-0 flex-1 overflow-auto">
         <Section id="settings" title="Settings" open={open} onToggle={toggle}>
-          <Sub>Campaign look</Sub>
-          <p>
-            Saved with this folder. You can also set it when you create a campaign, or from <Code>Start Here</Code>.
-            The player TV stays black.
-          </p>
-          {theme && onThemeChange ? (
-            <ul className="space-y-2">
-              {THEME_IDS.map((id) => {
-                const selected = theme === id
-                return (
-                  <li key={id}>
-                    <button
-                      type="button"
-                      onClick={() => onThemeChange(id)}
-                      className={`w-full rounded border px-3 py-2 text-left ${
-                        selected ? 'border-amber bg-amber/10' : 'border-line hover:border-amber'
-                      }`}
-                    >
-                      <span className={`block text-sm font-semibold ${selected ? 'text-amber' : 'text-parchment'}`}>
-                        {THEME_LABELS[id]}
-                      </span>
-                      <span className="mt-0.5 block text-[12px] leading-snug text-muted">{THEME_BLURBS[id]}</span>
-                    </button>
-                  </li>
-                )
-              })}
-            </ul>
-          ) : (
-            <p className="text-muted">Open a campaign to choose a look.</p>
-          )}
-          {theme === 'scifi' && onHoloPortraitsChange ? (
-            <label className="mt-3 flex items-start gap-2 text-[13px] text-parchment/90">
-              <input
-                type="checkbox"
-                className="mt-0.5"
-                checked={holoPortraits}
-                onChange={(event) => onHoloPortraitsChange(event.target.checked)}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Sub>Campaign look</Sub>
+              <p>
+                Saved with this folder. You can also set it when you create a campaign, or from <Code>Start Here</Code>.
+                The player TV stays black.
+              </p>
+              {theme && onThemeChange ? (
+                <ul className="space-y-2">
+                  {THEME_IDS.map((id) => {
+                    const selected = theme === id
+                    return (
+                      <li key={id}>
+                        <button
+                          type="button"
+                          onClick={() => onThemeChange(id)}
+                          className={`w-full rounded border px-3 py-2 text-left ${
+                            selected ? 'border-amber bg-amber/10' : 'border-line hover:border-amber'
+                          }`}
+                        >
+                          <span className={`block text-sm font-semibold ${selected ? 'text-amber' : 'text-parchment'}`}>
+                            {THEME_LABELS[id]}
+                          </span>
+                          <span className="mt-0.5 block text-[12px] leading-snug text-muted">{THEME_BLURBS[id]}</span>
+                        </button>
+                      </li>
+                    )
+                  })}
+                </ul>
+              ) : (
+                <p className="text-muted">Open a campaign to choose a look.</p>
+              )}
+              {theme === 'scifi' && onHoloPortraitsChange ? (
+                <label className="flex items-start gap-2 text-[13px] text-parchment/90">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5"
+                    checked={holoPortraits}
+                    onChange={(event) => onHoloPortraitsChange(event.target.checked)}
+                  />
+                  <span>
+                    <span className="font-semibold text-parchment">Hologram portraits</span>
+                    <span className="mt-0.5 block text-[12px] leading-snug text-muted">
+                      On by default for Sci-fi. Player, NPC, beast, and gear art as a projector plate. Places and maps
+                      stay as-is.
+                    </span>
+                  </span>
+                </label>
+              ) : null}
+              {theme === 'matrix' && onDigitalRainChange ? (
+                <label className="flex items-start gap-2 text-[13px] text-parchment/90">
+                  <input
+                    type="checkbox"
+                    className="mt-0.5"
+                    checked={digitalRain}
+                    onChange={(event) => onDigitalRainChange(event.target.checked)}
+                  />
+                  <span>
+                    <span className="font-semibold text-parchment">Falling code</span>
+                    <span className="mt-0.5 block text-[12px] leading-snug text-muted">
+                      On by default for Digital rain. Slow wallpaper in the file list and notes. Header stays clear.
+                    </span>
+                  </span>
+                </label>
+              ) : null}
+            </div>
+
+            <div className="space-y-2 border-t border-line/60 pt-4">
+              <Sub>Treasure currencies</Sub>
+              {onCurrenciesChange ? (
+                <CurrenciesSettings currencies={currencies} onChange={onCurrenciesChange} />
+              ) : (
+                <p className="text-muted">Open a campaign to edit treasure currencies.</p>
+              )}
+            </div>
+
+            <div className="space-y-2 border-t border-line/60 pt-4">
+              <Sub>Dice</Sub>
+              <p>
+                Every roll in Tableside — dice tray, Box of Doom, stat block chips, combat initiative, Lookup attack
+                lines, and Improvise damage — uses one shared randomiser. Each face on a die has the same chance of
+                coming up. Rolls use the system&apos;s standard unpredictable source; they are not seeded from names,
+                turn order, or anything you typed.
+              </p>
+              <Ul
+                items={[
+                  <>
+                    <strong>Dice tray</strong> — d4–d100 and custom expressions such as <Code>2d6+3</Code>.{' '}
+                    <Action>Adv</Action> / <Action>Dis</Action> on a single d20 rolls two fair d20s and keeps the higher
+                    or lower.
+                  </>,
+                  <>
+                    <strong>Box of Doom</strong> — same fair d20(s). The tumbling faces before the reveal are cosmetic
+                    only; they never change the result.
+                  </>,
+                  <>
+                    <strong>Stat blocks & combat</strong> — to hit, saves, damage, and initiative d20s use the same
+                    engine.
+                  </>
+                ]}
               />
-              <span>
-                <span className="font-semibold text-parchment">Hologram portraits</span>
+              <p className="text-[12px] text-muted">
+                Automated tests check that faces stay in range and that large samples match a fair distribution. There
+                are no hidden rerolls or built-in bias toward players or the DM.
+              </p>
+              <label className="mt-2 block text-[13px] text-parchment/90">
+                <span className="font-semibold text-parchment">Box of Doom — auto fade-out (seconds)</span>
                 <span className="mt-0.5 block text-[12px] leading-snug text-muted">
-                  On by default for Sci-fi. Player, NPC, beast, and gear art as a projector plate. Places and maps
-                  stay as-is.
+                  How long Success or Failure stays on the player TV before fading back if you do not click{' '}
+                  <Action>Fade out</Action>. Between {MIN_BOX_OF_DOOM_HOLD_MS / 1000} and{' '}
+                  {MAX_BOX_OF_DOOM_HOLD_MS / 1000} seconds.
                 </span>
-              </span>
-            </label>
-          ) : null}
-          {theme === 'matrix' && onDigitalRainChange ? (
-            <label className="mt-3 flex items-start gap-2 text-[13px] text-parchment/90">
-              <input
-                type="checkbox"
-                className="mt-0.5"
-                checked={digitalRain}
-                onChange={(event) => onDigitalRainChange(event.target.checked)}
-              />
-              <span>
-                <span className="font-semibold text-parchment">Falling code</span>
-                <span className="mt-0.5 block text-[12px] leading-snug text-muted">
-                  On by default for Digital rain. Slow wallpaper in the file list and notes. Header stays clear.
-                </span>
-              </span>
-            </label>
-          ) : null}
-          <Sub>Currencies</Sub>
-          {onCurrenciesChange ? (
-            <CurrenciesSettings currencies={currencies} onChange={onCurrenciesChange} />
-          ) : (
-            <p className="text-muted">Open a campaign to edit treasure currencies.</p>
-          )}
-          <Sub>Box of Doom</Sub>
-          <label className="block text-[13px] text-parchment/90">
-            <span className="font-semibold text-parchment">Auto fade-out after roll (seconds)</span>
-            <span className="mt-0.5 block text-[12px] leading-snug text-muted">
-              How long Success or Failure stays on the player TV before fading back if you do not click{' '}
-              <Action>Fade out</Action>. Between {MIN_BOX_OF_DOOM_HOLD_MS / 1000} and{' '}
-              {MAX_BOX_OF_DOOM_HOLD_MS / 1000} seconds.
-            </span>
-            <input
-              type="number"
-              min={MIN_BOX_OF_DOOM_HOLD_MS / 1000}
-              max={MAX_BOX_OF_DOOM_HOLD_MS / 1000}
-              step={1}
-              value={boxOfDoomHoldSec}
-              onChange={(event) => setBoxOfDoomHoldSec(event.target.value)}
-              onBlur={() => saveBoxOfDoomHoldSec(boxOfDoomHoldSec)}
-              className="mt-2 w-full rounded border border-line bg-ink px-2 py-1.5 text-sm text-parchment outline-none focus:border-amber"
-            />
-          </label>
+                <input
+                  type="number"
+                  min={MIN_BOX_OF_DOOM_HOLD_MS / 1000}
+                  max={MAX_BOX_OF_DOOM_HOLD_MS / 1000}
+                  step={1}
+                  value={boxOfDoomHoldSec}
+                  onChange={(event) => setBoxOfDoomHoldSec(event.target.value)}
+                  onBlur={() => saveBoxOfDoomHoldSec(boxOfDoomHoldSec)}
+                  className="mt-2 w-full rounded border border-line bg-ink px-2 py-1.5 text-sm text-parchment outline-none focus:border-amber"
+                />
+              </label>
+            </div>
+          </div>
         </Section>
         <Section id="start" title="Quick start" open={open} onToggle={toggle}>
           <Ol
@@ -777,16 +814,6 @@ export default function HelpPanel({
             <Action>Tools</Action> → <Action>Improvise</Action> has 2024 healing potions (dice and average) and a d10
             ladder for hazard damage, plus how hard that is by level.
           </p>
-          <Sub>Dice</Sub>
-          <p>
-            <Action>Tools</Action> → <Action>Dice</Action>: set a DC, a d20 modifier, and Normal, Advantage, or
-            Disadvantage. <Action>Show</Action> fades the check over whatever is already on the player TV and waits
-            (two dice for advantage or disadvantage). <Action>Roll</Action> tumbles, then holds Success or Failure
-            until you click <Action>Fade out</Action> or the auto fade-out timer in Settings runs.{' '}
-            <Action>Fade out</Action> returns to that picture. A natural 20 always succeeds; a natural 1 always fails.
-            Roll plays a clatter on the Music <Action>Sfx</Action> layer; uncheck <Action>Play sound on Roll</Action> to
-            skip it.
-          </p>
         </Section>
 
         <Section id="keys" title="Dice & shortcuts" open={open} onToggle={toggle}>
@@ -799,7 +826,15 @@ export default function HelpPanel({
             player screen for about 15 seconds, then fades out. In 5e campaigns, damage chips on statblocks also offer{' '}
             <Action>Crit</Action> (double the dice).
           </p>
-          <Sub>Keys</Sub>
+          <Sub>Box of Doom</Sub>
+          <p>
+            <Action>Tools</Action> → <Action>Dice</Action>: set DC and modifier, pick Normal, Advantage, or
+            Disadvantage. <Action>Show</Action> fades the check over whatever is on the player TV;{' '}
+            <Action>Roll</Action> tumbles (cosmetic), then holds Success or Failure until you click{' '}
+            <Action>Fade out</Action> or the auto fade-out timer in <strong>Settings</strong> runs. A natural 20 always
+            succeeds; a natural 1 always fails. Uncheck <Action>Play sound on Roll</Action> to skip the clatter.
+          </p>
+          <Sub>Shortcuts</Sub>
           <Ul
             items={[
               <>
