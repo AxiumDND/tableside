@@ -6,6 +6,12 @@ This is not a virtual tabletop. There is no account, no cloud, and no internet r
 
 Tableside is a table app. It is not an official Wizards, Paizo, or Paradox product.
 
+## System support & testing
+
+**New campaign** can scaffold **D&D 5e**, **Pathfinder 2e**, or **Vampire 5th Edition**, and each ships a bundled lookup pack. In practice, day-to-day development and playtesting right now focus on **D&D 5e (2024 / SRD 5.2.1)** — Greystead, combat, treasure, Lookup, and the sample night sheets are exercised there first.
+
+Pathfinder 2e and Vampire 5th are on the list for a proper pass later (sheet fields, combat overlay tags, lookup depth, and sample content). They should work for basic notes and folders, but treat them as early until those reviews land.
+
 ## Watch how to use it
 
 About two minutes on the bundled **Greystead** one-shot: files, a game night sheet, a map, Combat, and Lookup.
