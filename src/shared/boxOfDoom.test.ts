@@ -59,4 +59,9 @@ describe('boxOfDoomPhase', () => {
     expect(tumbleFace(0, 140)).not.toBe(tumbleFace(0, 0))
     expect(tumbleFace(0, 140, 1)).not.toBe(tumbleFace(0, 140, 0))
   })
+
+  it('tumbleFace is deterministic cosmetic animation, not a random roll', () => {
+    expect(tumbleFace(1000, 1500)).toBe(tumbleFace(1000, 1500))
+    expect(tumbleFace(1000, 1500)).not.toBe(tumbleFace(1000, 1570))
+  })
 })
