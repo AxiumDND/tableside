@@ -23,7 +23,7 @@ test('DM console boots with the bundled sample campaign', async () => {
   await expect(dmWindow.getByText(/Greystead/i).first()).toBeVisible({ timeout: 30_000 })
 })
 
-test('Dice tool and built-in Sfx oneshot are on the console', async () => {
+test('Dice tool and built-in Sfx oneshots are on the console', async () => {
   const tools = dmWindow.getByRole('button', { name: 'Tools' })
   await tools.click()
   await dmWindow.getByRole('navigation', { name: 'Tools' }).getByRole('button', { name: 'Dice' }).click()
@@ -32,7 +32,8 @@ test('Dice tool and built-in Sfx oneshot are on the console', async () => {
 
   await dmWindow.getByRole('button', { name: 'Music' }).click()
   await expect(dmWindow.getByRole('heading', { name: 'Soundboard' })).toBeVisible()
-  await expect(dmWindow.getByRole('button', { name: 'Dice', exact: true })).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Dice (one)', exact: true })).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Dice (handful)', exact: true })).toBeVisible()
 })
 
 test('Dice tray exposes show-to-players and roll-sound toggles', async () => {
