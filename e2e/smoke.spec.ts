@@ -23,7 +23,7 @@ test('DM console boots with the bundled sample campaign', async () => {
   await expect(dmWindow.getByText(/Greystead/i).first()).toBeVisible({ timeout: 30_000 })
 })
 
-test('Dice tool and built-in Sfx oneshot are on the console', async () => {
+test('Dice tool and built-in Sfx oneshots are on the console', async () => {
   const tools = dmWindow.getByRole('button', { name: 'Tools' })
   await tools.click()
   await dmWindow.getByRole('navigation', { name: 'Tools' }).getByRole('button', { name: 'Dice' }).click()
