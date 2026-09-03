@@ -50,7 +50,7 @@ export function setupAppUpdater(options: {
   autoUpdater.on('update-not-available', () => {
     const fromHelp = helpCheck
     helpCheck = false
-    if (fromHelp) send({ kind: 'current', version: APP_VERSION })
+    if (fromHelp) send({ kind: 'current', version: app.getVersion() })
   })
 
   autoUpdater.on('error', () => {

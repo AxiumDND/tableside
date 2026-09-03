@@ -1,3 +1,5 @@
-/** Display name and version. Version must match package.json. */
+import pkg from '../../package.json'
+
+/** Display name and version. Version is read from package.json (keep in sync on release). */
 export const APP_NAME = 'Tableside'
-export const APP_VERSION = '1.8.1'
+export const APP_VERSION = pkg.version
