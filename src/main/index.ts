@@ -34,6 +34,7 @@ import {
   configurePlayerOutput,
   disposePlayerWindow,
   resetPlayerState,
+  sendMixerStateToPlayer,
   syncPlayerWindow,
   watchDisplays
 } from './playerOutput'
@@ -281,6 +282,7 @@ app.whenReady().then(async () => {
     getCampaignFolder: () => campaignFolder,
     onStateChanged: (state) => {
       dmWindow?.webContents.send(IPC.mixerState, state)
+      sendMixerStateToPlayer(state)
     }
   })
 

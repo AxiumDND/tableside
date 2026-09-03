@@ -21,6 +21,7 @@ export type PartyGlanceRow = {
   className: string
   ac: string
   hp: string
+  pp: string
   webSheetUrl: string | null
 }
 
@@ -51,13 +52,28 @@ function pickField(fields: Record<string, string>, keys: string[]): string {
   return ''
 }
 
-export function glanceStatsFromSheet(markdown: string): { race: string; className: string; ac: string; hp: string } {
+function yamlSensesPassive(markdown: string): string {
+  const match = /passive Perception\s+(\d+)/i.exec(markdown)
+  return match?.[1] ?? ''
+}
+
+export function glanceStatsFromSheet(markdown: string): {
+  race: string
+  className: string
+  ac: string
+  hp: string
+  pp: string
+} {
   const fields = infoboxFields(markdown)
   const race = pickField(fields, ['species', 'ancestry', 'clan'])
   const className = pickField(fields, ['class', 'role', 'predator'])
   const ac = pickField(fields, ['ac']) || yamlStat(markdown, 'ac') || pickField(fields, ['health'])
   const hp = pickField(fields, ['hp']) || yamlStat(markdown, 'hp') || pickField(fields, ['health'])
-  return { race, className, ac, hp }
+  const pp =
+    pickField(fields, ['passive perception', 'pp', 'passive perc']) ||
+    yamlSensesPassive(markdown) ||
+    pickField(fields, ['perception'])
+  return { race, className, ac, hp, pp }
 }
 
 export function partyGlanceLinks(blockMarkdown: string): { target: string; alias: string }[] {

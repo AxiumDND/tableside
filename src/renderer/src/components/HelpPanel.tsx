@@ -4,6 +4,12 @@ import { THEME_BLURBS, THEME_IDS, THEME_LABELS, type ThemeId } from '../../../sh
 import type { AppFolders } from '../../../shared/types'
 import { APP_VERSION } from '../../../shared/version'
 import type { CampaignCurrency } from '../../../shared/currencies'
+import {
+  DEFAULT_BOX_OF_DOOM_HOLD_MS,
+  MAX_BOX_OF_DOOM_HOLD_MS,
+  MIN_BOX_OF_DOOM_HOLD_MS,
+  boxOfDoomHoldMs
+} from '../../../shared/boxOfDoom'
 import CurrenciesSettings from './CurrenciesSettings'
 
 type HelpSection = 'settings' | 'start' | 'screens' | 'files' | 'music' | 'combat' | 'lookup' | 'keys' | 'updates'
@@ -124,6 +130,7 @@ export default function HelpPanel({
 }) {
   const [open, setOpen] = useState<HelpSection | null>('settings')
   const [folders, setFolders] = useState<AppFolders | null>(null)
+  const [boxOfDoomHoldSec, setBoxOfDoomHoldSec] = useState(String(DEFAULT_BOX_OF_DOOM_HOLD_MS / 1000))
 
   function toggle(id: HelpSection): void {
     setOpen((prev) => (prev === id ? null : id))
@@ -132,6 +139,19 @@ export default function HelpPanel({
   useEffect(() => {
     void window.tabledm.getAppFolders().then(setFolders)
   }, [])
+
+  useEffect(() => {
+    void window.tabledm.getSettings().then((prefs) => {
+      const sec = boxOfDoomHoldMs(prefs.boxOfDoomHoldSec) / 1000
+      setBoxOfDoomHoldSec(String(sec))
+    })
+  }, [])
+
+  function saveBoxOfDoomHoldSec(raw: string): void {
+    const sec = boxOfDoomHoldMs(raw) / 1000
+    setBoxOfDoomHoldSec(String(sec))
+    void window.tabledm.saveSettings({ boxOfDoomHoldSec: sec })
+  }
 
   return (
     <aside className="flex min-h-0 w-[400px] shrink-0 flex-col border-l border-line bg-ink">
@@ -213,6 +233,25 @@ export default function HelpPanel({
           ) : (
             <p className="text-muted">Open a campaign to edit treasure currencies.</p>
           )}
+          <Sub>Box of Doom</Sub>
+          <label className="block text-[13px] text-parchment/90">
+            <span className="font-semibold text-parchment">Auto fade-out after roll (seconds)</span>
+            <span className="mt-0.5 block text-[12px] leading-snug text-muted">
+              How long Success or Failure stays on the player TV before fading back if you do not click{' '}
+              <Action>Fade out</Action>. Between {MIN_BOX_OF_DOOM_HOLD_MS / 1000} and{' '}
+              {MAX_BOX_OF_DOOM_HOLD_MS / 1000} seconds.
+            </span>
+            <input
+              type="number"
+              min={MIN_BOX_OF_DOOM_HOLD_MS / 1000}
+              max={MAX_BOX_OF_DOOM_HOLD_MS / 1000}
+              step={1}
+              value={boxOfDoomHoldSec}
+              onChange={(event) => setBoxOfDoomHoldSec(event.target.value)}
+              onBlur={() => saveBoxOfDoomHoldSec(boxOfDoomHoldSec)}
+              className="mt-2 w-full rounded border border-line bg-ink px-2 py-1.5 text-sm text-parchment outline-none focus:border-amber"
+            />
+          </label>
         </Section>
         <Section id="start" title="Quick start" open={open} onToggle={toggle}>
           <Ol
@@ -246,7 +285,7 @@ export default function HelpPanel({
                 player screen.
               </>,
               <>
-                Open <Action>Combat</Action> or <Action>Lookup</Action> from the header when you need them. Dice live
+                Open <Action>Combat</Action> or <Action>Tools</Action> from the header when you need them. Dice live
                 at the bottom of the left column.
               </>
             ]}
@@ -319,7 +358,7 @@ export default function HelpPanel({
           <Ul
             items={[
               <>
-                Header: left and right panel icons, campaign name, New / Open, Lookup, Combat, Music,{' '}
+                Header: left and right panel icons, campaign name, New / Open, Tools, Combat, Music,{' '}
                 <strong>Help & settings</strong>. Campaign look lives under Settings (also on <Code>Start Here</Code>).
                 DM-only — the player TV stays black.
               </>,
@@ -329,8 +368,8 @@ export default function HelpPanel({
                 Hide the preview if you need height inside the sidebar.
               </>,
               <>Center: the open note, image, or PDF.</>,
-              <>Right: Combat, Music, Lookup, or this panel — one at a time. The panel icon at the right of the
-                header hides it; click it again to bring back the last tool.</>
+              <>Right: Combat, Music, Tools, or this panel — one at a time. The panel icon at the right of the
+                header hides it; click it again to bring back the last tool. Tools holds Lookup, Names, Improvise, and Dice.</>
             ]}
           />
           <Sub>Show maps and art</Sub>
@@ -561,7 +600,7 @@ export default function HelpPanel({
               </>,
               <>
                 <Code>[!party]…[!/party]</Code> is one list of PCs and companion NPCs. Read mode shows a live PC table
-                (name, race, class, AC, HP). Companions appear as links under the table — hover for their sheet.
+                (name, race, class, AC, HP, PP). Companions appear as links under the table — hover for their sheet.
                 <Action>Edit</Action> → <Action>Add NPC…</Action> pulls from <Code>NPCs/</Code>. Right-click{' '}
                 <Code>Party/</Code> for <Action>New party roster…</Action>.
               </>,
@@ -605,7 +644,7 @@ export default function HelpPanel({
                 <Code>Encounter</Code>, or ⚔️ still work — skip titles that say <Code>no combat</Code>. Right-click
                 Sessions for <Action>New game night sheet…</Action> — Party roster, scene blocks, nested combat, and
                 table cues. Copy a <Code>[!scene]…[!/scene]</Code> block to add another beat. Wrap PC and companion{' '}
-                <Code>[[NPC]]</Code> links in <Code>[!party]…[!/party]</Code> (live race / class / AC from those sheets).
+                <Code>[[NPC]]</Code> links in <Code>[!party]…[!/party]</Code> (live race / class / AC / HP / PP from those sheets).
                 After the session, <Action>New session recap…</Action> is notes on what actually happened (plus{' '}
                 <Code>[!gmonly]</Code> for you).
               </>,
@@ -692,7 +731,7 @@ export default function HelpPanel({
           </p>
           <Ol
             items={[
-              <>Open a campaign, then open <Action>Lookup</Action>.</>,
+              <>Open a campaign, then open <Action>Tools</Action> and pick <Action>Lookup</Action>.</>,
               <>
                 Search, or pick a chip to list everything in that category (Spells, Monsters, Trade Goods, Temple
                 Goods, Apothecary, Forge, …). A
@@ -725,13 +764,38 @@ export default function HelpPanel({
               </>
             ]}
           />
+          <Sub>Names</Sub>
+          <p>
+            In <Action>Tools</Action>, pick <Action>Names</Action>. Choose a race (5e), ancestry (Pathfinder 2e), or
+            name tradition (Vampire). Roll a few original table names, copy one, or <Action>New NPC…</Action> to write
+            a sheet under <Code>NPCs/</Code>.
+          </p>
+          <Sub>Improvise</Sub>
+          <p>
+            <Action>Tools</Action> → <Action>Improvise</Action> has 2024 healing potions (dice and average) and a d10
+            ladder for hazard damage, plus how hard that is by level.
+          </p>
+          <Sub>Dice</Sub>
+          <p>
+            <Action>Tools</Action> → <Action>Dice</Action>: set a DC, a d20 modifier, and Normal, Advantage, or
+            Disadvantage. <Action>Show</Action> fades the check over whatever is already on the player TV and waits
+            (two dice for advantage or disadvantage). <Action>Roll</Action> tumbles, then holds Success or Failure
+            until you click <Action>Fade out</Action> or the auto fade-out timer in Settings runs.{' '}
+            <Action>Fade out</Action> returns to that picture. A natural 20 always succeeds; a natural 1 always fails.
+            Roll plays a clatter on the Music <Action>Sfx</Action> layer; uncheck <Action>Play sound on Roll</Action> to
+            skip it.
+          </p>
         </Section>
 
         <Section id="keys" title="Dice & shortcuts" open={open} onToggle={toggle}>
           <Sub>Dice tray</Sub>
           <p>
-            Bottom of the left column: d4–d100 plus a custom expression such as <Code>2d6+3</Code>. Rolls feed the same
-            log as combat and statblock clicks.
+            Bottom of the left column: d4–d100 plus a custom expression such as <Code>2d6+3</Code>. Use{' '}
+            <Action>Adv</Action> or <Action>Dis</Action> for d20 rolls. Uncheck <Action>Show rolls to players</Action>{' '}
+            to keep tray and statblock rolls off the player TV; uncheck <Action>Play roll sound</Action> to mute the
+            clatter. Rolls feed the same log as combat and statblock clicks — a strip fades in on the right side of the
+            player screen for about 15 seconds, then fades out. In 5e campaigns, damage chips on statblocks also offer{' '}
+            <Action>Crit</Action> (double the dice).
           </p>
           <Sub>Keys</Sub>
           <Ul

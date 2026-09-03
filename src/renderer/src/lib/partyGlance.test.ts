@@ -25,6 +25,7 @@ const BREN = `
 name: Bren Oak
 ac: 12
 hp: 9
+senses: "passive Perception 11"
 \`\`\`
 `
 
@@ -47,7 +48,8 @@ describe('glanceStatsFromSheet', () => {
       race: 'Human',
       className: 'Fighter 5',
       ac: '18',
-      hp: '44'
+      hp: '44',
+      pp: '11'
     })
   })
 
@@ -56,7 +58,8 @@ describe('glanceStatsFromSheet', () => {
       race: '',
       className: '',
       ac: '13',
-      hp: '27'
+      hp: '27',
+      pp: ''
     })
   })
 
@@ -65,12 +68,19 @@ describe('glanceStatsFromSheet', () => {
       race: 'Ventrue',
       className: 'Alleycat',
       ac: '7 / 7',
-      hp: '7 / 7'
+      hp: '7 / 7',
+      pp: ''
     })
   })
 
-  it('uses Ancestry on a PF2e sheet', () => {
+  it('reads Passive Perception from the infobox, else senses', () => {
+    expect(glanceStatsFromSheet('| **Passive Perception** | 14 |\n').pp).toBe('14')
+    expect(glanceStatsFromSheet('senses: "Darkvision 60 ft., passive Perception 13"\n').pp).toBe('13')
+  })
+
+  it('uses Ancestry and Perception on a PF2e sheet', () => {
     expect(glanceStatsFromSheet(PF2).race).toBe('Elf')
+    expect(glanceStatsFromSheet(`${PF2}\n| **Perception** | +7 |\n`).pp).toBe('+7')
   })
 })
 

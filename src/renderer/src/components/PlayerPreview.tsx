@@ -68,7 +68,7 @@ function ScaledPlayerPreview({ state }: { state: PlayerState }) {
           transform: `scale(${scale})`
         }}
       >
-        <PlayerView state={state} />
+        <PlayerView state={state} suppressSound />
       </div>
     </div>
   )

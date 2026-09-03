@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import type { PlayerPhone } from '../../../shared/types'
 import { PHONE_FADE_IN_MS, PHONE_FADE_LEAD_MS } from '../../../shared/playerPhone'
+import { useAudioOutput } from '../hooks/useAudioOutput'
+import { applyAudioSink, createAudioContext } from '../lib/audioSink'
 
 export default function OpeningPhone({ phone }: { phone: PlayerPhone }) {
   const [visible, setVisible] = useState(false)
   const audioRef = useRef<HTMLAudioElement | null>(null)
+  const outputDeviceId = useAudioOutput()
 
   useEffect(() => {
     setVisible(false)
@@ -14,8 +17,12 @@ export default function OpeningPhone({ phone }: { phone: PlayerPhone }) {
 
   useEffect(() => {
     if (phone.answeredAt || phone.stoppingAt || phone.ringSrc) return
-    return startSynthRing()
-  }, [phone.startedAt, phone.answeredAt, phone.stoppingAt, phone.ringSrc])
+    let cleanup = (): void => undefined
+    void startSynthRing(outputDeviceId).then((stop) => {
+      cleanup = stop
+    })
+    return () => cleanup()
+  }, [outputDeviceId, phone.answeredAt, phone.ringSrc, phone.startedAt, phone.stoppingAt])
 
   useEffect(() => {
     const el = audioRef.current
@@ -26,11 +33,13 @@ export default function OpeningPhone({ phone }: { phone: PlayerPhone }) {
     }
     el.loop = true
     el.currentTime = 0
-    void el.play().catch(() => undefined)
+    void applyAudioSink(el, outputDeviceId)
+      .then(() => el.play())
+      .catch(() => undefined)
     return () => {
       el.pause()
     }
-  }, [phone.startedAt, phone.ringSrc, phone.answeredAt, phone.stoppingAt])
+  }, [outputDeviceId, phone.answeredAt, phone.ringSrc, phone.startedAt, phone.stoppingAt])
 
   const caller = phone.title?.trim() || 'Unknown'
   const fadingOut = Boolean(phone.stoppingAt)
@@ -81,26 +90,26 @@ function callerInitials(name: string): string {
   return `${parts[0]!.slice(0, 1)}${parts[parts.length - 1]!.slice(0, 1)}`.toUpperCase()
 }
 
-function startSynthRing(): () => void {
-  const AudioCtx = window.AudioContext || (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
-  if (!AudioCtx) return () => undefined
-  const ctx = new AudioCtx()
-  const master = ctx.createGain()
+async function startSynthRing(deviceId: string): Promise<() => void> {
+  const ctx = await createAudioContext(deviceId)
+  if (!ctx) return () => undefined
+  const audio = ctx
+  const master = audio.createGain()
   master.gain.value = 0.16
-  master.connect(ctx.destination)
+  master.connect(audio.destination)
   let stopped = false
 
   function burst(): void {
     if (stopped) return
-    const now = ctx.currentTime
-    const envelope = ctx.createGain()
+    const now = audio.currentTime
+    const envelope = audio.createGain()
     envelope.gain.setValueAtTime(0, now)
     envelope.gain.linearRampToValueAtTime(0.85, now + 0.03)
     envelope.gain.setValueAtTime(0.85, now + 1.9)
     envelope.gain.linearRampToValueAtTime(0, now + 2.05)
     envelope.connect(master)
     for (const freq of [440, 480]) {
-      const osc = ctx.createOscillator()
+      const osc = audio.createOscillator()
       osc.type = 'sine'
       osc.frequency.value = freq
       osc.connect(envelope)
@@ -109,13 +118,13 @@ function startSynthRing(): () => void {
     }
   }
 
-  void ctx.resume().catch(() => undefined)
+  void audio.resume().catch(() => undefined)
   burst()
   const timer = window.setInterval(burst, 6000)
   return () => {
     stopped = true
     window.clearInterval(timer)
-    void ctx.close().catch(() => undefined)
+    void audio.close().catch(() => undefined)
   }
 }
 

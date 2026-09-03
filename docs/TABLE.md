@@ -6,10 +6,10 @@ How the DM console and player window work during a session. **New to Tableside?*
 
 | Area | Role |
 | --- | --- |
-| Header | Campaign name, Combat / Music / Lookup / Help & settings, New / Open / Sample, player display picker, Clear |
+| Header | Campaign name, Combat / Music / Tools / Help & settings, New / Open / Sample, player display picker, Clear |
 | Left column | Mini **Players see** preview, campaign file tree, dice tray |
 | Center | Open note, image, PDF, or audio preview |
-| Right (optional) | Combat tracker, Music mixer, Lookup, or Help & settings |
+| Right (optional) | Combat tracker, Music mixer, Tools (Lookup and Names), or Help & settings |
 
 Two Electron windows open: the DM console, and a fullscreen **player** window on a second monitor. **Close** on the Players see preview shuts the player window so you can use the TV for something else. Pick a monitor or **Show to players** to open it again. **Theme** is a campaign setting (Classic fantasy, Light, Sci-fi, Vampire, Cyberpunk, Digital rain): New campaign asks for it, Open applies `campaign.json`, and you can change it from **Help & settings** or **Start Here**. Sci-fi can turn on **Hologram portraits** for party, NPC, beast, and gear art. Digital rain can turn on **Falling code** in the file list and notes. The player TV stays black.
 
@@ -57,7 +57,7 @@ Each strip has **Add audio…**. Right-click an Audio folder works the same. Ope
 - **Search** (hidden until you click it next to Files, or press `Ctrl+F` / `/`) finds notes, maps, and art by name. Results are a flat ranked list with folder paths — `Esc` clears, then hides the box.
 - **Right-click** a folder (or empty tree area) to create a player, party roster, NPC, monster, spell, gear, game night sheet, session recap, map, place, shop, or faction. **Add art…** on Party, NPCs, Bestiary, Places, Factions, Spells, Sessions, Maps, Handouts, a Gear subsection, or the `Art/` folder itself copies pictures into that folder’s `Art/` (creates it if needed). Name art like the sheet (`Ghoul.webp`) so portraits attach. **Add files…** still imports notes and PDFs into the folder you clicked. Gear has **Weapons**, **Armor**, **Equipment**, and **Magic Items** — right-click the subsection to add a note or art there.
 - Right-click a file to **Duplicate…**, **Add art here…** (into that folder’s `Art/`), add files beside it, or **Delete…** (asks first).
-- Creating **New player / NPC / monster / spell / gear / game night sheet / session recap / party roster / map / place / shop / faction** fills the built-in sheet for that type and the name you type. **Add web sheet** on a Party, NPC, or monster sheet stores a character or monster page URL; **Show web sheet** / **Show note** flip between the live page and the campaign note — sign in on that page if asked. Copy AC and HP onto the Party sheet if you want them in Combat. **New game night sheet…** is Party + Scenes (copy a `[!scene]` block to add beats) and links every existing `Party/` sheet. **New session recap…** is after-the-table notes on what happened (plus `[!gmonly]`). **New party roster…** on `Party/` is who is travelling together (companions stay in `NPCs/` and are linked in the same `[!party]` list; read mode shows race / class / AC from those sheets). **New place…** / **New shop…** live on `Places/` and include bundled default art (town, dungeon, mountain, swamp, inn, and similar). **New faction…** is on `Factions/` (thieves’ guild, city watch, cult, and similar).
+- Creating **New player / NPC / monster / spell / gear / game night sheet / session recap / party roster / map / place / shop / faction** fills the built-in sheet for that type and the name you type. **Add web sheet** on a Party, NPC, or monster sheet stores a character or monster page URL; **Show web sheet** / **Show note** flip between the live page and the campaign note — sign in on that page if asked. Copy AC and HP onto the Party sheet if you want them in Combat. **New game night sheet…** is Party + Scenes (copy a `[!scene]` block to add beats) and links every existing `Party/` sheet. **New session recap…** is after-the-table notes on what happened (plus `[!gmonly]`). **New party roster…** on `Party/` is who is travelling together (companions stay in `NPCs/` and are linked in the same `[!party]` list; read mode shows race / class / AC / HP / PP from those sheets). **New place…** / **New shop…** live on `Places/` and include bundled default art (town, dungeon, mountain, swamp, inn, and similar). **New faction…** is on `Factions/` (thieves’ guild, city watch, cult, and similar).
 - **New map…** lets you choose an existing campaign image or **Load image…**. Loaded files are copied into that folder’s `Art/` (usually `Maps/Art/`) and named to match the map.
 - `campaign.json`, `combat.json`, `audio.json`, `README.md`, and `Templates/` stay hidden from the tree.
 
@@ -99,7 +99,11 @@ State saves to `combat.json` in the campaign folder.
 - Conditions you set on a row (Poisoned, Prone, …) also appear
 - No extra secrets (full HP pools stay on the DM tracker)
 
-## Lookup panel
+## Tools panel
+
+**Tools** in the header opens the right rail. Pick **Lookup**, **Names**, **Improvise**, or **Dice**.
+
+### Lookup
 
 Offline MiniSearch over the **open campaign’s system pack**. D&D 5e uses the bundled SRD 5.2.1 snapshot (conditions, spells, monsters, weapons, rules, Axium goods). Pathfinder 2e uses a small original core. Vampire 5th uses original table procedures only.
 
@@ -110,13 +114,25 @@ Offline MiniSearch over the **open campaign’s system pack**. D&D 5e uses the b
 
 Step-by-step save flow: [RECIPES.md](RECIPES.md#lookup--campaign-note).
 
+### Names
+
+Pick a race, ancestry, or name tradition and roll a few original table names. **Copy** puts one on the clipboard. **New NPC…** writes a sheet under `NPCs/` and fills **Species**.
+
+### Improvise
+
+2024 **healing potions** (common through supreme: dice and average) and **improvised damage** (d10 steps and setback / dangerous / deadly by level). Falling: 1d6 per 10 feet, max 20d6.
+
+### Dice
+
+Set a DC, a d20 modifier, and **Normal**, **Advantage**, or **Disadvantage**. **Show** fades the check over whatever is already on the player TV and waits (two dice for advantage or disadvantage). **Roll** tumbles, then holds **Success** or **Failure**. **Fade out** returns to that picture. Natural 20 always succeeds; natural 1 always fails. The tumble plays on the Music **Sfx** layer; uncheck **Play sound on Roll** to silence it.
+
 ## Help & settings
 
 **Help & settings** in the header opens a side panel: campaign look, then quick start, player screen, files and maps, combat and game night sheets, Lookup, dice, and shortcuts. Click a heading to open it; click again to close.
 
 ## Dice tray
 
-Bottom of the left column: quick d4–d20 buttons plus a custom expression field (for example `2d6+3`). Rolls feed the shared dice log used by combat and statblock clicks.
+Bottom of the left column: quick d4–d100 buttons plus a custom expression field (for example `2d6+3`). **Adv** and **Dis** apply to d20 rolls from the tray and statblocks. Uncheck **Show rolls to players** to keep tray and statblock rolls off the player TV; uncheck **Play roll sound** to mute the clatter. Rolls feed the shared dice log used by combat and statblock clicks — a strip fades in on the right side of the player screen for about 15 seconds, then fades out. In 5e campaigns, damage chips on statblocks also offer **Crit** (double the dice).
 
 ## Keyboard and mouse
 

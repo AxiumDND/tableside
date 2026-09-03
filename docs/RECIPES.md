@@ -61,7 +61,7 @@ Copy bundled SRD (or optional book) text into the campaign folder so you can edi
 ### Steps
 
 1. Open a campaign (**Open**, **New**, or **Sample**).
-2. Open **Lookup**.
+2. Open **Tools** and pick **Lookup**.
 3. Search — use chips (Conditions, Spells, Monsters, Weapons, …). Optional book files add PHB / Gear / DMG chips.
 4. Open a result:
    - **Monster** → **Add to Bestiary** (and/or **Add to combat** for this fight only)

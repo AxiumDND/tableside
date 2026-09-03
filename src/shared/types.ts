@@ -1,5 +1,6 @@
 import { APP_NAME } from './version'
 import type { CampaignCurrency } from './currencies'
+import type { PlayerDiceShow } from './playerDiceShow'
 
 export type CombatantKind = 'pc' | 'npc' | 'monster'
 
@@ -244,6 +245,21 @@ export interface PlayerHandout {
   includeSecrets?: boolean
 }
 
+export interface PlayerBoxOfDoom {
+  dc: number
+  modifier: number
+  startedAt: number
+  mode?: 'normal' | 'advantage' | 'disadvantage'
+  rolledAt?: number
+  d20?: number
+  rolls?: number[]
+  total?: number
+  success?: boolean
+  stoppingAt?: number
+  sound?: boolean
+  label?: string
+}
+
 export interface PlayerState {
   imageSrc: string | null
   imageTitle: string
@@ -259,6 +275,8 @@ export interface PlayerState {
   phone?: PlayerPhone | null
   hyperspace?: PlayerHyperspace | null
   handout?: PlayerHandout | null
+  boxOfDoom?: PlayerBoxOfDoom | null
+  diceShow?: PlayerDiceShow | null
 }
 
 export interface RecentCampaign {
@@ -280,9 +298,17 @@ export interface AppSettings {
   dmBounds?: { x: number; y: number; width: number; height: number }
   lastOpenPath?: string
   lastOpenKind?: string
-  rightPanel?: 'combat' | 'lookup' | 'help' | 'music' | null
+  rightPanel?: 'combat' | 'tools' | 'help' | 'music' | null
   /** Last tool in the right column, restored when the panel icon shows it again. */
-  lastRightPanel?: 'combat' | 'lookup' | 'help' | 'music'
+  lastRightPanel?: 'combat' | 'tools' | 'help' | 'music'
+  /** Last page inside Tools (Lookup or Names). */
+  toolsTab?: 'lookup' | 'names' | 'improvise' | 'dice'
+  /** Play roll sound on the mixer Sfx layer. Default on. */
+  diceCheckSound?: boolean
+  /** Send tray and sheet rolls to the player TV strip. Default on. */
+  showDiceToPlayers?: boolean
+  /** Seconds to hold a Box of Doom result before auto fade-out. Default 15. */
+  boxOfDoomHoldSec?: number
   showPlayerPreview?: boolean
   /** Left column (preview, files, dice). Default open. */
   showLeftSidebar?: boolean
@@ -318,7 +344,9 @@ export const emptyPlayerState = (): PlayerState => ({
   video: null,
   phone: null,
   hyperspace: null,
-  handout: null
+  handout: null,
+  boxOfDoom: null,
+  diceShow: null
 })
 
 export const emptySettings = (): AppSettings => ({})

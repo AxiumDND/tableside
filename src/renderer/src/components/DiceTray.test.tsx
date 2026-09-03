@@ -19,7 +19,7 @@ describe('DiceTray', () => {
     const row = dice[0].parentElement
     expect(row?.className).toContain('flex-nowrap')
     expect(dice.every((button) => button.parentElement === row)).toBe(true)
-    expect(container.querySelector('section')?.className).toContain('h-48')
+    expect(container.querySelector('section')?.className).toContain('h-60')
   })
 
   it('always reserves four previous-result slots', () => {

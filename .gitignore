@@ -20,4 +20,5 @@ examples/Pathfinder test/
 /Additional Books/*
 !/Additional Books/README.md
 resources/local-portraits/
-/Dungeons of Drakkenheim/
+/WOTC/
+examples/scifi test/

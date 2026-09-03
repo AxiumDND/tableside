@@ -96,6 +96,7 @@ describe('creature sheet templates', () => {
   it('puts the NPC and monster statblocks above notes', () => {
     const npc = fillTemplate(FALLBACK_TEMPLATES.npc, 'npc', 'Hale')
     const monster = fillTemplate(FALLBACK_TEMPLATES.monster, 'monster', 'Ghoul')
+    expect(npc).toContain('| **Species** |')
     expect(npc.indexOf('```statblock')).toBeLessThan(npc.indexOf('## Notes'))
     expect(monster.indexOf('```statblock')).toBeLessThan(monster.indexOf('## Notes'))
   })

@@ -3,7 +3,7 @@ import { getSystemPack } from '../../../shared/systemPack'
 import { APP_NAME, APP_VERSION } from '../../../shared/version'
 import appIcon from '../assets/icon.png'
 
-export type RightPanel = 'combat' | 'lookup' | 'help' | 'music' | null
+export type RightPanel = 'combat' | 'tools' | 'help' | 'music' | null
 
 function buttonClass(active: boolean): string {
   return `rounded px-3 py-1 text-sm ${
@@ -46,7 +46,7 @@ export default function DmHeader({
   onOpenCampaign,
   onToggleSidebar,
   onToggleRightPanel,
-  onToggleLookup,
+  onToggleTools,
   onToggleCombat,
   onToggleMusic,
   onToggleHelp
@@ -60,7 +60,7 @@ export default function DmHeader({
   onOpenCampaign: () => void
   onToggleSidebar: () => void
   onToggleRightPanel: () => void
-  onToggleLookup: () => void
+  onToggleTools: () => void
   onToggleCombat: () => void
   onToggleMusic: () => void
   onToggleHelp: () => void
@@ -104,8 +104,8 @@ export default function DmHeader({
       <button type="button" onClick={onOpenCampaign} className="rounded border border-line px-3 py-1 text-sm hover:border-amber">
         Open campaign
       </button>
-      <button type="button" onClick={onToggleLookup} className={buttonClass(rightPanel === 'lookup')}>
-        Lookup
+      <button type="button" onClick={onToggleTools} className={buttonClass(rightPanel === 'tools')}>
+        Tools
       </button>
       <button type="button" onClick={onToggleCombat} className={buttonClass(rightPanel === 'combat')}>
         Combat

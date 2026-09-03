@@ -38,7 +38,10 @@ function GlanceTable({
             <th className="border-b border-line py-1 pr-3 font-semibold">Race</th>
             <th className="border-b border-line py-1 pr-3 font-semibold">Class</th>
             <th className="border-b border-line py-1 pr-3 font-semibold">AC</th>
-            <th className="border-b border-line py-1 font-semibold">HP</th>
+            <th className="border-b border-line py-1 pr-3 font-semibold">HP</th>
+            <th className="border-b border-line py-1 font-semibold" title="Passive Perception">
+              PP
+            </th>
           </tr>
         </thead>
         <tbody>
@@ -64,7 +67,8 @@ function GlanceTable({
               <td className="border-b border-line/60 py-1.5 pr-3">{row.race}</td>
               <td className="border-b border-line/60 py-1.5 pr-3">{row.className}</td>
               <td className="border-b border-line/60 py-1.5 pr-3">{row.ac}</td>
-              <td className="border-b border-line/60 py-1.5">{row.hp}</td>
+              <td className="border-b border-line/60 py-1.5 pr-3">{row.hp}</td>
+              <td className="border-b border-line/60 py-1.5">{row.pp}</td>
             </tr>
           ))}
         </tbody>

@@ -9,6 +9,9 @@ import OpeningGallery from './OpeningGallery'
 import OpeningVideo from './OpeningVideo'
 import OpeningPhone from './OpeningPhone'
 import OpeningHyperspace from './OpeningHyperspace'
+import OpeningBoxOfDoom from './OpeningBoxOfDoom'
+import OpeningDiceShow from './OpeningDiceShow'
+import { playerInitiativeVisible } from '../../../shared/playerInitiative'
 
 const FADE_MS = 5000
 
@@ -21,10 +24,12 @@ interface Layer {
 
 export default function PlayerView({
   state,
-  compact
+  compact,
+  suppressSound
 }: {
   state: PlayerState
   compact?: boolean
+  suppressSound?: boolean
 }) {
   const incoming = state.imageSrc
   const nextId = useRef(1)
@@ -116,15 +121,7 @@ export default function PlayerView({
     return () => clearTimeout(t)
   }, [handoutScene?.id, handoutScene?.fadingOut])
 
-  const showInit =
-    !state.crawl &&
-    !state.legend &&
-    !state.gallery &&
-    !state.video &&
-    !state.phone &&
-    !state.hyperspace &&
-    state.showInitiative &&
-    state.initiative.length > 0
+  const showInit = playerInitiativeVisible(state)
 
   const splitForHandout = Boolean(handoutScene && !handoutScene.fadingOut)
   const handoutOnly = splitForHandout && !incoming && layers.length === 0
@@ -158,6 +155,8 @@ export default function PlayerView({
       {state.video ? <OpeningVideo video={state.video} /> : null}
       {state.phone ? <OpeningPhone phone={state.phone} /> : null}
       {state.hyperspace ? <OpeningHyperspace jump={state.hyperspace} /> : null}
+      {state.boxOfDoom ? <OpeningBoxOfDoom roll={state.boxOfDoom} suppressSound={suppressSound} /> : null}
+      {state.diceShow ? <OpeningDiceShow show={state.diceShow} /> : null}
       {handoutScene ? (
         <aside
           key={handoutScene.id}

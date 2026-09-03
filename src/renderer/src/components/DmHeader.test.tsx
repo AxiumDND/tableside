@@ -17,7 +17,7 @@ const noopHandlers = {
   onOpenCampaign: () => {},
   onToggleSidebar: () => {},
   onToggleRightPanel: () => {},
-  onToggleLookup: () => {},
+  onToggleTools: () => {},
   onToggleCombat: () => {},
   onToggleMusic: () => {},
   onToggleHelp: () => {}
@@ -36,7 +36,7 @@ describe('DmHeader', () => {
       />
     )
     expect(screen.getByText('Greystead')).toBeTruthy()
-    for (const label of ['New campaign', 'Open campaign', 'Lookup', 'Combat', 'Music', 'Help']) {
+    for (const label of ['New campaign', 'Open campaign', 'Tools', 'Combat', 'Music', 'Help']) {
       expect(screen.getByRole('button', { name: new RegExp(label, 'i') })).toBeTruthy()
     }
   })
@@ -73,7 +73,7 @@ describe('DmHeader', () => {
   it('fires the matching toggle handler on click', async () => {
     const user = userEvent.setup()
     const onToggleCombat = vi.fn()
-    const onToggleLookup = vi.fn()
+    const onToggleTools = vi.fn()
     render(
       <DmHeader
         campaign={campaign}
@@ -83,13 +83,13 @@ describe('DmHeader', () => {
         sidebarOpen
         {...noopHandlers}
         onToggleCombat={onToggleCombat}
-        onToggleLookup={onToggleLookup}
+        onToggleTools={onToggleTools}
       />
     )
     await user.click(screen.getByRole('button', { name: /Combat/ }))
-    await user.click(screen.getByRole('button', { name: 'Lookup' }))
+    await user.click(screen.getByRole('button', { name: 'Tools' }))
     expect(onToggleCombat).toHaveBeenCalledOnce()
-    expect(onToggleLookup).toHaveBeenCalledOnce()
+    expect(onToggleTools).toHaveBeenCalledOnce()
   })
 
   it('toggles the sidebar from the header icon', async () => {

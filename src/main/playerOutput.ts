@@ -10,8 +10,17 @@ import {
 import { IPC } from '../shared/ipc'
 import { APP_NAME } from '../shared/version'
 import { CRAWL_FADE_OUT_MS } from '../shared/openingCrawl'
+import { BOX_OF_DOOM_FADE_OUT_MS, boxOfDoomHoldMs } from '../shared/boxOfDoom'
+import type { AppSettings } from '../shared/types'
+import {
+  DICE_SHOW_FADE_OUT_MS,
+  DICE_SHOW_HOLD_MS,
+  type PlayerDiceShow
+} from '../shared/playerDiceShow'
 import { PHONE_FADE_OUT_MS } from '../shared/playerPhone'
 import { HYPERSPACE_ARRIVE_MS, HYPERSPACE_FADE_OUT_MS } from '../shared/playerHyperspace'
+import type { MixerState } from '../shared/audio'
+import { getMixerState } from './campaignMixer'
 
 export type PlayerOutputDeps = {
   getDmWindow: () => BrowserWindow | null
@@ -41,6 +50,10 @@ let legendStopTimer: ReturnType<typeof setTimeout> | null = null
 let galleryStopTimer: ReturnType<typeof setTimeout> | null = null
 let phoneStopTimer: ReturnType<typeof setTimeout> | null = null
 let hyperspaceStopTimer: ReturnType<typeof setTimeout> | null = null
+let boxOfDoomStopTimer: ReturnType<typeof setTimeout> | null = null
+let boxOfDoomHoldTimer: ReturnType<typeof setTimeout> | null = null
+let diceShowHoldTimer: ReturnType<typeof setTimeout> | null = null
+let diceShowStopTimer: ReturnType<typeof setTimeout> | null = null
 
 export function configurePlayerOutput(next: PlayerOutputDeps): void {
   deps = next
@@ -89,6 +102,8 @@ function clearStopTimers(): void {
     clearTimeout(hyperspaceStopTimer)
     hyperspaceStopTimer = null
   }
+  clearBoxOfDoomTimers()
+  clearDiceShowTimers()
 }
 
 export function dmDisplayId(): number {
@@ -227,6 +242,7 @@ function createPlayerWindow(display = targetPlayerDisplay()): void {
   playerWindow.webContents.on('did-finish-load', () => {
     applyPlayerOutputScale()
     playerWindow?.webContents.send(IPC.playerState, playerState)
+    sendMixerStateToPlayer(getMixerState())
   })
   playerWindow.once('ready-to-show', () => {
     if (!playerWindow || playerWindow.isDestroyed()) return
@@ -273,6 +289,12 @@ async function verifyPlayerOutputScale(win: BrowserWindow, display: Electron.Dis
 export function syncPlayerWindow(): void {
   if (shouldShowPlayerWindow(hasSecondDisplay(), playerWindowWanted)) showPlayerWindow()
   else hidePlayerWindow()
+}
+
+export function sendMixerStateToPlayer(state: MixerState): void {
+  if (playerWindow && !playerWindow.isDestroyed()) {
+    playerWindow.webContents.send(IPC.mixerState, state)
+  }
 }
 
 export function sendPlayerState(): void {
@@ -331,7 +353,9 @@ export function clearPlayerMedia(): PlayerState {
     video: null,
     phone: null,
     hyperspace: null,
-    handout: null
+    handout: null,
+    boxOfDoom: null,
+    diceShow: null
   })
 }
 
@@ -346,7 +370,9 @@ export function clearPlayerOverlays(): PlayerState {
     video: null,
     phone: null,
     hyperspace: null,
-    handout: null
+    handout: null,
+    boxOfDoom: null,
+    diceShow: null
   })
 }
 
@@ -483,5 +509,102 @@ export function stopPlayerHyperspace(): PlayerState {
       sendPlayerState()
     }
   }, HYPERSPACE_FADE_OUT_MS)
+  return playerState
+}
+
+export function clearBoxOfDoomHoldTimer(): void {
+  if (boxOfDoomHoldTimer) {
+    clearTimeout(boxOfDoomHoldTimer)
+    boxOfDoomHoldTimer = null
+  }
+}
+
+export function clearBoxOfDoomStopTimer(): void {
+  if (boxOfDoomStopTimer) {
+    clearTimeout(boxOfDoomStopTimer)
+    boxOfDoomStopTimer = null
+  }
+}
+
+export function clearBoxOfDoomTimers(): void {
+  clearBoxOfDoomHoldTimer()
+  clearBoxOfDoomStopTimer()
+}
+
+export function scheduleBoxOfDoomAutoFade(settings: Pick<AppSettings, 'boxOfDoomHoldSec'>): void {
+  clearBoxOfDoomHoldTimer()
+  const holdMs = boxOfDoomHoldMs(settings.boxOfDoomHoldSec)
+  boxOfDoomHoldTimer = setTimeout(() => {
+    boxOfDoomHoldTimer = null
+    const roll = playerState.boxOfDoom
+    if (!roll || roll.stoppingAt != null || roll.rolledAt == null) return
+    stopPlayerBoxOfDoom()
+  }, holdMs)
+}
+
+export function stopPlayerBoxOfDoom(): PlayerState {
+  const roll = playerState.boxOfDoom
+  if (!roll || roll.stoppingAt != null) return playerState
+  clearBoxOfDoomTimers()
+  playerState = {
+    ...playerState,
+    boxOfDoom: { ...roll, stoppingAt: Date.now() }
+  }
+  sendPlayerState()
+  boxOfDoomStopTimer = setTimeout(() => {
+    boxOfDoomStopTimer = null
+    if (playerState.boxOfDoom?.stoppingAt) {
+      playerState = { ...playerState, boxOfDoom: null }
+      sendPlayerState()
+    }
+  }, BOX_OF_DOOM_FADE_OUT_MS)
+  return playerState
+}
+
+export function clearDiceShowTimers(): void {
+  if (diceShowHoldTimer) {
+    clearTimeout(diceShowHoldTimer)
+    diceShowHoldTimer = null
+  }
+  if (diceShowStopTimer) {
+    clearTimeout(diceShowStopTimer)
+    diceShowStopTimer = null
+  }
+}
+
+function beginDiceShowFade(): void {
+  const show = playerState.diceShow
+  if (!show || show.stoppingAt != null) return
+  playerState = {
+    ...playerState,
+    diceShow: { ...show, stoppingAt: Date.now() }
+  }
+  sendPlayerState()
+  diceShowStopTimer = setTimeout(() => {
+    diceShowStopTimer = null
+    if (playerState.diceShow?.stoppingAt) {
+      playerState = { ...playerState, diceShow: null }
+      sendPlayerState()
+    }
+  }, DICE_SHOW_FADE_OUT_MS)
+}
+
+export function showPlayerDice(payload: Omit<PlayerDiceShow, 'startedAt' | 'stoppingAt'>): PlayerState {
+  clearDiceShowTimers()
+  const diceShow: PlayerDiceShow = {
+    ...payload,
+    groups: Array.isArray(payload.groups) ? payload.groups : [],
+    bonus: Number(payload.bonus) || 0,
+    total: Number(payload.total) || 0,
+    expr: String(payload.expr ?? ''),
+    startedAt: Date.now()
+  }
+  playerState = { ...playerState, diceShow }
+  sendPlayerState()
+  showPlayerWindow(undefined, !playerWindowScaleOk)
+  diceShowHoldTimer = setTimeout(() => {
+    diceShowHoldTimer = null
+    beginDiceShowFade()
+  }, DICE_SHOW_HOLD_MS)
   return playerState
 }

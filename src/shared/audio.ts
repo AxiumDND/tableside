@@ -1,4 +1,5 @@
 import { canonicalFolder } from './campaignLayout'
+import { BUILTIN_DICE_ROLL_PATH, isBuiltinSfx } from './diceRollSound'
 
 export const AUDIO_EXT = new Set(['.mp3', '.ogg', '.wav', '.m4a', '.flac', '.webm', '.aac'])
 
@@ -186,8 +187,34 @@ function comparePlaylists(a: AudioPlaylist, b: AudioPlaylist): number {
   return a.name.localeCompare(b.name)
 }
 
+export const BUILTIN_DICE_SFX_TRACK: AudioTrack = {
+  relativePath: BUILTIN_DICE_ROLL_PATH,
+  name: 'Dice'
+}
+
+const BUILTIN_SFX_GROUP_ID = 'Audio/Sfx'
+
+export function withBuiltinSfx(library: AudioLibrary): AudioLibrary {
+  const dice = BUILTIN_DICE_SFX_TRACK
+  const groups = library.sfx.filter((group) => group.id !== 'builtin:sfx')
+  const rootIndex = groups.findIndex((group) => group.id === BUILTIN_SFX_GROUP_ID)
+  if (rootIndex >= 0) {
+    const root = groups[rootIndex]
+    if (!root || root.tracks.some((track) => track.relativePath === dice.relativePath)) {
+      return { ...library, sfx: groups }
+    }
+    const next = groups.slice()
+    next[rootIndex] = { ...root, tracks: [dice, ...root.tracks] }
+    return { ...library, sfx: next }
+  }
+  return {
+    ...library,
+    sfx: [{ id: BUILTIN_SFX_GROUP_ID, name: 'Sfx', tracks: [dice] }, ...groups]
+  }
+}
+
 export function emptyAudioLibrary(): AudioLibrary {
-  return { music: [], ambience: [], sfx: [], skipped: 0 }
+  return withBuiltinSfx({ music: [], ambience: [], sfx: [], skipped: 0 })
 }
 
 export function buildAudioLibrary(paths: string[]): AudioLibrary {
@@ -229,7 +256,7 @@ export function buildAudioLibrary(paths: string[]): AudioLibrary {
   const sortTracks = (tracks: AudioTrack[]): AudioTrack[] =>
     [...tracks].sort((a, b) => a.name.localeCompare(b.name))
 
-  return {
+  return withBuiltinSfx({
     music: [...music.values()]
       .map((playlist) => ({ ...playlist, tracks: sortTracks(playlist.tracks) }))
       .sort(comparePlaylists),
@@ -240,7 +267,7 @@ export function buildAudioLibrary(paths: string[]): AudioLibrary {
       .map((group) => ({ ...group, tracks: sortTracks(group.tracks) }))
       .sort((a, b) => a.name.localeCompare(b.name)),
     skipped
-  }
+  })
 }
 
 export function emptyMixerPrefs(): MixerPrefs {
@@ -482,7 +509,7 @@ export function applyMixerCommand(state: MixerState, command: MixerCommand): Mix
     case 'set-prefs':
       return { ...state, prefs: { ...state.prefs, ...parseMixerPrefs({ ...state.prefs, ...command.prefs }) } }
     case 'set-library': {
-      const library = command.library
+      const library = withBuiltinSfx(command.library)
       const musicTracks = musicTracksFor(library, state.playback.musicPlaylistId)
       const musicOk = musicTracks.length > 0
       const ambience = findPlaylist(library, 'ambience', state.playback.ambiencePlaylistId)
@@ -633,7 +660,11 @@ export function applyMixerCommand(state: MixerState, command: MixerCommand): Mix
         }
       }
     case 'oneshot':
-      if (!findSfxTrack(state.library, command.path) && !isAudioPath(command.path)) {
+      if (
+        !isBuiltinSfx(command.path) &&
+        !findSfxTrack(state.library, command.path) &&
+        !isAudioPath(command.path)
+      ) {
         return { ...state, playback: { ...state.playback, error: 'That sound is not in Audio/Sfx.' } }
       }
       return {

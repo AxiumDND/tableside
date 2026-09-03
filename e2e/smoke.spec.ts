@@ -16,19 +16,42 @@ test.afterAll(async () => {
 
 test('DM console boots with the bundled sample campaign', async () => {
   // Toolbar renders → the renderer bundle loaded and mounted.
-  await expect(dmWindow.getByRole('button', { name: 'Lookup' })).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Tools' })).toBeVisible()
   await expect(dmWindow.getByRole('button', { name: 'Combat' })).toBeVisible()
 
   // First launch opens the Greystead one-shot (legacy table-dm migrate skipped in e2e).
   await expect(dmWindow.getByText(/Greystead/i).first()).toBeVisible({ timeout: 30_000 })
 })
 
+test('Dice tool and built-in Sfx oneshot are on the console', async () => {
+  const tools = dmWindow.getByRole('button', { name: 'Tools' })
+  await tools.click()
+  await dmWindow.getByRole('navigation', { name: 'Tools' }).getByRole('button', { name: 'Dice' }).click()
+  await expect(dmWindow.getByRole('button', { name: 'Show', exact: true })).toBeVisible()
+  await expect(dmWindow.getByText('Play sound on Roll')).toBeVisible()
+
+  await dmWindow.getByRole('button', { name: 'Music' }).click()
+  await expect(dmWindow.getByRole('heading', { name: 'Soundboard' })).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Dice', exact: true })).toBeVisible()
+})
+
+test('Dice tray exposes show-to-players and roll-sound toggles', async () => {
+  await expect(dmWindow.getByText('Show rolls to players')).toBeVisible()
+  await expect(dmWindow.getByText('Play roll sound')).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Adv', exact: true })).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Dis', exact: true })).toBeVisible()
+})
+
 test('Lookup opens and searches the offline SRD', async () => {
-  const lookup = dmWindow.getByRole('button', { name: 'Lookup' })
+  const tools = dmWindow.getByRole('button', { name: 'Tools' })
   // Panel toggles — open if the search field is not already visible.
   const search = dmWindow.getByPlaceholder(/poisoned/i)
   if (!(await search.isVisible().catch(() => false))) {
-    await lookup.click()
+    await tools.click()
+  }
+  const lookupTab = dmWindow.getByRole('button', { name: 'Lookup' })
+  if (!(await search.isVisible().catch(() => false))) {
+    await lookupTab.click()
   }
   await expect(search).toBeVisible()
   await search.fill('goblin')

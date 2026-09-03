@@ -13,6 +13,7 @@
 | | |
 |---|---|
 | **Role** | Patron / informant / obstacle |
+| **Species** |  |
 | **Faction** | [[Faction Name]] |
 | **Location** | [[Place Name]] |
 | **Status** | Alive |

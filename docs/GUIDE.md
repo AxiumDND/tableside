@@ -1,6 +1,6 @@
 # How to use Tableside
 
-Step-by-step for a night at the table. Current release: **1.7.16**.
+Step-by-step for a night at the table. Current release: **1.8.0**.
 
 Tableside is a **local Windows DM console**. Your laptop holds the notes. A second monitor (TV) shows players a clean picture — maps, art, initiative, or a sci-fi opening crawl. There is no account and no internet required once the app is installed.
 
@@ -23,7 +23,7 @@ Deeper reference: [TABLE.md](TABLE.md) (every control), [CAMPAIGN.md](CAMPAIGN.m
 
 ## Install
 
-1. Download **[Tableside-Setup-1.7.16.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
+1. Download **[Tableside-Setup-1.8.0.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
 2. Run it. Per-user install — Start Menu + desktop shortcut. No admin.
 3. If Windows says **Windows protected your PC**, click **More info**, then **Run anyway**. The installer is not code-signed. That is expected.
 4. Open **Tableside**.
@@ -46,7 +46,7 @@ With no campaign yet, Tableside copies **Greystead — The Pale Well** (a level-
 
 | Window | What it is for |
 | --- | --- |
-| **DM console** | Notes, combat, music, Lookup, dice. Only you see this. |
+| **DM console** | Notes, combat, music, Tools, dice. Only you see this. |
 | **Player view** | Fullscreen on the TV. Picture, map (crop / fog / tokens), initiative overlay, or crawl. Black when idle. |
 
 Click the left **Players see** preview to place the player window on the table TV. **Close** on that preview shuts the player window so you can use the TV for something else. **Show to players** or picking a monitor opens it again.
@@ -90,7 +90,7 @@ Large and Huge tokens stay 2× / 3× a Medium token.
 
 Prep on a **game night sheet** (right-click **Sessions/** → **New game night sheet…**):
 
-1. **The Party** — a `[!party]` block with linked PC sheets (and any companion `[[NPC]]` lines) plus a **Focus tonight** note. Read mode shows race, class, and AC from those sheets.
+1. **The Party** — a `[!party]` block with linked PC sheets (and any companion `[[NPC]]` lines) plus a **Focus tonight** note. Read mode shows race, class, AC, HP, and passive perception from those sheets.
 2. **Scenes** — Opening scene block, then more `[!scene]` blocks (copy one to add a beat). Each can have art, read-aloud, GM-only notes, optional secrets/treasure/NPCs, nested `[!combat]` fights, and **At the table** cues (place, map, checks, music, sound, leads to).
 3. Combatants for a fight **inside a `[!combat]` block** nested in the scene (or at document level):
 
@@ -170,7 +170,7 @@ Other looks still show the card so the note stays readable. Play stays disabled 
 
 ### 7. Look something up
 
-**Lookup** searches the open campaign’s system pack offline.
+**Tools → Lookup** searches the open campaign’s system pack offline.
 
 | Pack | What you get |
 | --- | --- |
@@ -181,6 +181,10 @@ Other looks still show the card so the note stays readable. Play stays disabled 
 Filter chips narrow the category. From a result you can **Add to combat** (monsters) or **Add to Bestiary / Spells / Gear** (writes a campaign note you can edit and wikilink). On 5e, adding a monster also copies its default portrait into `Bestiary/Art/` if you do not already have one.
 
 Optional PHB / DMG text dumps go in the app `Additional Books/` folder — not in the campaign. Details: [Additional Books/README.md](../Additional%20Books/README.md). Use the **Additional books** link in Lookup.
+
+**Tools → Names** rolls a few NPC names from race (5e), ancestry (Pathfinder 2e), or name tradition (Vampire). Copy one, or **New NPC…** to write a sheet under `NPCs/`.
+
+**Tools → Improvise** is 2024 potions of healing and on-the-fly hazard damage.
 
 ### 8. Roll dice
 

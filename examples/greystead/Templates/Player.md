@@ -20,6 +20,7 @@
 | **Role** | Front line |
 | **AC** | 18 |
 | **HP** | 44 |
+| **Passive Perception** | 11 |
 [!/pc]
 
 ```statblock

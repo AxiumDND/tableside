@@ -8,7 +8,7 @@ Also read:
 - [TABLE.md](TABLE.md) — DM console, combat, Lookup, player display
 - [RECIPES.md](RECIPES.md) — game night sheet → initiative, Lookup → campaign note, music, crawl (also in-app **Help**)
 - [MARKDOWN.md](MARKDOWN.md) — wikilinks, callouts, `statblock` field reference
-- [AI-CAMPAIGN.md](AI-CAMPAIGN.md) — spec for an AI converting a vault into this layout (1.7.16: web sheets in the note pane)
+- [AI-CAMPAIGN.md](AI-CAMPAIGN.md) — spec for an AI converting a vault into this layout (1.8.0: web sheets in the note pane)
 - [Additional Books/README.md](../Additional%20Books/README.md) — optional book text for Lookup
 
 ## Folder layout
@@ -206,7 +206,7 @@ A **session recap** is notes after the table on what actually happened. Right-cl
 
 A **party roster** is who is travelling together. Right-click **Party** → **New party roster…**. `Party Roster` stays `Party Roster.md`; other names become `The Table — Roster.md`. Player sheets stay as **New player…**; companions stay in `NPCs/` and are linked in the same `[!party]` block. Combat still skips notes whose name matches `roster`.
 
-Wrap PC and companion NPC links in `[!party]…[!/party]`. Read mode shows a live PC table (name, race, class, AC, HP); companions sit as links under the table (hover for the sheet). **Edit** → **Add NPC…** to pick from `NPCs/`. Scene blocks use `[!scene] Title` … `[!/scene]`. Put optional art with `![[…]]`, a short “what could happen” note, nested `[!readaloud]` for spoken text, nested `[!gmonly]` for hidden prep, nested `[!combat]` for fights, optional secrets/treasure/NPC bullets, and an **At the table** cue list (place, map, checks, if they miss, music, sound, leads to). Copy a whole scene block to add another beat.
+Wrap PC and companion NPC links in `[!party]…[!/party]`. Read mode shows a live PC table (name, race, class, AC, HP, PP); companions sit as links under the table (hover for the sheet). **Edit** → **Add NPC…** to pick from `NPCs/`. Scene blocks use `[!scene] Title` … `[!/scene]`. Put optional art with `![[…]]`, a short “what could happen” note, nested `[!readaloud]` for spoken text, nested `[!gmonly]` for hidden prep, nested `[!combat]` for fights, optional secrets/treasure/NPC bullets, and an **At the table** cue list (place, map, checks, if they miss, music, sound, leads to). Copy a whole scene block to add another beat.
 
 1. Prefer a combat block inside a scene (or at document level). Aliases: `encounter`, `fight`. New blocks default to `**Combatants:** party`. Add foes with real Bestiary / NPC stems, or use **Edit → Add combatant…** at the table (SRD/book monsters copy into `Bestiary/`).
 

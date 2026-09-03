@@ -1575,3 +1575,324 @@ body,
     opacity: 0;
   }
 }
+
+.box-of-doom {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.2vh;
+  background:
+    radial-gradient(ellipse at center, rgba(28, 18, 8, 0.28) 0%, rgba(0, 0, 0, 0.88) 72%),
+    rgba(5, 5, 5, 0.55);
+  color: #f4e6c3;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 1.4s ease;
+  pointer-events: none;
+}
+
+.box-of-doom.is-in {
+  opacity: 1;
+}
+
+.box-of-doom.is-out {
+  opacity: 0;
+}
+
+.box-of-doom.is-success {
+  background:
+    radial-gradient(ellipse at center, rgba(80, 55, 8, 0.45) 0%, rgba(0, 0, 0, 0.92) 68%),
+    #050505;
+}
+
+.box-of-doom.is-fail {
+  background:
+    radial-gradient(ellipse at center, rgba(70, 8, 8, 0.5) 0%, rgba(0, 0, 0, 0.94) 68%),
+    #050505;
+}
+
+.box-of-doom-kicker {
+  margin: 0;
+  font-size: 1.6vmin;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: #c4a574;
+}
+
+.box-of-doom-dice {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3.5vmin;
+}
+
+.box-of-doom-die {
+  position: relative;
+  width: 28vmin;
+  height: 32vmin;
+  display: grid;
+  place-items: center;
+  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+  background: linear-gradient(160deg, #3a2a14 0%, #1a1208 45%, #0c0904 100%);
+  box-shadow:
+    0 0 0 0.35vmin #d4b06a,
+    0 0 4vmin rgba(212, 176, 106, 0.35);
+}
+
+.box-of-doom.has-pair .box-of-doom-die {
+  width: 20vmin;
+  height: 23vmin;
+}
+
+.box-of-doom-die.is-waiting {
+  opacity: 0.85;
+}
+
+.box-of-doom-die.is-spinning {
+  animation: box-of-doom-spin 0.18s linear infinite;
+}
+
+.box-of-doom-dice .box-of-doom-die:nth-child(2).is-spinning {
+  animation-direction: reverse;
+  animation-duration: 0.16s;
+}
+
+.box-of-doom-die.is-landed {
+  animation: box-of-doom-slam 0.45s cubic-bezier(0.2, 1.4, 0.3, 1) both;
+}
+
+.box-of-doom-die.is-dropped {
+  opacity: 0.32;
+  filter: grayscale(0.65);
+  box-shadow:
+    0 0 0 0.25vmin #6a5a40,
+    0 0 1.5vmin rgba(0, 0, 0, 0.35);
+}
+
+.box-of-doom-die.is-nat20 {
+  box-shadow:
+    0 0 0 0.4vmin #f3d48a,
+    0 0 6vmin rgba(243, 212, 138, 0.7);
+}
+
+.box-of-doom-die.is-nat1 {
+  box-shadow:
+    0 0 0 0.4vmin #c45c4a,
+    0 0 6vmin rgba(196, 92, 74, 0.55);
+}
+
+.box-of-doom-face {
+  font-family: var(--font-display, Georgia, serif);
+  font-size: 12vmin;
+  line-height: 1;
+  color: #f7e7c2;
+  text-shadow: 0 0.4vmin 0 #000;
+}
+
+.box-of-doom.has-pair .box-of-doom-face {
+  font-size: 8.5vmin;
+}
+
+.box-of-doom-math,
+.box-of-doom-dc {
+  margin: 0;
+  font-size: 2.4vmin;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #c4a574;
+}
+
+.box-of-doom-verdict {
+  margin: 1.5vh 0 0;
+  font-family: var(--font-display, Georgia, serif);
+  font-size: 9vmin;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  animation: box-of-doom-verdict 0.55s cubic-bezier(0.2, 1.5, 0.3, 1) both;
+}
+
+.box-of-doom-verdict.is-success {
+  color: #e8c56b;
+  text-shadow: 0 0 2.4vmin rgba(232, 197, 107, 0.55);
+}
+
+.box-of-doom-verdict.is-fail {
+  color: #e07060;
+  text-shadow: 0 0 2.4vmin rgba(224, 112, 96, 0.5);
+}
+
+@keyframes box-of-doom-spin {
+  from {
+    transform: rotate(-18deg) scale(0.96);
+  }
+  to {
+    transform: rotate(18deg) scale(1.04);
+  }
+}
+
+@keyframes box-of-doom-slam {
+  from {
+    transform: scale(1.35) rotate(-8deg);
+    opacity: 0.4;
+  }
+  to {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+
+@keyframes box-of-doom-verdict {
+  from {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+.player-dice-show {
+  position: absolute;
+  top: 6%;
+  right: 2.4%;
+  z-index: 11;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8vh;
+  width: min(22vw, 28vh);
+  padding: 1.6vh 1.2vw 1.8vh;
+  border-radius: 1.2vh;
+  background: rgba(8, 6, 4, 0.72);
+  box-shadow: 0 0.6vh 2.4vh rgba(0, 0, 0, 0.45);
+  color: #f4e6c3;
+  text-align: center;
+  opacity: 0;
+  transform: translateX(1.2vw);
+  transition:
+    opacity 1.2s ease,
+    transform 1.2s ease;
+  pointer-events: none;
+}
+
+.player-dice-show.is-in {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.player-dice-show.is-out {
+  opacity: 0;
+  transform: translateX(1.2vw);
+}
+
+.player-dice-show-source,
+.player-dice-show-mode,
+.player-dice-show-natural {
+  margin: 0;
+  font-size: 1.3vmin;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: #c4a574;
+}
+
+.player-dice-show-natural.is-success {
+  color: #7cb87a;
+}
+
+.player-dice-show-natural.is-fail {
+  color: #c45c5c;
+}
+
+.player-dice-show-expr {
+  margin: 0;
+  font-size: 1.7vmin;
+  color: #e8d4a8;
+}
+
+.player-dice-show-dice {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.8vmin;
+}
+
+.player-dice-show-die {
+  display: grid;
+  place-items: center;
+  width: 5.4vmin;
+  height: 5.4vmin;
+  background: linear-gradient(160deg, #3a2a14 0%, #1a1208 100%);
+  box-shadow: 0 0 0 0.15vmin #d4b06a;
+}
+
+.player-dice-show-die.is-d4 {
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+
+.player-dice-show-die.is-d6 {
+  border-radius: 0.4vmin;
+}
+
+.player-dice-show-die.is-d8,
+.player-dice-show-die.is-d10 {
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.player-dice-show-die.is-d12 {
+  clip-path: polygon(50% 0%, 95% 25%, 95% 75%, 50% 100%, 5% 75%, 5% 25%);
+}
+
+.player-dice-show-die.is-d20 {
+  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+}
+
+.player-dice-show-die.is-d100 {
+  border-radius: 50%;
+}
+
+.player-dice-show-die.is-dropped {
+  opacity: 0.35;
+  filter: grayscale(0.6);
+}
+
+.player-dice-show-die.is-nat20 {
+  box-shadow:
+    0 0 0 0.15vmin #7cb87a,
+    0 0 1.2vmin rgba(124, 184, 122, 0.55);
+}
+
+.player-dice-show-die.is-nat1 {
+  box-shadow:
+    0 0 0 0.15vmin #c45c5c,
+    0 0 1.2vmin rgba(196, 92, 92, 0.55);
+}
+
+.player-dice-show-face {
+  font-family: var(--font-display, Georgia, serif);
+  font-size: 2.2vmin;
+  line-height: 1;
+}
+
+.player-dice-show-sides {
+  display: none;
+}
+
+.player-dice-show-more,
+.player-dice-show-bonus {
+  margin: 0;
+  font-size: 1.6vmin;
+  color: #c4a574;
+}
+
+.player-dice-show-total {
+  margin: 0.4vh 0 0;
+  font-family: var(--font-display, Georgia, serif);
+  font-size: 4.6vmin;
+  line-height: 1;
+  color: #e8c56b;
+}

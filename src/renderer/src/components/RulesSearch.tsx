@@ -346,12 +346,14 @@ export default function RulesSearch({
   onAddMonster,
   onSaveToCampaign,
   canSaveToCampaign,
-  system
+  system,
+  embedded = false
 }: {
   onAddMonster?: (record: SrdRecord) => void
   onSaveToCampaign?: (record: SrdRecord) => Promise<'added' | 'exists' | void> | 'added' | 'exists' | void
   canSaveToCampaign?: boolean
   system?: string | null
+  embedded?: boolean
 }) {
   const pack = getSystemPack(system)
   const [query, setQuery] = useState('')
@@ -403,10 +405,10 @@ export default function RulesSearch({
   const packCount = packLookupRecords(system).length
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col border-l border-line bg-panel">
+    <section className={`flex min-h-0 flex-1 flex-col bg-panel ${embedded ? '' : 'border-l border-line'}`}>
       <header className="border-b border-line px-3 py-2">
         <div className="flex items-baseline justify-between gap-2">
-          <h2 className="font-display text-lg text-amber">Lookup</h2>
+          {embedded ? null : <h2 className="font-display text-lg text-amber">Lookup</h2>}
           <div className="flex items-center gap-2">
             <span className="text-[10px] text-muted">
               {pack.id === 'dnd5e'

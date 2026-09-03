@@ -1,7 +1,13 @@
 import { ipcMain, screen } from 'electron'
 import type { PlayerState } from '../shared/types'
 import { IPC } from '../shared/ipc'
-import { patchSettings } from './appSettings'
+import {
+  clampBoxOfDoomDc,
+  clampBoxOfDoomMod,
+  normalizeBoxOfDoomMode,
+  resolveBoxOfDoom
+} from '../shared/boxOfDoom'
+import { patchSettings, getSettings } from './appSettings'
 import {
   arrivePlayerHyperspace,
   clearPlayerMedia,
@@ -14,6 +20,10 @@ import {
   playerWindowVisible,
   setPlayerState,
   showPlayerWindow,
+  clearBoxOfDoomTimers,
+  scheduleBoxOfDoomAutoFade,
+  showPlayerDice,
+  stopPlayerBoxOfDoom,
   stopPlayerCrawl,
   stopPlayerGallery,
   stopPlayerHyperspace,
@@ -45,7 +55,9 @@ export function registerPlayerIpc(): void {
           gallery: null,
           video: null,
           phone: null,
-          hyperspace: null
+          hyperspace: null,
+          boxOfDoom: null,
+          diceShow: null
         },
         { show: true }
       )
@@ -95,6 +107,8 @@ export function registerPlayerIpc(): void {
           video: null,
           phone: null,
           hyperspace: null,
+          boxOfDoom: null,
+          diceShow: null,
           handout: null
         },
         { show: true }
@@ -151,6 +165,8 @@ export function registerPlayerIpc(): void {
           video: null,
           phone: null,
           hyperspace: null,
+          boxOfDoom: null,
+          diceShow: null,
           handout: null
         },
         { show: true }
@@ -211,6 +227,8 @@ export function registerPlayerIpc(): void {
           video: null,
           phone: null,
           hyperspace: null,
+          boxOfDoom: null,
+          diceShow: null,
           handout: null
         },
         { show: true }
@@ -251,6 +269,8 @@ export function registerPlayerIpc(): void {
           },
           phone: null,
           hyperspace: null,
+          boxOfDoom: null,
+          diceShow: null,
           handout: null
         },
         { show: true }
@@ -288,7 +308,9 @@ export function registerPlayerIpc(): void {
             startedAt: Date.now()
           },
           hyperspace: null,
-          handout: null
+          handout: null,
+          boxOfDoom: null,
+          diceShow: null
         },
         { show: true }
       )
@@ -328,7 +350,9 @@ export function registerPlayerIpc(): void {
             planetSrc,
             startedAt: Date.now()
           },
-          handout: null
+          handout: null,
+          boxOfDoom: null,
+          diceShow: null
         },
         { show: true }
       )
@@ -337,6 +361,87 @@ export function registerPlayerIpc(): void {
 
   ipcMain.handle(IPC.playerArriveHyperspace, () => arrivePlayerHyperspace())
   ipcMain.handle(IPC.playerStopHyperspace, () => stopPlayerHyperspace())
+
+  ipcMain.handle(
+    IPC.playerShowBoxOfDoom,
+    (_e, payload: { dc?: number; modifier?: number; mode?: string; label?: string }) => {
+      clearBoxOfDoomTimers()
+      const dc = clampBoxOfDoomDc(Number(payload?.dc))
+      const modifier = clampBoxOfDoomMod(Number(payload?.modifier))
+      const mode = normalizeBoxOfDoomMode(payload?.mode)
+      const label = typeof payload?.label === 'string' ? payload.label.trim() : ''
+      const prev = getPlayerState().boxOfDoom
+      const reuseFade = Boolean(prev && prev.stoppingAt == null && prev.rolledAt == null)
+      return setPlayerState(
+        {
+          ...getPlayerState(),
+          crawl: null,
+          legend: null,
+          gallery: null,
+          video: null,
+          phone: null,
+          hyperspace: null,
+          boxOfDoom: {
+            dc,
+            modifier,
+            mode,
+            startedAt: reuseFade && prev ? prev.startedAt : Date.now(),
+            label: label || undefined
+          }
+        },
+        { show: true }
+      )
+    }
+  )
+
+  ipcMain.handle(
+    IPC.playerRollBoxOfDoom,
+    (
+      _e,
+      payload: {
+        dc?: number
+        modifier?: number
+        d20?: number
+        d20b?: number
+        mode?: string
+        sound?: boolean
+      }
+    ) => {
+      const current = getPlayerState().boxOfDoom
+      if (!current || current.stoppingAt != null || current.rolledAt != null) {
+        return getPlayerState()
+      }
+      const resolved = resolveBoxOfDoom(
+        Number(payload?.dc ?? current.dc),
+        Number(payload?.d20),
+        Number(payload?.modifier ?? current.modifier),
+        { mode: normalizeBoxOfDoomMode(payload?.mode ?? current.mode), d20b: payload?.d20b }
+      )
+      const next = setPlayerState({
+        ...getPlayerState(),
+        boxOfDoom: {
+          ...current,
+          dc: resolved.dc,
+          modifier: resolved.modifier,
+          mode: resolved.mode,
+          d20: resolved.d20,
+          rolls: resolved.rolls,
+          total: resolved.total,
+          success: resolved.success,
+          sound: payload?.sound !== false,
+          rolledAt: Date.now()
+        }
+      })
+      scheduleBoxOfDoomAutoFade(getSettings())
+      return next
+    }
+  )
+
+  ipcMain.handle(IPC.playerStopBoxOfDoom, () => stopPlayerBoxOfDoom())
+
+  ipcMain.handle(IPC.playerShowDice, (_e, payload: Parameters<typeof showPlayerDice>[0]) => {
+    return showPlayerDice(payload ?? { expr: '', total: 0, groups: [], bonus: 0 })
+  })
 
   ipcMain.handle(
     IPC.playerSetInitiative,

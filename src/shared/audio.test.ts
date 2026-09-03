@@ -39,7 +39,18 @@ describe('audio library', () => {
     expect(library.ambience.map((item) => item.name)).toEqual(['Crowd', 'Rain'])
     expect(library.sfx.map((item) => item.name)).toEqual(['Doors', 'Sfx'])
     expect(library.sfx.find((group) => group.name === 'Doors')?.tracks[0]?.name).toBe('Slam')
+    expect(library.sfx.find((group) => group.name === 'Sfx')?.tracks.map((track) => track.name)).toEqual([
+      'Dice',
+      'Thunder'
+    ])
     expect(library.skipped).toBe(0)
+  })
+
+  it('always includes the built-in dice oneshot on the Sfx board', () => {
+    expect(emptyMixerState().library.sfx[0]?.tracks[0]).toMatchObject({
+      name: 'Dice',
+      relativePath: 'builtin:dice-roll'
+    })
   })
 
   it('counts audio sitting outside Music, Ambience, or Sfx', () => {
@@ -144,6 +155,8 @@ describe('mixer commands', () => {
   it('stop all clears playback but keeps the library', () => {
     let state = ready()
     state = applyMixerCommand(state, { type: 'play-music', playlistId: 'Audio/Music/General' })
+    state = applyMixerCommand(state, { type: 'oneshot', path: 'builtin:dice-roll' })
+    expect(state.playback.oneshot?.path).toBe('builtin:dice-roll')
     state = applyMixerCommand(state, { type: 'oneshot', path: 'Audio/Sfx/Thunder.mp3' })
     state = applyMixerCommand(state, { type: 'stop-all' })
     expect(state.playback.musicPlaying).toBe(false)

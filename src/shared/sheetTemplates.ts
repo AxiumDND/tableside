@@ -39,6 +39,7 @@ const PLAYER = `<!--
 | **Role** | Front line |
 | **AC** | 18 |
 | **HP** | 44 |
+| **Passive Perception** | 11 |
 [!/pc]
 
 \`\`\`statblock
@@ -103,6 +104,7 @@ const NPC = `<!--
 | | |
 |---|---|
 | **Role** | Patron / informant / obstacle |
+| **Species** |  |
 | **Faction** | [[Faction Name]] |
 | **Location** | [[Place Name]] |
 | **Status** | Alive |
@@ -258,7 +260,7 @@ const NIGHTSHEET = `<!--
   {{crawl}} is replaced on Sci-fi campaigns with an Opening crawl sample (Play on the player screen).
   {{legend}} is replaced on Classic, Light, and Vampire campaigns with an Opening legend sample.
   Scene blocks: [!scene] Title … [!/scene] — art, what could happen, nested [!readaloud] / [!gmonly] / [!combat] / [!treasure], optional secrets/NPCs, and table cues.
-  Party roster: [!party] … [!/party] wraps PC links, companion [[NPC]] lines, and the Focus tonight note. Read mode shows race / class / AC from those sheets.
+  Party roster: [!party] … [!/party] wraps PC links, companion [[NPC]] lines, and the Focus tonight note. Read mode shows race / class / AC / HP / PP from those sheets.
   Copy a scene block to add another beat. Use // lines for notes that stay in the editor only.
   Combat blocks: [!combat] Title … [!/combat] (nest in a scene or at document level). Legacy ## Combat / Encounter / ⚔️ headings still work.
   party = all PCs. [[Name]] opens a sheet. ![[Art.webp]] then Show to players.

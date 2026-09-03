@@ -8,6 +8,8 @@ import {
   type MixerLayerId,
   type MixerState
 } from '../../../shared/audio'
+import { diceRollSoundUrl, isBuiltinSfx } from '../../../shared/diceRollSound'
+import { applyAudioSink, playOneshot } from '../lib/audioSink'
 
 function fadeTo(
   el: HTMLAudioElement,
@@ -35,21 +37,6 @@ function fadeTo(
     }
     requestAnimationFrame(step)
   })
-}
-
-async function applySink(el: HTMLAudioElement, deviceId: string): Promise<void> {
-  if (typeof el.setSinkId !== 'function') return
-  try {
-    await el.setSinkId(deviceId)
-  } catch {
-    if (deviceId) {
-      try {
-        await el.setSinkId('')
-      } catch {
-        /* keep going */
-      }
-    }
-  }
 }
 
 class LayerPlayer {
@@ -117,7 +104,7 @@ class LayerPlayer {
 
   async setSink(deviceId: string): Promise<void> {
     this.sinkId = deviceId
-    await Promise.all([applySink(this.a, deviceId), applySink(this.b, deviceId)])
+    await Promise.all([applyAudioSink(this.a, deviceId), applyAudioSink(this.b, deviceId)])
   }
 
   setGain(gain: number): void {
@@ -161,7 +148,7 @@ class LayerPlayer {
     if (!srcChanged) {
       this.front.volume = 0
       try {
-        await applySink(this.front, this.sinkId)
+        await applyAudioSink(this.front, this.sinkId)
         await this.front.play()
         await fadeTo(this.front, this.gain, MIXER_FADE_MS, current)
       } catch {
@@ -174,7 +161,7 @@ class LayerPlayer {
     next.src = src
     next.volume = 0
     try {
-      await applySink(next, this.sinkId)
+      await applyAudioSink(next, this.sinkId)
       await next.play()
     } catch {
       if (current()) this.onError('Could not play that track. Check the file and Output device.')
@@ -207,14 +194,6 @@ class LayerPlayer {
 
 function reportPlaybackError(message: string): void {
   void window.tabledm.mixerError(message)
-}
-
-function playOneshot(url: string, gain: number, deviceId: string): void {
-  const el = new Audio(url)
-  el.volume = gain
-  void applySink(el, deviceId)
-    .then(() => el.play())
-    .catch(() => reportPlaybackError('Could not play that sound. Check the file and Output device.'))
 }
 
 export default function AudioEngine({
@@ -296,7 +275,11 @@ export default function AudioEngine({
     const shot = state.playback.oneshot
     if (shot && shot.at !== oneshotAt.current) {
       oneshotAt.current = shot.at
-      playOneshot(audioFileUrl(shot.path), mixerLayerGain(state.prefs, 'sfx'), sink)
+      playOneshot(
+        isBuiltinSfx(shot.path) ? diceRollSoundUrl() : audioFileUrl(shot.path),
+        mixerLayerGain(state.prefs, 'sfx'),
+        sink
+      ).catch(() => reportPlaybackError('Could not play that sound. Check the file and Output device.'))
     }
   }, [state])
 

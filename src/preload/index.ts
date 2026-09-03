@@ -107,6 +107,34 @@ const api = {
   }): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerShowHyperspace, payload),
   arriveHyperspace: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerArriveHyperspace),
   stopHyperspace: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerStopHyperspace),
+  showBoxOfDoom: (payload: {
+    dc: number
+    modifier: number
+    mode?: 'normal' | 'advantage' | 'disadvantage'
+    label?: string
+  }): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerShowBoxOfDoom, payload),
+  rollBoxOfDoom: (payload: {
+    dc: number
+    modifier: number
+    d20: number
+    d20b?: number
+    mode?: 'normal' | 'advantage' | 'disadvantage'
+    sound?: boolean
+  }): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerRollBoxOfDoom, payload),
+  stopBoxOfDoom: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerStopBoxOfDoom),
+  showPlayerDice: (payload: {
+    source?: string
+    expr: string
+    total: number
+    groups: { sides: number; rolls: number[] }[]
+    bonus: number
+    mode?: 'normal' | 'advantage' | 'disadvantage' | 'crit'
+    kept?: number
+    rollLabel?: string
+    damageType?: string
+    nat20?: boolean
+    nat1?: boolean
+  }): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerShowDice, payload),
   clearPlayer: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerClear),
   clearPlayerOverlays: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerClearOverlays),
   setPlayerInitiative: (payload: {

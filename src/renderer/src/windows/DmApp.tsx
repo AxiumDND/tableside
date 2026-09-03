@@ -9,7 +9,7 @@ import {
   resolveConsoleTheme,
   type ThemeId
 } from '../../../shared/theme'
-import { getSystemPack } from '../../../shared/systemPack'
+import { getSystemPack, parseSystemId } from '../../../shared/systemPack'
 import CampaignFiles, { campaignFileUrl, fileKind } from '../components/CampaignFiles'
 import AudioEngine from '../components/AudioEngine'
 import CombatTracker from '../components/CombatTracker'
@@ -17,7 +17,6 @@ import MusicPanel from '../components/MusicPanel'
 import DiceTray, { DiceLogProvider } from '../components/DiceTray'
 import HelpPanel from '../components/HelpPanel'
 import PlayerPreview from '../components/PlayerPreview'
-import RulesSearch from '../components/RulesSearch'
 import SessionNotes from '../components/SessionNotes'
 import SystemPicker from '../components/SystemPicker'
 import ThemeSetup from '../components/ThemeSetup'
@@ -30,7 +29,10 @@ import type { SrdRecord } from '../lib/srd'
 import type { AppUpdateNotice } from '../../../shared/appUpdate'
 import UpdateBanner from '../components/UpdateBanner'
 import DmHeader from '../components/DmHeader'
+import ToolsPanel from '../components/ToolsPanel'
 import { adjacentCampaignFile, canonicalFolder } from '../../../shared/campaignLayout'
+import { asRightPanelId, asToolsTabId, type RightPanelId, type ToolsTabId } from '../../../shared/rightPanel'
+import { applyNpcSpecies } from '../../../shared/npcNames'
 import { usePlayerPlayback } from '../hooks/usePlayerPlayback'
 import { useConsoleHotkeys } from '../hooks/useConsoleHotkeys'
 import { useCombatActions } from '../hooks/useCombatActions'
@@ -38,12 +40,6 @@ import { useCampaignOpen } from '../hooks/useCampaignOpen'
 import { useCampaignNavigation } from '../hooks/useCampaignNavigation'
 
 const SIDE_PANEL_WIDTH = 'w-[400px]'
-
-type RightPanelId = 'combat' | 'lookup' | 'help' | 'music'
-
-function asRightPanelId(value: unknown): RightPanelId | null {
-  return value === 'combat' || value === 'lookup' || value === 'help' || value === 'music' ? value : null
-}
 
 function findTreeNode(nodes: CampaignTreeNode[], path: string): CampaignTreeNode | null {
   for (const node of nodes) {
@@ -116,6 +112,8 @@ export default function DmApp() {
   const [displays, setDisplays] = useState<DisplayInfo[]>([])
   const [rightPanel, setRightPanel] = useState<RightPanelId | null>(null)
   const [lastRightPanel, setLastRightPanel] = useState<RightPanelId>('combat')
+  const [toolsTab, setToolsTab] = useState<ToolsTabId>('lookup')
+  const [diceCheckSound, setDiceCheckSound] = useState(true)
   const {
     openPath,
     openKind,
@@ -140,6 +138,7 @@ export default function DmApp() {
   const [recentCampaigns, setRecentCampaigns] = useState<RecentCampaign[]>([])
   const [updateNotice, setUpdateNotice] = useState<AppUpdateNotice | null>(null)
   const skipRestoredCombatShow = useRef(true)
+  const prevBoxOfDoomRef = useRef(player.boxOfDoom)
 
   const refresh = useCallback(async () => {
     const [info, state, mix, screens, prefs, windowOpen] = await Promise.all([
@@ -170,6 +169,8 @@ export default function DmApp() {
     const restoredPanel = asRightPanelId(prefs.rightPanel)
     setRightPanel(restoredPanel)
     setLastRightPanel(asRightPanelId(prefs.lastRightPanel) ?? restoredPanel ?? 'combat')
+    setToolsTab(asToolsTabId(prefs.toolsTab))
+    setDiceCheckSound(prefs.diceCheckSound !== false)
     if (info && !openPath) {
       const remembered =
         prefs.lastOpenPath && findTreeNode(info.tree, prefs.lastOpenPath)
@@ -284,6 +285,24 @@ export default function DmApp() {
     return result.existed ? 'exists' : 'added'
   }
 
+  async function createNpcFromName(name: string, species: string): Promise<void> {
+    const created = await window.tabledm.createNote('NPCs', name, 'npc')
+    if (!created) return
+    let campaignInfo = created.campaign
+    let path = created.path
+    const current = await window.tabledm.readFile(path)
+    const next = applyNpcSpecies(current, species)
+    if (next !== current) {
+      const saved = await window.tabledm.saveFile(path, next)
+      if (saved) {
+        campaignInfo = saved.campaign
+        path = saved.path
+      }
+    }
+    setCampaign(campaignInfo)
+    navigateTo(path, 'note')
+  }
+
   /** Copy an item into Gear without leaving the open sheet (treasure picker). */
   async function ensureGearFromLookup(record: SrdRecord): Promise<'added' | 'exists' | void> {
     if (libraryFolderFor(record) !== 'gear') return
@@ -330,6 +349,19 @@ export default function DmApp() {
     })
   }, [campaign, campaign?.combat])
 
+  useEffect(() => {
+    const prev = prevBoxOfDoomRef.current
+    prevBoxOfDoomRef.current = player.boxOfDoom
+    if (!prev || player.boxOfDoom) return
+    const live = campaign?.combat
+    const entries = live ? combatToPlayerInitiative(live, combatProfileFor(campaign?.system)) : []
+    void window.tabledm.setPlayerInitiative({
+      entries,
+      show: Boolean(live?.showOrderToPlayers && live.combatants.length > 0),
+      round: live?.round ?? 0
+    })
+  }, [player.boxOfDoom, campaign, campaign?.combat])
+
   function changeRightPanel(next: RightPanelId | null | ((prev: RightPanelId | null) => RightPanelId | null)): void {
     setRightPanel((prev) => {
       const value = typeof next === 'function' ? next(prev) : next
@@ -359,7 +391,7 @@ export default function DmApp() {
   })
 
   return (
-    <DiceLogProvider>
+    <DiceLogProvider allowCrit={parseSystemId(campaign?.system) === 'dnd5e'}>
     <AudioEngine state={mixer} onClock={setMixerClock} />
     <div className="flex h-full flex-col bg-ink text-parchment">
       <DmHeader
@@ -380,7 +412,7 @@ export default function DmApp() {
         onToggleRightPanel={() => {
           changeRightPanel((open) => (open ? null : lastRightPanel))
         }}
-        onToggleLookup={() => changeRightPanel((open) => (open === 'lookup' ? null : 'lookup'))}
+        onToggleTools={() => changeRightPanel((open) => (open === 'tools' ? null : 'tools'))}
         onToggleCombat={() => changeRightPanel((open) => (open === 'combat' ? null : 'combat'))}
         onToggleMusic={() => {
           changeRightPanel((open) => (open === 'music' ? null : 'music'))
@@ -578,13 +610,26 @@ export default function DmApp() {
             onChange={(next) => void saveCombat(next)}
           />
         ) : null}
-        {rightPanel === 'lookup' ? (
+        {rightPanel === 'tools' ? (
           <div className={`flex min-h-0 ${SIDE_PANEL_WIDTH} shrink-0 flex-col`}>
-            <RulesSearch
+            <ToolsPanel
+              tab={toolsTab}
+              onTabChange={(next) => {
+                setToolsTab(next)
+                void window.tabledm.saveSettings({ toolsTab: next })
+              }}
               system={campaign?.system}
+              canCreateNpc={Boolean(campaign)}
+              onCreateNpc={(name, species) => void createNpcFromName(name, species)}
               onAddMonster={addMonster}
               onSaveToCampaign={saveLookupToCampaign}
               canSaveToCampaign={Boolean(campaign)}
+              boxOfDoom={player.boxOfDoom ?? null}
+              diceCheckSound={diceCheckSound}
+              onDiceCheckSound={(on) => {
+                setDiceCheckSound(on)
+                void window.tabledm.saveSettings({ diceCheckSound: on })
+              }}
             />
           </div>
         ) : null}

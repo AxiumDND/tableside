@@ -34,6 +34,18 @@ const player = vi.hoisted(() => ({
   stopPlayerGallery: vi.fn(() => emptyPlayerState()),
   stopPlayerPhone: vi.fn(() => emptyPlayerState()),
   stopPlayerHyperspace: vi.fn(() => emptyPlayerState()),
+  stopPlayerBoxOfDoom: vi.fn(() => emptyPlayerState()),
+  clearBoxOfDoomTimers: vi.fn(),
+  scheduleBoxOfDoomAutoFade: vi.fn(),
+  showPlayerDice: vi.fn((payload: Record<string, unknown>) => {
+    const prev = player.getPlayerState() as ReturnType<typeof emptyPlayerState>
+    const next = {
+      ...prev,
+      diceShow: { ...payload, startedAt: Date.now() }
+    }
+    player.setPlayerState(next)
+    return next
+  }),
   arrivePlayerHyperspace: vi.fn(() => emptyPlayerState()),
   playerWindowVisible: vi.fn(() => false),
   closePlayerWindow: vi.fn(),
@@ -151,6 +163,77 @@ describe('main IPC registration', () => {
     expect(next.imageSrc).toBe('tabledm://map.png')
     expect(next.crawl).toBeNull()
     expect(next.phone).toBeNull()
+  })
+
+  it('fades a Box of Doom overlay onto the player TV without rolling', () => {
+    player.getPlayerState.mockReturnValue({
+      ...emptyPlayerState(),
+      imageSrc: 'tabledm://map.png'
+    })
+    invoke(IPC.playerShowBoxOfDoom, { dc: 15, modifier: 4 })
+    const next = player.setPlayerState.mock.calls.at(-1)?.[0] as {
+      imageSrc: string
+      boxOfDoom: { dc: number; modifier: number; d20?: number; rolledAt?: number }
+    }
+    expect(next.imageSrc).toBe('tabledm://map.png')
+    expect(next.boxOfDoom).toMatchObject({ dc: 15, modifier: 4 })
+    expect(next.boxOfDoom.d20).toBeUndefined()
+    expect(next.boxOfDoom.rolledAt).toBeUndefined()
+  })
+
+  it('rolls a waiting Box of Doom check', () => {
+    player.getPlayerState.mockReturnValue({
+      ...emptyPlayerState(),
+      imageSrc: 'tabledm://map.png',
+      boxOfDoom: { dc: 15, modifier: 4, startedAt: 1 }
+    })
+    invoke(IPC.playerRollBoxOfDoom, { dc: 15, modifier: 4, d20: 12 })
+    const next = player.setPlayerState.mock.calls.at(-1)?.[0] as {
+      imageSrc: string
+      boxOfDoom: { total: number; success: boolean; d20: number }
+    }
+    expect(next.imageSrc).toBe('tabledm://map.png')
+    expect(next.boxOfDoom).toMatchObject({ total: 16, success: true, d20: 12 })
+    expect(player.scheduleBoxOfDoomAutoFade).toHaveBeenCalled()
+  })
+
+  it('keeps the higher Box of Doom die on advantage', () => {
+    player.getPlayerState.mockReturnValue({
+      ...emptyPlayerState(),
+      boxOfDoom: { dc: 15, modifier: 0, mode: 'advantage', startedAt: 1 }
+    })
+    invoke(IPC.playerRollBoxOfDoom, {
+      dc: 15,
+      modifier: 0,
+      d20: 4,
+      d20b: 17,
+      mode: 'advantage'
+    })
+    const next = player.setPlayerState.mock.calls.at(-1)?.[0] as {
+      boxOfDoom: { d20: number; rolls: number[]; success: boolean }
+    }
+    expect(next.boxOfDoom).toMatchObject({ d20: 17, rolls: [4, 17], success: true })
+  })
+
+  it('shows dice on the player strip without clearing media', () => {
+    player.getPlayerState.mockReturnValue({
+      ...emptyPlayerState(),
+      imageSrc: 'tabledm://scene.png'
+    })
+    invoke(IPC.playerShowDice, {
+      source: 'Goblin',
+      expr: '2d6+3',
+      total: 11,
+      groups: [{ sides: 6, rolls: [4, 3] }],
+      bonus: 3
+    })
+    expect(player.showPlayerDice).toHaveBeenCalled()
+    const next = player.setPlayerState.mock.calls.at(-1)?.[0] as {
+      imageSrc: string
+      diceShow: { expr: string; total: number }
+    }
+    expect(next.imageSrc).toBe('tabledm://scene.png')
+    expect(next.diceShow).toMatchObject({ expr: '2d6+3', total: 11 })
   })
 
   it('plays mixer music by playlist id', () => {

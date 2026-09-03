@@ -1,7 +1,17 @@
 import { useState, type ReactNode } from 'react'
-import { abilityMod, extractRolls, formatMod, rollD20, rollExpr, type DiceResult } from '../lib/dice'
+import {
+  abilityMod,
+  extractRolls,
+  formatDicePlayerExpr,
+  formatMod,
+  isDamageLabel,
+  rollD20,
+  rollExpr,
+  type DiceMode,
+  type DiceResult
+} from '../lib/dice'
 import { type ParsedStatblock } from '../lib/statblock'
-import { useDiceLog } from './DiceTray'
+import { useDiceLog, type D20Mode } from './DiceTray'
 
 const ABILITY_LABELS = ['STR', 'DEX', 'CON', 'INT', 'WIS', 'CHA'] as const
 const ABILITY_KEYS = ['str', 'dex', 'con', 'int', 'wis', 'cha'] as const
@@ -23,26 +33,68 @@ function KeywordText({ text }: { text: string }): ReactNode {
   )
 }
 
-function RollChip({ label, expr, onRoll }: { label: string; expr: string; onRoll: (result: DiceResult) => void }) {
+function RollChip({
+  label,
+  expr,
+  damageType,
+  onRoll,
+  d20Mode,
+  allowCrit
+}: {
+  label: string
+  expr: string
+  damageType?: string
+  onRoll: (result: DiceResult) => void
+  d20Mode: D20Mode
+  allowCrit: boolean
+}) {
+  const cleaned = expr.replace(/\s/g, '')
+  const isD20 = /^1?d20/i.test(cleaned)
+  const showCrit = allowCrit && isDamageLabel(label)
+  const chipLabel = damageType && isDamageLabel(label) ? `${label} (${damageType})` : label
+
+  function roll(mode: DiceMode = 'normal'): void {
+    onRoll({
+      ...rollExpr(expr, mode),
+      rollLabel: isDamageLabel(label) ? label : undefined,
+      damageType
+    })
+  }
+
   return (
-    <button
-      type="button"
-      onClick={() => onRoll(rollExpr(expr))}
-      className="rounded border border-amber-dim bg-ink px-1.5 py-0.5 text-[11px] text-amber hover:bg-amber hover:text-on-amber"
-    >
-      {label} {expr}
-    </button>
+    <>
+      <button
+        type="button"
+        onClick={() => roll(isD20 ? d20Mode : 'normal')}
+        className="rounded border border-amber-dim bg-ink px-1.5 py-0.5 text-[11px] text-amber hover:bg-amber hover:text-on-amber"
+      >
+        {chipLabel} {expr}
+      </button>
+      {showCrit ? (
+        <button
+          type="button"
+          onClick={() => roll('crit')}
+          className="rounded border border-blood/60 bg-ink px-1.5 py-0.5 text-[11px] text-blood hover:bg-blood hover:text-parchment"
+        >
+          Crit
+        </button>
+      ) : null}
+    </>
   )
 }
 
 function ActionBlock({
   title,
   items,
-  onRoll
+  onRoll,
+  d20Mode,
+  allowCrit
 }: {
   title: string
   items: { name: string; desc: string }[]
   onRoll: (result: DiceResult) => void
+  d20Mode: D20Mode
+  allowCrit: boolean
 }) {
   if (!items.length) return null
   return (
@@ -63,10 +115,13 @@ function ActionBlock({
                 <div className="mt-1 flex flex-wrap gap-1">
                   {rolls.map((roll) => (
                     <RollChip
-                      key={item.name + roll.label + roll.expr}
+                      key={item.name + roll.label + roll.expr + (roll.damageType ?? '')}
                       label={roll.label}
                       expr={roll.expr}
+                      damageType={roll.damageType}
                       onRoll={onRoll}
+                      d20Mode={d20Mode}
+                      allowCrit={allowCrit}
                     />
                   ))}
                 </div>
@@ -131,7 +186,7 @@ export default function RollableStatBlock({
 
           {last ? (
             <div className="mt-2 rounded bg-amber/15 px-2 py-1 text-sm">
-              <span className="text-muted">{last.expr}</span>{' '}
+              <span className="text-muted">{formatDicePlayerExpr(last)}</span>{' '}
               <span className="font-semibold text-amber">{last.total}</span>{' '}
               <span className="text-xs text-muted">{last.detail}</span>
             </div>
@@ -146,7 +201,7 @@ export default function RollableStatBlock({
             <p>
               <button
                 type="button"
-                onClick={() => noteRoll(rollD20(init, 'Initiative'))}
+                onClick={() => noteRoll(rollD20(init, 'Initiative', dice.d20Mode))}
                 className="hover:text-amber"
               >
                 <span className="text-muted">Initiative</span> {formatMod(init)} ({10 + init})
@@ -177,7 +232,7 @@ export default function RollableStatBlock({
               <button
                 type="button"
                 title={`${label} check`}
-                onClick={() => noteRoll(rollD20(mod, label))}
+                onClick={() => noteRoll(rollD20(mod, label, dice.d20Mode))}
                 className="block w-full hover:text-amber"
               >
                 <div className="text-sm font-semibold leading-none">{score}</div>
@@ -186,7 +241,7 @@ export default function RollableStatBlock({
               <button
                 type="button"
                 title={`${label} save`}
-                onClick={() => noteRoll(rollD20(save, `${label} save`))}
+                onClick={() => noteRoll(rollD20(save, `${label} save`, dice.d20Mode))}
                 className="mt-0.5 block w-full text-[10px] text-amber-dim hover:text-amber"
               >
                 Save {formatMod(save)}
@@ -205,6 +260,8 @@ export default function RollableStatBlock({
               label={skill}
               expr={`1d20${mod >= 0 ? '+' : ''}${mod}`}
               onRoll={noteRoll}
+              d20Mode={dice.d20Mode}
+              allowCrit={dice.allowCrit}
             />
           ))}
         </div>
@@ -238,11 +295,23 @@ export default function RollableStatBlock({
         ) : null}
       </div>
 
-      <ActionBlock title="Traits" items={block.traits} onRoll={noteRoll} />
-      <ActionBlock title="Actions" items={block.actions} onRoll={noteRoll} />
-      <ActionBlock title="Bonus Actions" items={block.bonusActions} onRoll={noteRoll} />
-      <ActionBlock title="Reactions" items={block.reactions} onRoll={noteRoll} />
-      <ActionBlock title="Legendary Actions" items={block.legendary} onRoll={noteRoll} />
+      <ActionBlock title="Traits" items={block.traits} onRoll={noteRoll} d20Mode={dice.d20Mode} allowCrit={dice.allowCrit} />
+      <ActionBlock title="Actions" items={block.actions} onRoll={noteRoll} d20Mode={dice.d20Mode} allowCrit={dice.allowCrit} />
+      <ActionBlock
+        title="Bonus Actions"
+        items={block.bonusActions}
+        onRoll={noteRoll}
+        d20Mode={dice.d20Mode}
+        allowCrit={dice.allowCrit}
+      />
+      <ActionBlock title="Reactions" items={block.reactions} onRoll={noteRoll} d20Mode={dice.d20Mode} allowCrit={dice.allowCrit} />
+      <ActionBlock
+        title="Legendary Actions"
+        items={block.legendary}
+        onRoll={noteRoll}
+        d20Mode={dice.d20Mode}
+        allowCrit={dice.allowCrit}
+      />
     </section>
   )
 }
