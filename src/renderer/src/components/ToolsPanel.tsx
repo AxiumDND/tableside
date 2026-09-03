@@ -3,6 +3,7 @@ import type { PlayerBoxOfDoom } from '../../../shared/types'
 import type { SrdRecord } from '../lib/srd'
 import BoxOfDoomPanel from './BoxOfDoomPanel'
 import ImprovisePanel from './ImprovisePanel'
+import LinksPanel from './LinksPanel'
 import NpcPanel, { type NpcQuickCreateInput } from './NpcPanel'
 import RulesSearch from './RulesSearch'
 
@@ -10,7 +11,8 @@ const TOOLS: { id: ToolsTabId; label: string }[] = [
   { id: 'lookup', label: 'Lookup' },
   { id: 'npc', label: 'NPC' },
   { id: 'improvise', label: 'Improvise' },
-  { id: 'dice', label: 'Dice' }
+  { id: 'dice', label: 'Dice' },
+  { id: 'links', label: 'Links' }
 ]
 
 export default function ToolsPanel({
@@ -79,6 +81,8 @@ export default function ToolsPanel({
         />
       ) : tab === 'improvise' ? (
         <ImprovisePanel />
+      ) : tab === 'links' ? (
+        <LinksPanel />
       ) : (
         <BoxOfDoomPanel
           overlay={boxOfDoom}
