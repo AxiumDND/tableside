@@ -1,8 +1,10 @@
 import { stripSheetHeader } from '../../../shared/sheetBlock'
+import { hasBundledPortrait } from '../../../shared/bundledPortrait'
 import { cleanWikiText, extraItemFacts, isPlaceholderSheetValue, isPlaceholderTagline } from './itemFacts'
 import {
   campaignFileUrl,
   IMAGE_EXT,
+  isBundledArtSrc,
   portraitSrcForNote,
   resolveImageRef,
   type CampaignImage
@@ -39,10 +41,13 @@ export function firstSheetImageRef(markdown: string): string | null {
 export function notePreviewImageUrl(
   notePath: string,
   markdown: string,
-  images: CampaignImage[] = []
+  images: CampaignImage[] = [],
+  options?: { hideBundled?: boolean }
 ): string | null {
+  const hideBundled = options?.hideBundled === true
+  if (hideBundled && hasBundledPortrait(markdown)) return null
   const ref = firstSheetImageRef(markdown)
-  if (ref?.startsWith('tabledm://')) return ref
+  if (ref?.startsWith('tabledm://')) return hideBundled && isBundledArtSrc(ref) ? null : ref
   if (ref) {
     const found = resolveImageRef(ref, notePath, images)
     if (found) return campaignFileUrl(found)
@@ -53,7 +58,7 @@ export function notePreviewImageUrl(
       return campaignFileUrl(folder ? `${folder}/Art/${file}` : `Art/${file}`)
     }
   }
-  return portraitSrcForNote(notePath, images)
+  return portraitSrcForNote(notePath, images, undefined, { hideBundled, markdown })
 }
 
 function titleFrom(path: string, markdown: string): string {

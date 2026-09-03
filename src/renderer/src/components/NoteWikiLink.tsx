@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { notePreviewFromMarkdown, notePreviewImageUrl, type NotePreview } from '../lib/notePreview'
 import type { CampaignImage } from '../lib/images'
+import { useHideBundledArtwork } from '../hooks/useBundledArtwork'
 
 const previewCache = new Map<string, NotePreview>()
 
@@ -18,6 +19,7 @@ export default function NoteWikiLink({
   const [open, setOpen] = useState(false)
   const [preview, setPreview] = useState<NotePreview | null>(() => previewCache.get(notePath) ?? null)
   const [loading, setLoading] = useState(false)
+  const hideBundled = useHideBundledArtwork()
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const aliveRef = useRef(true)
 
@@ -51,7 +53,7 @@ export default function NoteWikiLink({
         .then((text) => {
           const next = {
             ...notePreviewFromMarkdown(notePath, text),
-            imageUrl: notePreviewImageUrl(notePath, text, images)
+            imageUrl: notePreviewImageUrl(notePath, text, images, { hideBundled })
           }
           previewCache.set(notePath, next)
           if (aliveRef.current) setPreview(next)

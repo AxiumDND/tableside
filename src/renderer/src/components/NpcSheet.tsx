@@ -3,6 +3,7 @@ import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { CreateNoteMapImage } from '../../../shared/types'
 import { pathHasFolder } from '../../../shared/campaignLayout'
+import { hasBundledPortrait } from '../../../shared/bundledPortrait'
 import {
   campaignFileUrl,
   markdownUrlTransform,
@@ -16,6 +17,7 @@ import { webSheetUrlFromMarkdown, isWebSheetFactLabel, parseWebSheetUrl } from '
 import { stripSheetHeader } from '../../../shared/sheetBlock'
 import RollableStatBlock from './RollableStatBlock'
 import SheetArtFrame from './SheetArtFrame'
+import { useHideBundledArtwork } from '../hooks/useBundledArtwork'
 
 function looksLikeEmbed(text: string): boolean {
   return /!\[\[|\]\]|\.(png|jpe?g|webp|gif|svg)\b/i.test(text)
@@ -119,8 +121,11 @@ export default function NpcSheet({
   const [webSheetDraft, setWebSheetDraft] = useState('')
   const [webSheetError, setWebSheetError] = useState('')
   const [webSheetBusy, setWebSheetBusy] = useState(false)
-  const imagePath = firstImage(markdown, path, images)
-  const srdSrc = !imagePath && pathHasFolder(path, 'bestiary') ? srdPortraitUrl(title) : null
+  const hideBundled = useHideBundledArtwork()
+  const rawImagePath = firstImage(markdown, path, images)
+  const imagePath = hideBundled && hasBundledPortrait(markdown) ? null : rawImagePath
+  const srdSrc =
+    !imagePath && pathHasFolder(path, 'bestiary') && !hideBundled ? srdPortraitUrl(title) : null
   const imageSrc = imagePath ? campaignFileUrl(imagePath) : srdSrc
   const selectValue = imagePath ?? srdSrc
   const notes = notesBody(markdown)

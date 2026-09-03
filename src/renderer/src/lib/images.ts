@@ -1,6 +1,7 @@
 import { defaultUrlTransform } from 'react-markdown'
 import type { CampaignTreeNode } from '../../../shared/types'
 import { pathHasFolder } from '../../../shared/campaignLayout'
+import { hasBundledPortrait } from '../../../shared/bundledPortrait'
 
 export const IMAGE_EXT = new Set(['.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg', '.bmp'])
 
@@ -35,13 +36,29 @@ export function srdSchoolUrl(school: string): string {
   return `tabledm://srd-school/?name=${encodeURIComponent(stem)}`
 }
 
+export function isBundledArtSrc(src: string | null | undefined): boolean {
+  if (!src) return false
+  return (
+    src.startsWith('tabledm://srd-portrait/') ||
+    src.startsWith('tabledm://srd-item/') ||
+    src.startsWith('tabledm://srd-school/') ||
+    src.startsWith('tabledm://npc-portrait/')
+  )
+}
+
 export function portraitSrcForNote(
   notePath: string,
   images: CampaignImage[],
-  title?: string
+  title?: string,
+  options?: { hideBundled?: boolean; markdown?: string }
 ): string | null {
-  const campaign = portraitForNote(notePath, images) ?? (title ? portraitForNote(`${title}.md`, images) : null)
-  if (campaign) return campaignFileUrl(campaign)
+  const hideBundled = options?.hideBundled === true
+  const skipCampaignPortrait = hideBundled && options?.markdown && hasBundledPortrait(options.markdown)
+  if (!skipCampaignPortrait) {
+    const campaign = portraitForNote(notePath, images) ?? (title ? portraitForNote(`${title}.md`, images) : null)
+    if (campaign) return campaignFileUrl(campaign)
+  }
+  if (hideBundled) return null
   const file = notePath.replaceAll('\\', '/').split('/').pop() ?? notePath
   const stem = file.replace(/\.[^.]+$/, '')
   if (pathHasFolder(notePath, 'bestiary')) return srdPortraitUrl(title || stem)

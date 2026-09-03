@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { portraitSrcForNote, type CampaignImage } from '../lib/images'
+import { useHideBundledArtwork } from '../hooks/useBundledArtwork'
 import { npcNotes, resolveNoteRef, sheetDisplayName, type CampaignNote } from '../lib/notes'
 
 type PhoneFields = {
@@ -70,9 +71,10 @@ export default function PhoneCard({
     }
   }
 
+  const hideBundled = useHideBundledArtwork()
   const note = npcValue ? resolveNoteRef(npcValue, fromPath, notes) : null
   const callerName = note ? sheetDisplayName(note.stem) : npcValue?.trim() || ''
-  const photoSrc = note ? portraitSrcForNote(note.relativePath, images) : null
+  const photoSrc = note ? portraitSrcForNote(note.relativePath, images, undefined, { hideBundled }) : null
 
   const fields = (): PhoneFields => ({
     npcRef: npcValue,

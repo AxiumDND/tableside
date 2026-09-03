@@ -27,6 +27,7 @@ import {
   type SheetTemplateKind
 } from '../shared/sheetTemplates'
 import { getSystemPack } from '../shared/systemPack'
+import { markBundledPortrait } from '../shared/bundledPortrait'
 import { setSheetPortraitEmbed, sheetAcceptsPortrait } from '../shared/sheetPortrait'
 import { matchStockArt } from '../shared/stockArt'
 import { mapArtRelativeFolder, setMapFenceImage } from '../shared/mapCreate'
@@ -120,6 +121,7 @@ export async function setNotePortrait(
   const imageFile = await copyImageToArtFolder(folder, stem, image)
   if (!imageFile) return null
   let markdown = setSheetPortraitEmbed(await readFile(dest, 'utf8'), imageFile)
+  if (image.kind === 'npc-portrait') markdown = markBundledPortrait(markdown, 'bundled-ai')
   if (image.kind === 'stock' && looksLikeShopNote(markdown) && getSystemPack(await readCampaignSystem(campaignFolder)).shopsEnabled) {
     const catalog = resolveShopCatalog(image.id)
     markdown = setShopTypeFields(markdown, catalog, false)
@@ -222,12 +224,17 @@ export async function saveToCampaignLibrary(
   if (existsSync(dest)) {
     return { campaign: await loadCampaign(campaignFolder), path: relativePath, existed: true }
   }
-  await writeFile(dest, body.endsWith('\n') ? body : `${body}\n`, 'utf8')
+  let written = body.endsWith('\n') ? body : `${body}\n`
+  await writeFile(dest, written, 'utf8')
   if (folderKey === 'bestiary') await copySrdArtToFolder(name, destDir, 'portrait')
   if (folderKey === 'gear') await copySrdArtToFolder(name, destDir, 'item')
   if (folderKey === 'spells') {
     const school = schoolFromSpellMarkdown(body)
     if (school) await copySrdArtToFolder(school, destDir, 'school')
+  }
+  if (folderKey === 'bestiary' || folderKey === 'gear' || folderKey === 'spells') {
+    written = markBundledPortrait(await readFile(dest, 'utf8'), 'bundled-srd')
+    await writeFile(dest, written, 'utf8')
   }
   return { campaign: await loadCampaign(campaignFolder), path: relativePath, existed: false }
 }
@@ -299,7 +306,10 @@ export async function createCampaignNote(
   }
   if (sheetAcceptsPortrait(template) && artChoice) {
     const imageFile = await copyImageToArtFolder(folder, displayTitle(basename(fileName, '.md')), artChoice)
-    if (imageFile) body = setSheetPortraitEmbed(body, imageFile)
+    if (imageFile) {
+      body = setSheetPortraitEmbed(body, imageFile)
+      if (artChoice.kind === 'npc-portrait') body = markBundledPortrait(body, 'bundled-ai')
+    }
   }
   const pack = getSystemPack(await readCampaignSystem(campaignFolder))
   if (template === 'shop' && pack.shopsEnabled) {
@@ -307,13 +317,15 @@ export async function createCampaignNote(
       artChoice?.kind === 'stock' ? artChoice.id : (matchStockArt(title, 'shop')?.id ?? 'General Store')
     body = applyShopInventory(body, generateShopInventory(typeId))
   }
-  await writeFile(dest, body, 'utf8')
   if (pack.id === 'dnd5e' && template === 'monster') {
     await copySrdArtToFolder(title.replace(/^pc\s*[—–-]\s*/i, ''), destDir, 'portrait')
+    body = markBundledPortrait(body, 'bundled-srd')
   }
   if (pack.id === 'dnd5e' && template === 'gear') {
     await copySrdArtToFolder(title.replace(/^pc\s*[—–-]\s*/i, ''), destDir, 'item')
+    body = markBundledPortrait(body, 'bundled-srd')
   }
+  await writeFile(dest, body, 'utf8')
   const relativePath = toPosix(relative(campaignFolder, dest))
   return { campaign: await loadCampaign(campaignFolder), path: relativePath }
 }

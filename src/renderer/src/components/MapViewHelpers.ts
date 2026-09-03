@@ -29,7 +29,8 @@ export function liveView(
   tokens: MapToken[],
   images: CampaignImage[],
   tokenScale: number,
-  dragPos: { id: string; x: number; y: number } | null
+  dragPos: { id: string; x: number; y: number } | null,
+  hideBundled = false
 ): PlayerMapView {
   const placed = dragPos
     ? tokens.map((token) => (token.id === dragPos.id ? { ...token, x: dragPos.x, y: dragPos.y } : token))
@@ -40,7 +41,7 @@ export function liveView(
     centerY: camera.centerY,
     fog: fogAllClear(cells) ? '' : encodeFog(cells),
     fogSize: fogSizeOf(cells),
-    tokens: placed.map((token) => toPlayerMapToken(token, images, tokenScale))
+    tokens: placed.map((token) => toPlayerMapToken(token, images, tokenScale, hideBundled))
   }
 }
 

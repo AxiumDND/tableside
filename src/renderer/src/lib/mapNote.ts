@@ -450,9 +450,15 @@ export function tokenPortraitPath(token: MapToken, images: CampaignImage[]): str
 export function toPlayerMapToken(
   token: MapToken,
   images: CampaignImage[],
-  tokenScale: number
+  tokenScale: number,
+  hideBundled = false
 ): PlayerMapToken {
   const path = tokenPortraitPath(token, images)
+  const imageSrc = path
+    ? campaignFileUrl(path)
+    : token.kind === 'monster' && !hideBundled
+      ? srdPortraitUrl(token.label)
+      : null
   return {
     id: token.id,
     x: token.x,
@@ -460,6 +466,6 @@ export function toPlayerMapToken(
     size: tokenDiameter(tokenScale, token.space),
     label: token.label,
     kind: token.kind,
-    imageSrc: path ? campaignFileUrl(path) : token.kind === 'monster' ? srdPortraitUrl(token.label) : null
+    imageSrc
   }
 }

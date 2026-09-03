@@ -15,6 +15,7 @@ import AudioEngine from '../components/AudioEngine'
 import CombatTracker from '../components/CombatTracker'
 import MusicPanel from '../components/MusicPanel'
 import DiceTray, { DiceLogProvider } from '../components/DiceTray'
+import { HideBundledArtworkProvider } from '../hooks/useBundledArtwork'
 import HelpPanel from '../components/HelpPanel'
 import PlayerPreview from '../components/PlayerPreview'
 import SessionNotes from '../components/SessionNotes'
@@ -395,6 +396,7 @@ export default function DmApp() {
 
   return (
     <DiceLogProvider allowCrit={parseSystemId(campaign?.system) === 'dnd5e'}>
+    <HideBundledArtworkProvider hide={hideNpcPortraits}>
     <AudioEngine state={mixer} onClock={setMixerClock} />
     <div className="flex h-full flex-col bg-ink text-parchment">
       <DmHeader
@@ -654,6 +656,11 @@ export default function DmApp() {
             onDigitalRainChange={campaign ? (enabled) => void changeDigitalRain(enabled) : undefined}
             currencies={campaign?.currencies}
             onCurrenciesChange={campaign ? (next) => void changeCurrencies(next) : undefined}
+            hideNpcPortraits={hideNpcPortraits}
+            onHideNpcPortraitsChange={(hide) => {
+              setHideNpcPortraits(hide)
+              void window.tabledm.saveSettings({ hideNpcPortraits: hide })
+            }}
           />
         ) : null}
         </div>
@@ -669,6 +676,7 @@ export default function DmApp() {
         />
       ) : null}
     </div>
+    </HideBundledArtworkProvider>
     </DiceLogProvider>
   )
 }

@@ -3,6 +3,7 @@ import Markdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { CreateNoteMapImage } from '../../../shared/types'
 import { pathHasFolder } from '../../../shared/campaignLayout'
+import { hasBundledPortrait } from '../../../shared/bundledPortrait'
 import {
   campaignFileUrl,
   markdownUrlTransform,
@@ -21,6 +22,7 @@ import type { ShopStanding } from '../../../shared/shopStanding'
 import { matchStockArt, stockArtForTemplate, stockArtUrl } from '../../../shared/stockArt'
 import SheetArtFrame from './SheetArtFrame'
 import ShopStockBoard from './ShopStockBoard'
+import { useHideBundledArtwork } from '../hooks/useBundledArtwork'
 
 function looksLikeEmbed(text: string): boolean {
   return /!\[\[|\]\]|\.(png|jpe?g|webp|gif|svg)\b/i.test(text)
@@ -173,7 +175,9 @@ export default function ItemSheet({
     ? { category: '', notes: gazetteerBody(isShop ? stripShopStockSection(markdown) : markdown) }
     : itemNotes(markdown)
   const heading = tagline || (isGazetteer ? '' : category)
-  const imagePath = firstImage(markdown, path, images)
+  const hideBundled = useHideBundledArtwork()
+  const rawImagePath = firstImage(markdown, path, images)
+  const imagePath = hideBundled && hasBundledPortrait(markdown) ? null : rawImagePath
   const school = pathHasFolder(path, 'spells') ? schoolFromMarkdown(markdown) : null
   const stock = isGazetteer
     ? isFaction
@@ -182,15 +186,17 @@ export default function ItemSheet({
     : null
   const srdSrc = imagePath
     ? null
-    : pathHasFolder(path, 'spells')
-      ? school
-        ? srdSchoolUrl(school)
-        : null
-      : isGazetteer
-        ? stock
-          ? stockArtUrl(stock.id)
+    : hideBundled
+      ? null
+      : pathHasFolder(path, 'spells')
+        ? school
+          ? srdSchoolUrl(school)
           : null
-        : srdItemUrl(title)
+        : isGazetteer
+          ? stock
+            ? stockArtUrl(stock.id)
+            : null
+          : srdItemUrl(title)
   const imageSrc = imagePath ? campaignFileUrl(imagePath) : srdSrc
   const selectValue = imagePath ?? srdSrc
   const [srdFailed, setSrdFailed] = useState(false)
