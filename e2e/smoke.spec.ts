@@ -32,7 +32,8 @@ test('Dice tool and built-in Sfx oneshot are on the console', async () => {
 
   await dmWindow.getByRole('button', { name: 'Music' }).click()
   await expect(dmWindow.getByRole('heading', { name: 'Soundboard' })).toBeVisible()
-  await expect(dmWindow.getByRole('button', { name: 'Dice', exact: true })).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Dice (one)', exact: true })).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Dice (handful)', exact: true })).toBeVisible()
 })
 
 test('Dice tray exposes show-to-players and roll-sound toggles', async () => {
