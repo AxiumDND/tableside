@@ -28,7 +28,8 @@ If a feature mainly helps remote / online play, it does not belong here.
    - Music / ambience finders (links only — still no bundled copyrighted audio)
    - Puzzles, traps, and random tables  
    Keep entries 5e-friendly, open in the system browser, short blurbs, no junk or paywall-bait. Easy incremental PRs via `src/shared/tableLinks.ts`.
-6. **Docs keep-up** — README, GUIDE, TABLE, and Help stay on the current release.
+6. **More NPC portrait picks** — expand the optional portrait gallery in **Tools → NPC** (and quick-create) so each race / gender bucket has a larger set to choose from. Keep art original or clearly licensed for bundling; respect **Hide portrait picks** / hide-bundled-artwork settings. No copyrighted publisher character art.
+7. **Docs keep-up** — README, GUIDE, TABLE, and Help stay on the current release.
 
 ## Later
 
