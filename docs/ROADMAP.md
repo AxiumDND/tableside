@@ -35,9 +35,46 @@ If a feature mainly helps remote / online play, it does not belong here.
 - Prep import polish (paste / Beyond → campaign sheet without becoming a sync client)
 - Optional music cues when combat starts or a scene Plays
 - Printable handout export from a note
-- Pathfinder 2e and Vampire 5th proper pass (sheet fields, overlay tags, lookup depth, sample content) — already called out in the README
 
-## Out of scope
+## System support
+
+Day-to-day remains **D&D 5e**. New packs stay table-first: sheet templates, combat overlay tags, Lookup depth, NPC names, Links where useful, and a small sample when it is worth shipping. No mid-campaign system switch. No shipping copyrighted rulebook text — use SRD / ORC / original table material only.
+
+### Full Pathfinder 2e
+
+Promote the early PF2e pack to **full support**:
+
+- Sheet fields and layouts that match how PF2e is run at the table (PC / NPC / creature)
+- Combat tracker + player TV overlay tags beyond Dying / Wounded
+- Deeper offline Lookup (conditions, actions, common creatures/spells — original or ORC-safe)
+- Treasure / shops / Improvise equivalents where they help
+- Sample one-shot or starter night sheet (Greystead-scale, original)
+
+### Starfinder
+
+Add a **Starfinder** system pack (evaluate Starfinder 1e vs Starfinder 2e against Paizo’s current open licenses before building). Fit the existing Sci-fi look / crawl / hyperspace tools:
+
+- New campaign system option + sheet templates
+- Combat fields and TV overlay tags appropriate to Starfinder
+- Offline Lookup core (original / ORC-safe)
+- NPC names and Links aimed at sci-fi prep
+- Optional small sample night
+
+### Other games to evaluate
+
+Candidates to review for a later pack (not committed — pick ones that fit laptop + TV nights and have a clear open / original-content path):
+
+| Candidate | Why it might fit |
+| --- | --- |
+| **Vampire 5th** (finish) | Already scaffolded; needs the same “proper pass” as PF2e |
+| **Call of Cthulhu / BRP** | Investigation nights, handouts, and TV art are a natural fit |
+| **Blades in the Dark** (and Forged in the Dark cousins) | Crew sheets, clocks, and score prep map cleanly to night sheets |
+| **Savage Worlds** | Fast combat and genre-agnostic tables |
+| **OSR / Old School Essentials–style** | Simple sheets, strong map + exploration loop |
+| **Dragonbane** | Compact fantasy nights; light sheet surface |
+| **Shadowrun** | Overlaps sci-fi chrome; only if licensing / original pack is clear |
+
+Evaluate each on: in-person table value, sheet/combat complexity, Lookup licensing, and whether a tiny original sample is realistic. Skip anything that forces online play or a full VTT feature set.
 
 Tableside is **table-first**. These are explicitly not goals:
 
