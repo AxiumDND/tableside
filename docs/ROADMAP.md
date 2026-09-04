@@ -19,7 +19,16 @@ If a feature mainly helps remote / online play, it does not belong here.
    - Slavic
    - East Asian–inspired  
    Keep lists original Tableside table material (not scraped book name tables). Pair with the existing feminine / masculine / any control.
-5. **Docs keep-up** — README, GUIDE, TABLE, and Help stay on the current release.
+5. **Richer Tools → Links for DM prep** — grow the curated link list so it covers more of a prep night, not just a handful of starters. Aim for useful categories such as:
+   - Rules / SRD quick reference
+   - Maps & battlemap makers
+   - Tokens / portraits / free art
+   - Generators (NPCs, loot, dungeons, encounters, names)
+   - GM advice & lazy-prep workflows
+   - Music / ambience finders (links only — still no bundled copyrighted audio)
+   - Puzzles, traps, and random tables  
+   Keep entries 5e-friendly, open in the system browser, short blurbs, no junk or paywall-bait. Easy incremental PRs via `src/shared/tableLinks.ts`.
+6. **Docs keep-up** — README, GUIDE, TABLE, and Help stay on the current release.
 
 ## Later
 
