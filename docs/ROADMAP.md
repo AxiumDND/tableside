@@ -79,6 +79,8 @@ Candidates to review for a later pack (not committed — pick ones that fit lapt
 
 Evaluate each on: in-person table value, sheet/combat complexity, Lookup licensing, and whether a tiny original sample is realistic. Skip anything that forces online play or a full VTT feature set.
 
+## Out of scope
+
 Tableside is **table-first**. These are explicitly not goals:
 
 - Online multiplayer or remote player clients
