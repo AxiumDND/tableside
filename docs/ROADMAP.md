@@ -31,7 +31,13 @@ If a feature mainly helps remote / online play, it does not belong here.
 6. **More NPC portrait picks** — expand the optional portrait gallery in **Tools → NPC** (and quick-create) so each race / gender bucket has a larger set to choose from. Keep art original or clearly licensed for bundling; respect **Hide portrait picks** / hide-bundled-artwork settings. No copyrighted publisher character art.
 7. **Hourglass timer (Tools)** — a settable countdown in **Tools** next to Box of Doom–style Dice (e.g. 1 / 5 / 10 minutes, or a custom duration). **Show** puts a clean hourglass / countdown on the player TV so the table must decide before it runs out; optional soft chime on Music Sfx when it hits zero. DM can pause, reset, or Fade out. Not saved to the campaign; table pacing only.
 8. **Recent / multi-campaign switching** — you already remember the last few opened campaigns (name + folder) on the empty start screen. Improve that for DMs running more than one game: a clear **Recents** (or Switch campaign) list while a campaign is already open — header, Files, or Open flow — so you can jump without hunting disk. Show path under the name; drop stale entries when the folder is gone; optional pin/favorite. Local settings only — no cloud library.
-9. **Docs keep-up** — README, GUIDE, TABLE, and Help stay on the current release.
+9. **Start session coach / DM reminders** — a **Start session** control that puts the night in “live” mode and surfaces short, dismissible prompts so you do not forget table habits. Not a rules engine — gentle nudges only. Build out possibilities such as:
+   - **Session start:** offer inspiration; roll or set the party’s marching order; ask for downtime / last session hooks; confirm who’s at the table; optional “music on?” cue
+   - **When combat starts:** legendary actions / lair actions; concentration checks on damage; reactions available; bloodied / 0 HP callouts; who goes first on the TV
+   - **Between scenes:** short rest / long rest; ration or resource drains; faction clocks; “what did they learn?”
+   - **Session end:** inspiration left on the table; milestone / XP note; recap prompt; next-session hook  
+   Prefer system-aware copy (5e first; PF2e/V5 variants later). Let the DM snooze, disable per cue, or turn the whole coach off. No player-TV spam unless the DM chooses to Show something.
+10. **Docs keep-up** — README, GUIDE, TABLE, and Help stay on the current release.
 
 ## Later
 
