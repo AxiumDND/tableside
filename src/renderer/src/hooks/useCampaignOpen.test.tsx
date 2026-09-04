@@ -7,7 +7,9 @@ const api = {
   pickCampaignFolder: vi.fn(),
   openSampleCampaign: vi.fn(),
   openCampaignPath: vi.fn(),
-  newCampaign: vi.fn()
+  newCampaign: vi.fn(),
+  getSettings: vi.fn(),
+  saveSettings: vi.fn()
 }
 
 beforeEach(() => {
@@ -54,6 +56,35 @@ describe('useCampaignOpen', () => {
     })
     expect(api.pickCampaignFolder).toHaveBeenCalledOnce()
     expect(applyCampaign).toHaveBeenCalledWith({ name: 'X' })
+    expect(syncAfterOpen).toHaveBeenCalledOnce()
+  })
+
+  it('opens a recent campaign path', async () => {
+    const { result, applyCampaign, syncAfterOpen } = setup()
+    await act(async () => {
+      await result.current.openRecent('/data/night')
+    })
+    expect(api.openCampaignPath).toHaveBeenCalledWith('/data/night')
+    expect(applyCampaign).toHaveBeenCalledWith({ name: 'X' })
+    expect(syncAfterOpen).toHaveBeenCalledOnce()
+  })
+
+  it('prunes a missing recent folder without clearing the current campaign', async () => {
+    api.openCampaignPath.mockResolvedValueOnce(null)
+    api.getSettings.mockResolvedValueOnce({
+      recentCampaigns: [
+        { name: 'Gone', folder: '/gone' },
+        { name: 'Keep', folder: '/keep' }
+      ]
+    })
+    const { result, applyCampaign, syncAfterOpen } = setup()
+    await act(async () => {
+      await result.current.openRecent('/gone')
+    })
+    expect(applyCampaign).not.toHaveBeenCalled()
+    expect(api.saveSettings).toHaveBeenCalledWith({
+      recentCampaigns: [{ name: 'Keep', folder: '/keep' }]
+    })
     expect(syncAfterOpen).toHaveBeenCalledOnce()
   })
 })

@@ -6,7 +6,7 @@ How the DM console and player window work during a session. **New to Tableside?*
 
 | Area | Role |
 | --- | --- |
-| Header | Campaign name, Combat / Music / Tools / Help & settings, New / Open / Sample, player display picker, Clear |
+| Header | Campaign name, New / Open / Switch campaign (recents), Combat / Music / Tools / Help & settings, player display picker, Clear |
 | Left column | Mini **Players see** preview, campaign file tree, dice tray |
 | Center | Open note, image, PDF, or audio preview |
 | Right (optional) | Combat tracker, Music mixer, Tools (Lookup and Names), or Help & settings |
@@ -17,7 +17,8 @@ Two Electron windows open: the DM console, and a fullscreen **player** window on
 
 1. **Sample** — copies Greystead (the 5e level-1 one-shot) into user data and opens it (safe to edit). On install or update, the copy is replaced when the bundled `sampleRevision` is newer. First launch with no campaign folder does the same.
 2. **Open campaign** — pick any campaign folder on disk. Folders without `"system"` in `campaign.json` run as D&D 5e.
-3. **New campaign** — pick a system (D&D 5e, Pathfinder 2e, or Vampire 5th), then a look, then an empty folder; Tableside scaffolds the standard layout. Changing system later is not supported. Theme can change any time from Start Here.
+3. **Switch campaign** — when you have opened more than one campaign before, the header shows **Switch campaign** with name + folder path for the others (the current folder is omitted). Missing folders drop off the list when you try them. Recents also appear on the empty start screen.
+4. **New campaign** — pick a system (D&D 5e, Pathfinder 2e, or Vampire 5th), then a look, then an empty folder; Tableside scaffolds the standard layout. Changing system later is not supported. Theme can change any time from Start Here.
 
 With more than one display, click the **Players see** preview to put the player window on the TV/monitor facing the table. Close that window when you do not need it. The player window is built on that screen’s pixels (a 1080p TV next to a 4K laptop stays sharp after a restart or after you unplug the TV).
 

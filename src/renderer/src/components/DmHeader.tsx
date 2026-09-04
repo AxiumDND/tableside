@@ -1,7 +1,8 @@
-import type { CampaignInfo } from '../../../shared/types'
+import type { CampaignInfo, RecentCampaign } from '../../../shared/types'
 import { getSystemPack } from '../../../shared/systemPack'
 import { APP_NAME, APP_VERSION } from '../../../shared/version'
 import appIcon from '../assets/icon.png'
+import RecentCampaignMenu from './RecentCampaignMenu'
 
 export type RightPanel = 'combat' | 'tools' | 'help' | 'music' | null
 
@@ -42,8 +43,10 @@ export default function DmHeader({
   combatCount,
   mixerActive,
   sidebarOpen,
+  recentCampaigns = [],
   onNewCampaign,
   onOpenCampaign,
+  onOpenRecent,
   onToggleSidebar,
   onToggleRightPanel,
   onToggleTools,
@@ -56,8 +59,10 @@ export default function DmHeader({
   combatCount: number
   mixerActive: boolean
   sidebarOpen: boolean
+  recentCampaigns?: RecentCampaign[]
   onNewCampaign: () => void
   onOpenCampaign: () => void
+  onOpenRecent?: (folder: string) => void
   onToggleSidebar: () => void
   onToggleRightPanel: () => void
   onToggleTools: () => void
@@ -104,6 +109,14 @@ export default function DmHeader({
       <button type="button" onClick={onOpenCampaign} className="rounded border border-line px-3 py-1 text-sm hover:border-amber">
         Open campaign
       </button>
+      {onOpenRecent ? (
+        <RecentCampaignMenu
+          recentCampaigns={recentCampaigns}
+          currentFolder={campaign?.folder}
+          onOpenRecent={onOpenRecent}
+          label="Switch campaign"
+        />
+      ) : null}
       <button type="button" onClick={onToggleTools} className={buttonClass(rightPanel === 'tools')}>
         Tools
       </button>
