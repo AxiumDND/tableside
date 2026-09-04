@@ -4,8 +4,8 @@ export default function LinksPanel() {
   return (
     <div className="space-y-4 overflow-auto px-3 py-2 text-sm">
       <p className="text-[11px] leading-relaxed text-muted">
-        Curated sites for running D&amp;D at the table. Links open in your browser — Tableside does not embed or track
-        them.
+        Curated sites for prep and running D&amp;D at the table — rules, maps, art, advice, generators, music, and
+        tables. Links open in your browser; Tableside does not embed or track them.
       </p>
       {TABLE_LINK_CATEGORIES.map((category) => (
         <section key={category.id}>

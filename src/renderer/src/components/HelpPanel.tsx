@@ -891,8 +891,9 @@ export default function HelpPanel({
           </p>
           <Sub>Links</Sub>
           <p>
-            <Action>Tools</Action> → <Action>Links</Action> opens curated D&amp;D sites in your browser — official tools,
-            map makers, GM blogs, and improvisation generators grouped by category.
+            <Action>Tools</Action> → <Action>Links</Action> opens curated D&amp;D prep sites in your browser — rules
+            lookups, map makers, free art/tokens, GM blogs, generators, ambience, and random tables — grouped by
+            category. Tableside does not embed or track them.
           </p>
         </Section>
 

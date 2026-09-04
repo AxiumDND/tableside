@@ -101,7 +101,7 @@ State saves to `combat.json` in the campaign folder.
 
 ## Tools panel
 
-**Tools** in the header opens the right rail. Pick **Lookup**, **Names**, **Improvise**, or **Dice**.
+**Tools** in the header opens the right rail. Pick **Lookup**, **NPC**, **Improvise**, **Dice**, or **Links**.
 
 ### Lookup
 
@@ -114,7 +114,7 @@ Offline MiniSearch over the **open campaign’s system pack**. D&D 5e uses the b
 
 Step-by-step save flow: [RECIPES.md](RECIPES.md#lookup--campaign-note).
 
-### Names
+### NPC
 
 Pick a race, ancestry, or name tradition and roll a few original table names. **Copy** puts one on the clipboard. **New NPC…** writes a sheet under `NPCs/` and fills **Species**.
 
@@ -125,6 +125,10 @@ Pick a race, ancestry, or name tradition and roll a few original table names. **
 ### Dice
 
 Set a DC, a d20 modifier, and **Normal**, **Advantage**, or **Disadvantage**. **Show** fades the check over whatever is already on the player TV and waits (two dice for advantage or disadvantage). **Roll** tumbles, then holds **Success** or **Failure**. **Fade out** returns to that picture. Natural 20 always succeeds; natural 1 always fails. The tumble plays on the Music **Sfx** layer; uncheck **Play sound on Roll** to silence it.
+
+### Links
+
+Curated D&D prep sites open in your browser (not embedded). Categories: rules & characters, maps & battlemaps, tokens/portraits, GM advice, generators, music & ambience, and puzzles/traps/tables.
 
 ## Help & settings
 
