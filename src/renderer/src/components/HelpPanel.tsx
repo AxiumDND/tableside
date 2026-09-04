@@ -881,10 +881,11 @@ export default function HelpPanel({
           />
           <Sub>NPC</Sub>
           <p>
-            In <Action>Tools</Action>, pick <Action>NPC</Action>. Choose a race (5e), ancestry (Pathfinder 2e), or
-            name tradition (Vampire). Roll names, pick an AI-generated portrait, then <Action>New NPC…</Action> to write a
-            sheet under <Code>NPCs/</Code> with name, species, art, and stats. Turn off bundled AI art in{' '}
-            <strong>Help & settings → Settings → Artwork</strong>.
+            In <Action>Tools</Action>, pick <Action>NPC</Action>. Choose a race (5e) or ancestry (Pathfinder 2e), then a{' '}
+            <strong>Name flavor</strong> (Classic fantasy, Norse, Greek mythology, Celtic, Roman, Arabic / desert-fantasy,
+            Slavic, East Asian–inspired). Vampire nights use name tradition instead. Roll names, pick an AI-generated
+            portrait, then <Action>New NPC…</Action> to write a sheet under <Code>NPCs/</Code> with name, species, art,
+            and stats. Turn off bundled AI art in <strong>Help & settings → Settings → Artwork</strong>.
           </p>
           <Sub>Improvise</Sub>
           <p>

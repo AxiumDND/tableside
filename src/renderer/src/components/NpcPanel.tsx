@@ -14,6 +14,12 @@ import {
   npcNameCatalog,
   pickNpcNames
 } from '../../../shared/npcNames'
+import {
+  NAME_FLAVOR_OPTIONS,
+  nameListForFlavor,
+  systemSupportsNameFlavors,
+  type NameFlavorId
+} from '../../../shared/npcNameFlavors'
 import { parseSystemId } from '../../../shared/systemPack'
 
 const ROLL_COUNT = 5
@@ -40,7 +46,9 @@ export default function NpcPanel({
 }) {
   const catalog = useMemo(() => npcNameCatalog(system), [system])
   const showStats = parseSystemId(system) === 'dnd5e'
+  const showFlavors = systemSupportsNameFlavors(system)
   const [listId, setListId] = useState(catalog.lists[0]?.id ?? '')
+  const [flavorId, setFlavorId] = useState<NameFlavorId>('classic')
   const [style, setStyle] = useState<NameStyle>('any')
   const [names, setNames] = useState<string[]>([])
   const [selectedName, setSelectedName] = useState<string | null>(null)
@@ -50,21 +58,28 @@ export default function NpcPanel({
   const [copied, setCopied] = useState<string | null>(null)
   const [creating, setCreating] = useState<string | null>(null)
 
-  const list = nameListById(catalog, listId)
-  const showStyle = listHasStyleSplits(list)
-  const portraitRace = portraitRaceForList(list.id)
+  const raceList = nameListById(catalog, listId)
+  const activeFlavor = showFlavors ? flavorId : 'classic'
+  const rollList = nameListForFlavor(raceList, activeFlavor)
+  const showStyle = listHasStyleSplits(rollList)
+  const portraitRace = portraitRaceForList(raceList.id)
   const showPortraitGallery = !hidePortraits
 
   useEffect(() => {
     setListId(catalog.lists[0]?.id ?? '')
+    setFlavorId('classic')
     setStyle('any')
   }, [catalog])
 
   useEffect(() => {
-    setNames(pickNpcNames(list, ROLL_COUNT, showStyle ? style : 'any'))
+    if (!showFlavors && flavorId !== 'classic') setFlavorId('classic')
+  }, [showFlavors, flavorId])
+
+  useEffect(() => {
+    setNames(pickNpcNames(rollList, ROLL_COUNT, showStyle ? style : 'any'))
     setSelectedName(null)
     setCopied(null)
-  }, [list, showStyle, style])
+  }, [rollList, showStyle, style])
 
   useEffect(() => {
     if (!showPortraitGallery) {
@@ -75,10 +90,10 @@ export default function NpcPanel({
     const next = pickNpcPortraitRefs(portraitRace, showStyle ? style : 'any')
     setPortraits(next)
     setSelectedPortrait(next[0] ?? null)
-  }, [portraitRace, showPortraitGallery, showStyle, style, list.id])
+  }, [portraitRace, showPortraitGallery, showStyle, style, raceList.id])
 
   function rollNames(): void {
-    setNames(pickNpcNames(list, ROLL_COUNT, showStyle ? style : 'any'))
+    setNames(pickNpcNames(rollList, ROLL_COUNT, showStyle ? style : 'any'))
     setSelectedName(null)
     setCopied(null)
   }
@@ -109,7 +124,7 @@ export default function NpcPanel({
     try {
       await onCreateNpc({
         name,
-        species: list.label,
+        species: raceList.label,
         portrait: showPortraitGallery && selectedPortrait ? portraitPayload(selectedPortrait) : undefined,
         statBlockId: showStats ? statBlockId : undefined
       })
@@ -124,7 +139,7 @@ export default function NpcPanel({
         <label className="block text-[11px] uppercase tracking-wider text-muted">
           {catalog.pickerLabel}
           <select
-            value={list.id}
+            value={raceList.id}
             onChange={(event) => setListId(event.target.value)}
             className="mt-1 w-full rounded border border-line bg-ink px-2 py-1.5 text-sm text-parchment outline-none focus:border-amber"
           >
@@ -135,6 +150,22 @@ export default function NpcPanel({
             ))}
           </select>
         </label>
+        {showFlavors ? (
+          <label className="block text-[11px] uppercase tracking-wider text-muted">
+            Name flavor
+            <select
+              value={flavorId}
+              onChange={(event) => setFlavorId(event.target.value as NameFlavorId)}
+              className="mt-1 w-full rounded border border-line bg-ink px-2 py-1.5 text-sm text-parchment outline-none focus:border-amber"
+            >
+              {NAME_FLAVOR_OPTIONS.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
+        ) : null}
         {showStyle ? (
           <label className="block text-[11px] uppercase tracking-wider text-muted">
             Style
