@@ -35,6 +35,7 @@ If a feature mainly helps remote / online play, it does not belong here.
 - Prep import polish (paste / Beyond → campaign sheet without becoming a sync client)
 - Optional music cues when combat starts or a scene Plays
 - Printable handout export from a note
+- **Linux build** — ship a packaged Linux app alongside the Windows installer (AppImage and/or `.deb` via electron-builder). Keep the same table-first dual-monitor flow; document display/VNC quirks for contributors. macOS packaging stays optional until there is real demand.
 
 ## System support
 
