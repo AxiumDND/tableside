@@ -2,9 +2,9 @@
 
 Thanks for helping with Tableside.
 
-This is a **hobby** local dual-monitor DM tool. Pull requests that keep that
-niche sharp are welcome. Changes that push toward online play, accounts, cloud
-sync, or a full VTT may be closed — see [docs/ROADMAP.md](docs/ROADMAP.md).
+**Product intent:** Tableside runs the game on a **laptop at the physical table**. The DM uses the console; players look at a second screen (TV). It is **not** a full VTT for online play.
+
+Pull requests that sharpen that niche are welcome. Changes aimed at remote players, accounts, cloud sync, browser clients, or Foundry-style online tooling may be closed without merge — see [docs/ROADMAP.md](docs/ROADMAP.md).
 
 Please follow the [Code of Conduct](CODE_OF_CONDUCT.md).
 

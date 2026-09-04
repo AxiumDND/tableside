@@ -6,10 +6,12 @@ body:
   - type: markdown
     attributes:
       value: |
-        Tableside is **not** a VTT. Prefer ideas that help local dual-monitor
-        play (DM console + table TV). Cloud accounts, online multiplayer, and
-        Foundry-style lighting clones are usually out of scope — see
-        [docs/ROADMAP.md](../../docs/ROADMAP.md).
+        Tableside is **table-first**: a laptop DM console + player TV for
+        people in the **same room**. It is **not** a full VTT for online play.
+
+        Prefer ideas that help in-person nights. Cloud accounts, remote
+        players, browser clients, and Foundry-style online tooling are out of
+        scope — see [docs/ROADMAP.md](../../docs/ROADMAP.md).
   - type: textarea
     id: problem
     attributes:
@@ -45,5 +47,7 @@ body:
     attributes:
       label: Scope check
       options:
-        - label: This stays local (no account / cloud / online play required)
+        - label: This helps an in-person table (laptop + TV in the same room), not online/remote play
+          required: true
+      - label: This does not need accounts, cloud sync, or a browser player client
           required: true

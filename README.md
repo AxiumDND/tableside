@@ -1,8 +1,8 @@
 # Tableside
 
-A local Windows app for running **in-person** tabletop games. Your laptop is the DM console. The second monitor is a clean player view for maps and art — image only, plus an optional initiative overlay.
+A local Windows app for running **in-person** games on a laptop at the table. Your laptop is the DM console. A second monitor (usually the TV) is a clean player view for maps and art — image only, plus an optional initiative overlay.
 
-This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table. Current release: **1.8.5**.
+**Table-first, not a VTT.** Tableside is for people sitting together in the same room. It is not meant to be a full virtual tabletop for online play. There is no account, no cloud campaign sync, and no internet required once the app is installed. Current release: **1.8.5**.
 
 Tableside is a table app. It is not an official Wizards, Paizo, or Paradox product.
 
@@ -131,7 +131,9 @@ The bundled sample is **[examples/greystead](examples/greystead)**. Tableside co
 
 ## Contributing
 
-Want to help? Use **Node.js 22+**, then `npm ci`, `npm run typecheck`, `npm run lint`, and `npm test`. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md). Small doc fixes and the ideas under [docs/ROADMAP.md](docs/ROADMAP.md#good-first-contributions) are the best first PRs. This stays a local table tool — see the roadmap for what is out of scope.
+Want to help? Use **Node.js 22+**, then `npm ci`, `npm run typecheck`, `npm run lint`, and `npm test`. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md). Small doc fixes and the ideas under [docs/ROADMAP.md](docs/ROADMAP.md#good-first-contributions) are the best first PRs.
+
+Keep the product **table-first**: laptop DM console + player TV in the same room. Online multiplayer, accounts, and “make it a full VTT” work are out of scope — see the [roadmap](docs/ROADMAP.md#out-of-scope).
 
 ## Campaign folders
 

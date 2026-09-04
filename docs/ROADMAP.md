@@ -1,7 +1,8 @@
 # Roadmap
 
-Tableside is a hobby dual-monitor DM console. This list is directional, not a
-promise. Day-to-day focus stays **D&D 5e** at the table.
+Tableside is a **hobby DM console for in-person nights**: laptop at the table, second monitor for the players. This list is directional, not a promise. Day-to-day focus stays **D&D 5e** at the table.
+
+If a feature mainly helps remote / online play, it does not belong here.
 
 ## Near term (highest table impact)
 
@@ -19,8 +20,11 @@ promise. Day-to-day focus stays **D&D 5e** at the table.
 
 ## Out of scope
 
-- Online multiplayer, accounts, or cloud campaign sync
-- Full VTT lighting / drawing for the player TV
+Tableside is **table-first**. These are explicitly not goals:
+
+- Online multiplayer or remote player clients
+- Accounts, logins, or cloud campaign sync
+- Turning the player TV into a full VTT (dynamic lighting, freehand draw tools for online maps, etc.)
 - Shipping PHB / DMG / other copyrighted book text
 
 ## Good first contributions
@@ -34,4 +38,4 @@ These are usually small, reviewable, and helpful without deep Electron knowledge
 - Accessibility or wording fixes in existing panels (no redesign)
 
 Open an issue first if the change is more than a few files, or if you are unsure
-it fits the local dual-monitor niche. See [CONTRIBUTING.md](../CONTRIBUTING.md).
+it fits the laptop-at-the-table niche. See [CONTRIBUTING.md](../CONTRIBUTING.md).
