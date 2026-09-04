@@ -1,8 +1,8 @@
 # Tableside
 
-A local Windows app for running **in-person** tabletop games. Your laptop is the DM console. The second monitor is a clean player view for maps and art — image only, plus an optional initiative overlay.
+A local Windows app for running **in-person** games on a laptop at the table. Your laptop is the DM console. A second monitor (usually the TV) is a clean player view for maps and art — image only, plus an optional initiative overlay.
 
-This is not a virtual tabletop. There is no account, no cloud, and no internet required at the table. Current release: **1.8.1**.
+**Table-first, not a VTT.** Tableside is for people sitting together in the same room. It is not meant to be a full virtual tabletop for online play. There is no account, no cloud campaign sync, and no internet required once the app is installed. Current release: **1.8.5**.
 
 Tableside is a table app. It is not an official Wizards, Paizo, or Paradox product.
 
@@ -31,7 +31,7 @@ About two minutes on the bundled **Greystead** one-shot: files, a game night she
 
 ## Install (Windows)
 
-**[Download the latest installer](https://github.com/AxiumDND/tableside/releases/latest)** — look for `Tableside-Setup-1.8.1.exe`. No account, no admin.
+**[Download the latest installer](https://github.com/AxiumDND/tableside/releases/latest)** — look for `Tableside-Setup-1.8.5.exe`. No account, no admin.
 
 1. Run the installer. It is a per-user install: Start Menu + desktop shortcuts. You can pick the folder.
 2. Open **Tableside** from the Start Menu.
@@ -60,7 +60,7 @@ The video above is the first night. **[docs/GUIDE.md](docs/GUIDE.md)** is the sa
 1. Install, then **Sample** (Greystead) or **Open** / **New** a campaign folder. **New campaign** asks which system pack to use: **D&D 5e** (bundled SRD 5.2.1), **Pathfinder 2e** (small original core), or **Vampire 5th Edition**.
 2. Click **Players see** to put the player window on the table TV.
 3. Open a note, click a picture, **Show to players** (`Alt+S`). **Clear** (`Alt+X`) blanks the TV.
-4. **Combat** loads a game night sheet’s combatants. **Music** plays your files from `Audio/`. **Tools** holds Lookup (offline system pack) and Names (NPC name rolls).
+4. **Combat** loads a game night sheet’s combatants. **Music** plays your files from `Audio/`. **Tools** holds Lookup (offline system pack), NPC (name rolls + quick-create), Improvise, Dice, and Links.
 
 ## Who made this
 
@@ -105,7 +105,7 @@ npm start
 npm run dist
 ```
 
-Writes `dist/Tableside-Setup-1.8.1.exe`. Pushing a `v1.8.1` tag builds that file and attaches it to the [GitHub Release](https://github.com/AxiumDND/tableside/releases/latest).
+Writes `dist/Tableside-Setup-1.8.5.exe`. Pushing a `v1.8.5` tag builds that file and attaches it to the [GitHub Release](https://github.com/AxiumDND/tableside/releases/latest).
 
 `npm run fetch-srd` is only needed if you want to refresh the bundled SRD snapshot from the [Open5e API](https://api.open5e.com/) (`srd-2024`).
 
@@ -123,8 +123,17 @@ The bundled sample is **[examples/greystead](examples/greystead)**. Tableside co
 | [docs/MARKDOWN.md](docs/MARKDOWN.md) | DMs — wikilinks, callouts, `statblock` fields |
 | [Additional Books/README.md](Additional%20Books/README.md) | Optional PHB / DMG lookup file formats |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Contributors — scripts, architecture, CI |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Near-term direction and starter tasks |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Pull request expectations |
+| [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Community standards |
+| [SECURITY.md](SECURITY.md) | Vulnerability reports |
 | [ATTRIBUTION.md](ATTRIBUTION.md) | SRD / Open5e licensing |
+
+## Contributing
+
+Want to help? Use **Node.js 22+**, then `npm ci`, `npm run typecheck`, `npm run lint`, and `npm test`. Start with [CONTRIBUTING.md](CONTRIBUTING.md) and [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md). Small doc fixes and the ideas under [docs/ROADMAP.md](docs/ROADMAP.md#good-first-contributions) are the best first PRs.
+
+Keep the product **table-first**: laptop DM console + player TV in the same room. Online multiplayer, accounts, and “make it a full VTT” work are out of scope — see the [roadmap](docs/ROADMAP.md#out-of-scope).
 
 ## Campaign folders
 

@@ -407,6 +407,8 @@ export default function DmApp() {
         sidebarOpen={showLeftSidebar}
         onNewCampaign={() => void newCampaign()}
         onOpenCampaign={openFolder}
+        recentCampaigns={recentCampaigns}
+        onOpenRecent={(folder) => void openRecent(folder)}
         onToggleSidebar={() => {
           setShowLeftSidebar((open) => {
             const next = !open

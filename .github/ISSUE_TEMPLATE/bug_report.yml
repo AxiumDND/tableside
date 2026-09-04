@@ -1,0 +1,53 @@
+name: Bug report
+description: Something in Tableside does not work as expected
+title: '[bug] '
+labels: ['bug']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping. Tableside is a local dual-monitor DM tool — please
+        include enough detail to reproduce on a Windows install or from source.
+  - type: input
+    id: version
+    attributes:
+      label: Tableside version
+      description: Installer name or Help & settings version (e.g. 1.8.5).
+      placeholder: 1.8.5
+    validations:
+      required: true
+  - type: dropdown
+    id: how
+    attributes:
+      label: How are you running it?
+      options:
+        - Windows installer
+        - From source (`npm run dev` / `npm start`)
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open Sample (Greystead)
+        2. …
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Extra context
+      description: OS version, second-monitor setup, campaign system (5e / PF2e / V5), screenshots.
