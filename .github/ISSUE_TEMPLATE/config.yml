@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Tableside email
+    url: mailto:tableside.gm@gmail.com
+    about: Questions, thanks, or private reports (including security — see SECURITY.md).
+  - name: Buy me a coffee
+    url: https://ko-fi.com/tablesidegm
+    about: Optional support for this hobby project.

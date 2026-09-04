@@ -6,10 +6,10 @@ How the DM console and player window work during a session. **New to Tableside?*
 
 | Area | Role |
 | --- | --- |
-| Header | Campaign name, Combat / Music / Tools / Help & settings, New / Open / Sample, player display picker, Clear |
+| Header | Campaign name, New / Open / Switch campaign (recents), Combat / Music / Tools / Help & settings, player display picker, Clear |
 | Left column | Mini **Players see** preview, campaign file tree, dice tray |
 | Center | Open note, image, PDF, or audio preview |
-| Right (optional) | Combat tracker, Music mixer, Tools (Lookup and Names), or Help & settings |
+| Right (optional) | Combat tracker, Music mixer, Tools (Lookup, NPC, Improvise, Dice, Links), or Help & settings |
 
 Two Electron windows open: the DM console, and a fullscreen **player** window on a second monitor. **Close** on the Players see preview shuts the player window so you can use the TV for something else. Pick a monitor or **Show to players** to open it again. **Theme** is a campaign setting (Classic fantasy, Light, Sci-fi, Vampire, Cyberpunk, Digital rain): New campaign asks for it, Open applies `campaign.json`, and you can change it from **Help & settings** or **Start Here**. Sci-fi can turn on **Hologram portraits** for party, NPC, beast, and gear art. Digital rain can turn on **Falling code** in the file list and notes. The player TV stays black.
 
@@ -17,7 +17,8 @@ Two Electron windows open: the DM console, and a fullscreen **player** window on
 
 1. **Sample** — copies Greystead (the 5e level-1 one-shot) into user data and opens it (safe to edit). On install or update, the copy is replaced when the bundled `sampleRevision` is newer. First launch with no campaign folder does the same.
 2. **Open campaign** — pick any campaign folder on disk. Folders without `"system"` in `campaign.json` run as D&D 5e.
-3. **New campaign** — pick a system (D&D 5e, Pathfinder 2e, or Vampire 5th), then a look, then an empty folder; Tableside scaffolds the standard layout. Changing system later is not supported. Theme can change any time from Start Here.
+3. **Switch campaign** — when you have opened more than one campaign before, the header shows **Switch campaign** with name + folder path for the others (the current folder is omitted). Missing folders drop off the list when you try them. Recents also appear on the empty start screen.
+4. **New campaign** — pick a system (D&D 5e, Pathfinder 2e, or Vampire 5th), then a look, then an empty folder; Tableside scaffolds the standard layout. Changing system later is not supported. Theme can change any time from Start Here.
 
 With more than one display, click the **Players see** preview to put the player window on the TV/monitor facing the table. Close that window when you do not need it. The player window is built on that screen’s pixels (a 1080p TV next to a 4K laptop stays sharp after a restart or after you unplug the TV).
 
@@ -116,7 +117,7 @@ Step-by-step save flow: [RECIPES.md](RECIPES.md#lookup--campaign-note).
 
 ### NPC
 
-Pick a race (5e) or ancestry (Pathfinder 2e), then **Name flavor** for how the names should sound — Classic fantasy (default race lists), Norse, Greek mythology, Celtic / Gaelic, Roman / Latinate, Arabic / desert-fantasy, Slavic, or East Asian–inspired. Vampire nights use **Name tradition** instead (no separate flavor picker). Optional feminine / masculine style. **Copy** puts one on the clipboard. **New NPC…** writes a sheet under `NPCs/` and fills **Species** from the race/ancestry pick.
+Pick a race (5e) or ancestry (Pathfinder 2e), then **Name flavor** for how the names should sound — Classic fantasy (default race lists), Norse, Greek mythology, Celtic / Gaelic, Roman / Latinate, Arabic / desert-fantasy, Slavic, or East Asian–inspired. Vampire nights use **Name tradition** instead (no separate flavor picker). Optional feminine / masculine style. **Copy** puts one on the clipboard. **New NPC…** writes a sheet under `NPCs/` and fills **Species** from the race/ancestry pick. Optional portrait picks can be hidden from this tab.
 
 ### Improvise
 
@@ -125,6 +126,10 @@ Pick a race (5e) or ancestry (Pathfinder 2e), then **Name flavor** for how the n
 ### Dice
 
 Set a DC, a d20 modifier, and **Normal**, **Advantage**, or **Disadvantage**. **Show** fades the check over whatever is already on the player TV and waits (two dice for advantage or disadvantage). **Roll** tumbles, then holds **Success** or **Failure**. **Fade out** returns to that picture. Natural 20 always succeeds; natural 1 always fails. The tumble plays on the Music **Sfx** layer; uncheck **Play sound on Roll** to silence it.
+
+### Links
+
+Curated D&D reference sites. Each row opens in your default browser — nothing is fetched inside Tableside.
 
 ## Help & settings
 

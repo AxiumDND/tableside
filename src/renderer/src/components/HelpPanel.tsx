@@ -369,9 +369,10 @@ export default function HelpPanel({
           <Ol
             items={[
               <>
-                <Action>Open campaign</Action> picks any folder. <Action>New campaign</Action> asks which system to
-                use (D&D 5e, Pathfinder 2e, or Vampire 5th), then which look (and hologram or falling-code if that
-                look has them), then scaffolds Party, NPCs, Places,
+                <Action>Open campaign</Action> picks any folder. <Action>Switch campaign</Action> jumps to another
+                recent folder (name + path) when you run more than one game. <Action>New campaign</Action> asks which
+                system to use (D&D 5e, Pathfinder 2e, or Vampire 5th), then which look (and hologram or falling-code if
+                that look has them), then scaffolds Party, NPCs, Places,
                 Factions, Maps, and the rest in an empty folder, with the hub note in <Code>Start Here</Code>. First
                 launch with no folder opens the Greystead one-shot (5e); <Action>Sample</Action> loads that same copy.
                 Open <Code>Start Here</Code> first — the campaign look is there too. Changing system on an existing
@@ -403,8 +404,9 @@ export default function HelpPanel({
             ]}
           />
           <p className="text-[12px] text-muted">
-            This is not a VTT. There is no account and no internet at the table. Notes are ordinary Markdown on disk
-            (Obsidian-friendly). A two-minute first-night walkthrough is on the GitHub README.
+            Built for the laptop at your physical table — not a full VTT for online play. There is no account and no
+            internet at the table. Notes are ordinary Markdown on disk (Obsidian-friendly). A two-minute first-night
+            walkthrough is on the GitHub README.
           </p>
           <Sub>Convert a vault</Sub>
           <p>
