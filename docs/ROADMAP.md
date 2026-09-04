@@ -30,7 +30,8 @@ If a feature mainly helps remote / online play, it does not belong here.
    Keep entries 5e-friendly, open in the system browser, short blurbs, no junk or paywall-bait. Easy incremental PRs via `src/shared/tableLinks.ts`.
 6. **More NPC portrait picks** — expand the optional portrait gallery in **Tools → NPC** (and quick-create) so each race / gender bucket has a larger set to choose from. Keep art original or clearly licensed for bundling; respect **Hide portrait picks** / hide-bundled-artwork settings. No copyrighted publisher character art.
 7. **Hourglass timer (Tools)** — a settable countdown in **Tools** next to Box of Doom–style Dice (e.g. 1 / 5 / 10 minutes, or a custom duration). **Show** puts a clean hourglass / countdown on the player TV so the table must decide before it runs out; optional soft chime on Music Sfx when it hits zero. DM can pause, reset, or Fade out. Not saved to the campaign; table pacing only.
-8. **Docs keep-up** — README, GUIDE, TABLE, and Help stay on the current release.
+8. **Recent / multi-campaign switching** — you already remember the last few opened campaigns (name + folder) on the empty start screen. Improve that for DMs running more than one game: a clear **Recents** (or Switch campaign) list while a campaign is already open — header, Files, or Open flow — so you can jump without hunting disk. Show path under the name; drop stale entries when the folder is gone; optional pin/favorite. Local settings only — no cloud library.
+9. **Docs keep-up** — README, GUIDE, TABLE, and Help stay on the current release.
 
 ## Later
 
