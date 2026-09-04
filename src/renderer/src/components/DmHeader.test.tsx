@@ -122,33 +122,42 @@ describe('DmHeader', () => {
     expect(screen.getByRole('button', { name: 'Show sidebar' })).toBeTruthy()
   })
 
-  it('toggles the right panel from the header icon', async () => {
+  it('shows Switch campaign when other recents exist', async () => {
     const user = userEvent.setup()
-    const onToggleRightPanel = vi.fn()
-    const { rerender } = render(
-      <DmHeader
-        campaign={campaign}
-        rightPanel="combat"
-        combatCount={0}
-        mixerActive={false}
-        sidebarOpen
-        {...noopHandlers}
-        onToggleRightPanel={onToggleRightPanel}
-      />
-    )
-    await user.click(screen.getByRole('button', { name: 'Hide right panel' }))
-    expect(onToggleRightPanel).toHaveBeenCalledOnce()
-    rerender(
+    const onOpenRecent = vi.fn()
+    render(
       <DmHeader
         campaign={campaign}
         rightPanel={null}
         combatCount={0}
         mixerActive={false}
         sidebarOpen
+        recentCampaigns={[
+          { name: 'Greystead', folder: '/tmp/greystead' },
+          { name: 'Other', folder: '/tmp/other' }
+        ]}
+        onOpenRecent={onOpenRecent}
         {...noopHandlers}
-        onToggleRightPanel={onToggleRightPanel}
       />
     )
-    expect(screen.getByRole('button', { name: 'Show right panel' })).toBeTruthy()
+    await user.click(screen.getByRole('button', { name: 'Switch campaign' }))
+    await user.click(screen.getByRole('menuitem', { name: /Other/ }))
+    expect(onOpenRecent).toHaveBeenCalledWith('/tmp/other')
+  })
+
+  it('hides Switch campaign when the only recent is the open folder', () => {
+    render(
+      <DmHeader
+        campaign={campaign}
+        rightPanel={null}
+        combatCount={0}
+        mixerActive={false}
+        sidebarOpen
+        recentCampaigns={[{ name: 'Greystead', folder: '/tmp/greystead' }]}
+        onOpenRecent={() => {}}
+        {...noopHandlers}
+      />
+    )
+    expect(screen.queryByRole('button', { name: 'Switch campaign' })).toBeNull()
   })
 })

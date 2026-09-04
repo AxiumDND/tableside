@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import type { RecentCampaign } from '../../../shared/types'
 import { APP_NAME } from '../../../shared/version'
+import RecentCampaignMenu from './RecentCampaignMenu'
 
 function Step({ title, children }: { title: string; children: ReactNode }) {
   return (
@@ -68,27 +69,14 @@ export default function GettingStarted({
               New campaign
             </button>
           ) : null}
-        </div>
-      ) : null}
-
-      {!hasCampaign && recentCampaigns.length > 0 ? (
-        <div className="rounded border border-line/80 bg-ink/40 px-3 py-2.5">
-          <div className="text-sm font-semibold text-amber">Recent campaigns</div>
-          <ul className="mt-2 space-y-1">
-            {recentCampaigns.map((item) => (
-              <li key={item.folder}>
-                <button
-                  type="button"
-                  onClick={() => onOpenRecent?.(item.folder)}
-                  className="w-full truncate rounded px-1.5 py-1 text-left text-[13px] text-parchment/90 hover:bg-panel-2 hover:text-amber"
-                  title={item.folder}
-                >
-                  {item.name}
-                  <span className="mt-0.5 block truncate text-[11px] text-muted">{item.folder}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
+          {onOpenRecent ? (
+            <RecentCampaignMenu
+              recentCampaigns={recentCampaigns}
+              currentFolder={null}
+              onOpenRecent={onOpenRecent}
+              label="Recent campaigns"
+            />
+          ) : null}
         </div>
       ) : null}
 

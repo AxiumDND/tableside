@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { CampaignInfo } from '../../../shared/types'
 import type { SystemId } from '../../../shared/systemPack'
 import type { ThemeId, ThemeOptions } from '../../../shared/theme'
+import { withoutRecentCampaign } from '../../../shared/recentCampaigns'
 
 export type CampaignSetup = null | { step: 'system' } | { step: 'theme'; system: SystemId }
 
@@ -43,6 +44,13 @@ export function useCampaignOpen({
 
   async function openRecent(folder: string): Promise<void> {
     const info = await window.tabledm.openCampaignPath(folder)
+    if (!info) {
+      const settings = await window.tabledm.getSettings()
+      const next = withoutRecentCampaign(settings.recentCampaigns, folder)
+      await window.tabledm.saveSettings({ recentCampaigns: next })
+      await syncAfterOpen()
+      return
+    }
     applyCampaign(info)
     await syncAfterOpen()
   }
