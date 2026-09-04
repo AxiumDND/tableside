@@ -9,7 +9,17 @@ If a feature mainly helps remote / online play, it does not belong here.
 1. **Session pacing aids** — tonight strip / session clock; optional scene timer.
 2. **Handout / art queue** — preload a few images and advance with a hotkey.
 3. **Combat ↔ map glue** — focus or highlight the active combatant’s token; DM-only HP / condition cues on tokens.
-4. **Docs keep-up** — README, GUIDE, TABLE, and Help stay on the current release.
+4. **NPC name flavor dropdown** — in **Tools → NPC**, add a style/flavor picker beyond race/ancestry lists, so you can roll names that sound like:
+   - Classic fantasy
+   - Norse
+   - Greek mythology
+   - Celtic / Gaelic
+   - Roman / Latinate
+   - Arabic / desert-fantasy
+   - Slavic
+   - East Asian–inspired  
+   Keep lists original Tableside table material (not scraped book name tables). Pair with the existing feminine / masculine / any control.
+5. **Docs keep-up** — README, GUIDE, TABLE, and Help stay on the current release.
 
 ## Later
 
