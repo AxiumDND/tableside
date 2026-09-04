@@ -182,7 +182,7 @@ Filter chips narrow the category. From a result you can **Add to combat** (monst
 
 Optional PHB / DMG text dumps go in the app `Additional Books/` folder — not in the campaign. Details: [Additional Books/README.md](../Additional%20Books/README.md). Use the **Additional books** link in Lookup.
 
-**Tools → Names** rolls a few NPC names from race (5e), ancestry (Pathfinder 2e), or name tradition (Vampire). Copy one, or **New NPC…** to write a sheet under `NPCs/`.
+**Tools → NPC** rolls a few names from race (5e) or ancestry (Pathfinder 2e), with a **Name flavor** picker (Classic fantasy, Norse, Greek mythology, Celtic, Roman, Arabic / desert-fantasy, Slavic, East Asian–inspired). Vampire uses name tradition instead. Copy one, or **New NPC…** to write a sheet under `NPCs/`.
 
 **Tools → Improvise** is 2024 potions of healing and on-the-fly hazard damage.
 

@@ -101,7 +101,7 @@ State saves to `combat.json` in the campaign folder.
 
 ## Tools panel
 
-**Tools** in the header opens the right rail. Pick **Lookup**, **Names**, **Improvise**, or **Dice**.
+**Tools** in the header opens the right rail. Pick **Lookup**, **NPC**, **Improvise**, **Dice**, or **Links**.
 
 ### Lookup
 
@@ -114,9 +114,9 @@ Offline MiniSearch over the **open campaign’s system pack**. D&D 5e uses the b
 
 Step-by-step save flow: [RECIPES.md](RECIPES.md#lookup--campaign-note).
 
-### Names
+### NPC
 
-Pick a race, ancestry, or name tradition and roll a few original table names. **Copy** puts one on the clipboard. **New NPC…** writes a sheet under `NPCs/` and fills **Species**.
+Pick a race (5e) or ancestry (Pathfinder 2e), then **Name flavor** for how the names should sound — Classic fantasy (default race lists), Norse, Greek mythology, Celtic / Gaelic, Roman / Latinate, Arabic / desert-fantasy, Slavic, or East Asian–inspired. Vampire nights use **Name tradition** instead (no separate flavor picker). Optional feminine / masculine style. **Copy** puts one on the clipboard. **New NPC…** writes a sheet under `NPCs/` and fills **Species** from the race/ancestry pick.
 
 ### Improvise
 
