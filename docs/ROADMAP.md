@@ -51,7 +51,7 @@ Tableside is **table-first**. These are explicitly not goals:
 These are usually small, reviewable, and helpful without deep Electron knowledge:
 
 - Doc / Help copy that still mentions an old UI name or version
-- Extra curated links in `src/shared/tableLinks.ts` (5e-friendly, no junk)
+- Extra curated links in `src/shared/tableLinks.ts` (DM prep: maps, generators, art, advice — see roadmap item 5)
 - Unit tests for pure helpers under `src/shared/` or `src/renderer/src/lib/`
 - Greystead / sample campaign typos and clearer night-sheet beats
 - Accessibility or wording fixes in existing panels (no redesign)
