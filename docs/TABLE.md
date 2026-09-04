@@ -129,7 +129,7 @@ Set a DC, a d20 modifier, and **Normal**, **Advantage**, or **Disadvantage**. **
 
 ### Links
 
-Curated D&D reference sites. Each row opens in your default browser — nothing is fetched inside Tableside.
+Curated D&D prep sites open in your browser (not embedded). Categories: rules & characters, maps & battlemaps, tokens/portraits, GM advice, generators, music & ambience, and puzzles/traps/tables.
 
 ## Help & settings
 
