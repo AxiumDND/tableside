@@ -1,6 +1,6 @@
 # How to use Tableside
 
-Step-by-step for a night at the table. Current release: **1.8.1**.
+Step-by-step for a night at the table. Current release: **1.8.5**.
 
 Tableside is a **local Windows DM console**. Your laptop holds the notes. A second monitor (TV) shows players a clean picture — maps, art, initiative, or a sci-fi opening crawl. There is no account and no internet required once the app is installed.
 
@@ -23,7 +23,7 @@ Deeper reference: [TABLE.md](TABLE.md) (every control), [CAMPAIGN.md](CAMPAIGN.m
 
 ## Install
 
-1. Download **[Tableside-Setup-1.8.1.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
+1. Download **[Tableside-Setup-1.8.5.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
 2. Run it. Per-user install — Start Menu + desktop shortcut. No admin.
 3. If Windows says **Windows protected your PC**, click **More info**, then **Run anyway**. The installer is not code-signed. That is expected.
 4. Open **Tableside**.
@@ -182,9 +182,11 @@ Filter chips narrow the category. From a result you can **Add to combat** (monst
 
 Optional PHB / DMG text dumps go in the app `Additional Books/` folder — not in the campaign. Details: [Additional Books/README.md](../Additional%20Books/README.md). Use the **Additional books** link in Lookup.
 
-**Tools → Names** rolls a few NPC names from race (5e), ancestry (Pathfinder 2e), or name tradition (Vampire). Copy one, or **New NPC…** to write a sheet under `NPCs/`.
+**Tools → NPC** rolls a few names from race (5e), ancestry (Pathfinder 2e), or name tradition (Vampire). Copy one, or **New NPC…** to write a sheet under `NPCs/`.
 
 **Tools → Improvise** is 2024 potions of healing and on-the-fly hazard damage.
+
+**Tools → Links** is a short list of curated D&D reference sites (opens in your browser).
 
 ### 8. Roll dice
 

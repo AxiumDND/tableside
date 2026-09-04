@@ -5,6 +5,9 @@
   "main": "./out/main/index.js",
   "author": "James",
   "license": "MIT",
+  "engines": {
+    "node": ">=22"
+  },
   "homepage": "https://github.com/AxiumDND/tableside/releases/latest",
   "repository": {
     "type": "git",

@@ -1,0 +1,49 @@
+name: Feature request
+description: Suggest something that helps an in-person DM laptop + player TV night
+title: '[feature] '
+labels: ['enhancement']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Tableside is **not** a VTT. Prefer ideas that help local dual-monitor
+        play (DM console + table TV). Cloud accounts, online multiplayer, and
+        Foundry-style lighting clones are usually out of scope — see
+        [docs/ROADMAP.md](../../docs/ROADMAP.md).
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem at the table
+      description: What is awkward or slow during prep or play?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed idea
+      description: What would you want Tableside to do?
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Maps / fog / tokens
+        - Combat / initiative
+        - Player TV / handouts
+        - Game night sheets / notes
+        - Lookup / Tools
+        - Music / audio
+        - Docs / Help
+        - Other systems (PF2e / V5)
+        - Other
+    validations:
+      required: true
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: Scope check
+      options:
+        - label: This stays local (no account / cloud / online play required)
+          required: true

@@ -9,7 +9,7 @@ How the DM console and player window work during a session. **New to Tableside?*
 | Header | Campaign name, Combat / Music / Tools / Help & settings, New / Open / Sample, player display picker, Clear |
 | Left column | Mini **Players see** preview, campaign file tree, dice tray |
 | Center | Open note, image, PDF, or audio preview |
-| Right (optional) | Combat tracker, Music mixer, Tools (Lookup and Names), or Help & settings |
+| Right (optional) | Combat tracker, Music mixer, Tools (Lookup, NPC, Improvise, Dice, Links), or Help & settings |
 
 Two Electron windows open: the DM console, and a fullscreen **player** window on a second monitor. **Close** on the Players see preview shuts the player window so you can use the TV for something else. Pick a monitor or **Show to players** to open it again. **Theme** is a campaign setting (Classic fantasy, Light, Sci-fi, Vampire, Cyberpunk, Digital rain): New campaign asks for it, Open applies `campaign.json`, and you can change it from **Help & settings** or **Start Here**. Sci-fi can turn on **Hologram portraits** for party, NPC, beast, and gear art. Digital rain can turn on **Falling code** in the file list and notes. The player TV stays black.
 
@@ -101,7 +101,7 @@ State saves to `combat.json` in the campaign folder.
 
 ## Tools panel
 
-**Tools** in the header opens the right rail. Pick **Lookup**, **Names**, **Improvise**, or **Dice**.
+**Tools** in the header opens the right rail. Pick **Lookup**, **NPC**, **Improvise**, **Dice**, or **Links**.
 
 ### Lookup
 
@@ -114,9 +114,9 @@ Offline MiniSearch over the **open campaign’s system pack**. D&D 5e uses the b
 
 Step-by-step save flow: [RECIPES.md](RECIPES.md#lookup--campaign-note).
 
-### Names
+### NPC
 
-Pick a race, ancestry, or name tradition and roll a few original table names. **Copy** puts one on the clipboard. **New NPC…** writes a sheet under `NPCs/` and fills **Species**.
+Pick a race, ancestry, or name tradition and roll a few original table names. **Copy** puts one on the clipboard. **New NPC…** writes a sheet under `NPCs/` and fills **Species**. Optional portrait picks can be hidden from this tab.
 
 ### Improvise
 
@@ -125,6 +125,10 @@ Pick a race, ancestry, or name tradition and roll a few original table names. **
 ### Dice
 
 Set a DC, a d20 modifier, and **Normal**, **Advantage**, or **Disadvantage**. **Show** fades the check over whatever is already on the player TV and waits (two dice for advantage or disadvantage). **Roll** tumbles, then holds **Success** or **Failure**. **Fade out** returns to that picture. Natural 20 always succeeds; natural 1 always fails. The tumble plays on the Music **Sfx** layer; uncheck **Play sound on Roll** to silence it.
+
+### Links
+
+Curated D&D reference sites. Each row opens in your default browser — nothing is fetched inside Tableside.
 
 ## Help & settings
 
