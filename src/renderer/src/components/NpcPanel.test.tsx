@@ -62,7 +62,30 @@ describe('NpcPanel', () => {
     expect(screen.queryByText('AI portrait picks')).toBeNull()
   })
 
-  it('disables New NPC when no campaign is open', () => {
+  it('offers name flavors on 5e and keeps species from race', async () => {
+    const user = userEvent.setup()
+    const onCreateNpc = vi.fn()
+    render(
+      <NpcPanel
+        system="dnd5e"
+        canCreate
+        hidePortraits
+        onHidePortraitsChange={() => undefined}
+        onCreateNpc={onCreateNpc}
+      />
+    )
+    expect(screen.getByText('Name flavor')).toBeTruthy()
+    const flavor = screen.getByLabelText('Name flavor') as HTMLSelectElement
+    await user.selectOptions(flavor, 'norse')
+    await user.click(screen.getByRole('button', { name: 'Roll names' }))
+    await user.click(screen.getAllByRole('button', { name: 'New NPC…' })[0])
+    expect(onCreateNpc).toHaveBeenCalledOnce()
+    const payload = onCreateNpc.mock.calls[0]?.[0] as { name: string; species: string }
+    expect(payload.species).toBe('Human')
+    expect(String(payload.name).length).toBeGreaterThan(0)
+  })
+
+  it('hides name flavors on Vampire nights', () => {
     render(
       <NpcPanel
         system="v5"
@@ -73,6 +96,19 @@ describe('NpcPanel', () => {
       />
     )
     expect(screen.getByText('Name tradition')).toBeTruthy()
+    expect(screen.queryByText('Name flavor')).toBeNull()
+  })
+
+  it('disables New NPC when no campaign is open', () => {
+    render(
+      <NpcPanel
+        system="v5"
+        canCreate={false}
+        hidePortraits
+        onHidePortraitsChange={() => undefined}
+        onCreateNpc={() => {}}
+      />
+    )
     for (const button of screen.getAllByRole('button', { name: 'New NPC…' })) {
       expect((button as HTMLButtonElement).disabled).toBe(true)
     }
