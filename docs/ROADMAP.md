@@ -37,6 +37,7 @@ If a feature mainly helps remote / online play, it does not belong here.
 - Optional music cues when combat starts or a scene Plays
 - Printable handout export from a note
 - **Campaign zip backup** — one-click export of the open campaign folder to a `.zip` (and optional import/restore into a chosen folder). For backing up before a session, moving a one-shot to another PC, or sharing a self-contained night with a friend. Stays local files only — no cloud upload. Skip huge regenerable caches if any; keep notes, art, audio, and `campaign.json` / `combat.json` / `audio.json`.
+- **Party glance strip (possible)** — optional DM-only strip (header or over the map) showing live AC / HP / PP for the current party, same data as `[!party]` cards, so you need not flip back to the night sheet mid-map or mid-combat. Toggle off when you want the space. Never on the player TV.
 - **Linux build** — ship a packaged Linux app alongside the Windows installer (AppImage and/or `.deb` via electron-builder). Keep the same table-first dual-monitor flow; document display/VNC quirks for contributors. macOS packaging stays optional until there is real demand.
 
 ## System support
