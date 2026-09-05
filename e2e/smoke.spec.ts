@@ -56,7 +56,7 @@ test('Timer minutes field updates a waiting glass', async () => {
   await dmWindow.getByRole('navigation', { name: 'Tools' }).getByRole('button', { name: 'Timer' }).click()
   await dmWindow.getByRole('button', { name: 'Show', exact: true }).click()
   await expect(dmWindow.getByText('wait', { exact: false })).toBeVisible()
-  await dmWindow.getByLabelText('Minutes').fill('7')
+  await dmWindow.getByLabel('Minutes').fill('7')
   await expect(dmWindow.getByText('7:00')).toBeVisible()
 })
 
