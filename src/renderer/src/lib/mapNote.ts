@@ -23,6 +23,8 @@ export interface MapToken {
   space: CreatureSpace
   label: string
   image: string
+  /** Combat tracker row this token is bound to for this fight. */
+  combatantId?: string
 }
 
 export interface MapNoteData {
@@ -194,7 +196,8 @@ function parseTokens(lines: string[], start: number): { tokens: MapToken[]; next
       y: clamp01(current.y ?? 0.5),
       space: current.space ?? 'medium',
       label,
-      image: (current.image ?? '').trim()
+      image: (current.image ?? '').trim(),
+      ...(current.combatantId ? { combatantId: current.combatantId } : {})
     })
     current = null
   }
@@ -225,6 +228,7 @@ function parseTokens(lines: string[], start: number): { tokens: MapToken[]; next
       else if (key === 'size' && /[a-z]/i.test(value)) current.space = parseCreatureSpace(value)
       else if (key === 'label') current.label = value
       else if (key === 'image') current.image = value
+      else if (key === 'combatantid') current.combatantId = value
       i += 1
       continue
     }
@@ -360,6 +364,7 @@ export function serializeMapYaml(data: MapNoteData): string {
       if (token.space !== 'medium') lines.push(`    space: ${token.space}`)
       lines.push(`    label: ${token.label}`)
       if (token.image) lines.push(`    image: ${token.image}`)
+      if (token.combatantId) lines.push(`    combatantId: ${token.combatantId}`)
     }
   }
   lines.push(`tokenScale: ${clampTokenScale(data.tokenScale ?? TOKEN_SCALE_DEFAULT)}`)
@@ -451,7 +456,8 @@ export function toPlayerMapToken(
   token: MapToken,
   images: CampaignImage[],
   tokenScale: number,
-  hideBundled = false
+  hideBundled = false,
+  overlayTags?: PlayerMapToken['overlayTags']
 ): PlayerMapToken {
   const path = tokenPortraitPath(token, images)
   const imageSrc = path
@@ -466,6 +472,7 @@ export function toPlayerMapToken(
     size: tokenDiameter(tokenScale, token.space),
     label: token.label,
     kind: token.kind,
-    imageSrc
+    imageSrc,
+    ...(overlayTags && overlayTags.length > 0 ? { overlayTags } : {})
   }
 }

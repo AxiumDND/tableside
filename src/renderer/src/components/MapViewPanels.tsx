@@ -234,23 +234,49 @@ export function MapPinToolbar({
 export function MapTokenToolbar({
   pendingToken,
   selectedTokenId,
-  onDeleteToken
+  inCombat,
+  onDeleteToken,
+  onAddToCombat,
+  onOpenConditions
 }: {
   pendingToken: TokenPick | null
   selectedTokenId: string | null
+  inCombat?: boolean
   onDeleteToken: (id: string) => void
+  onAddToCombat?: (id: string) => void
+  onOpenConditions?: (id: string) => void
 }) {
   return (
     <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted">
       <span>{pendingToken ? `Click the map to place ${pendingToken.label}` : 'Pick a creature, then click the map'}</span>
       {selectedTokenId ? (
-        <button
-          type="button"
-          onClick={() => onDeleteToken(selectedTokenId)}
-          className="rounded border border-line px-2 py-0.5 hover:border-blood"
-        >
-          Delete token
-        </button>
+        <>
+          {onAddToCombat ? (
+            <button
+              type="button"
+              onClick={() => onAddToCombat(selectedTokenId)}
+              className="rounded border border-line px-2 py-0.5 hover:border-amber"
+            >
+              {inCombat ? 'Open combat' : 'Add to combat'}
+            </button>
+          ) : null}
+          {inCombat && onOpenConditions ? (
+            <button
+              type="button"
+              onClick={() => onOpenConditions(selectedTokenId)}
+              className="rounded border border-line px-2 py-0.5 hover:border-amber"
+            >
+              Cnd
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={() => onDeleteToken(selectedTokenId)}
+            className="rounded border border-line px-2 py-0.5 hover:border-blood"
+          >
+            Delete token
+          </button>
+        </>
       ) : null}
     </div>
   )

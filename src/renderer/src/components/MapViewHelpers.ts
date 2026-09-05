@@ -1,8 +1,9 @@
-import type { PlayerMapView } from '../../../shared/types'
+import type { Combatant, PlayerMapView } from '../../../shared/types'
 import { campaignFileUrl, portraitForNote, type CampaignImage } from '../lib/images'
 import { fogAllClear, encodeFog, fogSizeOf } from '../lib/mapFog'
 import type { MapCamera } from '../lib/mapCamera'
 import { toPlayerMapToken, type CreatureSpace, type MapToken } from '../lib/mapNote'
+import { tokenOverlayTags } from '../lib/mapTokenCombat'
 import {
   allPartyNotes,
   bestiaryNotes,
@@ -30,7 +31,9 @@ export function liveView(
   images: CampaignImage[],
   tokenScale: number,
   dragPos: { id: string; x: number; y: number } | null,
-  hideBundled = false
+  hideBundled = false,
+  combatants: Combatant[] = [],
+  system?: string | null
 ): PlayerMapView {
   const placed = dragPos
     ? tokens.map((token) => (token.id === dragPos.id ? { ...token, x: dragPos.x, y: dragPos.y } : token))
@@ -41,7 +44,15 @@ export function liveView(
     centerY: camera.centerY,
     fog: fogAllClear(cells) ? '' : encodeFog(cells),
     fogSize: fogSizeOf(cells),
-    tokens: placed.map((token) => toPlayerMapToken(token, images, tokenScale, hideBundled))
+    tokens: placed.map((token) =>
+      toPlayerMapToken(
+        token,
+        images,
+        tokenScale,
+        hideBundled,
+        tokenOverlayTags(token, combatants, system)
+      )
+    )
   }
 }
 

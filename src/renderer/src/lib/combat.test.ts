@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   advanceCombatTurn,
+  combatOverlayTags,
   combatantCondition,
   combatProfileFor,
   combatToPlayerInitiative,
@@ -105,6 +106,28 @@ describe('combat helpers', () => {
     expect(tags).toContain('Unconscious')
     expect(tags).toContain('Poisoned')
     expect(tags?.filter((label) => label === 'Unconscious')).toHaveLength(1)
+  })
+
+  it('can omit vital numbers from overlay tags for map tokens', () => {
+    const tags = combatOverlayTags(
+      {
+        id: '2',
+        name: 'Mira',
+        kind: 'pc',
+        initiative: 12,
+        hp: 4,
+        maxHp: 7,
+        ac: 16,
+        willpower: 2,
+        maxWillpower: 5,
+        hunger: 3,
+        conditions: ['poisoned']
+      },
+      combatProfileFor('v5'),
+      { includeVitals: false }
+    ).map((tag) => tag.label)
+    expect(tags).toContain('Poisoned')
+    expect(tags.some((label) => /Health|WP|Hunger/.test(label))).toBe(false)
   })
 
   it('advances turns and rounds', () => {

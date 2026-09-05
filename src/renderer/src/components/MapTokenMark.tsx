@@ -73,13 +73,27 @@ export default function MapTokenMark({
         )}
       </span>
       <span
-        className="pointer-events-none absolute top-full left-1/2 z-10 mt-0.5 max-w-[8rem] whitespace-nowrap rounded bg-ink/90 px-1 py-px text-center text-[10px] font-semibold leading-tight text-parchment shadow"
+        className="pointer-events-none absolute top-full left-1/2 z-10 mt-0.5 flex max-w-[8rem] -translate-x-1/2 flex-col items-center gap-0.5"
         style={{
           transform: 'translate(-50%, 0) scale(calc(1 / var(--map-scale, 1)))',
           transformOrigin: 'top center'
         }}
       >
-        {token.label}
+        <span className="whitespace-nowrap rounded bg-ink/90 px-1 py-px text-center text-[10px] font-semibold leading-tight text-parchment shadow">
+          {token.label}
+        </span>
+        {token.overlayTags && token.overlayTags.length > 0
+          ? token.overlayTags.map((tag) => (
+              <span
+                key={tag.label}
+                className={`whitespace-nowrap rounded px-1 py-px text-center text-[9px] font-semibold uppercase tracking-wide shadow ${
+                  tag.tone === 'blood' ? 'bg-blood text-parchment' : 'bg-ink/90 text-amber'
+                }`}
+              >
+                {tag.label}
+              </span>
+            ))
+          : null}
       </span>
     </button>
   )

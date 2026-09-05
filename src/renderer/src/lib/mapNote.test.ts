@@ -157,6 +157,22 @@ tokens:
     expect(extractMapNote(next)?.tokens).toHaveLength(3)
   })
 
+  it('round-trips a combatantId on a map token', () => {
+    const data = parseMapYaml(`image: x.png
+tokens:
+  - id: wolf
+    kind: monster
+    source: Bestiary/Wolf.md
+    x: 0.5
+    y: 0.5
+    label: Wolf
+    combatantId: abc-123
+`)
+    expect(data.tokens[0].combatantId).toBe('abc-123')
+    const next = replaceMapFence('# Map\n\n```map\nimage: x.png\npins: []\n```\n', data)
+    expect(next).toContain('combatantId: abc-123')
+  })
+
   it('round-trips the measured grid origin', () => {
     const data = parseMapYaml('image: x.png\npins: []\ntokenScale: 0.08\ngridX: 0.03\ngridY: 0.11\n')
     expect(data.gridX).toBeCloseTo(0.03)

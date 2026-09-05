@@ -1,5 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react'
-import type { PlayerMapView } from '../../../shared/types'
+import type { CombatState, PlayerMapView } from '../../../shared/types'
+import { CombatConditionPicker } from './CombatConditionPicker'
+import {
+  combatOverlaySignature,
+  combatantForToken,
+  tokenOverlayTags
+} from '../lib/mapTokenCombat'
 import { campaignFileUrl, resolveImageRef, type CampaignImage } from '../lib/images'
 import { useMapCamera } from '../hooks/useMapCamera'
 import { useMapFog } from '../hooks/useMapFog'
@@ -26,7 +32,8 @@ import {
   tokenDiameter,
   toPlayerMapToken,
   type CreatureSpace,
-  type MapNoteData
+  type MapNoteData,
+  type MapToken
 } from '../lib/mapNote'
 import { type CampaignNote } from '../lib/notes'
 import MapGridOverlay from './MapGridOverlay'
@@ -55,7 +62,11 @@ export default function MapView({
   notes = [],
   renderRoom,
   onChange,
-  onLiveView
+  onLiveView,
+  combat,
+  system,
+  onAddTokenToCombat,
+  onToggleTokenStatus
 }: {
   markdown: string
   path: string
@@ -64,6 +75,10 @@ export default function MapView({
   renderRoom: (markdown: string) => ReactNode
   onChange: (next: string) => void
   onLiveView?: (imagePath: string, view: PlayerMapView) => void
+  combat?: CombatState | null
+  system?: string | null
+  onAddTokenToCombat?: (token: MapToken) => Promise<string | null>
+  onToggleTokenStatus?: (combatantId: string, statusId: string) => void
 }) {
   const data = useMemo(() => extractMapNote(markdown), [markdown])
   const imagePath = data?.image ? resolveImageRef(data.image, path, images) : null
@@ -81,6 +96,11 @@ export default function MapView({
   const [measureFeet, setMeasureFeet] = useState(MEASURE_FEET_DEFAULT)
   const [measureOrigin, setMeasureOrigin] = useState<{ x: number; y: number } | null>(null)
   const [measureAim, setMeasureAim] = useState<{ x: number; y: number } | null>(null)
+  const [conditionTokenId, setConditionTokenId] = useState<string | null>(null)
+  const combatants = combat?.combatants ?? []
+  const combatSignature = combatOverlaySignature(combatants)
+  const conditionToken = (data?.tokens ?? []).find((token) => token.id === conditionTokenId) ?? null
+  const conditionCombatant = conditionToken ? combatantForToken(combatants, conditionToken) : undefined
   const toolRef = useRef(tool)
   const scaleArmedRef = useRef(scaleArmed)
   const measureKindRef = useRef(measureKind)
@@ -204,7 +224,10 @@ export default function MapView({
     scaleDraftRef: tokens.scaleDraftRef,
     dragPos,
     dragPosRef,
-    hideBundled
+    hideBundled,
+    combatants,
+    system,
+    combatSignature
   })
 
   useEffect(() => {
@@ -541,7 +564,22 @@ export default function MapView({
           <MapTokenToolbar
             pendingToken={tokens.pendingToken}
             selectedTokenId={tokens.selectedTokenId}
+            inCombat={Boolean(
+              tokens.selectedToken && combatantForToken(combatants, tokens.selectedToken)
+            )}
             onDeleteToken={tokens.deleteToken}
+            onAddToCombat={
+              onAddTokenToCombat
+                ? (id) => {
+                    const token = (data?.tokens ?? []).find((item) => item.id === id)
+                    if (!token) return
+                    void onAddTokenToCombat(token).then((combatantId) => {
+                      if (combatantId) tokens.setTokenCombatantId(id, combatantId)
+                    })
+                  }
+                : undefined
+            }
+            onOpenConditions={() => setConditionTokenId(tokens.selectedTokenId)}
           />
           <MapTokenPickerPanel
             pickerTab={tokens.pickerTab}
@@ -633,7 +671,13 @@ export default function MapView({
                 return (
                   <MapTokenMark
                     key={token.id}
-                    token={toPlayerMapToken(live, images, tokens.tokenScale, hideBundled)}
+                    token={toPlayerMapToken(
+                      live,
+                      images,
+                      tokens.tokenScale,
+                      hideBundled,
+                      tokenOverlayTags(token, combatants, system)
+                    )}
                     selected={token.id === tokens.selectedTokenId}
                     interactive={!tokensLocked && !placingOnBoard}
                     onPointerDown={(event) => {
@@ -830,6 +874,15 @@ export default function MapView({
           {renderRoom(roomText || '_No room text yet. Edit the note to add headings._')}
         </div>
       </div>
+      {conditionToken && conditionCombatant && onToggleTokenStatus ? (
+        <CombatConditionPicker
+          name={conditionToken.label}
+          selected={conditionCombatant.conditions ?? []}
+          system={system}
+          onToggle={(statusId) => onToggleTokenStatus(conditionCombatant.id, statusId)}
+          onClose={() => setConditionTokenId(null)}
+        />
+      ) : null}
     </div>
   )
 }

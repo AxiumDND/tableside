@@ -159,6 +159,7 @@ export interface PlayerMapToken {
   label: string
   kind: 'pc' | 'npc' | 'monster'
   imageSrc: string | null
+  overlayTags?: PlayerOverlayTag[]
 }
 
 /** Crop + fog sent with a map so the player window follows the DM view. */
