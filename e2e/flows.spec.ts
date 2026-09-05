@@ -148,7 +148,8 @@ test('map token can join combat and share condition chips', async () => {
 
   await dmWindow.getByRole('button', { name: 'Token' }).click()
   await dmWindow.getByRole('button', { name: /Monsters/ }).click()
-  await dmWindow.getByRole('button', { name: 'Wolf' }).click()
+  // Title is exact "Wolf"; name: 'Wolf' also matches leftover Dire Wolf combat rows.
+  await dmWindow.getByTitle('Wolf', { exact: true }).click()
   await expect(dmWindow.getByText(/Click the map to place Wolf/)).toBeVisible()
 
   const stage = dmWindow.locator('.map-stage')
@@ -158,16 +159,15 @@ test('map token can join combat and share condition chips', async () => {
   await expect(dmWindow.getByRole('button', { name: 'Add to combat' })).toBeVisible()
   await dmWindow.getByRole('button', { name: 'Add to combat' }).click()
   await expect(dmWindow.getByRole('heading', { name: 'Combat' })).toBeVisible()
-  await expect(dmWindow.getByText('Wolf').first()).toBeVisible()
   await expect(dmWindow.getByRole('button', { name: 'Open combat' })).toBeVisible()
 
-  await dmWindow.getByRole('button', { name: 'Cnd' }).click()
+  await dmWindow.getByRole('button', { name: 'Cnd', exact: true }).click()
   const dialog = dmWindow.getByRole('dialog')
-  await expect(dialog.getByRole('heading', { name: 'Wolf' })).toBeVisible()
-  await dialog.getByRole('button', { name: 'Poisoned', exact: true }).click()
+  await expect(dialog.getByRole('heading', { name: 'Wolf', exact: true })).toBeVisible()
+  // Prone is unused by the earlier Dire Wolf combat test (that row is already Poisoned).
+  await dialog.getByRole('button', { name: 'Prone', exact: true }).click()
   await dmWindow.getByRole('button', { name: 'Done' }).click()
-  await expect(dmWindow.getByText('Poisoned').first()).toBeVisible()
-  await expect(dmWindow.getByRole('button', { name: 'Clear Poisoned' })).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Clear Prone' })).toBeVisible()
 })
 
 test('editing a note autosaves when switching away and back', async () => {
