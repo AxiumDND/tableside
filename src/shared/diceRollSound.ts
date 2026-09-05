@@ -4,6 +4,38 @@ export const BUILTIN_DICE_ROLL_MULTI_PATH = 'builtin:dice-roll-multi'
 
 export type DiceRollSoundVariant = 'single' | 'multi'
 
+/** Filenames under resources/dice-sfx/ (any supported audio extension). */
+export const DICE_SFX_STEMS = {
+  single: 'dice-one',
+  multi: 'dice-handful'
+} as const
+
+export const DICE_SFX_EXTS = ['.wav', '.mp3', '.ogg', '.m4a', '.flac', '.webm', '.aac'] as const
+
+export function diceSfxIdForVariant(variant: DiceRollSoundVariant): 'one' | 'handful' {
+  return variant === 'multi' ? 'handful' : 'one'
+}
+
+export function diceSfxVariantForId(id: string): DiceRollSoundVariant {
+  return id === 'handful' || id === 'multi' ? 'multi' : 'single'
+}
+
+export function diceSfxFileNames(idOrVariant: string | DiceRollSoundVariant): string[] {
+  const variant =
+    idOrVariant === 'single' || idOrVariant === 'multi' ? idOrVariant : diceSfxVariantForId(idOrVariant)
+  const stem = DICE_SFX_STEMS[variant]
+  return DICE_SFX_EXTS.map((ext) => `${stem}${ext}`)
+}
+
+/** Packaged recording, served by the main-process tabledm:// protocol. */
+export function bundledDiceSfxUrl(pathOrVariant: string | DiceRollSoundVariant = 'single'): string {
+  const variant =
+    pathOrVariant === 'multi' || pathOrVariant === 'single'
+      ? pathOrVariant
+      : diceRollVariantForPath(pathOrVariant)
+  return `tabledm://dice-sfx/?id=${diceSfxIdForVariant(variant)}`
+}
+
 const BUILTIN_PATHS = new Set([BUILTIN_DICE_ROLL_PATH, BUILTIN_DICE_ROLL_MULTI_PATH])
 
 export function isBuiltinSfx(path: string): boolean {
@@ -160,6 +192,25 @@ export function diceRollSoundUrl(pathOrVariant: string | DiceRollSoundVariant = 
   return url
 }
 
+async function playUrl(url: string, volume: number, deviceId: string): Promise<void> {
+  const el = new Audio(url)
+  el.volume = volume
+  if (typeof el.setSinkId === 'function') {
+    try {
+      await el.setSinkId(deviceId)
+    } catch {
+      if (deviceId) {
+        try {
+          await el.setSinkId('')
+        } catch {
+          /* ignore */
+        }
+      }
+    }
+  }
+  await el.play()
+}
+
 export function playDiceRollSound(
   gain = 1,
   deviceId = '',
@@ -168,22 +219,7 @@ export function playDiceRollSound(
   if (typeof Audio === 'undefined') return
   const volume = Math.min(1, Math.max(0, gain))
   if (volume <= 0) return
-  const el = new Audio(diceRollSoundUrl(variant))
-  el.volume = volume
-  void (async () => {
-    if (typeof el.setSinkId === 'function') {
-      try {
-        await el.setSinkId(deviceId)
-      } catch {
-        if (deviceId) {
-          try {
-            await el.setSinkId('')
-          } catch {
-            /* ignore */
-          }
-        }
-      }
-    }
-    void el.play()?.catch?.(() => undefined)
-  })()
+  void playUrl(bundledDiceSfxUrl(variant), volume, deviceId).catch(() => {
+    void playUrl(diceRollSoundUrl(variant), volume, deviceId).catch(() => undefined)
+  })
 }

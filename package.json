@@ -105,6 +105,10 @@
         "to": "npc-portraits"
       },
       {
+        "from": "resources/dice-sfx",
+        "to": "dice-sfx"
+      },
+      {
         "from": "resources/icon.ico",
         "to": "icon.ico"
       },

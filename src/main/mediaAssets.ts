@@ -2,6 +2,7 @@ import { app, net, protocol } from 'electron'
 import { existsSync, readdirSync } from 'node:fs'
 import { extname, join } from 'node:path'
 import { pathToFileURL } from 'node:url'
+import { diceSfxFileNames } from '../shared/diceRollSound'
 import { IMAGE_EXT } from '../shared/imageExt'
 
 export { IMAGE_EXT }
@@ -71,6 +72,22 @@ function npcPortraitsDir(): string {
   return app.isPackaged
     ? join(process.resourcesPath, 'npc-portraits')
     : join(__dirname, '../../resources/npc-portraits')
+}
+
+function diceSfxDir(): string {
+  return app.isPackaged
+    ? join(process.resourcesPath, 'dice-sfx')
+    : join(__dirname, '../../resources/dice-sfx')
+}
+
+export function findDiceSfxFile(id: string): string | null {
+  const dir = diceSfxDir()
+  if (!existsSync(dir)) return null
+  for (const name of diceSfxFileNames(id)) {
+    const full = join(dir, name)
+    if (existsSync(full)) return full
+  }
+  return null
 }
 
 function loadSrdImageCache(cache: Map<string, string> | null, dir: string): Map<string, string> {
@@ -188,11 +205,14 @@ export function registerMediaProtocol(deps: {
         url.hostname === 'srd-item' ||
         url.hostname === 'srd-school' ||
         url.hostname === 'stock-art' ||
-        url.hostname === 'npc-portrait'
+        url.hostname === 'npc-portrait' ||
+        url.hostname === 'dice-sfx'
       ) {
         const name = url.searchParams.get('name') ?? ''
         const full =
-          url.hostname === 'npc-portrait'
+          url.hostname === 'dice-sfx'
+            ? findDiceSfxFile(url.searchParams.get('id') ?? '')
+            : url.hostname === 'npc-portrait'
             ? findNpcPortraitFile(
                 url.searchParams.get('race') ?? '',
                 url.searchParams.get('gender') ?? '',
