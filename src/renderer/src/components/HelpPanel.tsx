@@ -936,7 +936,8 @@ export default function HelpPanel({
           <Sub>Timer</Sub>
           <p>
             <Action>Tools</Action> → <Action>Timer</Action>: pick minutes, then <Action>Show</Action> to fade a full
-            hourglass over the player TV. <Action>Start</Action> begins the countdown. Pause, resume, or reset;{' '}
+            hourglass over the player TV. Change the minutes while it waits to retune the glass.{' '}
+            <Action>Start</Action> begins the countdown. Pause, resume, or reset;{' '}
             <Action>Fade out</Action> returns to the picture underneath. The empty glass holds at zero until you fade
             it. Uncheck <Action>Chime at zero</Action> to skip the Sfx-layer hit (same Music soundboard fader as
             dice; the <Action>Hourglass</Action> chip is on that board). Not saved to the campaign.

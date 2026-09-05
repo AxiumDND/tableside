@@ -105,7 +105,7 @@ npm start
 npm run dist
 ```
 
-Writes `dist/Tableside-Setup-1.8.10.exe`. Pushing a `v1.8.10` tag builds that file and attaches it to the [GitHub Release](https://github.com/AxiumDND/tableside/releases/latest). After CI, promote that tag to Latest so stable tables get it (Help → Updates → **Include test (beta) updates** is how later tags stay optional).
+Writes `dist/Tableside-Setup-<version>.exe`. Pushing a `v*` tag builds that file and attaches it as a GitHub Pre-release. Promote the tag to Latest when it should reach every table. Help → Updates → **Include test (beta) updates** is how later tags stay optional. Stable download stays [releases/latest](https://github.com/AxiumDND/tableside/releases/latest) (`Tableside-Setup-1.8.10.exe` until the next promote).
 
 `npm run fetch-srd` is only needed if you want to refresh the bundled SRD snapshot from the [Open5e API](https://api.open5e.com/) (`srd-2024`).
 

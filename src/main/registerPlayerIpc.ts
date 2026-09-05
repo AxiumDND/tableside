@@ -538,20 +538,26 @@ export function registerPlayerIpc(): void {
     })
   })
 
-  ipcMain.handle(IPC.playerResetHourglass, (_e, payload?: { minutes?: number }) => {
-    const current = getPlayerState().hourglass
-    if (!current || current.stoppingAt != null) return getPlayerState()
-    const durationMs =
-      payload?.minutes != null ? hourglassDurationMs(payload.minutes) : current.durationMs
-    return setPlayerState({
-      ...getPlayerState(),
-      hourglass: {
-        durationMs,
-        shownAt: Date.now(),
-        sound: current.sound
-      }
-    })
-  })
+  ipcMain.handle(
+    IPC.playerResetHourglass,
+    (_e, payload?: { minutes?: number; refill?: boolean }) => {
+      const current = getPlayerState().hourglass
+      if (!current || current.stoppingAt != null) return getPlayerState()
+      const durationMs =
+        payload?.minutes != null ? hourglassDurationMs(payload.minutes) : current.durationMs
+      const waiting =
+        current.endsAt == null && current.remainingMs == null && current.expiredAt == null
+      const keepShownAt = payload?.refill === false && waiting
+      return setPlayerState({
+        ...getPlayerState(),
+        hourglass: {
+          durationMs,
+          shownAt: keepShownAt ? current.shownAt : Date.now(),
+          sound: current.sound
+        }
+      })
+    }
+  )
 
   ipcMain.handle(IPC.playerStopHourglass, () => stopPlayerHourglass())
 

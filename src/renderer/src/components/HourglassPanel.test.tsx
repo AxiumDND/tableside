@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { act, render, screen } from '@testing-library/react'
+import { act, fireEvent, render, screen } from '@testing-library/react'
 import { BUILTIN_HOURGLASS_CHIME_PATH } from '../../../shared/hourglass'
 import HourglassPanel from './HourglassPanel'
 
@@ -54,6 +54,25 @@ describe('HourglassPanel', () => {
       await vi.advanceTimersByTimeAsync(0)
     })
     expect(window.tabledm.mixerOneshot).toHaveBeenCalledWith(BUILTIN_HOURGLASS_CHIME_PATH)
+  })
+
+  it('applies a custom minute value to a waiting glass', async () => {
+    render(<HourglassPanel overlay={{ durationMs: 300_000, shownAt: 1 }} />)
+    expect(screen.getByText('5:00')).toBeTruthy()
+    await act(async () => {
+      fireEvent.change(screen.getByLabelText('Minutes'), { target: { value: '7' } })
+    })
+    expect(window.tabledm.resetHourglass).toHaveBeenCalledWith({ minutes: 7, refill: false })
+    expect(screen.getByText('7:00')).toBeTruthy()
+  })
+
+  it('applies a preset to a waiting glass', async () => {
+    render(<HourglassPanel overlay={{ durationMs: 300_000, shownAt: 1 }} />)
+    await act(async () => {
+      screen.getByRole('button', { name: '10 min' }).click()
+    })
+    expect(window.tabledm.resetHourglass).toHaveBeenCalledWith({ minutes: 10, refill: false })
+    expect(screen.getByText('10:00')).toBeTruthy()
   })
 
   it('skips the chime when sound is off', async () => {

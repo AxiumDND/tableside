@@ -17,15 +17,19 @@ export default function HourglassPanel({ overlay }: { overlay: PlayerHourglass |
   const [busy, setBusy] = useState(false)
   const [now, setNow] = useState(() => Date.now())
   const chimedFor = useRef<number | null>(null)
+  const applyRef = useRef(Promise.resolve())
 
   const showing = Boolean(overlay && overlay.stoppingAt == null)
   const fading = Boolean(overlay?.stoppingAt)
   const phase = overlay ? hourglassPhase(overlay, now) : 'wait'
-  const remaining = overlay ? hourglassRemainingMs(overlay, now) : hourglassDurationMsSafe(minutes)
   const waiting = showing && phase === 'wait'
   const running = showing && phase === 'running'
   const paused = showing && phase === 'paused'
   const expired = showing && phase === 'expired'
+  const remaining =
+    overlay && (running || paused || expired)
+      ? hourglassRemainingMs(overlay, now)
+      : hourglassDurationMsSafe(minutes)
 
   useEffect(() => {
     if (!running) {
@@ -53,9 +57,24 @@ export default function HourglassPanel({ overlay }: { overlay: PlayerHourglass |
     if (!overlay) chimedFor.current = null
   }, [overlay])
 
+  function commitMinutes(raw: string): void {
+    setMinutes(raw)
+    const parsed = Number(raw)
+    if (!Number.isFinite(parsed)) return
+    if (!showing || running || fading) return
+    const next = clampHourglassMinutes(parsed)
+    applyRef.current = applyDuration(next)
+  }
+
+  async function applyDuration(mins: number): Promise<void> {
+    chimedFor.current = null
+    await window.tabledm.resetHourglass({ minutes: mins, refill: false })
+  }
+
   async function show(): Promise<void> {
     setBusy(true)
     try {
+      await applyRef.current
       await window.tabledm.showHourglass({
         minutes: clampHourglassMinutes(minutes),
         sound: soundEnabled
@@ -68,6 +87,7 @@ export default function HourglassPanel({ overlay }: { overlay: PlayerHourglass |
   async function start(): Promise<void> {
     setBusy(true)
     try {
+      await applyRef.current
       await window.tabledm.startHourglass({ sound: soundEnabled })
     } finally {
       setBusy(false)
@@ -125,7 +145,7 @@ export default function HourglassPanel({ overlay }: { overlay: PlayerHourglass |
             key={preset}
             type="button"
             disabled={busy || running}
-            onClick={() => setMinutes(String(preset))}
+            onClick={() => commitMinutes(String(preset))}
             className={`rounded-full px-2.5 py-1 text-[11px] ${
               Number(minutes) === preset
                 ? 'bg-amber font-semibold text-on-amber'
@@ -144,7 +164,8 @@ export default function HourglassPanel({ overlay }: { overlay: PlayerHourglass |
           max={120}
           value={minutes}
           disabled={busy || running}
-          onChange={(event) => setMinutes(event.target.value)}
+          onChange={(event) => commitMinutes(event.target.value)}
+          onBlur={() => commitMinutes(String(clampHourglassMinutes(minutes)))}
           className="mt-1 w-full rounded border border-line bg-ink px-2 py-1.5 text-sm text-parchment outline-none focus:border-amber disabled:opacity-50"
         />
       </label>

@@ -48,6 +48,19 @@ test('Timer tool shows a waiting glass and a separate Start control', async () =
   await expect(dmWindow.getByText('Chime at zero')).toBeVisible()
 })
 
+test('Timer minutes field updates a waiting glass', async () => {
+  const tools = dmWindow.getByRole('button', { name: 'Tools' })
+  if (!(await dmWindow.getByRole('navigation', { name: 'Tools' }).isVisible().catch(() => false))) {
+    await tools.click()
+  }
+  await dmWindow.getByRole('navigation', { name: 'Tools' }).getByRole('button', { name: 'Timer' }).click()
+  await dmWindow.getByRole('button', { name: 'Show', exact: true }).click()
+  await expect(dmWindow.getByText('wait', { exact: false })).toBeVisible()
+  await dmWindow.getByLabel('Minutes').fill('7')
+  await expect(dmWindow.locator('[aria-live="polite"]')).toContainText('7:00')
+  await expect(dmWindow.locator('.hourglass-clock')).toHaveText('7:00')
+})
+
 test('Dice tray exposes show-to-players and roll-sound toggles', async () => {
   await expect(dmWindow.getByText('Show rolls to players')).toBeVisible()
   await expect(dmWindow.getByText('Play roll sound')).toBeVisible()
