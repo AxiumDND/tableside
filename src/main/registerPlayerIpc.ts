@@ -223,12 +223,10 @@ export function registerPlayerIpc(): void {
       const loop = payload?.loop !== false
       const showTitle = Boolean(payload?.showTitle) && Boolean(title)
       const prev = getPlayerState()
-      return setPlayerState(
+      setPlayerState(
         {
           ...prev,
           imageTitle: prev.imageSrc ? prev.imageTitle : title || 'Gallery',
-          crawl: null,
-          legend: null,
           gallery: {
             title: title || undefined,
             slides,
@@ -248,6 +246,9 @@ export function registerPlayerIpc(): void {
         },
         { show: true }
       )
+      if (prev.crawl) stopPlayerCrawl()
+      if (prev.legend) stopPlayerLegend()
+      return getPlayerState()
     }
   )
 

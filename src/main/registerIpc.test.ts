@@ -229,6 +229,30 @@ describe('main IPC registration', () => {
     expect(player.scheduleLegendEndStill).toHaveBeenCalled()
   })
 
+  it('fades a live chronicle when a gallery starts instead of cutting it', () => {
+    const legend = {
+      title: 'The Pale Well',
+      body: 'The well runs cold.',
+      endSrc: 'tabledm://end.png',
+      startedAt: 1
+    }
+    player.getPlayerState.mockReturnValue({
+      ...emptyPlayerState(),
+      legend
+    })
+    invoke(IPC.playerShowGallery, {
+      title: 'Faces',
+      slides: [{ src: 'tabledm://alden.png' }]
+    })
+    const next = player.setPlayerState.mock.calls[0][0] as {
+      legend: { endSrc?: string }
+      gallery: { title?: string }
+    }
+    expect(next.legend).toEqual(legend)
+    expect(next.gallery).toMatchObject({ title: 'Faces' })
+    expect(player.stopPlayerLegend).toHaveBeenCalled()
+  })
+
   it('schedules the crawl closing still onto the player image layer', () => {
     invoke(IPC.playerShowCrawl, {
       title: 'Kestrel',
