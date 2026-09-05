@@ -609,10 +609,10 @@ body,
 }
 
 .player-layer-still img {
-  width: auto;
-  height: auto;
-  max-height: calc(100% - 2 * var(--player-image-pad, 4%));
-  max-width: calc(100% - 2 * var(--player-image-pad, 4%));
+  width: calc(100% - 2 * var(--player-image-pad, 4%));
+  height: calc(100% - 2 * var(--player-image-pad, 4%));
+  max-width: none;
+  max-height: none;
   object-fit: contain;
   object-position: center;
 }
@@ -928,8 +928,8 @@ body,
 }
 
 .opening-gallery-slide {
-  max-width: calc(100% - 2 * var(--player-image-pad, 4%));
-  max-height: calc(100% - 2 * var(--player-image-pad, 4%));
+  width: calc(100% - 2 * var(--player-image-pad, 4%));
+  height: calc(100% - 2 * var(--player-image-pad, 4%));
   object-fit: contain;
   transition: opacity 0.28s ease;
 }

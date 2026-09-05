@@ -26,7 +26,7 @@ With more than one display, click the **Players see** preview to put the player 
 
 1. Open a note that embeds `![[image.png]]`, or open an image from the tree.
 2. Click the image so it is selected.
-3. Press **Show to players** — the player screen fades in over ~5 seconds on black. Stills fit by width or height with a black inset (Help & settings → **Picture padding**, default 4%). Maps stay edge-to-edge. On Gear, Spells, Places, and Factions sheets: **Show art to players** (`Alt+S`) is picture only; **Show item to players** (`Alt+I`) adds the title, facts, and player-facing notes (`[!gmonly]` stays hidden unless you **Shift+click** / **Alt+Shift+I**).
+3. Press **Show to players** — the player screen fades in over ~5 seconds on black. Stills scale up or down to fit by width or height with a black inset (Help & settings → **Picture padding**, default 4%). Maps stay edge-to-edge. On Gear, Spells, Places, and Factions sheets: **Show art to players** (`Alt+S`) is picture only; **Show item to players** (`Alt+I`) adds the title, facts, and player-facing notes (`[!gmonly]` stays hidden unless you **Shift+click** / **Alt+Shift+I**).
 4. **Clear** (header or preview) blanks the player screen.
 
 The left **Players see** panel mirrors the player window. Use **Hide** there if you need vertical space.

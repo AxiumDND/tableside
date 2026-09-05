@@ -340,8 +340,8 @@ export default function HelpPanel({
             <div className="space-y-2 border-t border-line/60 pt-4">
               <Sub>Player TV</Sub>
               <p>
-                <Action>Show to players</Action> stills fit the screen by width or height, with a black inset so art is
-                not clipped by the TV bezel. Maps stay edge-to-edge.
+                <Action>Show to players</Action> stills scale up or down to fit by width or height, with a black inset so
+                art is not clipped by the TV bezel. Maps stay edge-to-edge.
               </p>
               <label className="block text-[13px] text-parchment/90">
                 <span className="font-semibold text-parchment">Picture padding</span>

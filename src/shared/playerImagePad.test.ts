@@ -1,3 +1,6 @@
+import { readFileSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import {
   DEFAULT_PLAYER_IMAGE_PAD_PCT,
@@ -6,6 +9,17 @@ import {
   clampPlayerImagePadPct,
   playerImagePadFromSettings
 } from './playerImagePad'
+
+const css = readFileSync(
+  resolve(dirname(fileURLToPath(import.meta.url)), '../renderer/src/index.css'),
+  'utf8'
+)
+
+function rule(selector: string): string {
+  const match = css.match(new RegExp(`${selector.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*\\{([^}]+)\\}`))
+  if (!match) throw new Error(`missing CSS rule ${selector}`)
+  return match[1]
+}
 
 describe('clampPlayerImagePadPct', () => {
   it('defaults, clamps, and rounds', () => {
@@ -26,5 +40,18 @@ describe('playerImagePadFromSettings', () => {
 
   it('reads a saved percent', () => {
     expect(playerImagePadFromSettings({ playerImagePadPct: 10 })).toBe(10)
+  })
+})
+
+describe('player still CSS', () => {
+  it('sizes stills and gallery slides to the padded box so small art scales up', () => {
+    const still = rule('.player-layer-still img')
+    expect(still).toMatch(/width:\s*calc\(100% - 2 \* var\(--player-image-pad/)
+    expect(still).toMatch(/height:\s*calc\(100% - 2 \* var\(--player-image-pad/)
+    expect(still).toMatch(/object-fit:\s*contain/)
+    expect(still).not.toMatch(/width:\s*auto/)
+    const gallery = rule('.opening-gallery-slide')
+    expect(gallery).toMatch(/width:\s*calc\(100% - 2 \* var\(--player-image-pad/)
+    expect(gallery).toMatch(/height:\s*calc\(100% - 2 \* var\(--player-image-pad/)
   })
 })

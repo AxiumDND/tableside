@@ -1,4 +1,4 @@
-/** Inset for Show to players stills. Tall art fits height; wide art fits width. */
+/** Inset for Show to players stills. Art scales up or down to fit width or height. */
 
 export const DEFAULT_PLAYER_IMAGE_PAD_PCT = 4
 export const MIN_PLAYER_IMAGE_PAD_PCT = 0
