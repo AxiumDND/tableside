@@ -23,6 +23,15 @@ describe('PlayerView still fades', () => {
     expect(container.querySelector('.player-layer.player-fade-in img')?.getAttribute('src')).toBe(
       'tabledm://a.png'
     )
+    expect(container.querySelector('.player-layer-still')).toBeTruthy()
+    expect(container.querySelector('.player-stage')?.getAttribute('style')).toContain('--player-image-pad: 4%')
+  })
+
+  it('applies the saved picture padding to stills', () => {
+    const { container } = render(
+      <PlayerView state={{ ...emptyPlayerState(), imageSrc: 'tabledm://a.png', imagePadPct: 12 }} />
+    )
+    expect(container.querySelector('.player-stage')?.getAttribute('style')).toContain('--player-image-pad: 12%')
   })
 
   it('fades a new still over the previous layer', () => {

@@ -2,6 +2,8 @@ import { join } from 'node:path'
 import { BrowserWindow, screen } from 'electron'
 import type { DisplayInfo, PlayerState } from '../shared/types'
 import { emptyPlayerState } from '../shared/types'
+import { clampPlayerImagePadPct, playerImagePadFromSettings } from '../shared/playerImagePad'
+import { getSettings } from './appSettings'
 import {
   playerOutputScaleMismatch,
   playerWindowNeedsRebuild,
@@ -81,7 +83,19 @@ export function setPlayerState(next: PlayerState, opts?: { show?: boolean }): Pl
 
 export function resetPlayerState(partial?: Partial<PlayerState>): PlayerState {
   clearStopTimers()
-  playerState = { ...emptyPlayerState(), ...partial }
+  playerState = {
+    ...emptyPlayerState(),
+    imagePadPct: playerImagePadFromSettings(getSettings()),
+    ...partial
+  }
+  sendPlayerState()
+  return playerState
+}
+
+export function applyPlayerImagePad(pct: unknown): PlayerState {
+  const imagePadPct = clampPlayerImagePadPct(pct)
+  if (playerState.imagePadPct === imagePadPct) return playerState
+  playerState = { ...playerState, imagePadPct }
   sendPlayerState()
   return playerState
 }

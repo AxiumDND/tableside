@@ -11,6 +11,12 @@ import {
   boxOfDoomHoldMs
 } from '../../../shared/boxOfDoom'
 import { parseUpdateChannel, type UpdateChannel } from '../../../shared/updateChannel'
+import {
+  DEFAULT_PLAYER_IMAGE_PAD_PCT,
+  MAX_PLAYER_IMAGE_PAD_PCT,
+  MIN_PLAYER_IMAGE_PAD_PCT,
+  clampPlayerImagePadPct
+} from '../../../shared/playerImagePad'
 import CurrenciesSettings from './CurrenciesSettings'
 
 type HelpSection = 'settings' | 'start' | 'screens' | 'files' | 'music' | 'combat' | 'lookup' | 'keys' | 'updates'
@@ -180,6 +186,7 @@ export default function HelpPanel({
   const [open, setOpen] = useState<HelpSection | null>('settings')
   const [folders, setFolders] = useState<AppFolders | null>(null)
   const [boxOfDoomHoldSec, setBoxOfDoomHoldSec] = useState(String(DEFAULT_BOX_OF_DOOM_HOLD_MS / 1000))
+  const [playerImagePadPct, setPlayerImagePadPct] = useState(DEFAULT_PLAYER_IMAGE_PAD_PCT)
   const [updateChannel, setUpdateChannel] = useState<UpdateChannel>('stable')
 
   function toggle(id: HelpSection): void {
@@ -194,6 +201,7 @@ export default function HelpPanel({
     void window.tabledm.getSettings().then((prefs) => {
       const sec = boxOfDoomHoldMs(prefs.boxOfDoomHoldSec) / 1000
       setBoxOfDoomHoldSec(String(sec))
+      setPlayerImagePadPct(clampPlayerImagePadPct(prefs.playerImagePadPct))
       setUpdateChannel(parseUpdateChannel(prefs.updateChannel))
     })
   }, [])
@@ -207,6 +215,12 @@ export default function HelpPanel({
     const sec = boxOfDoomHoldMs(raw) / 1000
     setBoxOfDoomHoldSec(String(sec))
     void window.tabledm.saveSettings({ boxOfDoomHoldSec: sec })
+  }
+
+  function savePlayerImagePadPct(raw: number | string): void {
+    const pct = clampPlayerImagePadPct(raw)
+    setPlayerImagePadPct(pct)
+    void window.tabledm.saveSettings({ playerImagePadPct: pct })
   }
 
   return (
@@ -324,6 +338,31 @@ export default function HelpPanel({
             </div>
 
             <div className="space-y-2 border-t border-line/60 pt-4">
+              <Sub>Player TV</Sub>
+              <p>
+                <Action>Show to players</Action> stills fit the screen by width or height, with a black inset so art is
+                not clipped by the TV bezel. Maps stay edge-to-edge.
+              </p>
+              <label className="block text-[13px] text-parchment/90">
+                <span className="font-semibold text-parchment">Picture padding</span>
+                <span className="mt-0.5 block text-[12px] leading-snug text-muted">
+                  {playerImagePadPct}% on each side ({MIN_PLAYER_IMAGE_PAD_PCT}–{MAX_PLAYER_IMAGE_PAD_PCT}). Default{' '}
+                  {DEFAULT_PLAYER_IMAGE_PAD_PCT}%.
+                </span>
+                <input
+                  type="range"
+                  min={MIN_PLAYER_IMAGE_PAD_PCT}
+                  max={MAX_PLAYER_IMAGE_PAD_PCT}
+                  step={1}
+                  value={playerImagePadPct}
+                  aria-label="Picture padding"
+                  onChange={(event) => savePlayerImagePadPct(event.target.value)}
+                  className="mt-2 w-full"
+                />
+              </label>
+            </div>
+
+            <div className="space-y-2 border-t border-line/60 pt-4">
               <Sub>Dice</Sub>
               <p>
                 Every roll in Tableside — dice tray, Box of Doom, stat block chips, combat initiative, Lookup attack
@@ -398,7 +437,7 @@ export default function HelpPanel({
                 <Code>Alt+S</Code>). On Gear, Spells, Places, and Factions, use <Action>Show art to players</Action> for
                 the picture only, or <Action>Show item to players</Action> for art plus details (
                 <Code>Alt+I</Code>; hold <Code>Shift</Code> to include GM-only notes). It fades in over about five
-                seconds. In a Sci-fi campaign,{' '}
+                seconds and fits the TV with a little padding (Help & settings → Settings → Picture padding). In a Sci-fi campaign,{' '}
                 <Action>Play</Action> on an Opening crawl card sends that text to the player screen. While it runs,{' '}
                 <Action>Stop</Action> fades to black over five seconds, fades out crawl music, and resumes the mood
                 playlist.{' '}

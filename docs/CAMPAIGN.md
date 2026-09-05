@@ -117,7 +117,7 @@ Notes can stay in Obsidian. Tableside understands:
 | `[[Note Name\|Alias]]` | Link with display text |
 | `![[Portrait.png]]` | Embed an image from that folder’s `Art/` (or elsewhere in the campaign) |
 
-Portrait files should match the character or creature name when possible. Click an image in a note, then **Show to players** — the player monitor fades it in on a black screen.
+Portrait files should match the character or creature name when possible. Click an image in a note, then **Show to players** — the player monitor fades it in on a black screen, fitted with a little padding (Help & settings).
 
 **Map notes** (a fenced `map` block) open as a full map with DM-only pins, circular tokens from Party / NPCs / Bestiary, zoom/pan, and drawable fog. Right-click **Maps/** → **New map…** to pick existing art or load a file into `Maps/Art/` named like the note. **Show to players** sends the image, the current crop, fog, and tokens — no pins. See [MARKDOWN.md](MARKDOWN.md).
 

@@ -13,6 +13,7 @@ import OpeningBoxOfDoom from './OpeningBoxOfDoom'
 import OpeningHourglass from './OpeningHourglass'
 import OpeningDiceShow from './OpeningDiceShow'
 import { playerInitiativeVisible } from '../../../shared/playerInitiative'
+import { clampPlayerImagePadPct } from '../../../shared/playerImagePad'
 
 const FADE_MS = 5000
 
@@ -123,6 +124,7 @@ export default function PlayerView({
   }, [handoutScene?.id, handoutScene?.fadingOut])
 
   const showInit = playerInitiativeVisible(state)
+  const imagePadPct = clampPlayerImagePadPct(state.imagePadPct)
 
   const splitForHandout = Boolean(handoutScene && !handoutScene.fadingOut)
   const handoutOnly = splitForHandout && !incoming && layers.length === 0
@@ -132,6 +134,7 @@ export default function PlayerView({
       className={`player-stage${compact ? ' player-stage-compact' : ''}${
         splitForHandout && !handoutOnly ? ' has-handout' : ''
       }${handoutOnly ? ' handout-only' : ''}`}
+      style={{ ['--player-image-pad' as string]: `${imagePadPct}%` }}
     >
       {layers.map((layer, index) => {
         const top = index === layers.length - 1
@@ -140,7 +143,9 @@ export default function PlayerView({
         return (
           <div
             key={layer.id}
-            className={`player-layer${fadeIn ? ' player-fade-in' : ''}${fadeOut ? ' player-fade-out' : ''}`}
+            className={`player-layer${layer.mapView ? '' : ' player-layer-still'}${
+              fadeIn ? ' player-fade-in' : ''
+            }${fadeOut ? ' player-fade-out' : ''}`}
           >
             {layer.mapView ? (
               <PlayerMapLayer src={layer.src} mapView={layer.mapView} />

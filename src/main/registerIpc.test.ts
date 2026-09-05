@@ -38,6 +38,7 @@ const player = vi.hoisted(() => ({
   stopPlayerHourglass: vi.fn(() => emptyPlayerState()),
   scheduleCrawlEndStill: vi.fn(),
   scheduleLegendEndStill: vi.fn(),
+  applyPlayerImagePad: vi.fn(),
   clearBoxOfDoomTimers: vi.fn(),
   clearHourglassTimers: vi.fn(),
   scheduleBoxOfDoomAutoFade: vi.fn(),
@@ -436,9 +437,16 @@ describe('main IPC registration', () => {
     await expect(invoke(IPC.campaignGet)).resolves.toBeNull()
   })
 
-  it('saves app settings through patchSettings', () => {
-    invoke(IPC.appSaveSettings, { theme: 'scifi' })
+  it('saves app settings through patchSettings', async () => {
+    await invoke(IPC.appSaveSettings, { theme: 'scifi' })
     expect(settings.patchSettings).toHaveBeenCalledWith({ theme: 'scifi' })
+    expect(player.applyPlayerImagePad).not.toHaveBeenCalled()
+  })
+
+  it('pushes picture padding onto the player TV when the setting changes', async () => {
+    settings.patchSettings.mockResolvedValueOnce({ playerImagePadPct: 10 })
+    await invoke(IPC.appSaveSettings, { playerImagePadPct: 10 })
+    expect(player.applyPlayerImagePad).toHaveBeenCalledWith(10)
   })
 
 })

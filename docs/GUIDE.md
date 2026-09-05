@@ -69,7 +69,7 @@ Right-click a folder to create a player, party roster, NPC, monster, spell, gear
 
 1. Open a note that embeds `![[image.png]]`, or click an image in the file tree.
 2. Click the picture so it is selected.
-3. Press **Show to players** (`Alt+S`). The TV fades in over about five seconds.
+3. Press **Show to players** (`Alt+S`). The TV fades in over about five seconds. Pictures fit the screen with a little padding (Help & settings → Picture padding).
 4. **Clear** (`Alt+X`) when you are done.
 
 PDFs open for you only. They are not sent to the TV. Use an image under `Maps/Art/` (or a screenshot) if the players should see it.

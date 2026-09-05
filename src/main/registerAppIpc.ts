@@ -8,7 +8,8 @@ import {
   hideWebSheetEmbed,
   setWebSheetEmbedBounds
 } from './webSheetWindow'
-import { listDisplays } from './playerOutput'
+import { applyPlayerImagePad, listDisplays } from './playerOutput'
+import { playerImagePadFromSettings } from '../shared/playerImagePad'
 
 export type AppIpcDeps = {
   confirmClose: () => void
@@ -18,7 +19,13 @@ export type AppIpcDeps = {
 export function registerAppIpc(deps: AppIpcDeps): void {
   ipcMain.handle(IPC.appDisplays, () => listDisplays())
   ipcMain.handle(IPC.appGetSettings, () => getSettings())
-  ipcMain.handle(IPC.appSaveSettings, (_e, partial: AppSettings) => patchSettings(partial ?? {}))
+  ipcMain.handle(IPC.appSaveSettings, async (_e, partial: AppSettings) => {
+    const next = await patchSettings(partial ?? {})
+    if (partial && 'playerImagePadPct' in partial) {
+      applyPlayerImagePad(playerImagePadFromSettings(next))
+    }
+    return next
+  })
   ipcMain.handle(IPC.appFolders, () => appFolders())
   ipcMain.handle(IPC.appOpenFolder, (_e, kind: string) => openAppFolder(kind))
   ipcMain.handle(IPC.appReadConvertGuide, () => readConvertGuide())

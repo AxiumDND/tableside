@@ -1,4 +1,5 @@
 import { APP_NAME } from './version'
+import { DEFAULT_PLAYER_IMAGE_PAD_PCT } from './playerImagePad'
 import type { CampaignCurrency } from './currencies'
 import type { PlayerDiceShow } from './playerDiceShow'
 
@@ -278,6 +279,8 @@ export interface PlayerHourglass {
 export interface PlayerState {
   imageSrc: string | null
   imageTitle: string
+  /** Percent inset around stills on the player TV. Maps ignore this. */
+  imagePadPct?: number
   campaignTitle: string
   initiative: PlayerInitiativeEntry[]
   showInitiative: boolean
@@ -335,6 +338,8 @@ export interface AppSettings {
   dismissedUpdateVersion?: string
   /** GitHub Latest only, or Latest plus Pre-releases. Default stable. */
   updateChannel?: 'stable' | 'beta'
+  /** Percent inset around Show to players stills (0–20). Default 4. Maps stay edge-to-edge. */
+  playerImagePadPct?: number
 }
 
 /** Optional image when creating a map or sheet note. */
@@ -354,6 +359,7 @@ export const emptyCombat = (): CombatState => ({
 export const emptyPlayerState = (): PlayerState => ({
   imageSrc: null,
   imageTitle: '',
+  imagePadPct: DEFAULT_PLAYER_IMAGE_PAD_PCT,
   campaignTitle: APP_NAME,
   initiative: [],
   showInitiative: false,

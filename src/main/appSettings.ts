@@ -5,6 +5,7 @@ import { dirname, join, normalize } from 'node:path'
 import type { AppSettings } from '../shared/types'
 import { emptySettings } from '../shared/types'
 import { parseUpdateChannel, type UpdateChannel } from '../shared/updateChannel'
+import { clampPlayerImagePadPct } from '../shared/playerImagePad'
 import { ensureBooksHome } from './bookLibrary'
 import { ensureConvertGuide, revealConvertGuide } from './convertGuide'
 
@@ -83,7 +84,9 @@ function settingsPath(): string {
 function normalizeSettings(raw: AppSettings): AppSettings {
   return {
     ...raw,
-    updateChannel: parseUpdateChannel(raw.updateChannel)
+    updateChannel: parseUpdateChannel(raw.updateChannel),
+    playerImagePadPct:
+      raw.playerImagePadPct == null ? undefined : clampPlayerImagePadPct(raw.playerImagePadPct)
   }
 }
 
@@ -108,6 +111,9 @@ export async function patchSettings(partial: AppSettings): Promise<AppSettings> 
   const next: AppSettings = { ...settings, ...partial }
   if (partial.updateChannel !== undefined) {
     next.updateChannel = parseUpdateChannel(partial.updateChannel)
+  }
+  if (partial.playerImagePadPct !== undefined) {
+    next.playerImagePadPct = clampPlayerImagePadPct(partial.playerImagePadPct)
   }
   await writeSettings(next)
   if (partial.theme !== undefined) deps.onThemeChanged?.(settings.theme)
