@@ -5,6 +5,7 @@ import {
   BUILTIN_DICE_ROLL_PATH,
   isBuiltinSfx
 } from './diceRollSound'
+import { BUILTIN_HOURGLASS_CHIME_PATH } from './hourglass'
 
 export const AUDIO_EXT = new Set(['.mp3', '.ogg', '.wav', '.m4a', '.flac', '.webm', '.aac'])
 
@@ -212,10 +213,20 @@ export const BUILTIN_DICE_MULTI_SFX_TRACK: AudioTrack = {
   name: 'Dice (handful)'
 }
 
+export const BUILTIN_HOURGLASS_SFX_TRACK: AudioTrack = {
+  relativePath: BUILTIN_HOURGLASS_CHIME_PATH,
+  name: 'Hourglass'
+}
+
 const BUILTIN_SFX_GROUP_ID = 'Audio/Sfx'
 
 export function withBuiltinSfx(library: AudioLibrary): AudioLibrary {
-  const builtins = [BUILTIN_DICE_SFX_TRACK, BUILTIN_DICE_PAIR_SFX_TRACK, BUILTIN_DICE_MULTI_SFX_TRACK]
+  const builtins = [
+    BUILTIN_DICE_SFX_TRACK,
+    BUILTIN_DICE_PAIR_SFX_TRACK,
+    BUILTIN_DICE_MULTI_SFX_TRACK,
+    BUILTIN_HOURGLASS_SFX_TRACK
+  ]
   const groups = library.sfx.filter((group) => group.id !== 'builtin:sfx')
   const rootIndex = groups.findIndex((group) => group.id === BUILTIN_SFX_GROUP_ID)
   if (rootIndex >= 0) {

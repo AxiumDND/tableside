@@ -594,8 +594,9 @@ export default function HelpPanel({
               </>,
               <>
                 <Code>Audio/Sfx</Code> — clickable one-shots. Subfolders become headings. Bundled{' '}
-                <Action>Dice (one)</Action>, <Action>Dice (two)</Action>, and <Action>Dice (handful)</Action> sit on
-                the board even with no campaign files.
+                <Action>Dice (one)</Action>, <Action>Dice (two)</Action>, <Action>Dice (handful)</Action>, and{' '}
+                <Action>Hourglass</Action> sit on the board even with no campaign files. The timer chime uses that
+                same Sfx layer.
               </>
             ]}
           />
@@ -910,7 +911,8 @@ export default function HelpPanel({
             <Action>Tools</Action> → <Action>Timer</Action>: pick minutes, then <Action>Show</Action> to fade a full
             hourglass over the player TV. <Action>Start</Action> begins the countdown. Pause, resume, or reset;{' '}
             <Action>Fade out</Action> returns to the picture underneath. The empty glass holds at zero until you fade
-            it. Uncheck <Action>Chime at zero</Action> to skip the Music Sfx hit. Not saved to the campaign.
+            it. Uncheck <Action>Chime at zero</Action> to skip the Sfx-layer hit (same Music soundboard fader as
+            dice; the <Action>Hourglass</Action> chip is on that board). Not saved to the campaign.
           </p>
         </Section>
 

@@ -43,6 +43,7 @@ describe('audio library', () => {
       'Dice (one)',
       'Dice (two)',
       'Dice (handful)',
+      'Hourglass',
       'Thunder'
     ])
     expect(library.skipped).toBe(0)
@@ -62,6 +63,19 @@ describe('audio library', () => {
       name: 'Dice (handful)',
       relativePath: 'builtin:dice-roll-multi'
     })
+    expect(tracks[3]).toMatchObject({
+      name: 'Hourglass',
+      relativePath: 'builtin:hourglass-chime'
+    })
+  })
+
+  it('accepts the hourglass chime as an Sfx oneshot', () => {
+    const state = applyMixerCommand(emptyMixerState(), {
+      type: 'oneshot',
+      path: 'builtin:hourglass-chime'
+    })
+    expect(state.playback.oneshot?.path).toBe('builtin:hourglass-chime')
+    expect(state.playback.error).toBeNull()
   })
 
   it('counts audio sitting outside Music, Ambience, or Sfx', () => {

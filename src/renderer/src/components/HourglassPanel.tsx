@@ -116,7 +116,8 @@ export default function HourglassPanel({ overlay }: { overlay: PlayerHourglass |
       <p className="text-[11px] text-muted">
         Fade a full hourglass over whatever is on the player TV, then start the countdown when the
         table is ready. Pause, reset, or fade back to that picture. The glass stays empty at zero
-        until you fade out. Optional chime plays on the Music panel Sfx layer.
+        until you fade out. Optional chime plays on the Music soundboard Sfx layer — same fader as
+        dice.
       </p>
       <div className="flex flex-wrap gap-1" role="group" aria-label="Timer presets">
         {PRESETS.map((preset) => (

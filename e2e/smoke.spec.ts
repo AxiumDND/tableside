@@ -35,6 +35,7 @@ test('Dice tool and built-in Sfx oneshots are on the console', async () => {
   await expect(dmWindow.getByRole('button', { name: 'Dice (one)', exact: true })).toBeVisible()
   await expect(dmWindow.getByRole('button', { name: 'Dice (two)', exact: true })).toBeVisible()
   await expect(dmWindow.getByRole('button', { name: 'Dice (handful)', exact: true })).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Hourglass', exact: true })).toBeVisible()
 })
 
 test('Timer tool shows a waiting glass and a separate Start control', async () => {
