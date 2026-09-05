@@ -484,7 +484,7 @@ export default function HelpPanel({
               </>,
               <>Center: the open note, image, or PDF.</>,
               <>Right: Combat, Music, Tools, or this panel — one at a time. The panel icon at the right of the
-                header hides it; click it again to bring back the last tool. Tools holds Lookup, NPC, Improvise, Dice, and Links.</>
+                header hides it; click it again to bring back the last tool. Tools holds Lookup, NPC, Improvise, Dice, Timer, and Links.</>
             ]}
           />
           <Sub>Show maps and art</Sub>
@@ -905,6 +905,13 @@ export default function HelpPanel({
             lookups, map makers, free art/tokens, GM blogs, generators, ambience, and random tables — grouped by
             category. Tableside does not embed or track them.
           </p>
+          <Sub>Timer</Sub>
+          <p>
+            <Action>Tools</Action> → <Action>Timer</Action>: pick minutes, then <Action>Show</Action> to fade a full
+            hourglass over the player TV. <Action>Start</Action> begins the countdown. Pause, resume, or reset;{' '}
+            <Action>Fade out</Action> returns to the picture underneath. The empty glass holds at zero until you fade
+            it. Uncheck <Action>Chime at zero</Action> to skip the Music Sfx hit. Not saved to the campaign.
+          </p>
         </Section>
 
         <Section id="keys" title="Dice & shortcuts" open={open} onToggle={toggle}>
@@ -925,6 +932,13 @@ export default function HelpPanel({
             <Action>Fade out</Action> or the auto fade-out timer in <strong>Settings</strong> runs. A natural 20 always
             succeeds; a natural 1 always fails. The clatter plays as the dice land. Uncheck{' '}
             <Action>Play sound on Roll</Action> to skip it (same one-die / two-die recordings as the tray).
+          </p>
+          <Sub>Timer</Sub>
+          <p>
+            <Action>Tools</Action> → <Action>Timer</Action>: <Action>Show</Action> puts a full glass on the TV; a
+            separate <Action>Start</Action> begins the sand. Last 30 seconds warm toward blood-red. Zero holds until{' '}
+            <Action>Fade out</Action>. Header <Action>Clear</Action> / <Code>Alt+X</Code> takes it with the rest of the
+            player screen.
           </p>
           <Sub>Shortcuts</Sub>
           <Ul

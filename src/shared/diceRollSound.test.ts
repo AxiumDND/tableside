@@ -1,6 +1,7 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
+import { BUILTIN_HOURGLASS_CHIME_PATH } from './hourglass'
 import {
   BUILTIN_DICE_ROLL_MULTI_PATH,
   BUILTIN_DICE_ROLL_PAIR_PATH,
@@ -20,6 +21,7 @@ describe('dice roll sound', () => {
     expect(isBuiltinSfx(BUILTIN_DICE_ROLL_PATH)).toBe(true)
     expect(isBuiltinSfx(BUILTIN_DICE_ROLL_PAIR_PATH)).toBe(true)
     expect(isBuiltinSfx(BUILTIN_DICE_ROLL_MULTI_PATH)).toBe(true)
+    expect(isBuiltinSfx(BUILTIN_HOURGLASS_CHIME_PATH)).toBe(true)
     expect(isBuiltinSfx('Audio/Sfx/Thunder.mp3')).toBe(false)
   })
 

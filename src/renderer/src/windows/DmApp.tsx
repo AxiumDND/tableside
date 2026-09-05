@@ -637,6 +637,7 @@ export default function DmApp() {
               onSaveToCampaign={saveLookupToCampaign}
               canSaveToCampaign={Boolean(campaign)}
               boxOfDoom={player.boxOfDoom ?? null}
+              hourglass={player.hourglass ?? null}
               diceCheckSound={diceCheckSound}
               onDiceCheckSound={(on) => {
                 setDiceCheckSound(on)

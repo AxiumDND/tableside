@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { IPC } from '../shared/ipc'
 import { emptyPlayerState } from '../shared/types'
 
@@ -35,7 +35,9 @@ const player = vi.hoisted(() => ({
   stopPlayerPhone: vi.fn(() => emptyPlayerState()),
   stopPlayerHyperspace: vi.fn(() => emptyPlayerState()),
   stopPlayerBoxOfDoom: vi.fn(() => emptyPlayerState()),
+  stopPlayerHourglass: vi.fn(() => emptyPlayerState()),
   clearBoxOfDoomTimers: vi.fn(),
+  clearHourglassTimers: vi.fn(),
   scheduleBoxOfDoomAutoFade: vi.fn(),
   showPlayerDice: vi.fn((payload: Record<string, unknown>) => {
     const prev = player.getPlayerState() as ReturnType<typeof emptyPlayerState>
@@ -132,6 +134,10 @@ describe('main IPC registration', () => {
     })
   })
 
+  afterEach(() => {
+    vi.useRealTimers()
+  })
+
   it('registers invoke handlers for every request channel', () => {
     const sendOnly = new Set<string>([
       IPC.appWillClose,
@@ -213,6 +219,86 @@ describe('main IPC registration', () => {
       boxOfDoom: { d20: number; rolls: number[]; success: boolean }
     }
     expect(next.boxOfDoom).toMatchObject({ d20: 17, rolls: [4, 17], success: true })
+  })
+
+  it('shows a full hourglass without starting the countdown', () => {
+    player.getPlayerState.mockReturnValue({
+      ...emptyPlayerState(),
+      imageSrc: 'tabledm://map.png'
+    })
+    invoke(IPC.playerShowHourglass, { minutes: 5, sound: true })
+    const next = player.setPlayerState.mock.calls.at(-1)?.[0] as {
+      imageSrc: string
+      boxOfDoom: unknown
+      hourglass: { durationMs: number; endsAt?: number; remainingMs?: number }
+    }
+    expect(next.imageSrc).toBe('tabledm://map.png')
+    expect(next.boxOfDoom).toBeNull()
+    expect(next.hourglass.durationMs).toBe(300_000)
+    expect(next.hourglass.endsAt).toBeUndefined()
+    expect(next.hourglass.remainingMs).toBeUndefined()
+  })
+
+  it('starts a waiting hourglass', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(10_000)
+    player.getPlayerState.mockReturnValue({
+      ...emptyPlayerState(),
+      hourglass: { durationMs: 60_000, shownAt: 1, sound: true }
+    })
+    invoke(IPC.playerStartHourglass)
+    const next = player.setPlayerState.mock.calls.at(-1)?.[0] as {
+      hourglass: { endsAt: number; durationMs: number }
+    }
+    expect(next.hourglass.durationMs).toBe(60_000)
+    expect(next.hourglass.endsAt).toBe(70_000)
+    vi.useRealTimers()
+  })
+
+  it('pauses a running hourglass and resumes from the remainder', () => {
+    vi.useFakeTimers()
+    vi.setSystemTime(20_000)
+    player.getPlayerState.mockReturnValue({
+      ...emptyPlayerState(),
+      hourglass: { durationMs: 60_000, shownAt: 1, endsAt: 70_000, sound: true }
+    })
+    invoke(IPC.playerPauseHourglass)
+    const paused = player.setPlayerState.mock.calls.at(-1)?.[0] as {
+      hourglass: { remainingMs: number; endsAt?: number }
+    }
+    expect(paused.hourglass.remainingMs).toBe(50_000)
+    expect(paused.hourglass.endsAt).toBeUndefined()
+
+    player.getPlayerState.mockReturnValue({
+      ...emptyPlayerState(),
+      hourglass: { durationMs: 60_000, shownAt: 1, remainingMs: 50_000, pausedAt: 20_000, sound: true }
+    })
+    vi.setSystemTime(30_000)
+    invoke(IPC.playerResumeHourglass)
+    const resumed = player.setPlayerState.mock.calls.at(-1)?.[0] as {
+      hourglass: { endsAt: number }
+    }
+    expect(resumed.hourglass.endsAt).toBe(80_000)
+    vi.useRealTimers()
+  })
+
+  it('resets the hourglass to a full waiting glass', () => {
+    player.getPlayerState.mockReturnValue({
+      ...emptyPlayerState(),
+      hourglass: { durationMs: 60_000, shownAt: 1, remainingMs: 12_000, pausedAt: 2 }
+    })
+    invoke(IPC.playerResetHourglass, { minutes: 3 })
+    const next = player.setPlayerState.mock.calls.at(-1)?.[0] as {
+      hourglass: { durationMs: number; endsAt?: number; remainingMs?: number }
+    }
+    expect(next.hourglass.durationMs).toBe(180_000)
+    expect(next.hourglass.endsAt).toBeUndefined()
+    expect(next.hourglass.remainingMs).toBeUndefined()
+  })
+
+  it('fades the hourglass out', () => {
+    invoke(IPC.playerStopHourglass)
+    expect(player.stopPlayerHourglass).toHaveBeenCalled()
   })
 
   it('shows dice on the player strip without clearing media', () => {

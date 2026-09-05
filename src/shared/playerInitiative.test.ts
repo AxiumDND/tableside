@@ -30,4 +30,22 @@ describe('playerInitiativeVisible', () => {
       })
     ).toBe(true)
   })
+
+  it('hides initiative under an active hourglass overlay', () => {
+    expect(
+      playerInitiativeVisible({
+        ...base,
+        hourglass: { durationMs: 60_000, shownAt: 1 }
+      })
+    ).toBe(false)
+  })
+
+  it('returns initiative while the hourglass is fading out', () => {
+    expect(
+      playerInitiativeVisible({
+        ...base,
+        hourglass: { durationMs: 60_000, shownAt: 1, stoppingAt: 2 }
+      })
+    ).toBe(true)
+  })
 })

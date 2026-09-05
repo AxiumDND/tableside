@@ -6,5 +6,6 @@ export function playerInitiativeVisible(state: PlayerState): boolean {
     return false
   }
   if (state.boxOfDoom && state.boxOfDoom.stoppingAt == null) return false
+  if (state.hourglass && state.hourglass.stoppingAt == null) return false
   return state.showInitiative && state.initiative.length > 0
 }

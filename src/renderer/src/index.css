@@ -1756,6 +1756,122 @@ body,
   }
 }
 
+.hourglass {
+  --hourglass-sand: #d4a24a;
+  --hourglass-sand-hi: #f0d48a;
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1.4vh;
+  background:
+    radial-gradient(ellipse at center, rgba(28, 18, 8, 0.28) 0%, rgba(0, 0, 0, 0.88) 72%),
+    rgba(5, 5, 5, 0.55);
+  color: var(--color-parchment, #f4e6c3);
+  text-align: center;
+  opacity: 0;
+  transition: opacity 1.4s ease;
+  pointer-events: none;
+}
+
+.hourglass.is-in {
+  opacity: 1;
+}
+
+.hourglass.is-out {
+  opacity: 0;
+}
+
+.hourglass.is-urgent {
+  --hourglass-sand: var(--color-blood);
+  --hourglass-sand-hi: #f0a090;
+  background:
+    radial-gradient(ellipse at center, rgba(70, 8, 8, 0.42) 0%, rgba(0, 0, 0, 0.92) 70%),
+    #050505;
+}
+
+.hourglass.is-expired {
+  --hourglass-sand: #8a6a3a;
+  --hourglass-sand-hi: #c4a05a;
+}
+
+.hourglass-kicker {
+  margin: 0;
+  font-size: 1.6vmin;
+  letter-spacing: 0.42em;
+  text-transform: uppercase;
+  color: var(--color-amber-dim, #c4a574);
+}
+
+.hourglass-mark {
+  width: 42vmin;
+  height: 68vmin;
+  filter: drop-shadow(0 1.2vmin 2.4vmin rgba(0, 0, 0, 0.55));
+}
+
+.hourglass-glow {
+  fill: rgba(212, 176, 106, 0.16);
+}
+
+.hourglass.is-urgent .hourglass-glow {
+  fill: rgba(224, 91, 85, 0.2);
+  animation: hourglass-pulse 1.15s ease-in-out infinite;
+}
+
+.hourglass-shine {
+  fill: rgba(255, 255, 255, 0.18);
+}
+
+.hourglass-clock {
+  margin: 0;
+  font-family: var(--font-display, Georgia, serif);
+  font-size: 10vmin;
+  letter-spacing: 0.08em;
+  line-height: 1;
+  color: var(--color-amber, #f3d48a);
+  text-shadow: 0 0.35vmin 1.6vmin rgba(0, 0, 0, 0.65);
+  font-variant-numeric: tabular-nums;
+}
+
+.hourglass.is-urgent .hourglass-clock {
+  color: var(--color-blood);
+  animation: hourglass-pulse 1.15s ease-in-out infinite;
+}
+
+.hourglass.is-expired .hourglass-clock,
+.hourglass.is-expired .hourglass-kicker {
+  color: var(--color-amber);
+}
+
+.hourglass-stream-spark {
+  fill: rgba(255, 236, 180, 0.85);
+  animation: hourglass-fall 0.42s linear infinite;
+}
+
+@keyframes hourglass-pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.72;
+  }
+}
+
+@keyframes hourglass-fall {
+  from {
+    transform: translateY(0);
+    opacity: 0.95;
+  }
+  to {
+    transform: translateY(18px);
+    opacity: 0.15;
+  }
+}
+
 .player-dice-show {
   position: absolute;
   top: 6%;

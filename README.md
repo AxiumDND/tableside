@@ -60,7 +60,7 @@ The video above is the first night. **[docs/GUIDE.md](docs/GUIDE.md)** is the sa
 1. Install, then **Sample** (Greystead) or **Open** / **New** a campaign folder. **New campaign** asks which system pack to use: **D&D 5e** (bundled SRD 5.2.1), **Pathfinder 2e** (small original core), or **Vampire 5th Edition**.
 2. Click **Players see** to put the player window on the table TV.
 3. Open a note, click a picture, **Show to players** (`Alt+S`). **Clear** (`Alt+X`) blanks the TV.
-4. **Combat** loads a game night sheet’s combatants. **Music** plays your files from `Audio/`. **Tools** holds Lookup (offline system pack), NPC (name rolls + quick-create), Improvise, Dice, and Links.
+4. **Combat** loads a game night sheet’s combatants. **Music** plays your files from `Audio/`. **Tools** holds Lookup (offline system pack), NPC (name rolls + quick-create), Improvise, Dice, Timer, and Links.
 
 ## Who made this
 

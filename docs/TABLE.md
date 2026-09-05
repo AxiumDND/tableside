@@ -9,7 +9,7 @@ How the DM console and player window work during a session. **New to Tableside?*
 | Header | Campaign name, New / Open / Switch campaign (recents), Combat / Music / Tools / Help & settings, player display picker, Clear |
 | Left column | Mini **Players see** preview, campaign file tree, dice tray |
 | Center | Open note, image, PDF, or audio preview |
-| Right (optional) | Combat tracker, Music mixer, Tools (Lookup, NPC, Improvise, Dice, Links), or Help & settings |
+| Right (optional) | Combat tracker, Music mixer, Tools (Lookup, NPC, Improvise, Dice, Timer, Links), or Help & settings |
 
 Two Electron windows open: the DM console, and a fullscreen **player** window on a second monitor. **Close** on the Players see preview shuts the player window so you can use the TV for something else. Pick a monitor or **Show to players** to open it again. **Theme** is a campaign setting (Classic fantasy, Light, Sci-fi, Vampire, Cyberpunk, Digital rain): New campaign asks for it, Open applies `campaign.json`, and you can change it from **Help & settings** or **Start Here**. Sci-fi can turn on **Hologram portraits** for party, NPC, beast, and gear art. Digital rain can turn on **Falling code** in the file list and notes. The player TV stays black.
 
@@ -103,7 +103,7 @@ State saves to `combat.json` in the campaign folder.
 
 ## Tools panel
 
-**Tools** in the header opens the right rail. Pick **Lookup**, **NPC**, **Improvise**, **Dice**, or **Links**.
+**Tools** in the header opens the right rail. Pick **Lookup**, **NPC**, **Improvise**, **Dice**, **Timer**, or **Links**.
 
 ### Lookup
 
@@ -127,6 +127,10 @@ Pick a race (5e) or ancestry (Pathfinder 2e), then **Name flavor** for how the n
 ### Dice
 
 Set a DC, a d20 modifier, and **Normal**, **Advantage**, or **Disadvantage**. **Show** fades the check over whatever is already on the player TV and waits (two dice for advantage or disadvantage). **Roll** tumbles, then holds **Success** or **Failure**. **Fade out** returns to that picture. Natural 20 always succeeds; natural 1 always fails. The roll clatter plays on the Music **Sfx** layer as the dice land; uncheck **Play sound on Roll** to silence it.
+
+### Timer
+
+Set minutes (1 / 3 / 5 / 10, or a custom 1–120). **Show** fades a full hourglass over whatever is already on the player TV and waits. **Start** begins the countdown. **Pause** / **Resume** hold the sand; **Reset** fills the glass again for the same minutes. **Fade out** returns to that picture. The glass stays empty at zero until you fade out. Optional chime plays on the Music **Sfx** layer; uncheck **Chime at zero** to silence it. Last Show wins against Box of Doom. Header **Clear** takes the timer with the rest of the TV. Not saved to the campaign.
 
 ### Links
 

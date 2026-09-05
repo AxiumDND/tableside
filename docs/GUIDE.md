@@ -189,6 +189,8 @@ Optional PHB / DMG text dumps go in the app `Additional Books/` folder — not i
 
 **Tools → Links** is a short list of curated D&D reference sites (opens in your browser).
 
+**Tools → Timer** fades a full hourglass onto the player TV. **Show** first, then **Start** when the table should begin deciding. Pause, reset, or fade out. Optional chime on Music Sfx at zero.
+
 ### 8. Roll dice
 
 The **dice tray** sits at the bottom of the left column. Quick d4–d20 buttons, plus a custom expression (`2d6+3`). Rolls feed the same log as combat and statblock clicks.

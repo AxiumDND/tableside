@@ -1,3 +1,5 @@
+import { BUILTIN_HOURGLASS_CHIME_PATH } from './hourglass'
+
 /** Mixer oneshot paths for bundled dice clatter (not campaign files). */
 export const BUILTIN_DICE_ROLL_PATH = 'builtin:dice-roll'
 export const BUILTIN_DICE_ROLL_PAIR_PATH = 'builtin:dice-roll-pair'
@@ -51,7 +53,7 @@ const BUILTIN_PATHS = new Set([
 ])
 
 export function isBuiltinSfx(path: string): boolean {
-  return BUILTIN_PATHS.has(path)
+  return BUILTIN_PATHS.has(path) || path === BUILTIN_HOURGLASS_CHIME_PATH
 }
 
 export function diceRollVariantForPath(path: string): DiceRollSoundVariant {

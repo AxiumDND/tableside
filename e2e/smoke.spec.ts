@@ -37,6 +37,16 @@ test('Dice tool and built-in Sfx oneshots are on the console', async () => {
   await expect(dmWindow.getByRole('button', { name: 'Dice (handful)', exact: true })).toBeVisible()
 })
 
+test('Timer tool shows a waiting glass and a separate Start control', async () => {
+  const tools = dmWindow.getByRole('button', { name: 'Tools' })
+  await tools.click()
+  await dmWindow.getByRole('navigation', { name: 'Tools' }).getByRole('button', { name: 'Timer' }).click()
+  await expect(dmWindow.getByRole('button', { name: 'Show', exact: true })).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Start' })).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Start' })).toBeDisabled()
+  await expect(dmWindow.getByText('Chime at zero')).toBeVisible()
+})
+
 test('Dice tray exposes show-to-players and roll-sound toggles', async () => {
   await expect(dmWindow.getByText('Show rolls to players')).toBeVisible()
   await expect(dmWindow.getByText('Play roll sound')).toBeVisible()
