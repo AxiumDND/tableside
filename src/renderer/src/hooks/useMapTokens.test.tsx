@@ -105,6 +105,38 @@ describe('useMapTokens', () => {
     expect(written.tokens[0].combatantId).toBe('combat-9')
   })
 
+  it('toggle, select-all, and batch combat links', () => {
+    const a = token({ id: 't1', label: 'Wolf' })
+    const b = token({ id: 't2', label: 'Cultist' })
+    const { view, persist } = setup({ tokens: [a, b] })
+    act(() => view.result.current.setSelectedTokenId('t1'))
+    act(() => view.result.current.toggleTokenSelected('t2'))
+    expect(view.result.current.selectedTokenIds).toEqual(['t1', 't2'])
+    act(() => view.result.current.toggleTokenSelected('t1'))
+    expect(view.result.current.selectedTokenIds).toEqual(['t2'])
+    act(() => view.result.current.selectAllTokens())
+    expect(view.result.current.selectedTokenIds).toEqual(['t1', 't2'])
+    act(() =>
+      view.result.current.setTokenCombatantIds([
+        { id: 't1', combatantId: 'c1' },
+        { id: 't2', combatantId: 'c2' }
+      ])
+    )
+    const written = persist.mock.calls[0][0] as { tokens: MapToken[] }
+    expect(written.tokens.map((row) => row.combatantId)).toEqual(['c1', 'c2'])
+  })
+
+  it('deleteTokens removes a selection in one write', () => {
+    const a = token({ id: 't1', label: 'Wolf' })
+    const b = token({ id: 't2', label: 'Cultist' })
+    const keep = token({ id: 't3', label: 'Bren' })
+    const { view, persist } = setup({ tokens: [a, b, keep] })
+    act(() => view.result.current.selectAllTokens())
+    act(() => view.result.current.deleteTokens(['t1', 't2']))
+    expect(persist).toHaveBeenCalledWith({ tokens: [keep] })
+    expect(view.result.current.selectedTokenIds).toEqual(['t3'])
+  })
+
   it('moveToken writes the new coordinates', () => {
     const placed = token({ id: 't1', label: 'Wolf', x: 0.2, y: 0.3 })
     const { view, persist } = setup({ tokens: [placed] })

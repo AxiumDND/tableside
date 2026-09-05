@@ -20,8 +20,13 @@ export interface CombatActions {
   addNpcFromSheet: (block: ParsedStatblock, notePath?: string) => void
   addPartyToCombat: () => void
   addBestiaryToCombat: (notePath: string) => Promise<void>
-  addEncounterItems: (items: EncounterAddItem[], extra?: Combatant, includeParty?: boolean) => Promise<void>
+  addEncounterItems: (
+    items: EncounterAddItem[],
+    extra?: Combatant | Combatant[],
+    includeParty?: boolean
+  ) => Promise<void>
   addTokenToCombat: (token: MapToken) => Promise<string | null>
+  addTokensToCombat: (tokens: MapToken[]) => Promise<{ tokenId: string; combatantId: string }[]>
 }
 
 /**
@@ -100,7 +105,7 @@ export function useCombatActions({
   }, [campaign, getPartyFromNote])
 
   const addEncounterItems = useCallback(
-    async (items: EncounterAddItem[], extra?: Combatant, includeParty = true): Promise<void> => {
+    async (items: EncounterAddItem[], extra?: Combatant | Combatant[], includeParty = true): Promise<void> => {
       const party = includeParty ? await loadPartyItems() : []
       const combined = [...party, ...items]
       const combat = campaign?.combat ?? emptyCombat()
@@ -139,8 +144,10 @@ export function useCombatActions({
         })
         added += 1
       }
-      if (extra && !next.some((c) => c.sourceId === extra.sourceId || c.id === extra.id)) {
-        next.push(extra)
+      const extras = extra == null ? [] : Array.isArray(extra) ? extra : [extra]
+      for (const row of extras) {
+        if (next.some((c) => c.sourceId === row.sourceId || c.id === row.id)) continue
+        next.push(row)
         added += 1
       }
       if (added > 0) {
@@ -193,44 +200,35 @@ export function useCombatActions({
     void addEncounterItems([])
   }, [addEncounterItems])
 
-  const addTokenToCombat = useCallback(
-    async (token: MapToken): Promise<string | null> => {
+  const addTokensToCombat = useCallback(
+    async (tokens: MapToken[]): Promise<{ tokenId: string; combatantId: string }[]> => {
       const live = campaign?.combat ?? emptyCombat()
-      const existing = combatantForToken(live.combatants, token)
-      if (existing) {
-        onOpenCombatPanel()
-        return existing.id
-      }
-      let text = ''
-      if (token.source) {
-        try {
-          text = await window.tabledm.readFile(token.source)
-        } catch {
-          text = ''
+      const links: { tokenId: string; combatantId: string }[] = []
+      const extras: Combatant[] = []
+      for (const token of tokens) {
+        const already =
+          combatantForToken(live.combatants, token) ?? extras.find((row) => row.sourceId === mapTokenSourceId(token))
+        if (already) {
+          links.push({ tokenId: token.id, combatantId: already.id })
+          continue
         }
+        const extra = await combatantFromMapToken(token)
+        extras.push(extra)
+        links.push({ tokenId: token.id, combatantId: extra.id })
       }
-      const parsed = token.source
-        ? extractStatblock(text)?.block ?? fallbackStatblock(token.source, text)
-        : fallbackStatblock(token.label || 'Token', `# ${token.label}`)
-      const statBlock = parsedToStatBlock(parsed)
-      const extra: Combatant = {
-        id: crypto.randomUUID(),
-        name: token.label,
-        kind: token.kind,
-        initiative: 0,
-        hp: statBlock.hp ?? 10,
-        maxHp: statBlock.hp ?? 10,
-        ac: statBlock.ac ?? 10,
-        willpower: parsed.willpower,
-        maxWillpower: parsed.maxWillpower ?? parsed.willpower,
-        hunger: parsed.hunger,
-        sourceId: mapTokenSourceId(token),
-        statBlock
-      }
-      await addEncounterItems([], extra, false)
-      return extra.id
+      if (extras.length > 0) await addEncounterItems([], extras, false)
+      else if (tokens.length > 0) onOpenCombatPanel()
+      return links
     },
     [addEncounterItems, campaign, onOpenCombatPanel]
+  )
+
+  const addTokenToCombat = useCallback(
+    async (token: MapToken): Promise<string | null> => {
+      const links = await addTokensToCombat([token])
+      return links[0]?.combatantId ?? null
+    },
+    [addTokensToCombat]
   )
 
   const addBestiaryToCombat = useCallback(
@@ -255,7 +253,37 @@ export function useCombatActions({
     addPartyToCombat,
     addBestiaryToCombat,
     addEncounterItems,
-    addTokenToCombat
+    addTokenToCombat,
+    addTokensToCombat
+  }
+}
+
+async function combatantFromMapToken(token: MapToken): Promise<Combatant> {
+  let text = ''
+  if (token.source) {
+    try {
+      text = await window.tabledm.readFile(token.source)
+    } catch {
+      text = ''
+    }
+  }
+  const parsed = token.source
+    ? extractStatblock(text)?.block ?? fallbackStatblock(token.source, text)
+    : fallbackStatblock(token.label || 'Token', `# ${token.label}`)
+  const statBlock = parsedToStatBlock(parsed)
+  return {
+    id: crypto.randomUUID(),
+    name: token.label,
+    kind: token.kind,
+    initiative: 0,
+    hp: statBlock.hp ?? 10,
+    maxHp: statBlock.hp ?? 10,
+    ac: statBlock.ac ?? 10,
+    willpower: parsed.willpower,
+    maxWillpower: parsed.maxWillpower ?? parsed.willpower,
+    hunger: parsed.hunger,
+    sourceId: mapTokenSourceId(token),
+    statBlock
   }
 }
 

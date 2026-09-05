@@ -81,7 +81,7 @@ PDFs open for you only. They are not sent to the TV. Use an image under `Maps/Ar
 3. On **Pan**, click **Scale map**, then two points that are 5 feet apart (or type another length). Tokens snap to that 5 ft grid.
 4. **Line**, **Cone**, **Round**, and **Square** drop a feet-sized template on that grid (default 30 ft). Click origin and drag to aim; **Round** is a radius at the click; **Square** is a cube centered on the click. Esc clears. Templates stay on the DM map only.
 5. Scroll to zoom. Drag to pan.
-6. **Pins** are DM-only. **Tokens** (Party / NPCs / Bestiary portraits) and **fog** show on the TV. Select a token → **Add to combat** to track it; **Cnd** keeps conditions in sync on the map and the tracker.
+6. **Pins** are DM-only. **Tokens** (Party / NPCs / Bestiary portraits) and **fog** show on the TV. Select a token → **Add to combat** to track it (Shift+click for more, then **Add selected**; **Add all to combat** takes every token on the map). **Cnd** keeps conditions in sync on the map and the tracker.
 7. **Show to players**. The TV follows as you zoom, pan, paint fog, or move tokens.
 
 Large and Huge tokens stay 2× / 3× a Medium token.

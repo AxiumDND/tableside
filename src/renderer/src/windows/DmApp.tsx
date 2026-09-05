@@ -267,7 +267,7 @@ export default function DmApp() {
     if (updated) setCampaign(updated)
   }
 
-  const { saveCombat, addMonster, addNpcFromSheet, addPartyToCombat, addBestiaryToCombat, addEncounterItems, addTokenToCombat } =
+  const { saveCombat, addMonster, addNpcFromSheet, addPartyToCombat, addBestiaryToCombat, addEncounterItems, addTokensToCombat } =
     useCombatActions({
       campaign,
       setCampaign,
@@ -575,7 +575,7 @@ export default function DmApp() {
           nextLabel={nextFile ? imageTitle(nextFile.relativePath).replace(/^PC\s+[—–-]\s+/i, '') : undefined}
           onAddNpcToCombat={addNpcFromSheet}
           combat={combat}
-          onAddTokenToCombat={addTokenToCombat}
+          onAddTokensToCombat={addTokensToCombat}
           onToggleTokenStatus={(combatantId, statusId) => {
             const live = combat.combatants.find((row) => row.id === combatantId)
             if (!live) return
