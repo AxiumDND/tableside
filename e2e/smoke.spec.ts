@@ -56,14 +56,12 @@ test('Dice tray exposes show-to-players and roll-sound toggles', async () => {
 })
 
 test('Lookup opens and searches the offline SRD', async () => {
-  const tools = dmWindow.getByRole('button', { name: 'Tools' })
-  // Panel toggles — open if the search field is not already visible.
   const search = dmWindow.getByPlaceholder(/poisoned/i)
+  const lookupTab = dmWindow.getByRole('navigation', { name: 'Tools' }).getByRole('button', { name: 'Lookup' })
   if (!(await search.isVisible().catch(() => false))) {
-    await tools.click()
-  }
-  const lookupTab = dmWindow.getByRole('button', { name: 'Lookup' })
-  if (!(await search.isVisible().catch(() => false))) {
+    if (!(await lookupTab.isVisible().catch(() => false))) {
+      await dmWindow.getByRole('button', { name: 'Tools' }).click()
+    }
     await lookupTab.click()
   }
   await expect(search).toBeVisible()
