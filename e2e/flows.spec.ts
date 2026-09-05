@@ -72,10 +72,14 @@ test('Sessions folder creates a session recap note', async () => {
 })
 
 test('combat tracker adds a combatant and starts a round', async () => {
-  await dmWindow.getByRole('button', { name: 'Combat' }).click()
+  const init = dmWindow.getByPlaceholder('Init')
+  if (!(await init.isVisible().catch(() => false))) {
+    await dmWindow.getByRole('button', { name: 'Combat' }).click()
+  }
+  await expect(init).toBeVisible()
 
   await dmWindow.getByPlaceholder('Name').fill('Dire Wolf')
-  await dmWindow.getByPlaceholder('Init').fill('15')
+  await init.fill('15')
   await dmWindow.getByRole('button', { name: 'Add', exact: true }).click()
   await expect(dmWindow.getByText('Dire Wolf').first()).toBeVisible()
 
