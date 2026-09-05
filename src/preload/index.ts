@@ -129,7 +129,7 @@ const api = {
   pauseHourglass: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerPauseHourglass),
   resumeHourglass: (payload?: { sound?: boolean }): Promise<PlayerState> =>
     ipcRenderer.invoke(IPC.playerResumeHourglass, payload),
-  resetHourglass: (payload?: { minutes?: number }): Promise<PlayerState> =>
+  resetHourglass: (payload?: { minutes?: number; refill?: boolean }): Promise<PlayerState> =>
     ipcRenderer.invoke(IPC.playerResetHourglass, payload),
   stopHourglass: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerStopHourglass),
   showPlayerDice: (payload: {

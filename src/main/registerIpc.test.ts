@@ -289,11 +289,25 @@ describe('main IPC registration', () => {
     })
     invoke(IPC.playerResetHourglass, { minutes: 3 })
     const next = player.setPlayerState.mock.calls.at(-1)?.[0] as {
-      hourglass: { durationMs: number; endsAt?: number; remainingMs?: number }
+      hourglass: { durationMs: number; shownAt: number; endsAt?: number; remainingMs?: number }
     }
     expect(next.hourglass.durationMs).toBe(180_000)
+    expect(next.hourglass.shownAt).not.toBe(1)
     expect(next.hourglass.endsAt).toBeUndefined()
     expect(next.hourglass.remainingMs).toBeUndefined()
+  })
+
+  it('retunes a waiting hourglass without restarting the fade', () => {
+    player.getPlayerState.mockReturnValue({
+      ...emptyPlayerState(),
+      hourglass: { durationMs: 300_000, shownAt: 42, sound: true }
+    })
+    invoke(IPC.playerResetHourglass, { minutes: 7, refill: false })
+    const next = player.setPlayerState.mock.calls.at(-1)?.[0] as {
+      hourglass: { durationMs: number; shownAt: number }
+    }
+    expect(next.hourglass.durationMs).toBe(420_000)
+    expect(next.hourglass.shownAt).toBe(42)
   })
 
   it('fades the hourglass out', () => {

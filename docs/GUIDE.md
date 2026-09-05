@@ -189,7 +189,7 @@ Optional PHB / DMG text dumps go in the app `Additional Books/` folder — not i
 
 **Tools → Links** is a short list of curated D&D reference sites (opens in your browser).
 
-**Tools → Timer** fades a full hourglass onto the player TV. **Show** first, then **Start** when the table should begin deciding. Pause, reset, or fade out. Optional chime on the Music soundboard Sfx layer at zero.
+**Tools → Timer** fades a full hourglass onto the player TV. **Show** first, then **Start** when the table should begin deciding. Change the minutes while it waits to retune the glass. Pause, reset, or fade out. Optional chime on the Music soundboard Sfx layer at zero.
 
 ### 8. Roll dice
 

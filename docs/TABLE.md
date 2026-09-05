@@ -130,7 +130,7 @@ Set a DC, a d20 modifier, and **Normal**, **Advantage**, or **Disadvantage**. **
 
 ### Timer
 
-Set minutes (1 / 3 / 5 / 10, or a custom 1–120). **Show** fades a full hourglass over whatever is already on the player TV and waits. **Start** begins the countdown. **Pause** / **Resume** hold the sand; **Reset** fills the glass again for the same minutes. **Fade out** returns to that picture. The glass stays empty at zero until you fade out. Optional chime plays on the Music soundboard **Sfx** layer (same fader as dice; the **Hourglass** chip is on that board); uncheck **Chime at zero** to silence it. Last Show wins against Box of Doom. Header **Clear** takes the timer with the rest of the TV. Not saved to the campaign.
+Set minutes (1 / 3 / 5 / 10, or a custom 1–120). **Show** fades a full hourglass over whatever is already on the player TV and waits. Changing minutes on a waiting glass updates that timer. **Start** begins the countdown. **Pause** / **Resume** hold the sand; **Reset** fills the glass again for the selected minutes. **Fade out** returns to that picture. The glass stays empty at zero until you fade out. Optional chime plays on the Music soundboard **Sfx** layer (same fader as dice; the **Hourglass** chip is on that board); uncheck **Chime at zero** to silence it. Last Show wins against Box of Doom. Header **Clear** takes the timer with the rest of the TV. Not saved to the campaign.
 
 ### Links
 
