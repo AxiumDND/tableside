@@ -1,5 +1,12 @@
 import { useEffect, useState } from 'react'
-import { LEGEND_FADE_OUT_MS, LEGEND_HOLD_MS, LEGEND_LOOK_DEFAULT, legendDurationMs, parseLegendLook } from '../../../shared/openingLegend'
+import {
+  LEGEND_FADE_OUT_MS,
+  LEGEND_HOLD_MS,
+  LEGEND_LOOK_DEFAULT,
+  legendDurationMs,
+  legendEndStillAtMs,
+  parseLegendLook
+} from '../../../shared/openingLegend'
 import type { PlayerLegend } from '../../../shared/types'
 import LegendParticles from './LegendParticles'
 
@@ -20,13 +27,12 @@ export default function OpeningLegend({ legend }: { legend: PlayerLegend }) {
     if (stopping) return
     setPhase('hold')
     const timers: number[] = []
-    let at = LEGEND_HOLD_MS
-    timers.push(window.setTimeout(() => setPhase('body'), at))
-    at += durationMs
+    const endAt = legendEndStillAtMs(legend.title, legend.body)
+    timers.push(window.setTimeout(() => setPhase('body'), LEGEND_HOLD_MS))
     if (endSrc) {
-      timers.push(window.setTimeout(() => setPhase('end'), at))
+      timers.push(window.setTimeout(() => setPhase('end'), endAt))
     } else {
-      timers.push(window.setTimeout(() => setPhase('done'), at))
+      timers.push(window.setTimeout(() => setPhase('done'), endAt))
     }
     return () => {
       for (const timer of timers) window.clearTimeout(timer)

@@ -7,6 +7,7 @@ import {
   CRAWL_SYNC_MS,
   crawlDurationMs,
   crawlEndImageRef,
+  crawlEndStillAtMs,
   crawlLogoRef,
   crawlMusicRef,
   crawlMusicStartDelayMs,
@@ -150,5 +151,14 @@ describe('crawlDurationMs', () => {
       CRAWL_SYNC_MS - 500 - CRAWL_LOGO_MS
     )
     expect(crawlWordCount('Kestrel', 'Go.')).toBe(2)
+  })
+})
+
+describe('crawlEndStillAtMs', () => {
+  it('starts the closing still after hold, far-off line, emblem, and scroll', () => {
+    expect(crawlEndStillAtMs(undefined)).toBe(
+      CRAWL_HOLD_MS + CRAWL_PREFACE_MS + CRAWL_LOGO_MS + crawlDurationMs()
+    )
+    expect(crawlEndStillAtMs(null)).toBe(CRAWL_HOLD_MS + CRAWL_LOGO_MS + crawlDurationMs())
   })
 })

@@ -5,7 +5,8 @@ import {
   CRAWL_LOGO_MS,
   CRAWL_PREFACE_DEFAULT,
   CRAWL_PREFACE_MS,
-  crawlDurationMs
+  crawlDurationMs,
+  crawlEndStillAtMs
 } from '../../../shared/openingCrawl'
 import type { PlayerCrawl } from '../../../shared/types'
 import crawlEmblem from '../assets/crawl-emblem.webp'
@@ -38,11 +39,11 @@ export default function OpeningCrawl({ crawl }: { crawl: PlayerCrawl }) {
     timers.push(window.setTimeout(() => setPhase('logo'), at))
     at += CRAWL_LOGO_MS
     timers.push(window.setTimeout(() => setPhase('crawl'), at))
-    at += durationMs
+    const endAt = crawlEndStillAtMs(crawl.preface)
     if (endSrc) {
-      timers.push(window.setTimeout(() => setPhase('end'), at))
+      timers.push(window.setTimeout(() => setPhase('end'), endAt))
     } else {
-      timers.push(window.setTimeout(() => setPhase('done'), at))
+      timers.push(window.setTimeout(() => setPhase('done'), endAt))
     }
     return () => {
       for (const timer of timers) window.clearTimeout(timer)

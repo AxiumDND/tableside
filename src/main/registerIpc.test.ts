@@ -36,6 +36,8 @@ const player = vi.hoisted(() => ({
   stopPlayerHyperspace: vi.fn(() => emptyPlayerState()),
   stopPlayerBoxOfDoom: vi.fn(() => emptyPlayerState()),
   stopPlayerHourglass: vi.fn(() => emptyPlayerState()),
+  scheduleCrawlEndStill: vi.fn(),
+  scheduleLegendEndStill: vi.fn(),
   clearBoxOfDoomTimers: vi.fn(),
   clearHourglassTimers: vi.fn(),
   scheduleBoxOfDoomAutoFade: vi.fn(),
@@ -169,6 +171,71 @@ describe('main IPC registration', () => {
     expect(next.imageSrc).toBe('tabledm://map.png')
     expect(next.crawl).toBeNull()
     expect(next.phone).toBeNull()
+    expect(player.stopPlayerCrawl).not.toHaveBeenCalled()
+    expect(player.stopPlayerLegend).not.toHaveBeenCalled()
+  })
+
+  it('fades a live campfire chronicle instead of cutting it when a new still is shown', () => {
+    const legend = {
+      title: 'The Pale Well',
+      body: 'The well runs cold.',
+      endSrc: 'tabledm://end.png',
+      startedAt: 1
+    }
+    player.getPlayerState.mockReturnValue({
+      ...emptyPlayerState(),
+      legend
+    })
+    invoke(IPC.playerShowImage, { src: 'tabledm://next.png', title: 'Caves' })
+    const next = player.setPlayerState.mock.calls[0][0] as {
+      imageSrc: string
+      legend: { endSrc?: string; stoppingAt?: number }
+      phone: unknown
+    }
+    expect(next.imageSrc).toBe('tabledm://next.png')
+    expect(next.legend).toEqual(legend)
+    expect(next.phone).toBeNull()
+    expect(player.stopPlayerLegend).toHaveBeenCalled()
+    expect(player.stopPlayerCrawl).not.toHaveBeenCalled()
+  })
+
+  it('fades a live opening crawl instead of cutting it when a new still is shown', () => {
+    const crawl = {
+      title: 'Kestrel',
+      body: 'It is a time of unrest.',
+      endSrc: 'tabledm://planet.png',
+      startedAt: 1
+    }
+    player.getPlayerState.mockReturnValue({
+      ...emptyPlayerState(),
+      crawl
+    })
+    invoke(IPC.playerShowImage, { src: 'tabledm://bridge.png', title: 'Bridge' })
+    const next = player.setPlayerState.mock.calls[0][0] as {
+      imageSrc: string
+      crawl: { endSrc?: string }
+    }
+    expect(next.imageSrc).toBe('tabledm://bridge.png')
+    expect(next.crawl).toEqual(crawl)
+    expect(player.stopPlayerCrawl).toHaveBeenCalled()
+  })
+
+  it('schedules the chronicle closing still onto the player image layer', () => {
+    invoke(IPC.playerShowLegend, {
+      title: 'The Pale Well',
+      body: 'The well runs cold.',
+      endSrc: 'tabledm://end.png'
+    })
+    expect(player.scheduleLegendEndStill).toHaveBeenCalled()
+  })
+
+  it('schedules the crawl closing still onto the player image layer', () => {
+    invoke(IPC.playerShowCrawl, {
+      title: 'Kestrel',
+      body: 'It is a time of unrest.',
+      endSrc: 'tabledm://planet.png'
+    })
+    expect(player.scheduleCrawlEndStill).toHaveBeenCalled()
   })
 
   it('fades a Box of Doom overlay onto the player TV without rolling', () => {

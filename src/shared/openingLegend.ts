@@ -189,6 +189,11 @@ export function legendBodyDurationMs(title?: string, body?: string): number {
   return legendDurationMs(title, body)
 }
 
+/** When the closing still begins after the mist hold and the scroll. */
+export function legendEndStillAtMs(title?: string, body?: string): number {
+  return LEGEND_HOLD_MS + legendDurationMs(title, body)
+}
+
 export interface LegendCalloutFields {
   title?: string
   preface: string | null

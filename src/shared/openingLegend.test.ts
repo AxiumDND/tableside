@@ -9,6 +9,7 @@ import {
   legendBodyDurationMs,
   legendDurationMs,
   legendEndImageRef,
+  legendEndStillAtMs,
   legendLogoRef,
   legendLook,
   legendMusicRef,
@@ -135,6 +136,7 @@ describe('legend timing', () => {
     expect(LEGEND_SYNC_MS).toBe(92_000)
     expect(legendDurationMs('The Pale Well', 'Go.')).toBe(LEGEND_SCROLL_MIN_MS)
     expect(legendBodyDurationMs()).toBe(legendDurationMs())
+    expect(legendEndStillAtMs('The Pale Well', 'Go.')).toBe(LEGEND_HOLD_MS + LEGEND_SCROLL_MIN_MS)
     const long = Array.from({ length: 200 }, () => 'word').join(' ')
     expect(legendDurationMs('', long)).toBe(Math.min(LEGEND_SCROLL_MAX_MS, 200 * LEGEND_MS_PER_WORD))
   })
