@@ -253,7 +253,9 @@ export function MapTokenToolbar({
   onOpenConditions?: () => void
 }) {
   const hint = pendingToken
-    ? `Click the map to place ${pendingToken.label}`
+    ? tokenCount >= 2
+      ? `Click the map to place ${pendingToken.label} · Shift+click to select more`
+      : `Click the map to place ${pendingToken.label}`
     : tokenCount >= 2
       ? 'Pick a creature, then click the map · Shift+click to select more'
       : 'Pick a creature, then click the map'
