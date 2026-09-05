@@ -39,7 +39,7 @@ export default function OpeningCrawl({ crawl }: { crawl: PlayerCrawl }) {
     timers.push(window.setTimeout(() => setPhase('logo'), at))
     at += CRAWL_LOGO_MS
     timers.push(window.setTimeout(() => setPhase('crawl'), at))
-    const endAt = crawlEndStillAtMs(crawl.preface)
+    const endAt = crawlEndStillAtMs(preface)
     if (endSrc) {
       timers.push(window.setTimeout(() => setPhase('end'), endAt))
     } else {

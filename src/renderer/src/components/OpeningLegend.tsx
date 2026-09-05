@@ -4,7 +4,6 @@ import {
   LEGEND_HOLD_MS,
   LEGEND_LOOK_DEFAULT,
   legendDurationMs,
-  legendEndStillAtMs,
   parseLegendLook
 } from '../../../shared/openingLegend'
 import type { PlayerLegend } from '../../../shared/types'
@@ -27,7 +26,7 @@ export default function OpeningLegend({ legend }: { legend: PlayerLegend }) {
     if (stopping) return
     setPhase('hold')
     const timers: number[] = []
-    const endAt = legendEndStillAtMs(legend.title, legend.body)
+    const endAt = LEGEND_HOLD_MS + durationMs
     timers.push(window.setTimeout(() => setPhase('body'), LEGEND_HOLD_MS))
     if (endSrc) {
       timers.push(window.setTimeout(() => setPhase('end'), endAt))
