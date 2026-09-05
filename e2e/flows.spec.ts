@@ -83,10 +83,12 @@ test('combat tracker adds a combatant and starts a round', async () => {
   await dmWindow.getByRole('button', { name: 'Add', exact: true }).click()
   await expect(dmWindow.getByText('Dire Wolf').first()).toBeVisible()
 
+  await expect(dmWindow.getByRole('checkbox', { name: /combat music/i })).toBeChecked()
   await dmWindow.getByRole('button', { name: /start combat/i }).click()
   // Combat is running: the round controls + Next turn replace Start combat.
   await expect(dmWindow.getByRole('button', { name: 'Next turn' })).toBeVisible()
   await expect(dmWindow.getByText(/Round/).first()).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'End combat' })).toBeVisible()
 
   await dmWindow.getByRole('button', { name: 'Conditions for Dire Wolf' }).click()
   const dialog = dmWindow.getByRole('dialog')

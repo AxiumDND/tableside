@@ -48,7 +48,7 @@ In a Sci-fi campaign, a `> [!crawl]` (or `> [!opening]`) block in any note shows
 | Soundboard | `Audio/Sfx/` (subfolders are headings) | Click a one-shot; several can overlap |
 | Master | — | Whole mix + mute |
 
-Each strip has its own volume. **Now playing** shows the current music track and ambience bed, with elapsed time and length. Music and ambience fade in and out over five seconds; **Stop all** fades both. **Output** picks the Windows audio device (laptop, HDMI TV, headset). The mix uses that device whether the player view is open or closed. Drop your own `.mp3` / `.ogg` / `.wav` / `.m4a` files into `Audio/Music`, `Audio/Ambience`, or `Audio/Sfx` — files in `Audio/` itself are ignored. Tableside does not include music. Volumes, last playlists, and the output device save in hidden `audio.json`.
+Each strip has its own volume. **Now playing** shows the current music track and ambience bed, with elapsed time and length. Music and ambience fade in and out over five seconds; **Stop all** fades both. **Output** picks the Windows audio device (laptop, HDMI TV, headset). The mix uses that device whether the player view is open or closed. Drop your own `.mp3` / `.ogg` / `.wav` / `.m4a` files into `Audio/Music`, `Audio/Ambience`, or `Audio/Sfx` — files in `Audio/` itself are ignored. Tableside does not include music. Volumes, last playlists, and the output device save in hidden `audio.json`. With **Combat music** ticked on the Combat panel, **Start combat** plays `Audio/Music/Combat` and **End combat** returns to `Audio/Music/General`.
 
 Each strip has **Add audio…**. Right-click an Audio folder works the same. Opening a track in the tree is a DM preview only.
 
@@ -83,11 +83,12 @@ Open with **Combat** in the header.
 | Bestiary filter + click | Adds that creature from `Bestiary/` |
 | Manual row | Name / Init / HP, plus AC (5e/PF2e) or Willpower and Hunger (Vampire 5th) |
 | d20 on a row | Rolls initiative for that combatant (PCs: type their table roll into Init) |
-| **Start** / next-round controls | Begins round 1 and advances whose turn it is |
+| **Start combat** / next-round controls | Begins round 1 and advances whose turn it is. With **Combat music** ticked, starts the `Audio/Music/Combat` playlist |
 | Eye / view | Opens that combatant’s rollable statblock without changing the turn |
 | **Cnd** | Toggle conditions (Poisoned, Prone, …) on that PC, NPC, or monster |
 | **Show to players** | Superimposes initiative order on the current player image |
-| Clear combat | Empties the tracker (confirm dialog) |
+| **Combat music** | Tick to switch music on Start / End combat. Untick to leave the mixer alone |
+| **End combat** | Empties the tracker (confirm dialog). With **Combat music** ticked, returns to the `Audio/Music/General` playlist |
 
 State saves to `combat.json` in the campaign folder.
 

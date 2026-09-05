@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from 'react'
-import type { Combatant, CombatantKind, CombatState } from '../../../shared/types'
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { COMBAT_MUSIC_PLAYLIST_ID, GENERAL_MUSIC_PLAYLIST_ID } from '../../../shared/audio'
 import { combatStatusesFor, toggleStatus } from '../../../shared/combatConditions'
 import { conditionLabel } from '../../../shared/systemPack'
+import type { Combatant, CombatantKind, CombatState } from '../../../shared/types'
 import { advanceCombatTurn, combatantCondition, combatProfileFor, initiativeBonus, sortCombatants } from '../lib/combat'
 import { formatMod, rollD20 } from '../lib/dice'
 import { statBlockToParsed } from '../lib/statblock'
@@ -42,6 +43,8 @@ export default function CombatTracker({
   const [confirmClear, setConfirmClear] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState<Combatant | null>(null)
   const [conditionEdit, setConditionEdit] = useState<Combatant | null>(null)
+  const [combatMusicCues, setCombatMusicCues] = useState(true)
+  const combatMusicTouched = useRef(false)
   const dice = useDiceLog()
   const ordered = useMemo(() => sortCombatants(combat.combatants), [combat.combatants])
   const round = combat.round ?? 0
@@ -63,6 +66,23 @@ export default function CombatTracker({
   const conditionEditLive = conditionEdit
     ? (combat.combatants.find((c) => c.id === conditionEdit.id) ?? conditionEdit)
     : null
+
+  useEffect(() => {
+    const api = window.tabledm
+    if (!api?.getMixer) return
+    let cancelled = false
+    void api.getMixer().then((mixer) => {
+      if (cancelled || combatMusicTouched.current) return
+      setCombatMusicCues(mixer.prefs.combatMusicCues ?? true)
+    })
+    const off = api.onMixerState?.((mixer) => {
+      setCombatMusicCues(mixer.prefs.combatMusicCues ?? true)
+    })
+    return () => {
+      cancelled = true
+      off?.()
+    }
+  }, [])
 
   useEffect(() => {
     if (!confirmClear && !confirmRemove && !hpEdit && !conditionEdit) return
@@ -108,11 +128,23 @@ export default function CombatTracker({
     setDraft({ name: '', initiative: '', hp: '', ac: '', willpower: '', hunger: '' })
   }
 
+  function playCombatMusicCue(playlistId: string): void {
+    if (!combatMusicCues) return
+    void window.tabledm?.mixerPlayMusic?.(playlistId)
+  }
+
+  function setCombatMusicPref(next: boolean): void {
+    combatMusicTouched.current = true
+    setCombatMusicCues(next)
+    void window.tabledm?.mixerSetPrefs?.({ combatMusicCues: next })
+  }
+
   function startCombat(): void {
     if (ordered.length === 0) return
     const first = ordered[0]
     setViewedId(first.id)
     update({ activeId: first.id, round: 1 })
+    playCombatMusicCue(COMBAT_MUSIC_PLAYLIST_ID)
   }
 
   function nextTurn(): void {
@@ -152,6 +184,7 @@ export default function CombatTracker({
     setConfirmRemove(null)
     setConditionEdit(null)
     update({ combatants: [], activeId: null, round: 0, showOrderToPlayers: false })
+    playCombatMusicCue(GENERAL_MUSIC_PLAYLIST_ID)
   }
 
   function removeCombatant(id: string): void {
@@ -266,6 +299,17 @@ export default function CombatTracker({
           >
             {combat.showOrderToPlayers ? 'Showing to players' : 'Show to players'}
           </button>
+          <label
+            className="flex shrink-0 items-center gap-1 whitespace-nowrap text-[11px] text-muted"
+            title="Play the Combat playlist on Start combat, and General when you End combat"
+          >
+            <input
+              type="checkbox"
+              checked={combatMusicCues}
+              onChange={(event) => setCombatMusicPref(event.target.checked)}
+            />
+            Combat music
+          </label>
           <button
             type="button"
             onClick={() => {
@@ -277,7 +321,7 @@ export default function CombatTracker({
             }}
             className="text-[11px] text-muted hover:text-blood"
           >
-            Clear
+            End combat
           </button>
         </div>
         {lastRoll ? <p className="mt-2 text-[11px] leading-snug text-muted">{lastRoll}</p> : null}
@@ -649,12 +693,12 @@ export default function CombatTracker({
           <div
             role="dialog"
             aria-modal="true"
-            aria-labelledby="clear-combat-title"
+            aria-labelledby="end-combat-title"
             className="w-full max-w-sm rounded border border-line bg-panel p-4"
             onClick={(e) => e.stopPropagation()}
           >
-            <h3 id="clear-combat-title" className="font-display text-lg text-amber">
-              Clear combat?
+            <h3 id="end-combat-title" className="font-display text-lg text-amber">
+              End combat?
             </h3>
             <p className="mt-2 text-sm text-parchment/90">
               This removes everyone from the initiative tracker. You cannot undo it.
@@ -672,7 +716,7 @@ export default function CombatTracker({
                 onClick={clearCombat}
                 className="rounded bg-blood px-3 py-1.5 text-sm font-semibold text-parchment"
               >
-                Clear tracker
+                End combat
               </button>
             </div>
           </div>

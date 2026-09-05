@@ -602,7 +602,9 @@ export default function HelpPanel({
           <p className="text-[12px] text-muted">
             Drop files you own into those three folders, or use <Action>Add audio…</Action> on each strip. Files sitting
             in <Code>Audio/</Code> itself are ignored. Tableside does not include music.{' '}
-            <Action>Clear</Action> on the player picture does not stop the mix — use <Action>Stop all</Action>.
+            <Action>Clear</Action> on the player picture does not stop the mix — use <Action>Stop all</Action>. With{' '}
+            <Action>Combat music</Action> ticked on the Combat panel, <Action>Start combat</Action> plays the Combat
+            playlist and <Action>End combat</Action> returns to General.
           </p>
         </Section>
 
@@ -803,14 +805,17 @@ export default function HelpPanel({
                 <Action>Roll all</Action> re-rolls everyone.
               </>,
               <>
-                <Action>Start</Action> begins round 1. <Code>Alt+T</Code> advances the turn (opens Combat if needed).
-                Adjust HP on the row. <Action>Cnd</Action> toggles conditions (Poisoned, Prone, and the rest of the
-                pack) on that PC, NPC, or monster. The name opens that combatant’s rollable statblock without changing
-                whose turn it is.
+                <Action>Start combat</Action> begins round 1. With <Action>Combat music</Action> ticked, that starts
+                the <Code>Audio/Music/Combat</Code> playlist. <Code>Alt+T</Code> advances the turn (opens Combat if
+                needed). Adjust HP on the row. <Action>Cnd</Action> toggles conditions (Poisoned, Prone, and the rest of
+                the pack) on that PC, NPC, or monster. The name opens that combatant’s rollable statblock without
+                changing whose turn it is.
               </>,
               <>
                 Optionally <Action>Show to players</Action> on the Combat panel to overlay initiative on the current
-                player image.
+                player image. <Action>End combat</Action> clears the tracker (asks first) and, with{' '}
+                <Action>Combat music</Action> ticked, returns to <Code>Audio/Music/General</Code>. Untick Combat music
+                if you want to keep the current mix.
               </>
             ]}
           />
@@ -832,7 +837,7 @@ export default function HelpPanel({
             ]}
           />
           <p className="text-[12px] text-muted">
-            Combat saves to hidden <Code>combat.json</Code>. Clear combat asks first. If Add to initiative does
+            Combat saves to hidden <Code>combat.json</Code>. End combat asks first. If Add to initiative does
             nothing: the wikilink does not match a sheet name, the sheet is not under Party / NPCs / Bestiary, the
             heading is not a combat heading, or there is no statblock.
           </p>
