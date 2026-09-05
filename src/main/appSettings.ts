@@ -4,11 +4,13 @@ import { copyFile, cp, mkdir, readFile, writeFile } from 'node:fs/promises'
 import { dirname, join, normalize } from 'node:path'
 import type { AppSettings } from '../shared/types'
 import { emptySettings } from '../shared/types'
+import { parseUpdateChannel, type UpdateChannel } from '../shared/updateChannel'
 import { ensureBooksHome } from './bookLibrary'
 import { ensureConvertGuide, revealConvertGuide } from './convertGuide'
 
 export type AppSettingsDeps = {
   onThemeChanged?: (theme?: string | null) => void
+  onUpdateChannelChanged?: (channel: UpdateChannel) => void
 }
 
 let deps: AppSettingsDeps = {}
@@ -78,12 +80,20 @@ function settingsPath(): string {
   return join(app.getPath('userData'), 'settings.json')
 }
 
+function normalizeSettings(raw: AppSettings): AppSettings {
+  return {
+    ...raw,
+    updateChannel: parseUpdateChannel(raw.updateChannel)
+  }
+}
+
 export async function readSettings(): Promise<AppSettings> {
   try {
-    settings = { ...emptySettings(), ...JSON.parse(await readFile(settingsPath(), 'utf8')) }
+    const parsed = JSON.parse(await readFile(settingsPath(), 'utf8')) as AppSettings
+    settings = normalizeSettings({ ...emptySettings(), ...parsed })
     return settings
   } catch {
-    settings = emptySettings()
+    settings = normalizeSettings(emptySettings())
     return settings
   }
 }
@@ -95,8 +105,15 @@ export async function writeSettings(next: AppSettings): Promise<void> {
 }
 
 export async function patchSettings(partial: AppSettings): Promise<AppSettings> {
-  await writeSettings({ ...settings, ...partial })
+  const next: AppSettings = { ...settings, ...partial }
+  if (partial.updateChannel !== undefined) {
+    next.updateChannel = parseUpdateChannel(partial.updateChannel)
+  }
+  await writeSettings(next)
   if (partial.theme !== undefined) deps.onThemeChanged?.(settings.theme)
+  if (partial.updateChannel !== undefined) {
+    deps.onUpdateChannelChanged?.(parseUpdateChannel(settings.updateChannel))
+  }
   return settings
 }
 

@@ -3,7 +3,7 @@ import { existsSync } from 'node:fs'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import type { CampaignInfo, RecentCampaign } from '../shared/types'
-import { setupAppUpdater, scheduleLaunchUpdateCheck } from './appUpdater'
+import { applyUpdateChannel, setupAppUpdater, scheduleLaunchUpdateCheck } from './appUpdater'
 import { attachSpellChecker } from './spellcheck'
 import { registerMediaProtocol } from './mediaAssets'
 import {
@@ -267,7 +267,8 @@ app.whenReady().then(async () => {
   registerMediaProtocol({ getCampaignFolder: () => campaignFolder, safeJoin })
 
   configureAppSettings({
-    onThemeChanged: (theme) => applyDmWindowTheme(theme)
+    onThemeChanged: (theme) => applyDmWindowTheme(theme),
+    onUpdateChannelChanged: applyUpdateChannel
   })
 
   configurePlayerOutput({

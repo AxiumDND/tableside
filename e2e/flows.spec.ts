@@ -16,6 +16,21 @@ test.afterAll(async () => {
   await app?.close()
 })
 
+test('Help Updates can opt into test (beta) updates', async () => {
+  await dmWindow.getByRole('button', { name: 'Help & settings' }).click()
+  await expect(dmWindow.getByRole('heading', { name: 'Help & settings' })).toBeVisible()
+  await dmWindow.getByRole('button', { name: 'Updates' }).click()
+  const beta = dmWindow.getByRole('checkbox', { name: /include test \(beta\) updates/i })
+  await expect(beta).toBeVisible()
+  await expect(beta).not.toBeChecked()
+  await beta.check()
+  await expect(beta).toBeChecked()
+  await expect(dmWindow.getByRole('button', { name: 'Check for updates' })).toBeVisible()
+  await dmWindow.getByRole('button', { name: 'Check for updates' }).click()
+  await expect(dmWindow.getByText(/installed app/i)).toBeVisible()
+  await dmWindow.getByRole('button', { name: 'Help & settings' }).click()
+})
+
 test('header panel icon hides and restores the left sidebar', async () => {
   await expect(dmWindow.getByText('Players see')).toBeVisible()
   await expect(dmWindow.getByRole('button', { name: 'Show sidebar' })).toHaveCount(0)

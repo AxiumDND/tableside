@@ -163,4 +163,4 @@ Bottom of the left column: quick d4–d100 buttons plus a custom expression fiel
 - Combat state remains in `combat.json` until you clear it.
 - Note edits write straight to the campaign folder (Obsidian vaults stay in sync on disk).
 - **Sample** lives in `%APPDATA%\Tableside\samples\greystead`. Tableside refreshes it automatically when the bundled `sampleRevision` in `campaign.json` is newer than your copy. Delete that folder and click **Sample** to force a refresh. Keep lasting edits in your own campaign folder.
-- **Updates** — if you are online, a newer GitHub release can show a dismissible bar. Help → Updates to check by hand. Offline, nothing is shown.
+- **Updates** — if you are online, a newer GitHub **Latest** release can show a dismissible bar. Help → Updates to check by hand. **Include test (beta) updates** also offers Pre-releases. Offline, nothing is shown.
