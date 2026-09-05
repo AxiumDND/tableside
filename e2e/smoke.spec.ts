@@ -43,8 +43,8 @@ test('Timer tool shows a waiting glass and a separate Start control', async () =
   await tools.click()
   await dmWindow.getByRole('navigation', { name: 'Tools' }).getByRole('button', { name: 'Timer' }).click()
   await expect(dmWindow.getByRole('button', { name: 'Show', exact: true })).toBeVisible()
-  await expect(dmWindow.getByRole('button', { name: 'Start' })).toBeVisible()
-  await expect(dmWindow.getByRole('button', { name: 'Start' })).toBeDisabled()
+  await expect(dmWindow.getByRole('button', { name: 'Start', exact: true })).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Start', exact: true })).toBeDisabled()
   await expect(dmWindow.getByText('Chime at zero')).toBeVisible()
 })
 
