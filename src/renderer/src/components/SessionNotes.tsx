@@ -74,7 +74,7 @@ export default function SessionNotes({
   onNext,
   nextLabel,
   onAddNpcToCombat,
-  onAddTokenToCombat,
+  onAddTokensToCombat,
   onToggleTokenStatus,
   combat,
   onAddEncounter,
@@ -182,7 +182,9 @@ export default function SessionNotes({
   onNext?: () => void
   nextLabel?: string
   onAddNpcToCombat?: (block: ParsedStatblock, notePath: string) => void
-  onAddTokenToCombat?: (token: import('../lib/mapNote').MapToken) => Promise<string | null>
+  onAddTokensToCombat?: (
+    tokens: import('../lib/mapNote').MapToken[]
+  ) => Promise<{ tokenId: string; combatantId: string }[]>
   onToggleTokenStatus?: (combatantId: string, statusId: string) => void
   combat?: import('../../../shared/types').CombatState | null
   onAddEncounter?: (items: EncounterAddItem[]) => void
@@ -535,7 +537,7 @@ export default function SessionNotes({
           notes={noteIndex}
           combat={combat}
           system={system}
-          onAddTokenToCombat={onAddTokenToCombat}
+          onAddTokensToCombat={onAddTokensToCombat}
           onToggleTokenStatus={onToggleTokenStatus}
           onChange={(next) => void saveMapMarkdown(next)}
           onLiveView={onMapLiveView}

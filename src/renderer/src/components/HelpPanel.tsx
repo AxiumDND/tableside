@@ -765,8 +765,10 @@ export default function HelpPanel({
                 <Action>Scale map</Action> — click two printed grid corners that are 5 ft (or another length) apart. Tokens snap to
                 that grid. <Action>Line</Action> / <Action>Cone</Action> / <Action>Round</Action> / <Action>Square</Action> drop a feet-sized
                 template (click origin, drag to aim; Round is a radius, Square is a cube). Esc clears. Templates are DM-only.
-                Large/Huge stay 2×/3× a Medium token. Select a token and <Action>Add to combat</Action>;{' '}
-                <Action>Cnd</Action> on that token toggles the same conditions as the Combat panel.
+                Large/Huge stay 2×/3× a Medium token. Select a token and <Action>Add to combat</Action>. Shift+click
+                to select more, then <Action>Add selected</Action>; <Action>Add all to combat</Action> takes every
+                token on the map. <Action>Cnd</Action> on a linked token toggles the same conditions as the Combat
+                panel.
               </>
             ]}
           />

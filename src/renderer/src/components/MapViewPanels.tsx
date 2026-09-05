@@ -233,50 +233,85 @@ export function MapPinToolbar({
 
 export function MapTokenToolbar({
   pendingToken,
-  selectedTokenId,
-  inCombat,
-  onDeleteToken,
-  onAddToCombat,
+  selectedCount,
+  tokenCount,
+  selectedInCombat,
+  onDeleteSelected,
+  onAddSelectedToCombat,
+  onAddAllToCombat,
+  onSelectAll,
   onOpenConditions
 }: {
   pendingToken: TokenPick | null
-  selectedTokenId: string | null
-  inCombat?: boolean
-  onDeleteToken: (id: string) => void
-  onAddToCombat?: (id: string) => void
-  onOpenConditions?: (id: string) => void
+  selectedCount: number
+  tokenCount: number
+  selectedInCombat: number
+  onDeleteSelected: () => void
+  onAddSelectedToCombat?: () => void
+  onAddAllToCombat?: () => void
+  onSelectAll?: () => void
+  onOpenConditions?: () => void
 }) {
+  const hint = pendingToken
+    ? `Click the map to place ${pendingToken.label}`
+    : tokenCount >= 2
+      ? 'Pick a creature, then click the map · Shift+click to select more'
+      : 'Pick a creature, then click the map'
+  const selectedAddLabel =
+    selectedCount > 1
+      ? selectedInCombat === selectedCount
+        ? 'Open combat'
+        : `Add selected (${selectedCount})`
+      : selectedInCombat === 1
+        ? 'Open combat'
+        : 'Add to combat'
   return (
     <div className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted">
-      <span>{pendingToken ? `Click the map to place ${pendingToken.label}` : 'Pick a creature, then click the map'}</span>
-      {selectedTokenId ? (
-        <>
-          {onAddToCombat ? (
-            <button
-              type="button"
-              onClick={() => onAddToCombat(selectedTokenId)}
-              className="rounded border border-line px-2 py-0.5 hover:border-amber"
-            >
-              {inCombat ? 'Open combat' : 'Add to combat'}
-            </button>
-          ) : null}
-          {inCombat && onOpenConditions ? (
-            <button
-              type="button"
-              onClick={() => onOpenConditions(selectedTokenId)}
-              className="rounded border border-line px-2 py-0.5 hover:border-amber"
-            >
-              Cnd
-            </button>
-          ) : null}
-          <button
-            type="button"
-            onClick={() => onDeleteToken(selectedTokenId)}
-            className="rounded border border-line px-2 py-0.5 hover:border-blood"
-          >
-            Delete token
-          </button>
-        </>
+      <span>{hint}</span>
+      {tokenCount >= 2 && onSelectAll && selectedCount < tokenCount ? (
+        <button
+          type="button"
+          onClick={onSelectAll}
+          className="rounded border border-line px-2 py-0.5 hover:border-amber"
+        >
+          Select all
+        </button>
+      ) : null}
+      {tokenCount >= 2 && onAddAllToCombat ? (
+        <button
+          type="button"
+          onClick={onAddAllToCombat}
+          className="rounded border border-line px-2 py-0.5 hover:border-amber"
+        >
+          Add all to combat
+        </button>
+      ) : null}
+      {selectedCount > 0 && onAddSelectedToCombat ? (
+        <button
+          type="button"
+          onClick={onAddSelectedToCombat}
+          className="rounded border border-line px-2 py-0.5 hover:border-amber"
+        >
+          {selectedAddLabel}
+        </button>
+      ) : null}
+      {selectedCount === 1 && selectedInCombat === 1 && onOpenConditions ? (
+        <button
+          type="button"
+          onClick={onOpenConditions}
+          className="rounded border border-line px-2 py-0.5 hover:border-amber"
+        >
+          Cnd
+        </button>
+      ) : null}
+      {selectedCount > 0 ? (
+        <button
+          type="button"
+          onClick={onDeleteSelected}
+          className="rounded border border-line px-2 py-0.5 hover:border-blood"
+        >
+          {selectedCount > 1 ? `Delete ${selectedCount} tokens` : 'Delete token'}
+        </button>
       ) : null}
     </div>
   )

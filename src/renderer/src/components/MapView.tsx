@@ -65,7 +65,7 @@ export default function MapView({
   onLiveView,
   combat,
   system,
-  onAddTokenToCombat,
+  onAddTokensToCombat,
   onToggleTokenStatus
 }: {
   markdown: string
@@ -77,7 +77,7 @@ export default function MapView({
   onLiveView?: (imagePath: string, view: PlayerMapView) => void
   combat?: CombatState | null
   system?: string | null
-  onAddTokenToCombat?: (token: MapToken) => Promise<string | null>
+  onAddTokensToCombat?: (tokens: MapToken[]) => Promise<{ tokenId: string; combatantId: string }[]>
   onToggleTokenStatus?: (combatantId: string, statusId: string) => void
 }) {
   const data = useMemo(() => extractMapNote(markdown), [markdown])
@@ -192,7 +192,7 @@ export default function MapView({
     pinsLocked: data?.pinsLocked ?? true,
     headings,
     tool,
-    tokenSelected: Boolean(tokens.selectedToken),
+    tokenSelected: tokens.selectedTokenIds.length > 0,
     dataRef,
     getMarkdown: () => markdownRef.current,
     persist: (partial, source) =>
@@ -563,22 +563,33 @@ export default function MapView({
         <div className="flex flex-col gap-1.5 border-b border-line bg-panel px-3 py-1.5">
           <MapTokenToolbar
             pendingToken={tokens.pendingToken}
-            selectedTokenId={tokens.selectedTokenId}
-            inCombat={Boolean(
-              tokens.selectedToken && combatantForToken(combatants, tokens.selectedToken)
-            )}
-            onDeleteToken={tokens.deleteToken}
-            onAddToCombat={
-              onAddTokenToCombat
-                ? (id) => {
-                    const token = (data?.tokens ?? []).find((item) => item.id === id)
-                    if (!token) return
-                    void onAddTokenToCombat(token).then((combatantId) => {
-                      if (combatantId) tokens.setTokenCombatantId(id, combatantId)
+            selectedCount={tokens.selectedTokenIds.length}
+            tokenCount={(data?.tokens ?? []).length}
+            selectedInCombat={tokens.selectedTokens.filter((token) => combatantForToken(combatants, token)).length}
+            onDeleteSelected={() => tokens.deleteTokens(tokens.selectedTokenIds)}
+            onAddSelectedToCombat={
+              onAddTokensToCombat
+                ? () => {
+                    void onAddTokensToCombat(tokens.selectedTokens).then((links) => {
+                      tokens.setTokenCombatantIds(
+                        links.map((link) => ({ id: link.tokenId, combatantId: link.combatantId }))
+                      )
                     })
                   }
                 : undefined
             }
+            onAddAllToCombat={
+              onAddTokensToCombat
+                ? () => {
+                    void onAddTokensToCombat(data?.tokens ?? []).then((links) => {
+                      tokens.setTokenCombatantIds(
+                        links.map((link) => ({ id: link.tokenId, combatantId: link.combatantId }))
+                      )
+                    })
+                  }
+                : undefined
+            }
+            onSelectAll={tokens.selectAllTokens}
             onOpenConditions={() => setConditionTokenId(tokens.selectedTokenId)}
           />
           <MapTokenPickerPanel
@@ -678,13 +689,14 @@ export default function MapView({
                       hideBundled,
                       tokenOverlayTags(token, combatants, system)
                     )}
-                    selected={token.id === tokens.selectedTokenId}
+                    selected={tokens.selectedTokenIds.includes(token.id)}
                     interactive={!tokensLocked && !placingOnBoard}
                     onPointerDown={(event) => {
                       if (tokensLocked) return
                       event.preventDefault()
                       event.stopPropagation()
-                      tokens.setSelectedTokenId(token.id)
+                      if (event.shiftKey || event.ctrlKey || event.metaKey) tokens.toggleTokenSelected(token.id)
+                      else tokens.setSelectedTokenId(token.id)
                       pins.setSelectedId(null)
                       tokenDrag.current = { id: token.id, moved: false }
                       event.currentTarget.setPointerCapture(event.pointerId)
@@ -857,7 +869,11 @@ export default function MapView({
 
       <div className="max-h-[38%] min-h-24 overflow-auto border-t border-line px-3 py-2">
         <div className="mx-auto max-w-3xl text-sm">
-          {tokens.selectedToken ? (
+          {tokens.selectedTokenIds.length > 1 ? (
+            <p className="mb-2 text-[11px] uppercase tracking-wider text-muted">
+              {tokens.selectedTokenIds.length} tokens selected
+            </p>
+          ) : tokens.selectedToken ? (
             <p className="mb-2 text-[11px] uppercase tracking-wider text-muted">
               Token {tokens.selectedToken.label}
               {tokens.selectedToken.kind === 'pc' ? ' · player' : tokens.selectedToken.kind === 'monster' ? ' · monster' : ' · npc'}

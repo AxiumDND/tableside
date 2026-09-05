@@ -13,8 +13,12 @@ import type { PickerTab, TokenPick } from '../components/MapViewHelpers'
 
 export interface MapTokens {
   selectedTokenId: string | null
-  setSelectedTokenId: Dispatch<SetStateAction<string | null>>
+  selectedTokenIds: string[]
+  setSelectedTokenId: (id: string | null) => void
+  toggleTokenSelected: (id: string) => void
+  selectAllTokens: () => void
   selectedToken: MapToken | null
+  selectedTokens: MapToken[]
   pendingToken: TokenPick | null
   setPendingToken: Dispatch<SetStateAction<TokenPick | null>>
   pickerTab: PickerTab
@@ -30,7 +34,9 @@ export interface MapTokens {
   addToken: (point: { x: number; y: number }) => void
   moveToken: (id: string, x: number, y: number) => void
   deleteToken: (id: string) => void
+  deleteTokens: (ids: string[]) => void
   setTokenCombatantId: (id: string, combatantId: string) => void
+  setTokenCombatantIds: (links: { id: string; combatantId: string }[]) => void
   /** Update the draft and persist after a short debounce. */
   setScale: (size: number) => void
   /** Update the draft and persist immediately (two-click scale / Shift+scroll). */
@@ -66,7 +72,7 @@ export function useMapTokens(opts: {
     onDeselectPins
   } = opts
 
-  const [selectedTokenId, setSelectedTokenId] = useState<string | null>(null)
+  const [selectedTokenIds, setSelectedTokenIds] = useState<string[]>([])
   const [pendingToken, setPendingToken] = useState<TokenPick | null>(null)
   const [pickerTab, setPickerTab] = useState<PickerTab>('pc')
   const [tokenQuery, setTokenQuery] = useState('')
@@ -80,7 +86,23 @@ export function useMapTokens(opts: {
   scaleDraftRef.current = scaleDraft
 
   const tokenScale = scaleDraft ?? storedScale ?? TOKEN_SCALE_DEFAULT
-  const selectedToken = tokens.find((token) => token.id === selectedTokenId) ?? null
+  const selectedTokenId = selectedTokenIds[selectedTokenIds.length - 1] ?? null
+  const selectedTokens = selectedTokenIds
+    .map((id) => tokens.find((token) => token.id === id))
+    .filter((token): token is MapToken => Boolean(token))
+  const selectedToken = selectedTokens[selectedTokens.length - 1] ?? null
+
+  function setSelectedTokenId(id: string | null): void {
+    setSelectedTokenIds(id ? [id] : [])
+  }
+
+  function toggleTokenSelected(id: string): void {
+    setSelectedTokenIds((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]))
+  }
+
+  function selectAllTokens(): void {
+    setSelectedTokenIds(tokens.map((token) => token.id))
+  }
 
   const filteredPicks = useMemo(() => {
     const q = tokenQuery.trim().toLowerCase()
@@ -93,9 +115,11 @@ export function useMapTokens(opts: {
   }, [catalog, pickerTab, tokenQuery, spaceBySource])
 
   useEffect(() => {
-    if (selectedTokenId && tokens.some((token) => token.id === selectedTokenId)) return
-    setSelectedTokenId(null)
-  }, [tokens, selectedTokenId])
+    setSelectedTokenIds((prev) => {
+      const next = prev.filter((id) => tokens.some((token) => token.id === id))
+      return next.length === prev.length ? prev : next
+    })
+  }, [tokens])
 
   useEffect(() => {
     return () => {
@@ -117,7 +141,7 @@ export function useMapTokens(opts: {
       image: ''
     }
     persistRef.current({ tokens: [...current.tokens, token] })
-    setSelectedTokenId(token.id)
+    setSelectedTokenIds([token.id])
     onDeselectPinsRef.current()
   }
 
@@ -130,17 +154,30 @@ export function useMapTokens(opts: {
   }
 
   function deleteToken(id: string): void {
+    deleteTokens([id])
+  }
+
+  function deleteTokens(ids: string[]): void {
     const current = dataRef.current
-    if (!current) return
-    persistRef.current({ tokens: current.tokens.filter((token) => token.id !== id) })
-    if (selectedTokenId === id) setSelectedTokenId(null)
+    if (!current || ids.length === 0) return
+    const remove = new Set(ids)
+    persistRef.current({ tokens: current.tokens.filter((token) => !remove.has(token.id)) })
+    setSelectedTokenIds((prev) => prev.filter((id) => !remove.has(id)))
   }
 
   function setTokenCombatantId(id: string, combatantId: string): void {
+    setTokenCombatantIds([{ id, combatantId }])
+  }
+
+  function setTokenCombatantIds(links: { id: string; combatantId: string }[]): void {
     const current = dataRef.current
-    if (!current) return
+    if (!current || links.length === 0) return
+    const byId = new Map(links.map((link) => [link.id, link.combatantId]))
     persistRef.current({
-      tokens: current.tokens.map((token) => (token.id === id ? { ...token, combatantId } : token))
+      tokens: current.tokens.map((token) => {
+        const combatantId = byId.get(token.id)
+        return combatantId ? { ...token, combatantId } : token
+      })
     })
   }
 
@@ -183,14 +220,18 @@ export function useMapTokens(opts: {
 
   function reset(): void {
     setPendingToken(null)
-    setSelectedTokenId(null)
+    setSelectedTokenIds([])
     setScaleDraft(null)
   }
 
   return {
     selectedTokenId,
+    selectedTokenIds,
     setSelectedTokenId,
+    toggleTokenSelected,
+    selectAllTokens,
     selectedToken,
+    selectedTokens,
     pendingToken,
     setPendingToken,
     pickerTab,
@@ -205,7 +246,9 @@ export function useMapTokens(opts: {
     addToken,
     moveToken,
     deleteToken,
+    deleteTokens,
     setTokenCombatantId,
+    setTokenCombatantIds,
     setScale,
     applyScaleNow,
     pickToken,

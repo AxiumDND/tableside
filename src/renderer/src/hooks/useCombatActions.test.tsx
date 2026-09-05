@@ -255,4 +255,41 @@ describe('useCombatActions', () => {
     expect(id).toBe('live')
     expect(saveCombat).not.toHaveBeenCalled()
   })
+
+  it('addTokensToCombat writes several new rows in one save', async () => {
+    readFile.mockResolvedValue('```statblock\nname: Wolf\nac: 13\nhp: 11\n```')
+    const { result } = setup(campaignWith([]))
+    let links: { tokenId: string; combatantId: string }[] = []
+    await act(async () => {
+      links = await result.current.addTokensToCombat([
+        {
+          id: 'wolf-1',
+          kind: 'monster',
+          source: 'Bestiary/Wolf.md',
+          x: 0.2,
+          y: 0.2,
+          space: 'medium',
+          label: 'Wolf',
+          image: ''
+        },
+        {
+          id: 'wolf-2',
+          kind: 'monster',
+          source: 'Bestiary/Wolf.md',
+          x: 0.4,
+          y: 0.5,
+          space: 'medium',
+          label: 'Wolf',
+          image: ''
+        }
+      ])
+    })
+    expect(links).toHaveLength(2)
+    expect(saveCombat).toHaveBeenCalledOnce()
+    const saved = saveCombat.mock.calls[0][0]
+    expect(saved.combatants.map((row: Combatant) => row.sourceId)).toEqual([
+      'Bestiary/Wolf.md#wolf-1',
+      'Bestiary/Wolf.md#wolf-2'
+    ])
+  })
 })

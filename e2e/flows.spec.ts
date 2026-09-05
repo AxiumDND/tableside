@@ -170,6 +170,26 @@ test('map token can join combat and share condition chips', async () => {
   await expect(dmWindow.getByRole('button', { name: 'Clear Prone' })).toBeVisible()
 })
 
+test('map can add every placed token to combat', async () => {
+  const maps = dmWindow.getByText(/^Maps$/).first()
+  if (await maps.isVisible().catch(() => false)) await maps.click()
+  await dmWindow.getByText(/Pale Well Caves/i).first().click()
+
+  await dmWindow.getByRole('button', { name: 'Token' }).click()
+  await dmWindow.getByRole('button', { name: /Monsters/ }).click()
+  await dmWindow.getByTitle('Wolf', { exact: true }).click()
+
+  const stage = dmWindow.locator('.map-stage')
+  await expect(stage.locator('img').first()).toBeVisible({ timeout: 15_000 })
+  await stage.click({ position: { x: 260, y: 200 } })
+  await stage.click({ position: { x: 300, y: 240 } })
+
+  await expect(dmWindow.getByRole('button', { name: 'Add all to combat' })).toBeVisible()
+  await dmWindow.getByRole('button', { name: 'Add all to combat' }).click()
+  await expect(dmWindow.getByRole('heading', { name: 'Combat' })).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Open combat' })).toBeVisible()
+})
+
 test('editing a note autosaves when switching away and back', async () => {
   const npcs = dmWindow.getByText(/^NPCs$/).first()
   if (await npcs.isVisible().catch(() => false)) await npcs.click()
