@@ -10,6 +10,7 @@ import OpeningVideo from './OpeningVideo'
 import OpeningPhone from './OpeningPhone'
 import OpeningHyperspace from './OpeningHyperspace'
 import OpeningBoxOfDoom from './OpeningBoxOfDoom'
+import OpeningHourglass from './OpeningHourglass'
 import OpeningDiceShow from './OpeningDiceShow'
 import { playerInitiativeVisible } from '../../../shared/playerInitiative'
 
@@ -156,6 +157,7 @@ export default function PlayerView({
       {state.phone ? <OpeningPhone phone={state.phone} /> : null}
       {state.hyperspace ? <OpeningHyperspace jump={state.hyperspace} /> : null}
       {state.boxOfDoom ? <OpeningBoxOfDoom roll={state.boxOfDoom} suppressSound={suppressSound} /> : null}
+      {state.hourglass ? <OpeningHourglass glass={state.hourglass} /> : null}
       {state.diceShow ? <OpeningDiceShow show={state.diceShow} /> : null}
       {handoutScene ? (
         <aside

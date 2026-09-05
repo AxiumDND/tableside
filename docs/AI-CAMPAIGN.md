@@ -4,7 +4,7 @@ Hand this file to an agent converting a vault, Obsidian folder, or loose notes i
 
 Tableside is a **local folder of Markdown**. No account. The DM laptop is the console; a second monitor shows images only.
 
-**Target app version: 1.8.8+.** Night sheets use structured **combat** and **treasure** blocks (party auto-roster, item/monster lookup that copies into Gear / Bestiary). `[!party]` cards show a live race / class / AC / HP / PP table from linked sheets. Classic / Light / Vampire nights get a **campfire chronicle** (`[!legend]`); Sci-fi gets an **opening crawl** (`[!crawl]`). Prefer the formats below so Edit on a block works without hand-editing fences.
+**Target app version: 1.8.9+.** Night sheets use structured **combat** and **treasure** blocks (party auto-roster, item/monster lookup that copies into Gear / Bestiary). `[!party]` cards show a live race / class / AC / HP / PP table from linked sheets. Classic / Light / Vampire nights get a **campfire chronicle** (`[!legend]`); Sci-fi gets an **opening crawl** (`[!crawl]`). Prefer the formats below so Edit on a block works without hand-editing fences.
 
 ## Rules
 
@@ -367,7 +367,7 @@ Under the hearth.
 
 Short hub only: party wikilinks (or `[[Party Roster]]`), current place, faction list, tonight’s session, 3–5 plot links. No book chapters.
 
-Optional `Templates/` at the campaign root overrides built-in **New …** sheets (`Party Roster.md`, `Session Recap.md`, `Game Night Sheet.md`, `Player.md`, …). The folder is hidden in the file tree. Prefer the built-in 1.8.8 shapes unless the table already has a house template.
+Optional `Templates/` at the campaign root overrides built-in **New …** sheets (`Party Roster.md`, `Session Recap.md`, `Game Night Sheet.md`, `Player.md`, …). The folder is hidden in the file tree. Prefer the built-in 1.8.9 shapes unless the table already has a house template.
 
 ## Conversion checklist
 

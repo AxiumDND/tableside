@@ -7,6 +7,7 @@ import {
   normalizeBoxOfDoomMode,
   resolveBoxOfDoom
 } from '../shared/boxOfDoom'
+import { hourglassDurationMs, hourglassRemainingMs } from '../shared/hourglass'
 import { patchSettings, getSettings } from './appSettings'
 import {
   arrivePlayerHyperspace,
@@ -21,9 +22,11 @@ import {
   setPlayerState,
   showPlayerWindow,
   clearBoxOfDoomTimers,
+  clearHourglassTimers,
   scheduleBoxOfDoomAutoFade,
   showPlayerDice,
   stopPlayerBoxOfDoom,
+  stopPlayerHourglass,
   stopPlayerCrawl,
   stopPlayerGallery,
   stopPlayerHyperspace,
@@ -57,6 +60,7 @@ export function registerPlayerIpc(): void {
           phone: null,
           hyperspace: null,
           boxOfDoom: null,
+          hourglass: null,
           diceShow: null
         },
         { show: true }
@@ -108,6 +112,7 @@ export function registerPlayerIpc(): void {
           phone: null,
           hyperspace: null,
           boxOfDoom: null,
+          hourglass: null,
           diceShow: null,
           handout: null
         },
@@ -166,6 +171,7 @@ export function registerPlayerIpc(): void {
           phone: null,
           hyperspace: null,
           boxOfDoom: null,
+          hourglass: null,
           diceShow: null,
           handout: null
         },
@@ -228,6 +234,7 @@ export function registerPlayerIpc(): void {
           phone: null,
           hyperspace: null,
           boxOfDoom: null,
+          hourglass: null,
           diceShow: null,
           handout: null
         },
@@ -270,6 +277,7 @@ export function registerPlayerIpc(): void {
           phone: null,
           hyperspace: null,
           boxOfDoom: null,
+          hourglass: null,
           diceShow: null,
           handout: null
         },
@@ -310,6 +318,7 @@ export function registerPlayerIpc(): void {
           hyperspace: null,
           handout: null,
           boxOfDoom: null,
+          hourglass: null,
           diceShow: null
         },
         { show: true }
@@ -352,6 +361,7 @@ export function registerPlayerIpc(): void {
           },
           handout: null,
           boxOfDoom: null,
+          hourglass: null,
           diceShow: null
         },
         { show: true }
@@ -366,6 +376,7 @@ export function registerPlayerIpc(): void {
     IPC.playerShowBoxOfDoom,
     (_e, payload: { dc?: number; modifier?: number; mode?: string; label?: string }) => {
       clearBoxOfDoomTimers()
+      clearHourglassTimers()
       const dc = clampBoxOfDoomDc(Number(payload?.dc))
       const modifier = clampBoxOfDoomMod(Number(payload?.modifier))
       const mode = normalizeBoxOfDoomMode(payload?.mode)
@@ -381,6 +392,7 @@ export function registerPlayerIpc(): void {
           video: null,
           phone: null,
           hyperspace: null,
+          hourglass: null,
           boxOfDoom: {
             dc,
             modifier,
@@ -438,6 +450,110 @@ export function registerPlayerIpc(): void {
   )
 
   ipcMain.handle(IPC.playerStopBoxOfDoom, () => stopPlayerBoxOfDoom())
+
+  ipcMain.handle(
+    IPC.playerShowHourglass,
+    (_e, payload: { minutes?: number; sound?: boolean }) => {
+      clearHourglassTimers()
+      clearBoxOfDoomTimers()
+      const durationMs = hourglassDurationMs(payload?.minutes)
+      return setPlayerState(
+        {
+          ...getPlayerState(),
+          crawl: null,
+          legend: null,
+          gallery: null,
+          video: null,
+          phone: null,
+          hyperspace: null,
+          boxOfDoom: null,
+          hourglass: {
+            durationMs,
+            shownAt: Date.now(),
+            sound: payload?.sound !== false
+          }
+        },
+        { show: true }
+      )
+    }
+  )
+
+  ipcMain.handle(IPC.playerStartHourglass, (_e, payload?: { sound?: boolean }) => {
+    const current = getPlayerState().hourglass
+    if (!current || current.stoppingAt != null || current.endsAt != null) return getPlayerState()
+    const remaining = hourglassRemainingMs(current)
+    if (remaining <= 0) return getPlayerState()
+    return setPlayerState({
+      ...getPlayerState(),
+      hourglass: {
+        durationMs: current.durationMs,
+        shownAt: current.shownAt,
+        endsAt: Date.now() + remaining,
+        sound: payload?.sound ?? current.sound
+      }
+    })
+  })
+
+  ipcMain.handle(IPC.playerPauseHourglass, () => {
+    const current = getPlayerState().hourglass
+    if (!current || current.stoppingAt != null || current.endsAt == null) return getPlayerState()
+    const remaining = hourglassRemainingMs(current)
+    if (remaining <= 0) {
+      return setPlayerState({
+        ...getPlayerState(),
+        hourglass: {
+          durationMs: current.durationMs,
+          shownAt: current.shownAt,
+          remainingMs: 0,
+          expiredAt: Date.now(),
+          sound: current.sound
+        }
+      })
+    }
+    return setPlayerState({
+      ...getPlayerState(),
+      hourglass: {
+        durationMs: current.durationMs,
+        shownAt: current.shownAt,
+        remainingMs: remaining,
+        pausedAt: Date.now(),
+        sound: current.sound
+      }
+    })
+  })
+
+  ipcMain.handle(IPC.playerResumeHourglass, (_e, payload?: { sound?: boolean }) => {
+    const current = getPlayerState().hourglass
+    if (!current || current.stoppingAt != null || current.endsAt != null) return getPlayerState()
+    const remaining = hourglassRemainingMs(current)
+    if (remaining <= 0) return getPlayerState()
+    return setPlayerState({
+      ...getPlayerState(),
+      hourglass: {
+        durationMs: current.durationMs,
+        shownAt: current.shownAt,
+        endsAt: Date.now() + remaining,
+        sound: payload?.sound ?? current.sound
+      }
+    })
+  })
+
+  ipcMain.handle(IPC.playerResetHourglass, (_e, payload?: { minutes?: number }) => {
+    const current = getPlayerState().hourglass
+    if (!current || current.stoppingAt != null) return getPlayerState()
+    const durationMs =
+      payload?.minutes != null ? hourglassDurationMs(payload.minutes) : current.durationMs
+    return setPlayerState({
+      ...getPlayerState(),
+      hourglass: {
+        durationMs,
+        shownAt: Date.now(),
+        sound: current.sound
+      }
+    })
+  })
+
+  ipcMain.handle(IPC.playerStopHourglass, () => stopPlayerHourglass())
 
   ipcMain.handle(IPC.playerShowDice, (_e, payload: Parameters<typeof showPlayerDice>[0]) => {
     return showPlayerDice(payload ?? { expr: '', total: 0, groups: [], bonus: 0 })

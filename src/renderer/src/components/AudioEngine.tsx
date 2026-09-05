@@ -9,6 +9,7 @@ import {
   type MixerState
 } from '../../../shared/audio'
 import { bundledDiceSfxUrl, diceRollSoundUrl, isBuiltinSfx } from '../../../shared/diceRollSound'
+import { BUILTIN_HOURGLASS_CHIME_PATH, hourglassChimeUrl } from '../../../shared/hourglass'
 import { applyAudioSink, playOneshot } from '../lib/audioSink'
 
 function fadeTo(
@@ -276,10 +277,21 @@ export default function AudioEngine({
     if (shot && shot.at !== oneshotAt.current) {
       oneshotAt.current = shot.at
       playOneshot(
-        isBuiltinSfx(shot.path) ? bundledDiceSfxUrl(shot.path) : audioFileUrl(shot.path),
+        shot.path === BUILTIN_HOURGLASS_CHIME_PATH
+          ? hourglassChimeUrl()
+          : isBuiltinSfx(shot.path)
+            ? bundledDiceSfxUrl(shot.path)
+            : audioFileUrl(shot.path),
         mixerLayerGain(state.prefs, 'sfx'),
         sink
       ).catch(() => {
+        if (shot.path === BUILTIN_HOURGLASS_CHIME_PATH) {
+          return playOneshot(
+            hourglassChimeUrl(),
+            mixerLayerGain(state.prefs, 'sfx'),
+            sink
+          ).catch(() => reportPlaybackError('Could not play that sound. Check the file and Output device.'))
+        }
         if (!isBuiltinSfx(shot.path)) {
           reportPlaybackError('Could not play that sound. Check the file and Output device.')
           return

@@ -143,9 +143,13 @@ export default function PlayerPreview({
                         ? state.hyperspace.arrivedAt
                           ? state.hyperspace.title || 'Arrival'
                           : state.hyperspace.title || 'Hyperspace'
-                        : state.handout
-                          ? state.handout.title
-                          : state.imageTitle || 'Nothing showing'}
+                        : state.hourglass
+                          ? 'Time'
+                          : state.boxOfDoom
+                            ? state.boxOfDoom.label || 'Box of Doom'
+                            : state.handout
+                              ? state.handout.title
+                              : state.imageTitle || 'Nothing showing'}
           </div>
         </button>
         <div className="flex shrink-0 items-center gap-1">
@@ -161,7 +165,9 @@ export default function PlayerPreview({
                 !state.video &&
                 !state.phone &&
                 !state.hyperspace &&
-                !state.handout
+                !state.handout &&
+                !state.boxOfDoom &&
+                !state.hourglass
               }
               className="rounded border border-line px-2 py-0.5 text-[11px] hover:border-amber disabled:text-muted"
             >

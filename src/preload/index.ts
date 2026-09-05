@@ -122,6 +122,16 @@ const api = {
     sound?: boolean
   }): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerRollBoxOfDoom, payload),
   stopBoxOfDoom: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerStopBoxOfDoom),
+  showHourglass: (payload: { minutes: number; sound?: boolean }): Promise<PlayerState> =>
+    ipcRenderer.invoke(IPC.playerShowHourglass, payload),
+  startHourglass: (payload?: { sound?: boolean }): Promise<PlayerState> =>
+    ipcRenderer.invoke(IPC.playerStartHourglass, payload),
+  pauseHourglass: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerPauseHourglass),
+  resumeHourglass: (payload?: { sound?: boolean }): Promise<PlayerState> =>
+    ipcRenderer.invoke(IPC.playerResumeHourglass, payload),
+  resetHourglass: (payload?: { minutes?: number }): Promise<PlayerState> =>
+    ipcRenderer.invoke(IPC.playerResetHourglass, payload),
+  stopHourglass: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerStopHourglass),
   showPlayerDice: (payload: {
     source?: string
     expr: string

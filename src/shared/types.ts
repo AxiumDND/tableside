@@ -260,6 +260,20 @@ export interface PlayerBoxOfDoom {
   label?: string
 }
 
+/** Tools → Timer overlay on the player TV. */
+export interface PlayerHourglass {
+  durationMs: number
+  shownAt: number
+  /** Countdown is running toward this timestamp. */
+  endsAt?: number
+  /** Frozen remainder while paused (no endsAt). */
+  remainingMs?: number
+  pausedAt?: number
+  expiredAt?: number
+  stoppingAt?: number
+  sound?: boolean
+}
+
 export interface PlayerState {
   imageSrc: string | null
   imageTitle: string
@@ -276,6 +290,7 @@ export interface PlayerState {
   hyperspace?: PlayerHyperspace | null
   handout?: PlayerHandout | null
   boxOfDoom?: PlayerBoxOfDoom | null
+  hourglass?: PlayerHourglass | null
   diceShow?: PlayerDiceShow | null
 }
 
@@ -301,8 +316,8 @@ export interface AppSettings {
   rightPanel?: 'combat' | 'tools' | 'help' | 'music' | null
   /** Last tool in the right column, restored when the panel icon shows it again. */
   lastRightPanel?: 'combat' | 'tools' | 'help' | 'music'
-  /** Last page inside Tools (Lookup, NPC, Improvise, Dice, or Links). */
-  toolsTab?: 'lookup' | 'npc' | 'names' | 'improvise' | 'dice' | 'links'
+  /** Last page inside Tools (Lookup, NPC, Improvise, Dice, Timer, or Links). */
+  toolsTab?: 'lookup' | 'npc' | 'names' | 'improvise' | 'dice' | 'timer' | 'links'
   /** Play roll sound on the mixer Sfx layer. Default on. */
   diceCheckSound?: boolean
   /** Send tray and sheet rolls to the player TV strip. Default on. */
@@ -349,6 +364,7 @@ export const emptyPlayerState = (): PlayerState => ({
   hyperspace: null,
   handout: null,
   boxOfDoom: null,
+  hourglass: null,
   diceShow: null
 })
 

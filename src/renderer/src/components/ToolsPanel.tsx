@@ -1,7 +1,8 @@
 import type { ToolsTabId } from '../../../shared/rightPanel'
-import type { PlayerBoxOfDoom } from '../../../shared/types'
+import type { PlayerBoxOfDoom, PlayerHourglass } from '../../../shared/types'
 import type { SrdRecord } from '../lib/srd'
 import BoxOfDoomPanel from './BoxOfDoomPanel'
+import HourglassPanel from './HourglassPanel'
 import ImprovisePanel from './ImprovisePanel'
 import LinksPanel from './LinksPanel'
 import NpcPanel, { type NpcQuickCreateInput } from './NpcPanel'
@@ -12,6 +13,7 @@ const TOOLS: { id: ToolsTabId; label: string }[] = [
   { id: 'npc', label: 'NPC' },
   { id: 'improvise', label: 'Improvise' },
   { id: 'dice', label: 'Dice' },
+  { id: 'timer', label: 'Timer' },
   { id: 'links', label: 'Links' }
 ]
 
@@ -27,6 +29,7 @@ export default function ToolsPanel({
   onSaveToCampaign,
   canSaveToCampaign,
   boxOfDoom,
+  hourglass,
   diceCheckSound,
   onDiceCheckSound
 }: {
@@ -41,6 +44,7 @@ export default function ToolsPanel({
   onSaveToCampaign?: (record: SrdRecord) => Promise<'added' | 'exists' | void> | 'added' | 'exists' | void
   canSaveToCampaign?: boolean
   boxOfDoom: PlayerBoxOfDoom | null
+  hourglass: PlayerHourglass | null
   diceCheckSound: boolean
   onDiceCheckSound: (on: boolean) => void
 }) {
@@ -83,6 +87,8 @@ export default function ToolsPanel({
         <ImprovisePanel />
       ) : tab === 'links' ? (
         <LinksPanel />
+      ) : tab === 'timer' ? (
+        <HourglassPanel overlay={hourglass} />
       ) : (
         <BoxOfDoomPanel
           overlay={boxOfDoom}

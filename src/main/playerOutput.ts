@@ -11,6 +11,7 @@ import { IPC } from '../shared/ipc'
 import { APP_NAME } from '../shared/version'
 import { CRAWL_FADE_OUT_MS } from '../shared/openingCrawl'
 import { BOX_OF_DOOM_FADE_OUT_MS, boxOfDoomHoldMs } from '../shared/boxOfDoom'
+import { HOURGLASS_FADE_OUT_MS } from '../shared/hourglass'
 import type { AppSettings } from '../shared/types'
 import {
   DICE_SHOW_FADE_OUT_MS,
@@ -52,6 +53,7 @@ let phoneStopTimer: ReturnType<typeof setTimeout> | null = null
 let hyperspaceStopTimer: ReturnType<typeof setTimeout> | null = null
 let boxOfDoomStopTimer: ReturnType<typeof setTimeout> | null = null
 let boxOfDoomHoldTimer: ReturnType<typeof setTimeout> | null = null
+let hourglassStopTimer: ReturnType<typeof setTimeout> | null = null
 let diceShowHoldTimer: ReturnType<typeof setTimeout> | null = null
 let diceShowStopTimer: ReturnType<typeof setTimeout> | null = null
 
@@ -103,6 +105,7 @@ function clearStopTimers(): void {
     hyperspaceStopTimer = null
   }
   clearBoxOfDoomTimers()
+  clearHourglassTimers()
   clearDiceShowTimers()
 }
 
@@ -355,6 +358,7 @@ export function clearPlayerMedia(): PlayerState {
     hyperspace: null,
     handout: null,
     boxOfDoom: null,
+    hourglass: null,
     diceShow: null
   })
 }
@@ -372,6 +376,7 @@ export function clearPlayerOverlays(): PlayerState {
     hyperspace: null,
     handout: null,
     boxOfDoom: null,
+    hourglass: null,
     diceShow: null
   })
 }
@@ -558,6 +563,32 @@ export function stopPlayerBoxOfDoom(): PlayerState {
       sendPlayerState()
     }
   }, BOX_OF_DOOM_FADE_OUT_MS)
+  return playerState
+}
+
+export function clearHourglassTimers(): void {
+  if (hourglassStopTimer) {
+    clearTimeout(hourglassStopTimer)
+    hourglassStopTimer = null
+  }
+}
+
+export function stopPlayerHourglass(): PlayerState {
+  const glass = playerState.hourglass
+  if (!glass || glass.stoppingAt != null) return playerState
+  clearHourglassTimers()
+  playerState = {
+    ...playerState,
+    hourglass: { ...glass, stoppingAt: Date.now() }
+  }
+  sendPlayerState()
+  hourglassStopTimer = setTimeout(() => {
+    hourglassStopTimer = null
+    if (playerState.hourglass?.stoppingAt) {
+      playerState = { ...playerState, hourglass: null }
+      sendPlayerState()
+    }
+  }, HOURGLASS_FADE_OUT_MS)
   return playerState
 }
 
