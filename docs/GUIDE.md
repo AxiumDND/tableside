@@ -112,12 +112,13 @@ At the table:
 1. Open the sheet. Press **Add to initiative** on that combat section.
 2. Open **Combat** in the header if it is not already open.
 3. Type PC initiative from the table. NPCs at 0 are rolled for you. Use **Roll all** / **Roll NPCs** if you need to re-roll.
-4. **Start**, then advance turns (`Alt+T`). Click **Cnd** on a row to toggle conditions (Poisoned, Prone, and the rest of the pack).
+4. **Start combat**, then advance turns (`Alt+T`). Click **Cnd** on a row to toggle conditions (Poisoned, Prone, and the rest of the pack). With **Combat music** ticked, Start combat plays `Audio/Music/Combat`.
 5. Optionally **Show to players** on the Combat panel to overlay order on the current picture. Players see names, pack tags (5e Bloodied / 0 HP; PF2e Wounded / Dying; V5 Health, Willpower, Hunger), and any conditions you set. They never see HP numbers.
+6. **End combat** empties the tracker (asks first). With **Combat music** ticked, it returns to `Audio/Music/General`. Untick Combat music if you want to leave the mixer alone.
 
 **Add all players** loads every `Party/` sheet. Lookup monsters can **Add to combat** for this fight only.
 
-Combat saves in hidden `combat.json` until you clear it.
+Combat saves in hidden `combat.json` until you End combat.
 
 After the session, right-click **Sessions/** → **New session recap…** for notes on what actually happened. Secrets and next-prep go in `[!gmonly]`. Prep stays on the game night sheet. Right-click **Party/** → **New party roster…** for a standing list of who is travelling together (companions stay in `NPCs/` and are linked in the same `[!party]` block).
 
@@ -127,9 +128,9 @@ Tableside does not include music. Drop files you own, or use **Add audio…** on
 
 | Folder | What it is |
 | --- | --- |
-| `Audio/Music/Combat` | Fight playlist |
+| `Audio/Music/Combat` | Fight playlist (also starts from **Start combat** when Combat music is ticked) |
 | `Audio/Music/Creepy` | Tension playlist |
-| `Audio/Music/General` | Town / travel playlist |
+| `Audio/Music/General` | Town / travel playlist (also resumes from **End combat** when Combat music is ticked) |
 | Extra folders under `Audio/Music/` | Extra moods |
 | `Audio/Ambience/` | Looping beds (crowd, rain). Folders or loose files |
 | `Audio/Sfx/` | Soundboard one-shots. Subfolders become headings |

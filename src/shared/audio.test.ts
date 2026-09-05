@@ -236,4 +236,9 @@ describe('mixer commands', () => {
     const prefs = parseMixerPrefs({ outputDeviceId: 'hdmi-tv' })
     expect(prefs.outputDeviceId).toBe('hdmi-tv')
   })
+
+  it('defaults combat music cues on and keeps an explicit off', () => {
+    expect(parseMixerPrefs({}).combatMusicCues).toBe(true)
+    expect(parseMixerPrefs({ combatMusicCues: false }).combatMusicCues).toBe(false)
+  })
 })

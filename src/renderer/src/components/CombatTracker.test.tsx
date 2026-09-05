@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import CombatTracker from './CombatTracker'
+import { COMBAT_MUSIC_PLAYLIST_ID, GENERAL_MUSIC_PLAYLIST_ID } from '../../../shared/audio'
 import { emptyCombat, type CombatState, type Combatant } from '../../../shared/types'
 
 function combatant(overrides: Partial<Combatant> & { id: string; name: string }): Combatant {
@@ -21,6 +22,10 @@ function makeCombat(combatants: Combatant[]): CombatState {
 }
 
 describe('CombatTracker', () => {
+  afterEach(() => {
+    Reflect.deleteProperty(window, 'tabledm')
+  })
+
   it('renders each combatant name in the tracker', () => {
     const combat = makeCombat([
       combatant({ id: 'a', name: 'Goblin Scout', initiative: 12 }),
@@ -121,5 +126,74 @@ describe('CombatTracker', () => {
     expect(screen.getByRole('button', { name: 'Poisoned' }).getAttribute('aria-pressed')).toBe('true')
     await user.click(screen.getByRole('button', { name: 'Done' }))
     expect(screen.getByRole('button', { name: 'Clear Poisoned' })).toBeTruthy()
+  })
+
+  it('renames Clear to End combat and asks before emptying the tracker', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    const combat = makeCombat([combatant({ id: 'a', name: 'Goblin Scout', initiative: 12 })])
+    render(<CombatTracker combat={combat} onChange={onChange} />)
+
+    expect(screen.queryByRole('button', { name: 'Clear' })).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'End combat' }))
+    expect(screen.getByRole('dialog', { name: 'End combat?' })).toBeTruthy()
+    expect(onChange).not.toHaveBeenCalled()
+
+    await user.click(within(screen.getByRole('dialog', { name: 'End combat?' })).getByRole('button', { name: 'End combat' }))
+    expect(onChange).toHaveBeenCalledTimes(1)
+    const next = onChange.mock.calls[0][0] as CombatState
+    expect(next.combatants).toEqual([])
+    expect(next.round).toBe(0)
+  })
+
+  it('plays Combat music on start and General on end when the cue is on', async () => {
+    const user = userEvent.setup()
+    const mixerPlayMusic = vi.fn().mockResolvedValue({})
+    const mixerSetPrefs = vi.fn().mockResolvedValue({})
+    window.tabledm = {
+      getMixer: vi.fn().mockResolvedValue({ prefs: { combatMusicCues: true } }),
+      mixerPlayMusic,
+      mixerSetPrefs,
+      onMixerState: vi.fn(() => () => {})
+    } as unknown as Window['tabledm']
+
+    const onChange = vi.fn()
+    const combat = makeCombat([
+      combatant({ id: 'high', name: 'Bandit Captain', initiative: 18 })
+    ])
+    render(<CombatTracker combat={combat} onChange={onChange} />)
+
+    expect(screen.getByRole('checkbox', { name: /combat music/i })).toBeTruthy()
+    await user.click(screen.getByRole('button', { name: /start combat/i }))
+    expect(mixerPlayMusic).toHaveBeenCalledWith(COMBAT_MUSIC_PLAYLIST_ID)
+
+    await user.click(screen.getByRole('button', { name: 'End combat' }))
+    await user.click(within(screen.getByRole('dialog', { name: 'End combat?' })).getByRole('button', { name: 'End combat' }))
+    expect(mixerPlayMusic).toHaveBeenCalledWith(GENERAL_MUSIC_PLAYLIST_ID)
+  })
+
+  it('skips combat music cues when the checkbox is unticked', async () => {
+    const user = userEvent.setup()
+    const mixerPlayMusic = vi.fn().mockResolvedValue({})
+    const mixerSetPrefs = vi.fn().mockResolvedValue({})
+    window.tabledm = {
+      getMixer: vi.fn().mockResolvedValue({ prefs: { combatMusicCues: true } }),
+      mixerPlayMusic,
+      mixerSetPrefs,
+      onMixerState: vi.fn(() => () => {})
+    } as unknown as Window['tabledm']
+
+    const combat = makeCombat([combatant({ id: 'high', name: 'Bandit Captain', initiative: 18 })])
+    render(<CombatTracker combat={combat} onChange={() => {}} />)
+
+    await user.click(screen.getByRole('checkbox', { name: /combat music/i }))
+    expect(mixerSetPrefs).toHaveBeenCalledWith({ combatMusicCues: false })
+
+    await user.click(screen.getByRole('button', { name: /start combat/i }))
+    expect(mixerPlayMusic).not.toHaveBeenCalled()
+
+    await user.click(screen.getByRole('button', { name: 'End combat' }))
+    await user.click(within(screen.getByRole('dialog', { name: 'End combat?' })).getByRole('button', { name: 'End combat' }))
+    expect(mixerPlayMusic).not.toHaveBeenCalled()
   })
 })

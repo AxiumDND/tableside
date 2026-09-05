@@ -63,6 +63,8 @@ export interface MixerPrefs {
   shuffle: boolean
   lastMusicId: string | null
   lastAmbienceId: string | null
+  /** Start combat plays Combat; End combat returns to General. */
+  combatMusicCues: boolean
 }
 
 export interface MixerPlayback {
@@ -162,6 +164,9 @@ function folderName(path: string): string {
   const parts = posix(path).split('/').filter(Boolean)
   return parts[parts.length - 1] ?? path
 }
+
+export const COMBAT_MUSIC_PLAYLIST_ID = 'Audio/Music/Combat'
+export const GENERAL_MUSIC_PLAYLIST_ID = 'Audio/Music/General'
 
 function musicPlaylistId(path: string): string {
   const parts = posix(path).split('/').filter(Boolean)
@@ -300,7 +305,8 @@ export function emptyMixerPrefs(): MixerPrefs {
     sfxMuted: false,
     shuffle: true,
     lastMusicId: null,
-    lastAmbienceId: null
+    lastAmbienceId: null,
+    combatMusicCues: true
   }
 }
 
@@ -359,7 +365,8 @@ export function parseMixerPrefs(raw: unknown): MixerPrefs {
     sfxMuted: flag('sfxMuted', base.sfxMuted),
     shuffle: flag('shuffle', base.shuffle),
     lastMusicId: id('lastMusicId'),
-    lastAmbienceId: id('lastAmbienceId')
+    lastAmbienceId: id('lastAmbienceId'),
+    combatMusicCues: flag('combatMusicCues', base.combatMusicCues)
   }
 }
 
