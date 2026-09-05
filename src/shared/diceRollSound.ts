@@ -1,54 +1,70 @@
 /** Mixer oneshot paths for bundled dice clatter (not campaign files). */
 export const BUILTIN_DICE_ROLL_PATH = 'builtin:dice-roll'
+export const BUILTIN_DICE_ROLL_PAIR_PATH = 'builtin:dice-roll-pair'
 export const BUILTIN_DICE_ROLL_MULTI_PATH = 'builtin:dice-roll-multi'
 
-export type DiceRollSoundVariant = 'single' | 'multi'
+export type DiceRollSoundVariant = 'single' | 'pair' | 'multi'
 
 /** Filenames under resources/dice-sfx/ (any supported audio extension). */
 export const DICE_SFX_STEMS = {
   single: 'dice-one',
+  pair: 'dice-two',
   multi: 'dice-handful'
 } as const
 
 export const DICE_SFX_EXTS = ['.wav', '.mp3', '.ogg', '.m4a', '.flac', '.webm', '.aac'] as const
 
-export function diceSfxIdForVariant(variant: DiceRollSoundVariant): 'one' | 'handful' {
-  return variant === 'multi' ? 'handful' : 'one'
+export function isDiceRollSoundVariant(value: string): value is DiceRollSoundVariant {
+  return value === 'single' || value === 'pair' || value === 'multi'
+}
+
+export function diceSfxIdForVariant(variant: DiceRollSoundVariant): 'one' | 'two' | 'handful' {
+  if (variant === 'multi') return 'handful'
+  if (variant === 'pair') return 'two'
+  return 'one'
 }
 
 export function diceSfxVariantForId(id: string): DiceRollSoundVariant {
-  return id === 'handful' || id === 'multi' ? 'multi' : 'single'
+  if (id === 'handful' || id === 'multi') return 'multi'
+  if (id === 'two' || id === 'pair') return 'pair'
+  return 'single'
 }
 
 export function diceSfxFileNames(idOrVariant: string | DiceRollSoundVariant): string[] {
-  const variant =
-    idOrVariant === 'single' || idOrVariant === 'multi' ? idOrVariant : diceSfxVariantForId(idOrVariant)
+  const variant = isDiceRollSoundVariant(idOrVariant) ? idOrVariant : diceSfxVariantForId(idOrVariant)
   const stem = DICE_SFX_STEMS[variant]
   return DICE_SFX_EXTS.map((ext) => `${stem}${ext}`)
 }
 
 /** Packaged recording, served by the main-process tabledm:// protocol. */
 export function bundledDiceSfxUrl(pathOrVariant: string | DiceRollSoundVariant = 'single'): string {
-  const variant =
-    pathOrVariant === 'multi' || pathOrVariant === 'single'
-      ? pathOrVariant
-      : diceRollVariantForPath(pathOrVariant)
+  const variant = isDiceRollSoundVariant(pathOrVariant)
+    ? pathOrVariant
+    : diceRollVariantForPath(pathOrVariant)
   return `tabledm://dice-sfx/?id=${diceSfxIdForVariant(variant)}`
 }
 
-const BUILTIN_PATHS = new Set([BUILTIN_DICE_ROLL_PATH, BUILTIN_DICE_ROLL_MULTI_PATH])
+const BUILTIN_PATHS = new Set([
+  BUILTIN_DICE_ROLL_PATH,
+  BUILTIN_DICE_ROLL_PAIR_PATH,
+  BUILTIN_DICE_ROLL_MULTI_PATH
+])
 
 export function isBuiltinSfx(path: string): boolean {
   return BUILTIN_PATHS.has(path)
 }
 
 export function diceRollVariantForPath(path: string): DiceRollSoundVariant {
-  return path === BUILTIN_DICE_ROLL_MULTI_PATH ? 'multi' : 'single'
+  if (path === BUILTIN_DICE_ROLL_MULTI_PATH) return 'multi'
+  if (path === BUILTIN_DICE_ROLL_PAIR_PATH) return 'pair'
+  return 'single'
 }
 
 /** Pick the builtin mixer path from how many dice were rolled. */
 export function builtinDiceRollPath(dieCount: number): string {
-  return dieCount >= 2 ? BUILTIN_DICE_ROLL_MULTI_PATH : BUILTIN_DICE_ROLL_PATH
+  if (dieCount >= 3) return BUILTIN_DICE_ROLL_MULTI_PATH
+  if (dieCount === 2) return BUILTIN_DICE_ROLL_PAIR_PATH
+  return BUILTIN_DICE_ROLL_PATH
 }
 
 function bitNoise(n: number): number {
@@ -172,10 +188,9 @@ function buildWavForVariant(variant: DiceRollSoundVariant): Uint8Array {
 const cachedUrls = new Map<string, string>()
 
 export function diceRollSoundUrl(pathOrVariant: string | DiceRollSoundVariant = 'single'): string {
-  const variant =
-    pathOrVariant === 'multi' || pathOrVariant === 'single'
-      ? pathOrVariant
-      : diceRollVariantForPath(pathOrVariant)
+  const variant = isDiceRollSoundVariant(pathOrVariant)
+    ? pathOrVariant
+    : diceRollVariantForPath(pathOrVariant)
   const cached = cachedUrls.get(variant)
   if (cached) return cached
   const bytes = buildWavForVariant(variant)
