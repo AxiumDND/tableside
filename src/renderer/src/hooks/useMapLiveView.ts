@@ -1,5 +1,5 @@
 import { useEffect, useRef, type MutableRefObject } from 'react'
-import type { PlayerMapView } from '../../../shared/types'
+import type { Combatant, PlayerMapView } from '../../../shared/types'
 import type { CampaignImage } from '../lib/images'
 import type { MapCamera } from '../lib/mapCamera'
 import { TOKEN_SCALE_DEFAULT, type MapNoteData, type MapToken } from '../lib/mapNote'
@@ -26,6 +26,9 @@ export function useMapLiveView(opts: {
   dragPos: { id: string; x: number; y: number } | null
   dragPosRef: MutableRefObject<{ id: string; x: number; y: number } | null>
   hideBundled?: boolean
+  combatants?: Combatant[]
+  system?: string | null
+  combatSignature?: string
 }): void {
   const {
     imagePath,
@@ -42,7 +45,10 @@ export function useMapLiveView(opts: {
     scaleDraftRef,
     dragPos,
     dragPosRef,
-    hideBundled = false
+    hideBundled = false,
+    combatants = [],
+    system,
+    combatSignature = ''
   } = opts
 
   const liveTimer = useRef<number | null>(null)
@@ -50,10 +56,14 @@ export function useMapLiveView(opts: {
   const imagePathRef = useRef(imagePath)
   const imagesRef = useRef(images)
   const hideBundledRef = useRef(hideBundled)
+  const combatantsRef = useRef(combatants)
+  const systemRef = useRef(system)
   onLiveViewRef.current = onLiveView
   imagePathRef.current = imagePath
   imagesRef.current = images
   hideBundledRef.current = hideBundled
+  combatantsRef.current = combatants
+  systemRef.current = system
 
   useEffect(() => {
     if (!imagePathRef.current || !onLiveViewRef.current) return
@@ -71,11 +81,13 @@ export function useMapLiveView(opts: {
           imagesRef.current,
           scaleDraftRef.current ?? dataRef.current?.tokenScale ?? TOKEN_SCALE_DEFAULT,
           dragPosRef.current,
-          hideBundledRef.current
+          hideBundledRef.current,
+          combatantsRef.current,
+          systemRef.current
         )
       )
     })
-  }, [imagePath, camera, fogTick, tokens, tokenScale, dragPos, scaleDraft, hideBundled, cameraRef, fogRef, dataRef, scaleDraftRef, dragPosRef])
+  }, [imagePath, camera, fogTick, tokens, tokenScale, dragPos, scaleDraft, hideBundled, combatSignature, cameraRef, fogRef, dataRef, scaleDraftRef, dragPosRef])
 
   useEffect(() => {
     return () => {

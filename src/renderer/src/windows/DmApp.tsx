@@ -38,6 +38,7 @@ import type { NpcQuickCreateInput } from '../components/NpcPanel'
 import { usePlayerPlayback } from '../hooks/usePlayerPlayback'
 import { useConsoleHotkeys } from '../hooks/useConsoleHotkeys'
 import { useCombatActions } from '../hooks/useCombatActions'
+import { toggleStatus } from '../../../shared/combatConditions'
 import { useCampaignOpen } from '../hooks/useCampaignOpen'
 import { useCampaignNavigation } from '../hooks/useCampaignNavigation'
 
@@ -266,7 +267,7 @@ export default function DmApp() {
     if (updated) setCampaign(updated)
   }
 
-  const { saveCombat, addMonster, addNpcFromSheet, addPartyToCombat, addBestiaryToCombat, addEncounterItems } =
+  const { saveCombat, addMonster, addNpcFromSheet, addPartyToCombat, addBestiaryToCombat, addEncounterItems, addTokenToCombat } =
     useCombatActions({
       campaign,
       setCampaign,
@@ -573,6 +574,20 @@ export default function DmApp() {
           onNext={nextFile ? goNextFile : undefined}
           nextLabel={nextFile ? imageTitle(nextFile.relativePath).replace(/^PC\s+[—–-]\s+/i, '') : undefined}
           onAddNpcToCombat={addNpcFromSheet}
+          combat={combat}
+          onAddTokenToCombat={addTokenToCombat}
+          onToggleTokenStatus={(combatantId, statusId) => {
+            const live = combat.combatants.find((row) => row.id === combatantId)
+            if (!live) return
+            void saveCombat({
+              ...combat,
+              combatants: combat.combatants.map((row) =>
+                row.id === combatantId
+                  ? { ...row, conditions: toggleStatus(row.conditions, statusId) }
+                  : row
+              )
+            })
+          }}
           onAddEncounter={addEncounterItems}
           onCampaignChange={setCampaign}
           onNewCampaign={() => void newCampaign()}

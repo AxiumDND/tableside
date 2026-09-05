@@ -43,7 +43,11 @@ export function combatantCondition(
   return null
 }
 
-function overlayTagsFor(c: Combatant, profile: CombatProfile): OverlayTag[] {
+export function combatOverlayTags(
+  c: Combatant,
+  profile: CombatProfile,
+  options?: { includeVitals?: boolean }
+): OverlayTag[] {
   const tags: OverlayTag[] = []
   const condition = combatantCondition(c, profile)
   const label = conditionLabel(condition)
@@ -54,6 +58,7 @@ function overlayTagsFor(c: Combatant, profile: CombatProfile): OverlayTag[] {
     if (tags.some((tag) => tag.label.toLowerCase() === status.toLowerCase())) continue
     tags.push({ label: status, tone: 'muted' })
   }
+  if (options?.includeVitals === false) return tags
   if (profile.showWillpower) {
     const current = c.willpower ?? c.maxWillpower ?? 0
     const max = c.maxWillpower ?? current
@@ -87,7 +92,7 @@ export function combatToPlayerInitiative(
       hunger: used.showHunger ? (c.hunger ?? 0) : null,
       willpower: used.showWillpower ? (c.willpower ?? null) : null,
       maxWillpower: used.showWillpower ? (c.maxWillpower ?? null) : null,
-      overlayTags: overlayTagsFor(c, used)
+      overlayTags: combatOverlayTags(c, used)
     }
   })
   const turn = entries.findIndex((entry) => entry.active)

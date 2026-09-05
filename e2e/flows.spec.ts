@@ -141,6 +141,35 @@ test('map note exposes fog tools and covers the map without error', async () => 
   await expect(dmWindow.getByRole('button', { name: 'Clear fog' })).toBeVisible()
 })
 
+test('map token can join combat and share condition chips', async () => {
+  const maps = dmWindow.getByText(/^Maps$/).first()
+  if (await maps.isVisible().catch(() => false)) await maps.click()
+  await dmWindow.getByText(/Pale Well Caves/i).first().click()
+
+  await dmWindow.getByRole('button', { name: 'Token' }).click()
+  await dmWindow.getByRole('button', { name: /Monsters/ }).click()
+  // Title is exact "Wolf"; name: 'Wolf' also matches leftover Dire Wolf combat rows.
+  await dmWindow.getByTitle('Wolf', { exact: true }).click()
+  await expect(dmWindow.getByText(/Click the map to place Wolf/)).toBeVisible()
+
+  const stage = dmWindow.locator('.map-stage')
+  await expect(stage.locator('img').first()).toBeVisible({ timeout: 15_000 })
+  await stage.click({ position: { x: 220, y: 180 } })
+
+  await expect(dmWindow.getByRole('button', { name: 'Add to combat' })).toBeVisible()
+  await dmWindow.getByRole('button', { name: 'Add to combat' }).click()
+  await expect(dmWindow.getByRole('heading', { name: 'Combat' })).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Open combat' })).toBeVisible()
+
+  await dmWindow.getByRole('button', { name: 'Cnd', exact: true }).click()
+  const dialog = dmWindow.getByRole('dialog')
+  await expect(dialog.getByRole('heading', { name: 'Wolf', exact: true })).toBeVisible()
+  // Prone is unused by the earlier Dire Wolf combat test (that row is already Poisoned).
+  await dialog.getByRole('button', { name: 'Prone', exact: true }).click()
+  await dmWindow.getByRole('button', { name: 'Done' }).click()
+  await expect(dmWindow.getByRole('button', { name: 'Clear Prone' })).toBeVisible()
+})
+
 test('editing a note autosaves when switching away and back', async () => {
   const npcs = dmWindow.getByText(/^NPCs$/).first()
   if (await npcs.isVisible().catch(() => false)) await npcs.click()

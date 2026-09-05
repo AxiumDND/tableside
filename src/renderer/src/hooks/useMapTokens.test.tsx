@@ -97,6 +97,14 @@ describe('useMapTokens', () => {
     expect(view.result.current.selectedTokenId).toBeNull()
   })
 
+  it('setTokenCombatantId writes the combat link', () => {
+    const placed = token({ id: 't1', label: 'Wolf' })
+    const { view, persist } = setup({ tokens: [placed] })
+    act(() => view.result.current.setTokenCombatantId('t1', 'combat-9'))
+    const written = persist.mock.calls[0][0] as { tokens: MapToken[] }
+    expect(written.tokens[0].combatantId).toBe('combat-9')
+  })
+
   it('moveToken writes the new coordinates', () => {
     const placed = token({ id: 't1', label: 'Wolf', x: 0.2, y: 0.3 })
     const { view, persist } = setup({ tokens: [placed] })

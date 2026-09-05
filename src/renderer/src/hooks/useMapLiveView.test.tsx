@@ -5,7 +5,7 @@ import { useMapLiveView } from './useMapLiveView'
 import { FIT_CAMERA, type MapCamera } from '../lib/mapCamera'
 import { createFog } from '../lib/mapFog'
 import type { MapNoteData, MapToken } from '../lib/mapNote'
-import type { PlayerMapView } from '../../../shared/types'
+import type { Combatant, PlayerMapView } from '../../../shared/types'
 
 function mapData(overrides: Partial<MapNoteData> = {}): MapNoteData {
   return { image: 'cave.png', pins: [], tokens: [], tokenScale: 1, gridX: 0, gridY: 0, pinsLocked: true, fog: '', fogSize: 0, ...overrides }
@@ -39,6 +39,8 @@ function setup(
     camera?: MapCamera
     tokens?: MapToken[]
     dragPos?: { id: string; x: number; y: number } | null
+    combatants?: Combatant[]
+    combatSignature?: string
   } = {}
 ) {
   const onLiveView = vi.fn()
@@ -51,7 +53,13 @@ function setup(
   const scaleDraftRef = { current: null as number | null }
   const dragPosRef = { current: dragPos }
   const view = renderHook(
-    (props: { camera: MapCamera; imagePath: string | null; dragPos: typeof dragPos }) =>
+    (props: {
+      camera: MapCamera
+      imagePath: string | null
+      dragPos: typeof dragPos
+      combatants: Combatant[]
+      combatSignature: string
+    }) =>
       useMapLiveView({
         imagePath: props.imagePath,
         onLiveView: overrides.omitOnLiveView ? undefined : onLiveView,
@@ -66,13 +74,17 @@ function setup(
         scaleDraft: null,
         scaleDraftRef,
         dragPos: props.dragPos,
-        dragPosRef
+        dragPosRef,
+        combatants: props.combatants,
+        combatSignature: props.combatSignature
       }),
     {
       initialProps: {
         camera,
         imagePath: overrides.imagePath === undefined ? 'Maps/cave.png' : overrides.imagePath,
-        dragPos
+        dragPos,
+        combatants: overrides.combatants ?? [],
+        combatSignature: overrides.combatSignature ?? ''
       }
     }
   )
@@ -124,7 +136,15 @@ describe('useMapLiveView', () => {
     act(() => flushRaf())
     const zoomed = { zoom: 2, centerX: 0.4, centerY: 0.6 }
     cameraRef.current = zoomed
-    act(() => view.rerender({ camera: zoomed, imagePath: 'Maps/cave.png', dragPos: null }))
+    act(() =>
+      view.rerender({
+        camera: zoomed,
+        imagePath: 'Maps/cave.png',
+        dragPos: null,
+        combatants: [],
+        combatSignature: ''
+      })
+    )
     act(() => flushRaf())
     expect(onLiveView).toHaveBeenCalledTimes(2)
     const viewPayload = onLiveView.mock.calls[1][1] as PlayerMapView
@@ -140,6 +160,49 @@ describe('useMapLiveView', () => {
     act(() => flushRaf())
     const viewPayload = onLiveView.mock.calls[0][1] as PlayerMapView
     expect(viewPayload.tokens?.[0]).toMatchObject({ id: 't1', x: 0.9, y: 0.1, label: 'Wolf' })
+  })
+
+  it('re-broadcasts condition chips when combat overlay changes', () => {
+    const placed = token({
+      id: 'wolf-2',
+      label: 'Wolf',
+      source: 'Bestiary/Wolf.md',
+      combatantId: 'c1'
+    })
+    const combatants = [
+      {
+        id: 'c1',
+        name: 'Wolf',
+        kind: 'monster' as const,
+        initiative: 10,
+        hp: 11,
+        maxHp: 11,
+        ac: 13,
+        conditions: [] as string[]
+      }
+    ]
+    const { view, onLiveView } = setup({
+      tokens: [placed],
+      combatants,
+      combatSignature: 'c1:11:11:'
+    })
+    act(() => flushRaf())
+    expect(onLiveView.mock.calls[0][1].tokens?.[0].overlayTags).toBeUndefined()
+
+    act(() =>
+      view.rerender({
+        camera: FIT_CAMERA,
+        imagePath: 'Maps/cave.png',
+        dragPos: null,
+        combatants: [{ ...combatants[0], conditions: ['poisoned'] }],
+        combatSignature: 'c1:11:11:poisoned'
+      })
+    )
+    act(() => flushRaf())
+    const tags = (onLiveView.mock.calls[1][1] as PlayerMapView).tokens?.[0].overlayTags?.map(
+      (tag) => tag.label
+    )
+    expect(tags).toContain('Poisoned')
   })
 
   it('cancels a pending frame on unmount', () => {

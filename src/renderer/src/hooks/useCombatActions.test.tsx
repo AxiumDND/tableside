@@ -202,4 +202,57 @@ describe('useCombatActions', () => {
     expect(getCampaign()?.combat?.combatants[0]?.conditions).toEqual(['poisoned'])
     expect(getCampaign()?.combat?.round).toBe(1)
   })
+
+  it('addTokenToCombat creates a row keyed by the token and returns its id', async () => {
+    readFile.mockResolvedValue('```statblock\nname: Wolf\nac: 13\nhp: 11\n```')
+    const { result, onOpenCombatPanel } = setup(campaignWith([]))
+    let id: string | null = null
+    await act(async () => {
+      id = await result.current.addTokenToCombat({
+        id: 'wolf-2',
+        kind: 'monster',
+        source: 'Bestiary/Wolf.md',
+        x: 0.4,
+        y: 0.5,
+        space: 'medium',
+        label: 'Wolf',
+        image: ''
+      })
+    })
+    expect(id).toBeTruthy()
+    expect(saveCombat).toHaveBeenCalledOnce()
+    const saved = saveCombat.mock.calls[0][0]
+    expect(saved.combatants[0].sourceId).toBe('Bestiary/Wolf.md#wolf-2')
+    expect(saved.combatants[0].name).toBe('Wolf')
+    expect(onOpenCombatPanel).toHaveBeenCalled()
+  })
+
+  it('addTokenToCombat reuses a live combatant instead of adding a second row', async () => {
+    const existing: Combatant = {
+      id: 'live',
+      name: 'Wolf',
+      kind: 'monster',
+      initiative: 12,
+      hp: 11,
+      maxHp: 11,
+      ac: 13,
+      sourceId: 'Bestiary/Wolf.md#wolf-2'
+    }
+    const { result } = setup(campaignWith([existing]))
+    let id: string | null = null
+    await act(async () => {
+      id = await result.current.addTokenToCombat({
+        id: 'wolf-2',
+        kind: 'monster',
+        source: 'Bestiary/Wolf.md',
+        x: 0.4,
+        y: 0.5,
+        space: 'medium',
+        label: 'Wolf',
+        image: ''
+      })
+    })
+    expect(id).toBe('live')
+    expect(saveCombat).not.toHaveBeenCalled()
+  })
 })

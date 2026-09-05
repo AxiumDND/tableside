@@ -70,7 +70,7 @@ Navigation: **← Back** in the note header, **Alt+←**, or mouse back button.
 - **Links** — heading jump list for long session notes.
 - Wikilinks open other notes; images stay clickable for **Show to players**. A `> [!crawl]` block is an Opening crawl card — **Play** in Sci-fi sends it to the player screen.
 - Sheets with a `statblock` (Party / NPCs / Bestiary) open in sheet view with **Add to combat**.
-- Map notes (` ```map ` fence) show **Pan / Pin / Token / Fog** — extra controls open as a submenu under the selected tool. Pins stay DM-only. On **Pan**, **Scale map** click two points that are 5 ft (or another length) apart; tokens snap to that grid. **Line / Cone / Round / Square** plus **ft** overlay a spell template (DM-only). Large/Huge stay 2×/3× a Medium token. **Show to players** follows crop, fog, and tokens.
+- Map notes (` ```map ` fence) show **Pan / Pin / Token / Fog** — extra controls open as a submenu under the selected tool. Pins stay DM-only. On **Pan**, **Scale map** click two points that are 5 ft (or another length) apart; tokens snap to that grid. **Line / Cone / Round / Square** plus **ft** overlay a spell template (DM-only). Large/Huge stay 2×/3× a Medium token. Select a token → **Add to combat** (then **Cnd** for conditions; chips stay in sync with the tracker). **Show to players** follows crop, fog, tokens, and those condition chips.
 - Night-sheet combat and treasure cards support per-block **Edit** (structured forms + lookup). Combat sections also show **Add to initiative** when combatants resolve — see [CAMPAIGN.md](CAMPAIGN.md).
 - **Help & settings → Currencies** edits coin denominations for treasure blocks.
 ## Combat panel
@@ -85,7 +85,7 @@ Open with **Combat** in the header.
 | d20 on a row | Rolls initiative for that combatant (PCs: type their table roll into Init) |
 | **Start combat** / next-round controls | Begins round 1 and advances whose turn it is. With **Combat music** ticked, starts the `Audio/Music/Combat` playlist |
 | Eye / view | Opens that combatant’s rollable statblock without changing the turn |
-| **Cnd** | Toggle conditions (Poisoned, Prone, …) on that PC, NPC, or monster |
+| **Cnd** | Toggle conditions (Poisoned, Prone, …) on that PC, NPC, or monster. Same picker on a map token that is in this fight |
 | **Show to players** | Superimposes initiative order on the current player image |
 | **Combat music** | Tick to switch music on Start / End combat. Untick to leave the mixer alone |
 | **End combat** | Empties the tracker (confirm dialog). With **Combat music** ticked, returns to the `Audio/Music/General` playlist |

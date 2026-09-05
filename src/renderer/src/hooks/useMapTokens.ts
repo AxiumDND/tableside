@@ -30,6 +30,7 @@ export interface MapTokens {
   addToken: (point: { x: number; y: number }) => void
   moveToken: (id: string, x: number, y: number) => void
   deleteToken: (id: string) => void
+  setTokenCombatantId: (id: string, combatantId: string) => void
   /** Update the draft and persist after a short debounce. */
   setScale: (size: number) => void
   /** Update the draft and persist immediately (two-click scale / Shift+scroll). */
@@ -135,6 +136,14 @@ export function useMapTokens(opts: {
     if (selectedTokenId === id) setSelectedTokenId(null)
   }
 
+  function setTokenCombatantId(id: string, combatantId: string): void {
+    const current = dataRef.current
+    if (!current) return
+    persistRef.current({
+      tokens: current.tokens.map((token) => (token.id === id ? { ...token, combatantId } : token))
+    })
+  }
+
   function setScale(size: number): void {
     const next = clampTokenScale(size)
     const current = dataRef.current
@@ -196,6 +205,7 @@ export function useMapTokens(opts: {
     addToken,
     moveToken,
     deleteToken,
+    setTokenCombatantId,
     setScale,
     applyScaleNow,
     pickToken,

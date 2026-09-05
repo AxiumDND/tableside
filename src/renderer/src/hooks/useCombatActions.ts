@@ -1,5 +1,7 @@
 import { useCallback, useRef, type Dispatch, type SetStateAction } from 'react'
 import type { CampaignInfo, CombatState, Combatant } from '../../../shared/types'
+import type { MapToken } from '../lib/mapNote'
+import { combatantForToken, mapTokenSourceId } from '../lib/mapTokenCombat'
 import { emptyCombat } from '../../../shared/types'
 import type { EncounterAddItem } from '../lib/sessionNoteEncounter'
 import { monsterToStatBlock, type SrdRecord } from '../lib/srd'
@@ -19,6 +21,7 @@ export interface CombatActions {
   addPartyToCombat: () => void
   addBestiaryToCombat: (notePath: string) => Promise<void>
   addEncounterItems: (items: EncounterAddItem[], extra?: Combatant, includeParty?: boolean) => Promise<void>
+  addTokenToCombat: (token: MapToken) => Promise<string | null>
 }
 
 /**
@@ -190,6 +193,46 @@ export function useCombatActions({
     void addEncounterItems([])
   }, [addEncounterItems])
 
+  const addTokenToCombat = useCallback(
+    async (token: MapToken): Promise<string | null> => {
+      const live = campaign?.combat ?? emptyCombat()
+      const existing = combatantForToken(live.combatants, token)
+      if (existing) {
+        onOpenCombatPanel()
+        return existing.id
+      }
+      let text = ''
+      if (token.source) {
+        try {
+          text = await window.tabledm.readFile(token.source)
+        } catch {
+          text = ''
+        }
+      }
+      const parsed = token.source
+        ? extractStatblock(text)?.block ?? fallbackStatblock(token.source, text)
+        : fallbackStatblock(token.label || 'Token', `# ${token.label}`)
+      const statBlock = parsedToStatBlock(parsed)
+      const extra: Combatant = {
+        id: crypto.randomUUID(),
+        name: token.label,
+        kind: token.kind,
+        initiative: 0,
+        hp: statBlock.hp ?? 10,
+        maxHp: statBlock.hp ?? 10,
+        ac: statBlock.ac ?? 10,
+        willpower: parsed.willpower,
+        maxWillpower: parsed.maxWillpower ?? parsed.willpower,
+        hunger: parsed.hunger,
+        sourceId: mapTokenSourceId(token),
+        statBlock
+      }
+      await addEncounterItems([], extra, false)
+      return extra.id
+    },
+    [addEncounterItems, campaign, onOpenCombatPanel]
+  )
+
   const addBestiaryToCombat = useCallback(
     async (notePath: string): Promise<void> => {
       const text = await window.tabledm.readFile(notePath)
@@ -205,7 +248,15 @@ export function useCombatActions({
     [addEncounterItems, campaign]
   )
 
-  return { saveCombat, addMonster, addNpcFromSheet, addPartyToCombat, addBestiaryToCombat, addEncounterItems }
+  return {
+    saveCombat,
+    addMonster,
+    addNpcFromSheet,
+    addPartyToCombat,
+    addBestiaryToCombat,
+    addEncounterItems,
+    addTokenToCombat
+  }
 }
 
 function nextCopyName(base: string, existing: Combatant[]): string {

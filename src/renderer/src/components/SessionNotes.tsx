@@ -74,6 +74,9 @@ export default function SessionNotes({
   onNext,
   nextLabel,
   onAddNpcToCombat,
+  onAddTokenToCombat,
+  onToggleTokenStatus,
+  combat,
   onAddEncounter,
   onNewCampaign,
   onOpenCampaign,
@@ -179,6 +182,9 @@ export default function SessionNotes({
   onNext?: () => void
   nextLabel?: string
   onAddNpcToCombat?: (block: ParsedStatblock, notePath: string) => void
+  onAddTokenToCombat?: (token: import('../lib/mapNote').MapToken) => Promise<string | null>
+  onToggleTokenStatus?: (combatantId: string, statusId: string) => void
+  combat?: import('../../../shared/types').CombatState | null
   onAddEncounter?: (items: EncounterAddItem[]) => void
   onNewCampaign?: () => void
   onOpenCampaign?: () => void
@@ -527,6 +533,10 @@ export default function SessionNotes({
           path={path}
           images={images}
           notes={noteIndex}
+          combat={combat}
+          system={system}
+          onAddTokenToCombat={onAddTokenToCombat}
+          onToggleTokenStatus={onToggleTokenStatus}
           onChange={(next) => void saveMapMarkdown(next)}
           onLiveView={onMapLiveView}
           renderRoom={(text) => (
