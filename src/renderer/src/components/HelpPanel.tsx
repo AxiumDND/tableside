@@ -593,7 +593,9 @@ export default function HelpPanel({
                 <Code>Audio/Ambience</Code> — looping beds (crowd, rain). One at a time.
               </>,
               <>
-                <Code>Audio/Sfx</Code> — clickable one-shots. Subfolders become headings.
+                <Code>Audio/Sfx</Code> — clickable one-shots. Subfolders become headings. Bundled{' '}
+                <Action>Dice (one)</Action>, <Action>Dice (two)</Action>, and <Action>Dice (handful)</Action> sit on
+                the board even with no campaign files.
               </>
             ]}
           />
@@ -906,7 +908,7 @@ export default function HelpPanel({
             Bottom of the left column: d4–d100 plus a custom expression such as <Code>2d6+3</Code>. Use{' '}
             <Action>Adv</Action> or <Action>Dis</Action> for d20 rolls. Uncheck <Action>Show rolls to players</Action>{' '}
             to keep tray and statblock rolls off the player TV; uncheck <Action>Play roll sound</Action> to mute the
-            clatter. Rolls feed the same log as combat and statblock clicks — a strip fades in on the right side of the
+            clatter (one die, two dice, and a handful each have their own recording). Rolls feed the same log as combat and statblock clicks — a strip fades in on the right side of the
             player screen for about 15 seconds, then fades out. In 5e campaigns, damage chips on statblocks also offer{' '}
             <Action>Crit</Action> (double the dice).
           </p>
@@ -916,7 +918,8 @@ export default function HelpPanel({
             Disadvantage. <Action>Show</Action> fades the check over whatever is on the player TV;{' '}
             <Action>Roll</Action> tumbles (cosmetic), then holds Success or Failure until you click{' '}
             <Action>Fade out</Action> or the auto fade-out timer in <strong>Settings</strong> runs. A natural 20 always
-            succeeds; a natural 1 always fails. Uncheck <Action>Play sound on Roll</Action> to skip the clatter.
+            succeeds; a natural 1 always fails. Uncheck <Action>Play sound on Roll</Action> to skip the clatter (same
+            one-die / two-die recordings as the tray).
           </p>
           <Sub>Shortcuts</Sub>
           <Ul
