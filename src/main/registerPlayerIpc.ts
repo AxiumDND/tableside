@@ -31,7 +31,9 @@ import {
   stopPlayerGallery,
   stopPlayerHyperspace,
   stopPlayerLegend,
-  stopPlayerPhone
+  stopPlayerPhone,
+  scheduleCrawlEndStill,
+  scheduleLegendEndStill
 } from './playerOutput'
 
 export function registerPlayerIpc(): void {
@@ -46,16 +48,14 @@ export function registerPlayerIpc(): void {
         handout?: PlayerState['handout']
       }
     ) => {
-      return setPlayerState(
+      const current = getPlayerState()
+      setPlayerState(
         {
-          ...getPlayerState(),
+          ...current,
           imageSrc: payload.src || null,
           imageTitle: payload.title,
           mapView: payload.mapView ?? null,
           handout: payload.handout ?? null,
-          crawl: null,
-          legend: null,
-          gallery: null,
           video: null,
           phone: null,
           hyperspace: null,
@@ -65,6 +65,10 @@ export function registerPlayerIpc(): void {
         },
         { show: true }
       )
+      if (current.crawl) stopPlayerCrawl()
+      if (current.legend) stopPlayerLegend()
+      if (current.gallery) stopPlayerGallery()
+      return getPlayerState()
     }
   )
 
@@ -92,7 +96,7 @@ export function registerPlayerIpc(): void {
           : typeof payload?.preface === 'string'
             ? payload.preface
             : undefined
-      return setPlayerState(
+      const next = setPlayerState(
         {
           ...getPlayerState(),
           imageSrc: null,
@@ -118,6 +122,8 @@ export function registerPlayerIpc(): void {
         },
         { show: true }
       )
+      scheduleCrawlEndStill()
+      return next
     }
   )
 
@@ -152,7 +158,7 @@ export function registerPlayerIpc(): void {
           ? lookRaw
           : 'mist'
       const prev = getPlayerState()
-      return setPlayerState(
+      const next = setPlayerState(
         {
           ...prev,
           imageTitle: prev.imageSrc ? prev.imageTitle : title || 'Campfire chronicle',
@@ -177,6 +183,8 @@ export function registerPlayerIpc(): void {
         },
         { show: true }
       )
+      scheduleLegendEndStill()
+      return next
     }
   )
 
@@ -215,12 +223,10 @@ export function registerPlayerIpc(): void {
       const loop = payload?.loop !== false
       const showTitle = Boolean(payload?.showTitle) && Boolean(title)
       const prev = getPlayerState()
-      return setPlayerState(
+      setPlayerState(
         {
           ...prev,
           imageTitle: prev.imageSrc ? prev.imageTitle : title || 'Gallery',
-          crawl: null,
-          legend: null,
           gallery: {
             title: title || undefined,
             slides,
@@ -240,6 +246,9 @@ export function registerPlayerIpc(): void {
         },
         { show: true }
       )
+      if (prev.crawl) stopPlayerCrawl()
+      if (prev.legend) stopPlayerLegend()
+      return getPlayerState()
     }
   )
 

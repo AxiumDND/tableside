@@ -9,7 +9,8 @@ import {
 } from '../shared/playerWindow'
 import { IPC } from '../shared/ipc'
 import { APP_NAME } from '../shared/version'
-import { CRAWL_FADE_OUT_MS } from '../shared/openingCrawl'
+import { CRAWL_FADE_OUT_MS, crawlEndStillAtMs } from '../shared/openingCrawl'
+import { legendEndStillAtMs } from '../shared/openingLegend'
 import { BOX_OF_DOOM_FADE_OUT_MS, boxOfDoomHoldMs } from '../shared/boxOfDoom'
 import { HOURGLASS_FADE_OUT_MS } from '../shared/hourglass'
 import type { AppSettings } from '../shared/types'
@@ -48,6 +49,8 @@ const programmaticPlayerCloses = new WeakSet<BrowserWindow>()
 let playerState: PlayerState = emptyPlayerState()
 let crawlStopTimer: ReturnType<typeof setTimeout> | null = null
 let legendStopTimer: ReturnType<typeof setTimeout> | null = null
+let crawlPromoteTimer: ReturnType<typeof setTimeout> | null = null
+let legendPromoteTimer: ReturnType<typeof setTimeout> | null = null
 let galleryStopTimer: ReturnType<typeof setTimeout> | null = null
 let phoneStopTimer: ReturnType<typeof setTimeout> | null = null
 let hyperspaceStopTimer: ReturnType<typeof setTimeout> | null = null
@@ -92,6 +95,7 @@ function clearStopTimers(): void {
     clearTimeout(legendStopTimer)
     legendStopTimer = null
   }
+  clearProloguePromoteTimers()
   if (galleryStopTimer) {
     clearTimeout(galleryStopTimer)
     galleryStopTimer = null
@@ -381,9 +385,64 @@ export function clearPlayerOverlays(): PlayerState {
   })
 }
 
+function clearCrawlPromoteTimer(): void {
+  if (crawlPromoteTimer) {
+    clearTimeout(crawlPromoteTimer)
+    crawlPromoteTimer = null
+  }
+}
+
+function clearLegendPromoteTimer(): void {
+  if (legendPromoteTimer) {
+    clearTimeout(legendPromoteTimer)
+    legendPromoteTimer = null
+  }
+}
+
+function clearProloguePromoteTimers(): void {
+  clearCrawlPromoteTimer()
+  clearLegendPromoteTimer()
+}
+
+function promotePrologueEndStill(startedAt: number): void {
+  const overlay = playerState.legend ?? playerState.crawl
+  if (!overlay || overlay.stoppingAt != null || overlay.startedAt !== startedAt) return
+  const src = overlay.endSrc?.trim()
+  if (!src || playerState.imageSrc === src) return
+  playerState = { ...playerState, imageSrc: src, mapView: null }
+  sendPlayerState()
+}
+
+/** Copy the chronicle / crawl closing still onto the player image layer when it appears. */
+export function scheduleLegendEndStill(): void {
+  clearProloguePromoteTimers()
+  const legend = playerState.legend
+  const endSrc = legend?.endSrc?.trim()
+  if (!legend || !endSrc) return
+  const startedAt = legend.startedAt
+  legendPromoteTimer = setTimeout(() => {
+    legendPromoteTimer = null
+    promotePrologueEndStill(startedAt)
+  }, legendEndStillAtMs(legend.title, legend.body))
+}
+
+/** Copy the crawl closing still onto the player image layer when it appears. */
+export function scheduleCrawlEndStill(): void {
+  clearProloguePromoteTimers()
+  const crawl = playerState.crawl
+  const endSrc = crawl?.endSrc?.trim()
+  if (!crawl || !endSrc) return
+  const startedAt = crawl.startedAt
+  crawlPromoteTimer = setTimeout(() => {
+    crawlPromoteTimer = null
+    promotePrologueEndStill(startedAt)
+  }, crawlEndStillAtMs(crawl.preface))
+}
+
 export function stopPlayerCrawl(): PlayerState {
   const crawl = playerState.crawl
   if (!crawl || crawl.stoppingAt != null) return playerState
+  clearCrawlPromoteTimer()
   if (crawlStopTimer) {
     clearTimeout(crawlStopTimer)
     crawlStopTimer = null
@@ -406,6 +465,7 @@ export function stopPlayerCrawl(): PlayerState {
 export function stopPlayerLegend(): PlayerState {
   const legend = playerState.legend
   if (!legend || legend.stoppingAt != null) return playerState
+  clearLegendPromoteTimer()
   if (legendStopTimer) {
     clearTimeout(legendStopTimer)
     legendStopTimer = null

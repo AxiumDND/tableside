@@ -262,7 +262,7 @@ In the caves beneath the pale stone, something older keeps its count.
 
 - `look:` (or `style:` / `atmosphere:`) is `mist` (gothic fog), `embers` (campfire), `crimson` (vampire), or `neon` (holo). Default mist. Aliases: fog/strahd → mist; fire/campfire → embers; blood/vampire → crimson; cyber/sci-fi → neon.
 - Body paragraphs (blank-line separated) rise on the player TV. Write short spoken-prose paragraphs, not one giant line and not a poem of three-word wraps — the player layout uses a readable measure.
-- Optional `music:` under `Audio/Music/` (same idea as crawl). Optional `end: ![[Still.webp]]` for a closing still. Optional `preface:` is stored for older notes but the player chronicle does **not** show an opening line — put the tale in the body.
+- Optional `music:` under `Audio/Music/` (same idea as crawl). Optional `end: ![[Still.webp]]` for a closing still — the next **Show to players** picture fades from that still. Optional `preface:` is stored for older notes but the player chronicle does **not** show an opening line — put the tale in the body.
 - Do not nest legend inside a scene. Do not paste licensed movie-crawl or published-module boxed text.
 
 ### Opening crawl (`[!crawl]`)

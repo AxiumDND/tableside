@@ -173,3 +173,10 @@ export function replaceNthCrawlCallout(source: string, index: number, fields: Cr
 export function crawlDurationMs(_title?: string | undefined, _body?: string): number {
   return crawlScrollDurationMs()
 }
+
+/** When the closing still begins after hold, far-off line, emblem, and scroll. */
+export function crawlEndStillAtMs(preface?: string | null): number {
+  const line = preface === undefined ? CRAWL_PREFACE_DEFAULT : preface
+  const prefaceMs = line ? CRAWL_PREFACE_MS : 0
+  return CRAWL_HOLD_MS + prefaceMs + CRAWL_LOGO_MS + crawlDurationMs()
+}
