@@ -918,8 +918,8 @@ export default function HelpPanel({
             Disadvantage. <Action>Show</Action> fades the check over whatever is on the player TV;{' '}
             <Action>Roll</Action> tumbles (cosmetic), then holds Success or Failure until you click{' '}
             <Action>Fade out</Action> or the auto fade-out timer in <strong>Settings</strong> runs. A natural 20 always
-            succeeds; a natural 1 always fails. Uncheck <Action>Play sound on Roll</Action> to skip the clatter (same
-            one-die / two-die recordings as the tray).
+            succeeds; a natural 1 always fails. The clatter plays as the dice land. Uncheck{' '}
+            <Action>Play sound on Roll</Action> to skip it (same one-die / two-die recordings as the tray).
           </p>
           <Sub>Shortcuts</Sub>
           <Ul

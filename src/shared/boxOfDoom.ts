@@ -7,6 +7,8 @@ export const MAX_BOX_OF_DOOM_HOLD_MS = 120_000
 export const BOX_OF_DOOM_TUMBLE_MS = 1800
 export const BOX_OF_DOOM_REVEAL_MS = 650
 export const BOX_OF_DOOM_VERDICT_AT = BOX_OF_DOOM_TUMBLE_MS + BOX_OF_DOOM_REVEAL_MS
+/** Start the roll clatter this far before faces land so it meets the result. */
+export const BOX_OF_DOOM_SFX_LEAD_MS = 500
 
 export type BoxOfDoomPhase = 'wait' | 'tumble' | 'reveal' | 'verdict'
 export type BoxOfDoomMode = 'normal' | 'advantage' | 'disadvantage'
@@ -59,6 +61,13 @@ export function resolveBoxOfDoom(
     nat20,
     nat1
   }
+}
+
+/** Delay from `rolledAt` until the dice clatter should start. */
+export function boxOfDoomSfxDelayMs(rolledAt: number | null | undefined, now = Date.now()): number {
+  if (rolledAt == null) return 0
+  const startAt = rolledAt + BOX_OF_DOOM_TUMBLE_MS - BOX_OF_DOOM_SFX_LEAD_MS
+  return Math.max(0, startAt - now)
 }
 
 export function boxOfDoomPhase(
