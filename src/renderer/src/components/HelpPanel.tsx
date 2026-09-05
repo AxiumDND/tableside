@@ -10,6 +10,7 @@ import {
   MIN_BOX_OF_DOOM_HOLD_MS,
   boxOfDoomHoldMs
 } from '../../../shared/boxOfDoom'
+import { parseUpdateChannel, type UpdateChannel } from '../../../shared/updateChannel'
 import CurrenciesSettings from './CurrenciesSettings'
 
 type HelpSection = 'settings' | 'start' | 'screens' | 'files' | 'music' | 'combat' | 'lookup' | 'keys' | 'updates'
@@ -179,6 +180,7 @@ export default function HelpPanel({
   const [open, setOpen] = useState<HelpSection | null>('settings')
   const [folders, setFolders] = useState<AppFolders | null>(null)
   const [boxOfDoomHoldSec, setBoxOfDoomHoldSec] = useState(String(DEFAULT_BOX_OF_DOOM_HOLD_MS / 1000))
+  const [updateChannel, setUpdateChannel] = useState<UpdateChannel>('stable')
 
   function toggle(id: HelpSection): void {
     setOpen((prev) => (prev === id ? null : id))
@@ -192,8 +194,14 @@ export default function HelpPanel({
     void window.tabledm.getSettings().then((prefs) => {
       const sec = boxOfDoomHoldMs(prefs.boxOfDoomHoldSec) / 1000
       setBoxOfDoomHoldSec(String(sec))
+      setUpdateChannel(parseUpdateChannel(prefs.updateChannel))
     })
   }, [])
+
+  function saveUpdateChannel(next: UpdateChannel): void {
+    setUpdateChannel(next)
+    void window.tabledm.saveSettings({ updateChannel: next })
+  }
 
   function saveBoxOfDoomHoldSec(raw: string): void {
     const sec = boxOfDoomHoldMs(raw) / 1000
@@ -425,10 +433,25 @@ export default function HelpPanel({
 
         <Section id="updates" title="Updates" open={open} onToggle={toggle}>
           <p>
-            Installed copies check GitHub at launch. If a newer Tableside exists, the app asks to install it.
-            Nothing downloads until you press <Action>Install</Action>. Offline (at the table) the check is skipped
-            and the app stays quiet.
+            Installed copies check GitHub at launch. By default they only offer the latest stable release. If a newer
+            Tableside exists, the app asks to install it. Nothing downloads until you press <Action>Install</Action>.
+            Offline (at the table) the check is skipped and the app stays quiet.
           </p>
+          <label className="mt-2 flex items-start gap-2 text-[13px] text-parchment/90">
+            <input
+              type="checkbox"
+              className="mt-0.5"
+              checked={updateChannel === 'beta'}
+              onChange={(event) => saveUpdateChannel(event.target.checked ? 'beta' : 'stable')}
+            />
+            <span>
+              <span className="font-semibold text-parchment">Include test (beta) updates</span>
+              <span className="mt-0.5 block text-[12px] leading-snug text-muted">
+                Also offer GitHub Pre-releases. Leave this off unless you want to try builds before they are marked
+                Latest. Turning it off later does not roll you back.
+              </span>
+            </span>
+          </label>
           <p className="text-[12px] text-muted">You are on {APP_VERSION}. Windows may still ask SmartScreen on the new installer — More info, then Run anyway.</p>
           {onCheckUpdate ? (
             <button
@@ -450,7 +473,11 @@ export default function HelpPanel({
             </p>
           ) : null}
           {updateNotice?.kind === 'current' ? (
-            <p className="mt-2 text-sm text-muted">You already have the latest release.</p>
+            <p className="mt-2 text-sm text-muted">
+              {updateChannel === 'beta'
+                ? 'You already have the latest update on the test channel.'
+                : 'You already have the latest release.'}
+            </p>
           ) : null}
           {updateNotice?.kind === 'offline' ? (
             <p className="mt-2 text-sm text-muted">Could not reach GitHub. Try again when you are online.</p>

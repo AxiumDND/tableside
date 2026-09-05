@@ -1,8 +1,15 @@
 import { app, dialog, ipcMain, type BrowserWindow } from 'electron'
 import { autoUpdater } from 'electron-updater'
 import type { AppUpdateNotice } from '../shared/appUpdate'
-import { APP_VERSION } from '../shared/version'
 import { IPC } from '../shared/ipc'
+import {
+  allowPrereleaseUpdates,
+  parseUpdateChannel,
+  updateInstallPromptDetail,
+  type UpdateChannel
+} from '../shared/updateChannel'
+import { APP_VERSION } from '../shared/version'
+import { getSettings } from './appSettings'
 
 let getWindow: () => BrowserWindow | null = () => null
 let readDismissed: () => string | undefined = () => undefined
@@ -33,7 +40,7 @@ export function setupAppUpdater(options: {
 
   autoUpdater.autoDownload = false
   autoUpdater.autoInstallOnAppQuit = false
-  autoUpdater.allowPrerelease = false
+  applyUpdateChannelFromSettings()
 
   autoUpdater.on('update-available', (info) => {
     pendingVersion = String(info.version ?? '')
@@ -85,7 +92,16 @@ export function setupAppUpdater(options: {
   })
 }
 
+export function applyUpdateChannel(channel: UpdateChannel): void {
+  autoUpdater.allowPrerelease = allowPrereleaseUpdates(channel)
+}
+
+export function applyUpdateChannelFromSettings(): void {
+  applyUpdateChannel(parseUpdateChannel(getSettings().updateChannel))
+}
+
 export function checkForAppUpdate(fromHelp = false): void {
+  applyUpdateChannelFromSettings()
   helpCheck = fromHelp
   if (!isPackaged()) {
     if (fromHelp) send({ kind: 'dev' })
@@ -114,11 +130,12 @@ async function promptLaunchInstall(version: string): Promise<void> {
   try {
     const win = getWindow()
     const parent = win && !win.isDestroyed() ? win : null
+    const channel = parseUpdateChannel(getSettings().updateChannel)
     const options: Electron.MessageBoxOptions = {
       type: 'question',
       title: 'Tableside update',
       message: `Tableside ${version} is available.`,
-      detail: 'Install now? Tableside will download the update and restart.',
+      detail: updateInstallPromptDetail(channel),
       buttons: ['Install', 'Not now'],
       defaultId: 0,
       cancelId: 1,

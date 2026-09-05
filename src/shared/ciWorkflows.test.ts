@@ -42,4 +42,18 @@ describe('CI workflows', () => {
     expect(runCommands(jobBody(crlf, 'checks'))).toContain('npm run lint')
     expect(jobBody(crlf, 'windows')).toMatch(/needs: checks/)
   })
+
+  it('publishes every v* tag as a pre-release until it is promoted', () => {
+    const windows = jobBody(workflow('release.yml'), 'windows')
+    expect(windows).toMatch(/prerelease:\s*true/)
+    expect(windows).toMatch(/make_latest:\s*false/)
+  })
+
+  it('promotes a chosen tag to GitHub Latest', () => {
+    const yaml = workflow('promote-release.yml')
+    expect(yaml).toMatch(/workflow_dispatch/)
+    expect(yaml).toMatch(/gh release edit/)
+    expect(yaml).toMatch(/--prerelease=false/)
+    expect(yaml).toMatch(/--latest/)
+  })
 })

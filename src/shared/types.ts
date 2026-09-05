@@ -332,6 +332,8 @@ export interface AppSettings {
   theme?: string
   recentCampaigns?: RecentCampaign[]
   dismissedUpdateVersion?: string
+  /** GitHub Latest only, or Latest plus Pre-releases. Default stable. */
+  updateChannel?: 'stable' | 'beta'
 }
 
 /** Optional image when creating a map or sheet note. */

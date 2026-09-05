@@ -103,7 +103,9 @@ Scripts that shell out to `tsc` / `vitest` / `playwright` use `node ./node_modul
 
 Hermetic Electron smoke: `npm run test:e2e` (builds first). The suite sets `TABLESIDE_E2E=1` so `migrateLegacyUserData` does not copy a real `%APPDATA%\table-dm` profile into the temp userData dir.
 
-[`.github/workflows/release.yml`](../.github/workflows/release.yml) publishes a GitHub Release when you push a `v*` tag (for example `git tag v1.2.0 && git push origin v1.2.0`). The Ubuntu `checks` job is the same lint / typecheck / test / e2e sequence as pull requests; the Windows installer job (`npm run dist`) waits for it, so a tag cannot ship what PR CI would have blocked. The release must include `latest.yml` (and the `.exe`) so installed copies can check for updates.
+[`.github/workflows/release.yml`](../.github/workflows/release.yml) publishes a GitHub **Pre-release** when you push a `v*` tag (for example `git tag v1.2.0 && git push origin v1.2.0`). It is not marked Latest. The Ubuntu `checks` job is the same lint / typecheck / test / e2e sequence as pull requests; the Windows installer job (`npm run dist`) waits for it, so a tag cannot ship what PR CI would have blocked. The release must include `latest.yml` (and the `.exe`) so installed copies can check for updates.
+
+Installed copies on the default **stable** channel only see the GitHub release marked Latest. Help → Updates → **Include test (beta) updates** also offers Pre-releases. When a tagged build is ready for tables, run [Promote release](../.github/workflows/promote-release.yml) (`workflow_dispatch`, input `tag` such as `v1.8.10`) or `gh release edit v1.8.10 --prerelease=false --latest`. That flips the same tag — no rebuild. Leave the previous Latest in place until you promote.
 
 ## Packaging notes
 
