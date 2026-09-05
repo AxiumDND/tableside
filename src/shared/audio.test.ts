@@ -41,6 +41,7 @@ describe('audio library', () => {
     expect(library.sfx.find((group) => group.name === 'Doors')?.tracks[0]?.name).toBe('Slam')
     expect(library.sfx.find((group) => group.name === 'Sfx')?.tracks.map((track) => track.name)).toEqual([
       'Dice (one)',
+      'Dice (two)',
       'Dice (handful)',
       'Thunder'
     ])
@@ -54,6 +55,10 @@ describe('audio library', () => {
       relativePath: 'builtin:dice-roll'
     })
     expect(tracks[1]).toMatchObject({
+      name: 'Dice (two)',
+      relativePath: 'builtin:dice-roll-pair'
+    })
+    expect(tracks[2]).toMatchObject({
       name: 'Dice (handful)',
       relativePath: 'builtin:dice-roll-multi'
     })

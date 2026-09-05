@@ -137,7 +137,7 @@ Curated D&D prep sites open in your browser (not embedded). Categories: rules & 
 
 ## Dice tray
 
-Bottom of the left column: quick d4–d100 buttons plus a custom expression field (for example `2d6+3`). **Adv** and **Dis** apply to d20 rolls from the tray and statblocks. Uncheck **Show rolls to players** to keep tray and statblock rolls off the player TV; uncheck **Play roll sound** to mute the clatter. Rolls feed the shared dice log used by combat and statblock clicks — a strip fades in on the right side of the player screen for about 15 seconds, then fades out. In 5e campaigns, damage chips on statblocks also offer **Crit** (double the dice).
+Bottom of the left column: quick d4–d100 buttons plus a custom expression field (for example `2d6+3`). **Adv** and **Dis** apply to d20 rolls from the tray and statblocks. Uncheck **Show rolls to players** to keep tray and statblock rolls off the player TV; uncheck **Play roll sound** to mute the clatter. One die, two dice, and a handful each have their own recording (same clips on Music → Soundboard as **Dice (one)** / **Dice (two)** / **Dice (handful)**). Box of Doom uses the matching clip. Rolls feed the shared dice log used by combat and statblock clicks — a strip fades in on the right side of the player screen for about 15 seconds, then fades out. In 5e campaigns, damage chips on statblocks also offer **Crit** (double the dice).
 
 ## Keyboard and mouse
 

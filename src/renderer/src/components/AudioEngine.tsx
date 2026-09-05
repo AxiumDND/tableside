@@ -8,7 +8,7 @@ import {
   type MixerLayerId,
   type MixerState
 } from '../../../shared/audio'
-import { diceRollSoundUrl, isBuiltinSfx } from '../../../shared/diceRollSound'
+import { bundledDiceSfxUrl, diceRollSoundUrl, isBuiltinSfx } from '../../../shared/diceRollSound'
 import { applyAudioSink, playOneshot } from '../lib/audioSink'
 
 function fadeTo(
@@ -276,10 +276,20 @@ export default function AudioEngine({
     if (shot && shot.at !== oneshotAt.current) {
       oneshotAt.current = shot.at
       playOneshot(
-        isBuiltinSfx(shot.path) ? diceRollSoundUrl(shot.path) : audioFileUrl(shot.path),
+        isBuiltinSfx(shot.path) ? bundledDiceSfxUrl(shot.path) : audioFileUrl(shot.path),
         mixerLayerGain(state.prefs, 'sfx'),
         sink
-      ).catch(() => reportPlaybackError('Could not play that sound. Check the file and Output device.'))
+      ).catch(() => {
+        if (!isBuiltinSfx(shot.path)) {
+          reportPlaybackError('Could not play that sound. Check the file and Output device.')
+          return
+        }
+        return playOneshot(
+          diceRollSoundUrl(shot.path),
+          mixerLayerGain(state.prefs, 'sfx'),
+          sink
+        ).catch(() => reportPlaybackError('Could not play that sound. Check the file and Output device.'))
+      })
     }
   }, [state])
 
