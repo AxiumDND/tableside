@@ -1,5 +1,13 @@
 import { describe, expect, it } from 'vitest'
-import { boxOfDoomHoldMs, boxOfDoomPhase, resolveBoxOfDoom, tumbleFace } from './boxOfDoom'
+import {
+  BOX_OF_DOOM_SFX_LEAD_MS,
+  BOX_OF_DOOM_TUMBLE_MS,
+  boxOfDoomHoldMs,
+  boxOfDoomPhase,
+  boxOfDoomSfxDelayMs,
+  resolveBoxOfDoom,
+  tumbleFace
+} from './boxOfDoom'
 
 describe('resolveBoxOfDoom', () => {
   it('beats the DC on a high total', () => {
@@ -40,6 +48,16 @@ describe('boxOfDoomHoldMs', () => {
     expect(boxOfDoomHoldMs(20)).toBe(20_000)
     expect(boxOfDoomHoldMs(1)).toBe(3_000)
     expect(boxOfDoomHoldMs(999)).toBe(120_000)
+  })
+})
+
+describe('boxOfDoomSfxDelayMs', () => {
+  it('waits until late in the tumble so the clatter meets the result', () => {
+    expect(boxOfDoomSfxDelayMs(1000, 1000)).toBe(BOX_OF_DOOM_TUMBLE_MS - BOX_OF_DOOM_SFX_LEAD_MS)
+    expect(boxOfDoomSfxDelayMs(1000, 1000 + BOX_OF_DOOM_TUMBLE_MS - BOX_OF_DOOM_SFX_LEAD_MS - 1)).toBe(1)
+    expect(boxOfDoomSfxDelayMs(1000, 1000 + BOX_OF_DOOM_TUMBLE_MS - BOX_OF_DOOM_SFX_LEAD_MS)).toBe(0)
+    expect(boxOfDoomSfxDelayMs(1000, 4000)).toBe(0)
+    expect(boxOfDoomSfxDelayMs(null, 1000)).toBe(0)
   })
 })
 

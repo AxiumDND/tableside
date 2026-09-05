@@ -6,6 +6,7 @@ import {
   BOX_OF_DOOM_VERDICT_AT,
   boxOfDoomIsPair,
   boxOfDoomPhase,
+  boxOfDoomSfxDelayMs,
   tumbleFace,
   type BoxOfDoomPhase
 } from '../../../shared/boxOfDoom'
@@ -39,9 +40,13 @@ export default function OpeningBoxOfDoom({
   }, [roll.startedAt])
 
   useEffect(() => {
-    if (suppressSound || roll.rolledAt == null || roll.sound === false) return
-    playDiceRollSound(0.95, outputDeviceId, pair ? 'pair' : 'single')
-  }, [outputDeviceId, pair, roll.rolledAt, roll.sound, suppressSound])
+    if (suppressSound || roll.rolledAt == null || roll.sound === false || roll.stoppingAt) return
+    const delay = boxOfDoomSfxDelayMs(roll.rolledAt)
+    const timer = window.setTimeout(() => {
+      playDiceRollSound(0.95, outputDeviceId, pair ? 'pair' : 'single')
+    }, delay)
+    return () => window.clearTimeout(timer)
+  }, [outputDeviceId, pair, roll.rolledAt, roll.sound, roll.stoppingAt, suppressSound])
 
   useEffect(() => {
     if (roll.rolledAt == null) return

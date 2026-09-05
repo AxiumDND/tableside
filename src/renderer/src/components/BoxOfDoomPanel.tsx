@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { resolveBoxOfDoom, type BoxOfDoomMode } from '../../../shared/boxOfDoom'
+import { useEffect, useRef, useState } from 'react'
+import { boxOfDoomSfxDelayMs, resolveBoxOfDoom, type BoxOfDoomMode } from '../../../shared/boxOfDoom'
 import { builtinDiceRollPath } from '../../../shared/diceRollSound'
 import type { PlayerBoxOfDoom } from '../../../shared/types'
 import type { DiceResult } from '../lib/dice'
@@ -47,6 +47,15 @@ export default function BoxOfDoomPanel({
   const [mode, setMode] = useState<BoxOfDoomMode>('normal')
   const [busy, setBusy] = useState(false)
   const [last, setLast] = useState<ReturnType<typeof resolveBoxOfDoom> | null>(null)
+  const sfxTimer = useRef<number | null>(null)
+
+  function clearRollSfx(): void {
+    if (sfxTimer.current == null) return
+    window.clearTimeout(sfxTimer.current)
+    sfxTimer.current = null
+  }
+
+  useEffect(() => () => clearRollSfx(), [])
 
   const showing = Boolean(overlay && overlay.stoppingAt == null)
   const waiting = showing && overlay?.rolledAt == null
@@ -86,7 +95,14 @@ export default function BoxOfDoomPanel({
     setLast(resolved)
     setBusy(true)
     try {
-      if (soundEnabled) void window.tabledm.mixerOneshot(builtinDiceRollPath(resolved.rolls.length))
+      if (soundEnabled) {
+        clearRollSfx()
+        const rolledAt = Date.now()
+        sfxTimer.current = window.setTimeout(() => {
+          sfxTimer.current = null
+          void window.tabledm.mixerOneshot(builtinDiceRollPath(resolved.rolls.length))
+        }, boxOfDoomSfxDelayMs(rolledAt))
+      }
       await window.tabledm.rollBoxOfDoom({
         dc: resolved.dc,
         modifier: resolved.modifier,
@@ -103,6 +119,7 @@ export default function BoxOfDoomPanel({
   async function fadeOut(): Promise<void> {
     setBusy(true)
     try {
+      clearRollSfx()
       await window.tabledm.stopBoxOfDoom()
     } finally {
       setBusy(false)
@@ -116,7 +133,7 @@ export default function BoxOfDoomPanel({
         to that picture. If you do not click Fade out, the result auto-fades after the timer under{' '}
         <strong>Help & settings → Settings → Dice</strong>. Advantage and disadvantage show two dice. Natural 20 always
         succeeds,
-        natural 1 always fails. Roll sound plays on the Music panel Sfx layer.
+        natural 1 always fails. Roll sound plays on the Music panel Sfx layer as the dice land.
       </p>
       <div className="flex flex-wrap gap-2">
         <label className="min-w-[5.5rem] flex-1 text-[11px] uppercase tracking-wider text-muted">

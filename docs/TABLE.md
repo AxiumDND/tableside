@@ -126,7 +126,7 @@ Pick a race (5e) or ancestry (Pathfinder 2e), then **Name flavor** for how the n
 
 ### Dice
 
-Set a DC, a d20 modifier, and **Normal**, **Advantage**, or **Disadvantage**. **Show** fades the check over whatever is already on the player TV and waits (two dice for advantage or disadvantage). **Roll** tumbles, then holds **Success** or **Failure**. **Fade out** returns to that picture. Natural 20 always succeeds; natural 1 always fails. The tumble plays on the Music **Sfx** layer; uncheck **Play sound on Roll** to silence it.
+Set a DC, a d20 modifier, and **Normal**, **Advantage**, or **Disadvantage**. **Show** fades the check over whatever is already on the player TV and waits (two dice for advantage or disadvantage). **Roll** tumbles, then holds **Success** or **Failure**. **Fade out** returns to that picture. Natural 20 always succeeds; natural 1 always fails. The roll clatter plays on the Music **Sfx** layer as the dice land; uncheck **Play sound on Roll** to silence it.
 
 ### Links
 
