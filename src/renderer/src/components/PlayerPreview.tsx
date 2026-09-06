@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { calendarPlayerMarkLabel } from '../../../shared/calendar'
 import type { DisplayInfo, PlayerState } from '../../../shared/types'
 import PlayerCalendarLight from './PlayerCalendarLight'
 import PlayerView from './PlayerView'
@@ -151,8 +150,6 @@ export default function PlayerPreview({
                             ? state.boxOfDoom.label || 'Box of Doom'
                             : state.handout
                               ? state.handout.title
-                              : state.calendarMark
-                              ? calendarPlayerMarkLabel(state.calendarMark)
                               : state.imageTitle || 'Nothing showing'}
           </div>
         </button>
