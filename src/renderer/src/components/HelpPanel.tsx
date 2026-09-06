@@ -416,12 +416,14 @@ export default function HelpPanel({
           <Ol
             items={[
               <>
-                <Action>Open campaign</Action> picks any folder. <Action>Switch campaign</Action> jumps to another
-                recent folder (name + path) when you run more than one game. <Action>New campaign</Action> asks which
+                <Action>Campaign</Action> is one header menu: recent folders (name + path, not the one already open),
+                then <Action>Open campaign…</Action> and <Action>New campaign…</Action>. Open picks any folder. New asks
+                which
                 system to use (D&D 5e, Pathfinder 2e, or Vampire 5th), then which look (and hologram or falling-code if
                 that look has them), then scaffolds Party, NPCs, Places,
                 Factions, Maps, and the rest in an empty folder, with the hub note in <Code>Start Here</Code>. First
-                launch with no folder opens the Greystead one-shot (5e); <Action>Sample</Action> loads that same copy.
+                launch with no folder opens the Greystead one-shot (5e); <Action>Sample</Action> on the empty start
+                screen loads that same copy.
                 Open <Code>Start Here</Code> first — the campaign look is there too. Changing system on an existing
                 folder is not supported — start a new campaign instead.
               </>,

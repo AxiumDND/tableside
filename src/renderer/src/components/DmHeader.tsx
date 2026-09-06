@@ -103,20 +103,13 @@ export default function DmHeader({
         <div className="truncate text-sm">{campaign?.name ?? 'No campaign open'}</div>
         <div className="truncate text-[11px] text-muted">{campaign?.folder ?? 'Choose a folder to begin'}</div>
       </div>
-      <button type="button" onClick={onNewCampaign} className="rounded border border-line px-3 py-1 text-sm hover:border-amber">
-        New campaign
-      </button>
-      <button type="button" onClick={onOpenCampaign} className="rounded border border-line px-3 py-1 text-sm hover:border-amber">
-        Open campaign
-      </button>
-      {onOpenRecent ? (
-        <RecentCampaignMenu
-          recentCampaigns={recentCampaigns}
-          currentFolder={campaign?.folder}
-          onOpenRecent={onOpenRecent}
-          label="Switch campaign"
-        />
-      ) : null}
+      <RecentCampaignMenu
+        recentCampaigns={recentCampaigns}
+        currentFolder={campaign?.folder}
+        onOpenRecent={onOpenRecent}
+        onOpenCampaign={onOpenCampaign}
+        onNewCampaign={onNewCampaign}
+      />
       <button type="button" onClick={onToggleTools} className={buttonClass(rightPanel === 'tools')}>
         Tools
       </button>

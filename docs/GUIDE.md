@@ -34,11 +34,10 @@ Installed copies check GitHub at launch. By default they only offer the latest s
 
 With no campaign yet, Tableside copies **Greystead — The Pale Well** (a level-1 5e one-shot) into your user data and opens it. **Sample** does the same later. Edits there are safe; they do not write back into the installer.
 
-| Button | What it does |
+| Control | What it does |
 | --- | --- |
-| **Sample** | Open the bundled Greystead one-shot |
-| **Open campaign** | Pick any folder on disk |
-| **New campaign** | Pick a system (D&D 5e, Pathfinder 2e, or Vampire 5th), a look, then an empty folder |
+| **Sample** | Open the bundled Greystead one-shot (empty start screen only) |
+| **Campaign** | Menu: recent folders, then **Open campaign…** (any folder) or **New campaign…** (system, look, empty folder) |
 
 **Open** reads any folder and fills in missing standard folders. Folders without `"system"` in `campaign.json` run as D&D 5e. You can change the **look** later (Classic, Light, Sci-fi, Vampire, Cyberpunk, Digital rain) from **Help & settings** or **Start Here**. You cannot change the system pack mid-campaign.
 

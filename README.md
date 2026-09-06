@@ -57,7 +57,7 @@ Older builds used `%APPDATA%\table-dm`. First launch copies settings and optiona
 
 The video above is the first night. **[docs/GUIDE.md](docs/GUIDE.md)** is the same night written out: first launch, show a picture, run a map, start a fight, play music, play a sci-fi crawl, and look up rules.
 
-1. Install, then **Sample** (Greystead) or **Open** / **New** a campaign folder. **New campaign** asks which system pack to use: **D&D 5e** (bundled SRD 5.2.1), **Pathfinder 2e** (small original core), or **Vampire 5th Edition**.
+1. Install, then **Sample** (Greystead) or **Campaign** → Open… / New…. **New campaign…** asks which system pack to use: **D&D 5e** (bundled SRD 5.2.1), **Pathfinder 2e** (small original core), or **Vampire 5th Edition**.
 2. Click **Players see** to put the player window on the table TV.
 3. Open a note, click a picture, **Show to players** (`Alt+S`). **Clear** (`Alt+X`) blanks the TV.
 4. **Combat** loads a game night sheet’s combatants. **Music** plays your files from `Audio/`. **Tools** holds Lookup (offline system pack), NPC (name rolls + quick-create), Improvise, Dice, Timer, and Links.
@@ -138,7 +138,7 @@ Keep the product **table-first**: laptop DM console + player TV in the same room
 
 ## Campaign folders
 
-Campaigns are ordinary folders on disk. **New campaign** picks a system and a look, then scaffolds the standard layout; **Open campaign** reads any folder and fills in missing pieces. Folders without `"system"` in `campaign.json` default to D&D 5e. Theme is saved on the campaign and can be changed from Help & settings or Start Here.
+Campaigns are ordinary folders on disk. **Campaign → New campaign…** picks a system and a look, then scaffolds the standard layout; **Campaign → Open campaign…** reads any folder and fills in missing pieces. Folders without `"system"` in `campaign.json` default to D&D 5e. Theme is saved on the campaign and can be changed from Help & settings or Start Here.
 
 ```
 Start Here/       hub notes (Overview.md — opens first)

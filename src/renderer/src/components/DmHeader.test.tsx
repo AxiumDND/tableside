@@ -36,7 +36,7 @@ describe('DmHeader', () => {
       />
     )
     expect(screen.getByText('Greystead')).toBeTruthy()
-    for (const label of ['New campaign', 'Open campaign', 'Tools', 'Combat', 'Music', 'Help']) {
+    for (const label of ['Campaign', 'Tools', 'Combat', 'Music', 'Help']) {
       expect(screen.getByRole('button', { name: new RegExp(label, 'i') })).toBeTruthy()
     }
   })
@@ -122,7 +122,7 @@ describe('DmHeader', () => {
     expect(screen.getByRole('button', { name: 'Show sidebar' })).toBeTruthy()
   })
 
-  it('shows Switch campaign when other recents exist', async () => {
+  it('opens a recent from the Campaign menu', async () => {
     const user = userEvent.setup()
     const onOpenRecent = vi.fn()
     render(
@@ -140,12 +140,13 @@ describe('DmHeader', () => {
         {...noopHandlers}
       />
     )
-    await user.click(screen.getByRole('button', { name: 'Switch campaign' }))
+    await user.click(screen.getByRole('button', { name: 'Campaign' }))
     await user.click(screen.getByRole('menuitem', { name: /Other/ }))
     expect(onOpenRecent).toHaveBeenCalledWith('/tmp/other')
   })
 
-  it('hides Switch campaign when the only recent is the open folder', () => {
+  it('still shows Campaign when the only recent is the open folder', async () => {
+    const user = userEvent.setup()
     render(
       <DmHeader
         campaign={campaign}
@@ -158,6 +159,10 @@ describe('DmHeader', () => {
         {...noopHandlers}
       />
     )
-    expect(screen.queryByRole('button', { name: 'Switch campaign' })).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'Campaign' }))
+    expect(screen.getByRole('menuitem', { name: 'Open campaign…' })).toBeTruthy()
+    expect(screen.getByRole('menuitem', { name: 'New campaign…' })).toBeTruthy()
+    expect(screen.queryByText('Greystead')).toBeTruthy()
+    expect(screen.queryByRole('menuitem', { name: /Greystead/ })).toBeNull()
   })
 })

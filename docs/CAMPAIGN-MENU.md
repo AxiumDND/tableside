@@ -1,6 +1,6 @@
 # One Campaign button (possible)
 
-**Status:** proposal only — not built. See [ROADMAP.md](ROADMAP.md) item 7.
+**Status:** built (1.8.17). Header and empty start screen use one **Campaign ▾** menu. See [ROADMAP.md](ROADMAP.md) item 7.
 
 The header currently shows **New campaign**, **Open campaign**, and (when another recent exists) **Switch campaign**. Three controls for one job: change which folder is open. They crowd the bar next to Tools / Combat / Music / Help, and Switch appearing and disappearing feels like a fourth mode.
 

@@ -51,30 +51,13 @@ export default function GettingStarted({
               Open Sample
             </button>
           ) : null}
-          {onOpenCampaign ? (
-            <button
-              type="button"
-              onClick={onOpenCampaign}
-              className="rounded border border-line px-3 py-1.5 text-sm hover:border-amber"
-            >
-              Open campaign
-            </button>
-          ) : null}
-          {onNewCampaign ? (
-            <button
-              type="button"
-              onClick={onNewCampaign}
-              className="rounded border border-line px-3 py-1.5 text-sm hover:border-amber"
-            >
-              New campaign
-            </button>
-          ) : null}
-          {onOpenRecent ? (
+          {onOpenCampaign && onNewCampaign ? (
             <RecentCampaignMenu
               recentCampaigns={recentCampaigns}
               currentFolder={null}
               onOpenRecent={onOpenRecent}
-              label="Recent campaigns"
+              onOpenCampaign={onOpenCampaign}
+              onNewCampaign={onNewCampaign}
             />
           ) : null}
         </div>

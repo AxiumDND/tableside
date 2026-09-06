@@ -3,18 +3,22 @@ import type { RecentCampaign } from '../../../shared/types'
 import { switchableRecentCampaigns } from '../../../shared/recentCampaigns'
 
 /**
- * Header / start-screen menu of remembered campaign folders.
- * Excludes the currently open campaign so the list is for switching.
+ * Always-visible Campaign menu: recents (if any), then Open… and New….
+ * Recents exclude the currently open folder.
  */
 export default function RecentCampaignMenu({
   recentCampaigns,
   currentFolder,
   onOpenRecent,
-  label = 'Switch campaign'
+  onOpenCampaign,
+  onNewCampaign,
+  label = 'Campaign'
 }: {
   recentCampaigns: RecentCampaign[]
   currentFolder?: string | null
-  onOpenRecent: (folder: string) => void
+  onOpenRecent?: (folder: string) => void
+  onOpenCampaign: () => void
+  onNewCampaign: () => void
   label?: string
 }) {
   const [open, setOpen] = useState(false)
@@ -37,7 +41,10 @@ export default function RecentCampaignMenu({
     }
   }, [open])
 
-  if (switchable.length === 0) return null
+  function closeAnd(run: () => void): void {
+    setOpen(false)
+    run()
+  }
 
   return (
     <div ref={rootRef} className="relative">
@@ -48,7 +55,7 @@ export default function RecentCampaignMenu({
         aria-expanded={open}
         aria-haspopup="menu"
       >
-        {label}
+        {label} <span aria-hidden="true">▾</span>
       </button>
       {open ? (
         <div
@@ -56,28 +63,49 @@ export default function RecentCampaignMenu({
           aria-label={label}
           className="absolute right-0 z-40 mt-1 w-72 max-w-[min(18rem,calc(100vw-2rem))] rounded border border-line bg-panel py-1 shadow-lg"
         >
-          <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-amber-dim">
-            Recent campaigns
-          </div>
-          <ul className="max-h-64 overflow-auto">
-            {switchable.map((item) => (
-              <li key={item.folder}>
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setOpen(false)
-                    onOpenRecent(item.folder)
-                  }}
-                  className="w-full truncate px-3 py-1.5 text-left text-[13px] text-parchment/90 hover:bg-panel-2 hover:text-amber"
-                  title={item.folder}
-                >
-                  <span className="block truncate font-semibold">{item.name}</span>
-                  <span className="mt-0.5 block truncate text-[11px] text-muted">{item.folder}</span>
-                </button>
-              </li>
-            ))}
-          </ul>
+          {switchable.length > 0 ? (
+            <>
+              <div className="px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wider text-amber-dim">
+                Recent
+              </div>
+              <ul className="max-h-64 overflow-auto">
+                {switchable.map((item) => (
+                  <li key={item.folder}>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      onClick={() => {
+                        setOpen(false)
+                        onOpenRecent?.(item.folder)
+                      }}
+                      className="w-full truncate px-3 py-1.5 text-left text-[13px] text-parchment/90 hover:bg-panel-2 hover:text-amber"
+                      title={item.folder}
+                    >
+                      <span className="block truncate font-semibold">{item.name}</span>
+                      <span className="mt-0.5 block truncate text-[11px] text-muted">{item.folder}</span>
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <div className="my-1 border-t border-line" />
+            </>
+          ) : null}
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => closeAnd(onOpenCampaign)}
+            className="w-full px-3 py-1.5 text-left text-[13px] text-parchment/90 hover:bg-panel-2 hover:text-amber"
+          >
+            Open campaign…
+          </button>
+          <button
+            type="button"
+            role="menuitem"
+            onClick={() => closeAnd(onNewCampaign)}
+            className="w-full px-3 py-1.5 text-left text-[13px] text-parchment/90 hover:bg-panel-2 hover:text-amber"
+          >
+            New campaign…
+          </button>
         </div>
       ) : null}
     </div>
