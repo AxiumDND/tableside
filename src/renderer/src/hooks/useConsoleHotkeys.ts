@@ -13,6 +13,8 @@ export interface ConsoleHotkeyHandlers {
   onClearPlayer: () => void
   /** Alt+T — advance the combat turn. */
   onAdvanceTurn: () => void
+  /** Alt+Shift+T — previous combat turn. */
+  onRewindTurn: () => void
 }
 
 function isTyping(target: EventTarget | null): boolean {
@@ -63,7 +65,8 @@ export function useConsoleHotkeys(handlers: ConsoleHotkeyHandlers): void {
       }
       if (key === 't') {
         e.preventDefault()
-        ref.current.onAdvanceTurn()
+        if (e.shiftKey) ref.current.onRewindTurn()
+        else ref.current.onAdvanceTurn()
       }
     }
     const onMouse = (e: MouseEvent): void => {

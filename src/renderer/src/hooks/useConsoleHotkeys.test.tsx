@@ -10,7 +10,8 @@ function makeHandlers(): { [K in keyof ConsoleHotkeyHandlers]: ReturnType<typeof
     onShowArt: vi.fn(),
     onShowHandout: vi.fn(),
     onClearPlayer: vi.fn(),
-    onAdvanceTurn: vi.fn()
+    onAdvanceTurn: vi.fn(),
+    onRewindTurn: vi.fn()
   }
 }
 
@@ -40,10 +41,12 @@ describe('useConsoleHotkeys', () => {
     pressKey({ key: 'i', altKey: true, shiftKey: true })
     pressKey({ key: 'x', altKey: true })
     pressKey({ key: 't', altKey: true })
+    pressKey({ key: 't', altKey: true, shiftKey: true })
     expect(h.onShowArt).toHaveBeenCalledOnce()
     expect(h.onShowHandout).toHaveBeenCalledWith(true)
     expect(h.onClearPlayer).toHaveBeenCalledOnce()
     expect(h.onAdvanceTurn).toHaveBeenCalledOnce()
+    expect(h.onRewindTurn).toHaveBeenCalledOnce()
   })
 
   it('ignores hotkeys without Alt and while typing in a field', () => {

@@ -42,7 +42,7 @@ A short **game night sheet** is enough for Party focus, scene beats, and combata
 2. On the combat section, press **Add to initiative** (loads linked sheets; skips names already in Combat). Unresolved `[[links]]` show a warning on the card. Newly added NPCs/monsters at initiative 0 are rolled automatically.
 3. Open **Combat** in the header if it is not already open.
 4. Type PC totals from the table (NPCs may already be rolled). Use **Roll all** / **Roll NPCs** if you need to re-roll.
-5. **Start** combat, advance turns (`Alt+T`), adjust HP.
+5. **Start** combat, advance turns (`Alt+T`; `Alt+Shift+T` to go back), adjust HP.
 6. Optionally **Show to players** on the Combat panel (`Alt+S` for the image) to overlay order (Bloodied / 0 HP tags, plus any conditions you set — no numbers).
 
 ### If Add to initiative does nothing

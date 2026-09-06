@@ -22,7 +22,7 @@ import SessionNotes from '../components/SessionNotes'
 import SystemPicker from '../components/SystemPicker'
 import ThemeSetup from '../components/ThemeSetup'
 import DigitalRain from '../components/DigitalRain'
-import { combatToPlayerInitiative, combatProfileFor, advanceCombatTurn } from '../lib/combat'
+import { combatToPlayerInitiative, combatProfileFor, advanceCombatTurn, rewindCombatTurn } from '../lib/combat'
 import { flattenImages, flattenVideos, imageTitle } from '../lib/images'
 import { allPartyNotes, bestiaryNotes, flattenNotes, sheetDisplayName } from '../lib/notes'
 import { libraryFolderFor, recordToCampaignMarkdown, gearSubfolderFor } from '../lib/lookupNotes'
@@ -394,6 +394,14 @@ export default function DmApp() {
       if (!live || live.combatants.length === 0) return
       changeRightPanel('combat')
       void saveCombat(advanceCombatTurn(live))
+    },
+    onRewindTurn: () => {
+      const live = campaign?.combat
+      if (!live || live.combatants.length === 0) return
+      const prev = rewindCombatTurn(live)
+      if (prev === live) return
+      changeRightPanel('combat')
+      void saveCombat(prev)
     }
   })
 

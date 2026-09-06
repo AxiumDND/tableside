@@ -120,6 +120,23 @@ export function advanceCombatTurn(combat: CombatState): CombatState {
   }
 }
 
+/** Step back one combatant (and drop the round when wrapping to the last). */
+export function rewindCombatTurn(combat: CombatState): CombatState {
+  const ordered = sortCombatants(combat.combatants)
+  if (ordered.length === 0) return combat
+  const round = combat.round ?? 0
+  const started = round > 0
+  const turnId =
+    started && combat.activeId && ordered.some((c) => c.id === combat.activeId) ? combat.activeId : null
+  if (!started || !turnId) return combat
+  const idx = ordered.findIndex((c) => c.id === turnId)
+  if (idx === 0) {
+    if (round <= 1) return combat
+    return { ...combat, activeId: ordered[ordered.length - 1].id, round: round - 1 }
+  }
+  return { ...combat, activeId: ordered[idx - 1].id, round }
+}
+
 /**
  * Roll initiative for matching combatants.
  * `unrolled-npcs` = non-PCs still at initiative 0 (typical after Add to initiative).

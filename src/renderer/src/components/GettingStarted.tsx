@@ -72,7 +72,8 @@ export default function GettingStarted({
           Open <span className="text-amber">Combat</span>. Use night-sheet{' '}
           <span className="text-amber">Add to initiative</span> (NPCs auto-roll), or{' '}
           <span className="text-amber">Add all players</span> plus the Bestiary list. Next turn:{' '}
-          <span className="text-amber">Alt+T</span>.
+          <span className="text-amber">Alt+T</span>. Previous:{' '}
+          <span className="text-amber">Alt+Shift+T</span>.
         </Step>
         <Step title="3. Look up rules">
           <span className="text-amber">Lookup</span> searches the pack for this campaign. D&D 5e uses the bundled

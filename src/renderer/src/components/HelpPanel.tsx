@@ -891,7 +891,8 @@ export default function HelpPanel({
               <>
                 <Action>Start combat</Action> begins round 1. With <Action>Combat music</Action> ticked, that starts
                 the <Code>Audio/Music/Combat</Code> playlist. <Code>Alt+T</Code> advances the turn (opens Combat if
-                needed). Adjust HP on the row. <Action>Cnd</Action> toggles conditions (Poisoned, Prone, and the rest of
+                needed). <Action>Previous turn</Action> or <Code>Alt+Shift+T</Code> steps back if you skip someone.
+                Adjust HP on the row. <Action>Cnd</Action> toggles conditions (Poisoned, Prone, and the rest of
                 the pack) on that PC, NPC, or monster. The name opens that combatant’s rollable statblock without
                 changing whose turn it is.
               </>,
@@ -1047,6 +1048,9 @@ export default function HelpPanel({
               </>,
               <>
                 <Code>Alt+T</Code> — Next combat turn
+              </>,
+              <>
+                <Code>Alt+Shift+T</Code> — Previous combat turn
               </>,
               <>
                 While editing: <Code>Ctrl+S</Code> save, <Code>Esc</Code> cancel (prompts if unsaved). Right-click a
