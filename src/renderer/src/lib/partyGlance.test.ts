@@ -49,7 +49,8 @@ describe('glanceStatsFromSheet', () => {
       className: 'Fighter 5',
       ac: '18',
       hp: '44',
-      pp: '11'
+      pp: '11',
+      saveDc: ''
     })
   })
 
@@ -59,7 +60,8 @@ describe('glanceStatsFromSheet', () => {
       className: '',
       ac: '13',
       hp: '27',
-      pp: ''
+      pp: '',
+      saveDc: ''
     })
   })
 
@@ -69,13 +71,19 @@ describe('glanceStatsFromSheet', () => {
       className: 'Alleycat',
       ac: '7 / 7',
       hp: '7 / 7',
-      pp: ''
+      pp: '',
+      saveDc: ''
     })
   })
 
   it('reads Passive Perception from the infobox, else senses', () => {
     expect(glanceStatsFromSheet('| **Passive Perception** | 14 |\n').pp).toBe('14')
     expect(glanceStatsFromSheet('senses: "Darkvision 60 ft., passive Perception 13"\n').pp).toBe('13')
+  })
+
+  it('reads Spell Save DC from the infobox', () => {
+    expect(glanceStatsFromSheet('| **Save DC** | 14 |\n').saveDc).toBe('14')
+    expect(glanceStatsFromSheet('| **Spell Save DC** | 15 |\n').saveDc).toBe('15')
   })
 
   it('uses Ancestry and Perception on a PF2e sheet', () => {

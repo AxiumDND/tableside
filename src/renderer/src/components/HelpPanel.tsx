@@ -447,8 +447,10 @@ export default function HelpPanel({
                 player screen.
               </>,
               <>
-                Open <Action>Combat</Action> or <Action>Tools</Action> from the header when you need them. Dice live
-                at the bottom of the left column.
+                Open <Action>Combat</Action> or <Action>Tools</Action> from the header when you need them. Under the
+                header, <Action>Quick</Action> links hold <Action>Party</Action> (name, AC, save DC, passive
+                perception), <Action>Conditions</Action>, and <Action>Calendar</Action> notes in{' '}
+                <Code>Reference/</Code>. Dice live at the bottom of the left column.
               </>
             ]}
           />

@@ -63,6 +63,7 @@ export function glanceStatsFromSheet(markdown: string): {
   ac: string
   hp: string
   pp: string
+  saveDc: string
 } {
   const fields = infoboxFields(markdown)
   const race = pickField(fields, ['species', 'ancestry', 'clan'])
@@ -73,7 +74,8 @@ export function glanceStatsFromSheet(markdown: string): {
     pickField(fields, ['passive perception', 'pp', 'passive perc']) ||
     yamlSensesPassive(markdown) ||
     pickField(fields, ['perception'])
-  return { race, className, ac, hp, pp }
+  const saveDc = pickField(fields, ['save dc', 'spell save dc', 'spell dc', 'spell save'])
+  return { race, className, ac, hp, pp, saveDc }
 }
 
 export function partyGlanceLinks(blockMarkdown: string): { target: string; alias: string }[] {

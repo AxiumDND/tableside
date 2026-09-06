@@ -30,6 +30,7 @@ import type { SrdRecord } from '../lib/srd'
 import type { AppUpdateNotice } from '../../../shared/appUpdate'
 import UpdateBanner from '../components/UpdateBanner'
 import DmHeader from '../components/DmHeader'
+import QuickLinksBar from '../components/QuickLinksBar'
 import ToolsPanel from '../components/ToolsPanel'
 import { adjacentCampaignFile, canonicalFolder } from '../../../shared/campaignLayout'
 import { asRightPanelId, asToolsTabId, type RightPanelId, type ToolsTabId } from '../../../shared/rightPanel'
@@ -428,6 +429,13 @@ export default function DmApp() {
         }}
         onToggleHelp={() => changeRightPanel((open) => (open === 'help' ? null : 'help'))}
       />
+      {campaign ? (
+        <QuickLinksBar
+          notes={flattenNotes(campaign.tree)}
+          system={campaign.system}
+          onOpenNote={openNote}
+        />
+      ) : null}
       <div>
       <UpdateBanner
         notice={updateNotice}

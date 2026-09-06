@@ -124,7 +124,8 @@ The bundled sample is **[examples/greystead](examples/greystead)**. Tableside co
 | [Additional Books/README.md](Additional%20Books/README.md) | Optional PHB / DMG lookup file formats |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Contributors — scripts, architecture, CI |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Near-term direction and starter tasks |
-| [docs/CAMPAIGN-MENU.md](docs/CAMPAIGN-MENU.md) | Possible one Campaign header button (proposal, not built) |
+| [docs/CAMPAIGN-MENU.md](docs/CAMPAIGN-MENU.md) | Campaign ▾ header menu (built in 1.8.17) |
+| [docs/QUICK-LINKS.md](docs/QUICK-LINKS.md) | Quick links bar under the header (Party / Conditions / Calendar) |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Pull request expectations |
 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Community standards |
 | [SECURITY.md](SECURITY.md) | Vulnerability reports |

@@ -39,6 +39,7 @@ const PLAYER = `<!--
 | **Role** | Front line |
 | **AC** | 18 |
 | **HP** | 44 |
+| **Save DC** | — |
 | **Passive Perception** | 11 |
 [!/pc]
 

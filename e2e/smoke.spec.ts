@@ -23,6 +23,16 @@ test('DM console boots with the bundled sample campaign', async () => {
   await expect(dmWindow.getByText(/Greystead/i).first()).toBeVisible({ timeout: 30_000 })
 })
 
+test('quick links bar lists party stats and conditions', async () => {
+  const bar = dmWindow.getByRole('navigation', { name: 'Quick links' })
+  await expect(bar).toBeVisible()
+  await bar.getByRole('button', { name: /Party/ }).click()
+  await expect(dmWindow.getByRole('menuitem', { name: /Bren Oak/ })).toBeVisible()
+  await dmWindow.keyboard.press('Escape')
+  await bar.getByRole('button', { name: /Conditions/ }).click()
+  await expect(dmWindow.getByRole('menuitem', { name: /Poisoned/ })).toBeVisible()
+})
+
 test('Dice tool and built-in Sfx oneshots are on the console', async () => {
   const tools = dmWindow.getByRole('button', { name: 'Tools' })
   await tools.click()

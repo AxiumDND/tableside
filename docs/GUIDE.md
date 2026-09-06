@@ -38,6 +38,7 @@ With no campaign yet, Tableside copies **Greystead — The Pale Well** (a level-
 | --- | --- |
 | **Sample** | Open the bundled Greystead one-shot (empty start screen only) |
 | **Campaign** | Menu: recent folders, then **Open campaign…** (any folder) or **New campaign…** (system, look, empty folder) |
+| **Quick links** | Second header strip: **Party** (AC / save DC / PP), **Conditions**, **Calendar** |
 
 **Open** reads any folder and fills in missing standard folders. Folders without `"system"` in `campaign.json` run as D&D 5e. You can change the **look** later (Classic, Light, Sci-fi, Vampire, Cyberpunk, Digital rain) from **Help & settings** or **Start Here**. You cannot change the system pack mid-campaign.
 
@@ -56,7 +57,7 @@ Click the left **Players see** preview to place the player window on the table T
 
 ### 1. Open tonight’s notes
 
-The left **Files** list is your campaign folder. Click a note to open it in the center.
+The left **Files** list is your campaign folder. Click a note to open it in the center. The **Quick** strip under the header keeps Party AC / save DC / PP, condition text, and calendar notes one click away.
 
 - Folders start collapsed. Opening a file expands its folder.
 - Click the search icon next to Files, or press `Ctrl+F` / `/`, to find a note by name. `Esc` clears, then hides the box.
