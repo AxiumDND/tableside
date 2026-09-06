@@ -12,6 +12,7 @@ import OpeningHyperspace from './OpeningHyperspace'
 import OpeningBoxOfDoom from './OpeningBoxOfDoom'
 import OpeningHourglass from './OpeningHourglass'
 import OpeningDiceShow from './OpeningDiceShow'
+import PlayerCalendarLight from './PlayerCalendarLight'
 import { playerInitiativeVisible } from '../../../shared/playerInitiative'
 import { clampPlayerImagePadPct } from '../../../shared/playerImagePad'
 
@@ -164,6 +165,7 @@ export default function PlayerView({
       {state.boxOfDoom ? <OpeningBoxOfDoom roll={state.boxOfDoom} suppressSound={suppressSound} /> : null}
       {state.hourglass ? <OpeningHourglass glass={state.hourglass} /> : null}
       {state.diceShow ? <OpeningDiceShow show={state.diceShow} /> : null}
+      {state.calendarMark ? <PlayerCalendarLight mark={state.calendarMark} /> : null}
       {handoutScene ? (
         <aside
           key={handoutScene.id}

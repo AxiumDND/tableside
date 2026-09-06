@@ -407,6 +407,30 @@ describe('main IPC registration', () => {
     expect(player.stopPlayerHourglass).toHaveBeenCalled()
   })
 
+  it('sets a calendar light mark without clearing media', () => {
+    player.getPlayerState.mockReturnValue({
+      ...emptyPlayerState(),
+      imageSrc: 'tabledm://scene.png'
+    })
+    const next = invoke(IPC.playerSetCalendarLight, { show: true, mark: 'sunset' }) as {
+      imageSrc: string
+      calendarMark: string | null
+    }
+    expect(next.imageSrc).toBe('tabledm://scene.png')
+    expect(next.calendarMark).toBe('sunset')
+  })
+
+  it('clears the calendar light mark when show is off', () => {
+    player.getPlayerState.mockReturnValue({
+      ...emptyPlayerState(),
+      calendarMark: 'morning'
+    })
+    const next = invoke(IPC.playerSetCalendarLight, { show: false, mark: 'morning' }) as {
+      calendarMark: string | null
+    }
+    expect(next.calendarMark).toBeNull()
+  })
+
   it('shows dice on the player strip without clearing media', () => {
     player.getPlayerState.mockReturnValue({
       ...emptyPlayerState(),
