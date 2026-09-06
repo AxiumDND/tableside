@@ -57,7 +57,7 @@ Click the left **Players see** preview to place the player window on the table T
 
 ### 1. Open tonight’s notes
 
-The left **Files** list is your campaign folder. Click a note to open it in the center. The **Quick** strip under the header keeps Party AC / save DC / PP, condition text, Lookup / Prep / Table, and the in-world date one click away. **◀h** / **▶h** / **+Day** advance the clock; **⚙** picks Gregorian, Forgotten Realms, Greyhawk, or a custom week. The left and right panel buttons on that strip hide the file column and the right rail.
+The left **Files** list is your campaign folder. Click a note to open it in the center. The **Quick** strip under the header keeps Party AC / save DC / PP, condition text, Lookup / Prep / Table, and the in-world date one click away. **−Day** / **◀h** sit before the date; **▶h** / **+Day** / **Morning** sit after Day / Night. **⚙** picks Gregorian, Forgotten Realms, Greyhawk, or a custom week. The left and right panel buttons on that strip hide the file column and the right rail.
 
 - Folders start collapsed. Opening a file expands its folder.
 - Click the search icon next to Files, or press `Ctrl+F` / `/`, to find a note by name. `Esc` clears, then hides the box.

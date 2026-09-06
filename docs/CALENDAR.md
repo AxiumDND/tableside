@@ -2,7 +2,7 @@
 
 **Status:** first pass (1.8.20 beta). DM console only — never on the player TV.
 
-The live clock sits on the **Quick** bar: weekday (when the calendar has one), date, time, and Day / Night / Dawn / Dusk. **◀h** / **▶h** move one hour. **+Day** keeps the hour and steps the date. **⚙** opens settings. Click the date to open the note.
+The live clock sits on the **Quick** bar. **−Day** / **◀h** sit before a darker date-and-time block, then Day / Night / Dawn / Dusk. After that: **▶h**, **+Day** (same hour, next date), **Morning** (next dawn), and **⚙**. Click the date to open the note.
 
 ## Where it lives
 
@@ -58,7 +58,7 @@ Setting names (Harptos, Greyhawk) are **calendar labels only** — no setting lo
 Calendars at the table are not all 7×24×365.
 
 - **Week length** — `weekdays:` is a comma list. 5, 6, 8, 10… all work. An empty list means no weekday (Harptos uses “1st tenday” on ordinary months instead).
-- **Hours in a day** — `hoursPerDay` from 4 to 48. A 24-hour day prints `9am` / `2pm`. Any other length prints `Hour 8/10`. **◀h** / **▶h** wrap at that length and roll the date.
+- **Hours in a day** — `hoursPerDay` from 4 to 48. A 24-hour day prints `9am` / `2pm`. Any other length prints `Hour 8/10`. **◀h** / **▶h** wrap at that length and roll the date. **Morning** jumps to the next `dawn` hour.
 - **Month lengths** — each `- Name: N` row is a month or intercalary stretch. Festival rows (`festival`) print as the day’s name (`Midwinter 1492 DR`) instead of `1 Midwinter`.
 - **Leap days** — `leapEvery`, `leapDay`, `leapAfter` insert a 1-day festival after a named unit in matching years (Shieldmeet after Midsummer every 4 years). Gregorian February is handled in code, not as an extra row.
 

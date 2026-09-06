@@ -1,7 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { CampaignInfo } from '../../../shared/types'
 import { PREP_TOOLS, TABLE_TOOLS, type ToolsTabId } from '../../../shared/rightPanel'
-import { addDays, addHours, calendarBarLabel, calendarLightLabel, formatCalendar } from '../../../shared/calendar'
+import {
+  addDays,
+  addHours,
+  calendarBarLabel,
+  calendarLightLabel,
+  formatCalendar,
+  nextMorning
+} from '../../../shared/calendar'
 import {
   calendarNoteTemplate,
   parseCampaignCalendar,
@@ -155,14 +162,16 @@ export default function QuickLinksBar({
     [calendarPath, onCampaignChange, onNotesReload]
   )
 
-  async function shift(kind: 'hour' | 'day', delta: number): Promise<void> {
+  async function shift(kind: 'hour' | 'day' | 'morning', delta = 0): Promise<void> {
     if (!clock || !calendarMarkdown || busy) return
     setBusy(true)
     try {
       const next =
-        kind === 'hour'
-          ? addHours(clock.definition, clock.now, delta)
-          : addDays(clock.definition, clock.now, delta)
+        kind === 'morning'
+          ? nextMorning(clock.definition, clock.now)
+          : kind === 'hour'
+            ? addHours(clock.definition, clock.now, delta)
+            : addDays(clock.definition, clock.now, delta)
       await persist(writeCalendarIntoNote(calendarMarkdown, clock.definition, next))
     } catch {
       /* keep the last good clock */
@@ -314,11 +323,17 @@ export default function QuickLinksBar({
       <div className="ml-auto flex min-w-0 items-center gap-1.5">
         {clock && readout ? (
           <>
+            <button type="button" className={chipBtn} disabled={busy} aria-label="Back one day" onClick={() => void shift('day', -1)}>
+              −Day
+            </button>
+            <button type="button" className={chipBtn} disabled={busy} aria-label="Back one hour" onClick={() => void shift('hour', -1)}>
+              ◀h
+            </button>
             <button
               type="button"
               title={barTitle}
               onClick={() => onOpenNote(calendarPath)}
-              className="min-w-0 truncate text-left text-[12px] text-parchment/90 hover:text-amber"
+              className="min-w-0 truncate rounded border border-line bg-ink px-2.5 py-0.5 text-left text-[12px] text-parchment shadow-[inset_0_1px_0_rgba(0,0,0,0.45)] hover:text-amber"
             >
               {barLabel}
             </button>
@@ -333,14 +348,21 @@ export default function QuickLinksBar({
             >
               {calendarLightLabel(readout.light)}
             </span>
-            <button type="button" className={chipBtn} disabled={busy} aria-label="Back one hour" onClick={() => void shift('hour', -1)}>
-              ◀h
-            </button>
             <button type="button" className={chipBtn} disabled={busy} aria-label="Forward one hour" onClick={() => void shift('hour', 1)}>
               ▶h
             </button>
             <button type="button" className={chipBtn} disabled={busy} aria-label="Advance one day" onClick={() => void shift('day', 1)}>
               +Day
+            </button>
+            <button
+              type="button"
+              className={chipBtn}
+              disabled={busy}
+              title="Jump to the next dawn"
+              aria-label="Advance to next morning"
+              onClick={() => void shift('morning')}
+            >
+              Morning
             </button>
             <button
               type="button"

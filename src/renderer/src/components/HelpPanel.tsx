@@ -782,7 +782,8 @@ export default function HelpPanel({
               </>,
               <>
                 <Code>Calendar/Calendar.md</Code> holds the in-world clock as <Code>[!calendar]…[!/calendar]</Code>. The
-                Quick bar shows the date and time; hour and day buttons write back to that note.
+                Quick bar shows the date and time in a darker block; hour, day, and Morning buttons write back to that
+                note.
               </>,
               <>
                 <Code>[!gallery]…[!/gallery]</Code> is an image sequence on the player screen;{' '}
