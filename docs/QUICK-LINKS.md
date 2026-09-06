@@ -1,6 +1,6 @@
 # Quick links bar
 
-**Status:** first pass (1.8.19), calendar in 1.8.20, hide and player-TV light in 1.8.21, tools and panel toggles moved here from the header. The strip is DM console chrome. **Show to players** on the calendar is a light-of-day mark only. The strip is always on, campaign or not.
+**Status:** first pass (1.8.19), calendar in 1.8.20, hide and player-TV light in 1.8.21, smaller corner mark in 1.8.22, tools and panel toggles moved here from the header. The strip is DM console chrome. **Show to players** on the calendar is a light-of-day mark only. The strip is always on, campaign or not.
 
 ## Why
 

@@ -1,6 +1,6 @@
 # In-world calendar
 
-**Status:** first pass (1.8.21 beta). The live clock is DM-only. **Show to players** is a light-of-day mark on the TV, not a clock.
+**Status:** first pass (1.8.22 beta). The live clock is DM-only. **Show to players** is a light-of-day mark on the TV, not a clock.
 
 The live clock sits on the **Quick** bar. **−Day** / **◀h** sit before a darker date-and-time block, then Day / Night / Dawn / Dusk. After that: **▶h**, **+Day** (same hour, next date), **Morning** (next dawn), **Show to players**, **Hide**, and **⚙**. Click the date to open the note. **Hide** collapses the cluster to a **Calendar** chip. **Show to players** puts sunrise / morning / afternoon / sunset / night on the top-right of the player TV — a symbol and a short word, never the date or hour.
 
