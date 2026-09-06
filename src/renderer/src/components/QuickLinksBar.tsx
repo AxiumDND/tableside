@@ -132,8 +132,8 @@ export default function QuickLinksBar({
 
   useEffect(() => {
     let cancelled = false
-    void window.tabledm.getSettings().then((prefs) => {
-      if (cancelled || calendarPrefsTouched.current) return
+    void window.tabledm.getSettings?.().then((prefs) => {
+      if (cancelled || calendarPrefsTouched.current || !prefs) return
       setShowQuickBarCalendar(prefs.showQuickBarCalendar !== false)
       setShowCalendarLightToPlayers(Boolean(prefs.showCalendarLightToPlayers))
     })
@@ -167,12 +167,13 @@ export default function QuickLinksBar({
   }
 
   useEffect(() => {
-    if (!window.tabledm.setPlayerCalendarLight) return
+    const setLight = window.tabledm?.setPlayerCalendarLight
+    if (!setLight) return
     if (!showCalendarLightToPlayers || !clock) {
-      void window.tabledm.setPlayerCalendarLight({ show: false })
+      void setLight({ show: false })
       return
     }
-    void window.tabledm.setPlayerCalendarLight({
+    void setLight({
       show: true,
       mark: calendarPlayerMark(clock.definition, clock.now)
     })
