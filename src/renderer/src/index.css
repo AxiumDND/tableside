@@ -1944,9 +1944,10 @@ body,
 
 .player-calendar-light-label {
   margin: 0;
-  font-family: var(--font-display);
-  font-size: 1.15vh;
-  letter-spacing: 0.12em;
+  font-family: var(--font-ui);
+  font-size: 0.72vh;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
   color: #f4e6c3;
 }
@@ -1968,8 +1969,8 @@ body,
 }
 
 .player-calendar-light.is-compact .player-calendar-light-label {
-  font-size: 0.62rem;
-  letter-spacing: 0.08em;
+  font-size: 0.42rem;
+  letter-spacing: 0.03em;
 }
 
 .player-dice-show {
