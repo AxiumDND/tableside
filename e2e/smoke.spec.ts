@@ -16,10 +16,12 @@ test.afterAll(async () => {
 
 async function openQuickTool(group: 'Prep' | 'Table', tool: 'NPC' | 'Improvise' | 'Links' | 'Dice' | 'Timer'): Promise<void> {
   const bar = dmWindow.getByRole('navigation', { name: 'Quick links' })
-  const groupName = group === 'Table' ? /^(Table|Dice|Timer)$/ : /^(Prep|NPC|Improvise|Links)$/
-  await bar.getByRole('button', { name: groupName }).click()
-  const item = dmWindow.getByRole('menuitem', { name: tool })
-  if (await item.isVisible().catch(() => false)) await item.click()
+  const groupName = group === 'Table' ? /^(Table|Dice|Timer)\b/ : /^(Prep|NPC|Improvise|Links)\b/
+  const groupBtn = bar.getByRole('button', { name: groupName })
+  const current = ((await groupBtn.textContent()) ?? '').replace(/\s*▾\s*$/u, '').trim()
+  if (current === tool) return
+  await groupBtn.click()
+  await dmWindow.getByRole('menuitem', { name: tool }).click()
 }
 
 test('DM console boots with the bundled sample campaign', async () => {

@@ -58,7 +58,7 @@ test('Quick bar panel icon hides and restores the right panel', async () => {
 })
 
 test('Party folder creates a party roster note', async () => {
-  await dmWindow.getByText(/^Party$/).first().click({ button: 'right' })
+  await dmWindow.locator('aside').getByRole('button', { name: /Party/ }).click({ button: 'right' })
   await dmWindow.getByText('New party roster…').click()
   await dmWindow.getByRole('heading', { name: 'New party roster' }).waitFor()
   await dmWindow.getByPlaceholder('Name').fill('Party Roster')
@@ -73,7 +73,7 @@ test('Party folder creates a party roster note', async () => {
 })
 
 test('Sessions folder creates a session recap note', async () => {
-  await dmWindow.getByText(/^Sessions$/).first().click({ button: 'right' })
+  await dmWindow.locator('aside').getByRole('button', { name: /Sessions/ }).click({ button: 'right' })
   await dmWindow.getByText('New session recap…').click()
   await dmWindow.getByRole('heading', { name: 'New session recap' }).waitFor()
   await dmWindow.getByPlaceholder('Name').fill('Session 9')

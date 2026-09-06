@@ -72,6 +72,14 @@ describe('QuickLinksBar', () => {
     expect(onOpenTool).toHaveBeenCalledWith('dice')
   })
 
+  it('names the open Prep or Table page on the group button', () => {
+    render(
+      <QuickLinksBar notes={notes} onOpenNote={() => {}} toolsTab="dice" toolsOpen />
+    )
+    expect(screen.getByRole('button', { name: /^Dice/ })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /^Table/ })).toBeNull()
+  })
+
   it('lists party AC, save DC, and PP, then opens the sheet', async () => {
     const user = userEvent.setup()
     const onOpenNote = vi.fn()
