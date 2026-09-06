@@ -1889,7 +1889,7 @@ body,
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.45vh;
+  gap: 0.28vh;
   min-width: 7.2vh;
   padding: 0.7vh 0.9vh 0.85vh;
   border-radius: 1vh;
