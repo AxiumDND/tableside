@@ -72,13 +72,25 @@ describe('QuickLinksBar', () => {
     expect(onOpenTool).toHaveBeenCalledWith('dice')
   })
 
-  it('names the open Prep or Table page on the group button', async () => {
+  it('lists Improvise under Table, not Prep', async () => {
+    const user = userEvent.setup()
+    render(<QuickLinksBar notes={notes} onOpenNote={() => {}} onOpenTool={() => {}} />)
+    await user.click(screen.getByRole('button', { name: /Prep/ }))
+    expect(screen.getByRole('menuitem', { name: 'NPC' })).toBeTruthy()
+    expect(screen.queryByRole('menuitem', { name: 'Improvise' })).toBeNull()
+    await user.click(screen.getByRole('button', { name: /Table/ }))
+    expect(screen.getByRole('menuitem', { name: 'Improvise' })).toBeTruthy()
+    expect(screen.getByRole('menuitem', { name: 'Dice' })).toBeTruthy()
+  })
+
+  it('keeps Prep and Table labels when a grouped page is open', async () => {
     render(
       <QuickLinksBar notes={notes} onOpenNote={() => {}} toolsTab="dice" toolsOpen />
     )
     await screen.findByRole('button', { name: /1 Fireseek 576 CY/ })
-    expect(screen.getByRole('button', { name: /^Dice/ })).toBeTruthy()
-    expect(screen.queryByRole('button', { name: /^Table/ })).toBeNull()
+    expect(screen.getByRole('button', { name: /^Table/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /^Prep/ })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /^Dice/ })).toBeNull()
   })
 
   it('lists party AC, save DC, and PP, then opens the sheet', async () => {

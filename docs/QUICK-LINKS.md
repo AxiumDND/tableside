@@ -14,8 +14,8 @@ The header keeps Campaign / Combat / Music / Help. Mid-session facts and the old
 | **Party** | Every `Party/` sheet (not the roster). Name, AC, spell save DC, passive perception. Click opens the sheet. Put **Save DC** on the PC infobox when they have one. |
 | **Conditions** | Lookup conditions for the campaign’s system pack. Filter, then click a name for the short rules text. Does not toggle combat Cnd chips. |
 | **Lookup** | Opens the right rail on Lookup. Click again to close. |
-| **Prep ▾** | NPC, Improvise, Links — opens that page on the right rail. The button names the open page. |
-| **Table ▾** | Dice (Box of Doom) and Timer. Same pattern. |
+| **Prep ▾** | NPC and Links — opens that page on the right rail. The button stays **Prep**. |
+| **Table ▾** | Dice (Box of Doom), Timer, and Improvise. The button stays **Table**. |
 | **Calendar** | Live in-world date, time, and Day / Night. **◀h** / **▶h** / **+Day**, then **⚙**. Setup is `Calendar/Calendar.md`. Notes: [CALENDAR.md](CALENDAR.md). |
 
 ## Shape

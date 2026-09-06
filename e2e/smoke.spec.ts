@@ -15,12 +15,9 @@ test.afterAll(async () => {
 })
 
 async function openQuickTool(group: 'Prep' | 'Table', tool: 'NPC' | 'Improvise' | 'Links' | 'Dice' | 'Timer'): Promise<void> {
+  if (await dmWindow.getByRole('heading', { name: tool, exact: true }).isVisible().catch(() => false)) return
   const bar = dmWindow.getByRole('navigation', { name: 'Quick links' })
-  const groupName = group === 'Table' ? /^(Table|Dice|Timer)\b/ : /^(Prep|NPC|Improvise|Links)\b/
-  const groupBtn = bar.getByRole('button', { name: groupName })
-  const current = ((await groupBtn.textContent()) ?? '').replace(/\s*▾\s*$/u, '').trim()
-  if (current === tool) return
-  await groupBtn.click()
+  await bar.getByRole('button', { name: group }).click()
   await dmWindow.getByRole('menuitem', { name: tool }).click()
 }
 
@@ -105,6 +102,11 @@ test('Quick bar tools open, switch, and close the right rail', async () => {
   await openQuickTool('Prep', 'NPC')
   await expect(dmWindow.getByRole('heading', { name: 'NPC' })).toBeVisible()
   await expect(dmWindow.getByRole('heading', { name: 'Lookup' })).toHaveCount(0)
+  await expect(bar.getByRole('button', { name: 'Prep' })).toBeVisible()
+  await expect(bar.getByRole('button', { name: 'Table' })).toBeVisible()
+  await openQuickTool('Table', 'Improvise')
+  await expect(dmWindow.getByRole('heading', { name: 'Improvise', exact: true })).toBeVisible()
+  await expect(bar.getByRole('button', { name: 'Table' })).toBeVisible()
   await bar.getByRole('button', { name: 'Lookup' }).click()
   await expect(dmWindow.getByRole('heading', { name: 'Lookup' })).toBeVisible()
   await bar.getByRole('button', { name: 'Lookup' }).click()

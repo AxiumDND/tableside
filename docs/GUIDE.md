@@ -185,7 +185,7 @@ Optional PHB / DMG text dumps go in the app `Additional Books/` folder — not i
 
 **Quick → Prep → NPC** rolls a few names from race (5e) or ancestry (Pathfinder 2e), with a **Name flavor** picker (Classic fantasy, Norse, Greek mythology, Celtic, Roman, Arabic / desert-fantasy, Slavic, East Asian–inspired). Vampire uses name tradition instead. Copy one, or **New NPC…** to write a sheet under `NPCs/`.
 
-**Quick → Prep → Improvise** is 2024 potions of healing and on-the-fly hazard damage.
+**Quick → Table → Improvise** is 2024 potions of healing and on-the-fly hazard damage.
 
 **Quick → Prep → Links** is a short list of curated D&D reference sites (opens in your browser).
 

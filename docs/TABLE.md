@@ -7,7 +7,7 @@ How the DM console and player window work during a session. **New to Tableside?*
 | Area | Role |
 | --- | --- |
 | Header | Campaign name, **Campaign** menu (recents + Open / New), Combat / Music / Help & settings |
-| Quick links | Strip under the header: left/right panel glyphs, **Party**, **Conditions**, **Lookup**, **Prep** (NPC / Improvise / Links), **Table** (Dice / Timer), **Calendar**. Never on the player TV. |
+| Quick links | Strip under the header: left/right panel glyphs, **Party**, **Conditions**, **Lookup**, **Prep** (NPC / Links), **Table** (Dice / Timer / Improvise), **Calendar**. Never on the player TV. |
 | Left column | Mini **Players see** preview, campaign file tree, dice tray |
 | Center | Open note, image, PDF, or audio preview |
 | Right (optional) | Combat tracker, Music mixer, a Quick-bar tool page (Lookup, NPC, Improvise, Dice, Timer, Links), or Help & settings |
@@ -106,7 +106,7 @@ State saves to `combat.json` in the campaign folder.
 
 ## Tools (Quick bar)
 
-**Lookup**, **Prep ▾**, and **Table ▾** on the Quick bar open the right rail. There is no Tools header button. Pick **Lookup**, or **NPC** / **Improvise** / **Links** under Prep, or **Dice** / **Timer** under Table. Click the same page again to close the rail. Left and right panel glyphs on that bar hide the file column and the right rail.
+**Lookup**, **Prep ▾**, and **Table ▾** on the Quick bar open the right rail. There is no Tools header button. Pick **Lookup**, or **NPC** / **Links** under Prep, or **Dice** / **Timer** / **Improvise** under Table. Click the same page again to close the rail. Left and right panel glyphs on that bar hide the file column and the right rail.
 
 ### Lookup
 

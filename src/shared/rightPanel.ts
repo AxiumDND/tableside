@@ -4,13 +4,13 @@ export type ToolsTabId = 'lookup' | 'npc' | 'improvise' | 'dice' | 'timer' | 'li
 
 export const PREP_TOOLS: { id: ToolsTabId; label: string }[] = [
   { id: 'npc', label: 'NPC' },
-  { id: 'improvise', label: 'Improvise' },
   { id: 'links', label: 'Links' }
 ]
 
 export const TABLE_TOOLS: { id: ToolsTabId; label: string }[] = [
   { id: 'dice', label: 'Dice' },
-  { id: 'timer', label: 'Timer' }
+  { id: 'timer', label: 'Timer' },
+  { id: 'improvise', label: 'Improvise' }
 ]
 
 export const TOOL_TABS: { id: ToolsTabId; label: string }[] = [
@@ -21,15 +21,6 @@ export const TOOL_TABS: { id: ToolsTabId; label: string }[] = [
 
 export function toolTabLabel(tab: ToolsTabId): string {
   return TOOL_TABS.find((item) => item.id === tab)?.label ?? 'Lookup'
-}
-
-export function groupToolLabel(
-  tools: readonly { id: ToolsTabId; label: string }[],
-  fallback: string,
-  activeTab: ToolsTabId | null
-): string {
-  if (!activeTab) return fallback
-  return tools.find((item) => item.id === activeTab)?.label ?? fallback
 }
 
 /** Map saved prefs, including the old Lookup panel id. */

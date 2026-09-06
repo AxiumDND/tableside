@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { asRightPanelId, asToolsTabId, groupToolLabel } from './rightPanel'
+import { PREP_TOOLS, TABLE_TOOLS, asRightPanelId, asToolsTabId } from './rightPanel'
 
 describe('asRightPanelId', () => {
   it('keeps current panel ids', () => {
@@ -25,6 +25,11 @@ describe('asToolsTabId', () => {
     expect(asToolsTabId('lookup')).toBe('lookup')
   })
 
+  it('puts Improvise with Table, not Prep', () => {
+    expect(PREP_TOOLS.map((tool) => tool.id)).toEqual(['npc', 'links'])
+    expect(TABLE_TOOLS.map((tool) => tool.id)).toEqual(['dice', 'timer', 'improvise'])
+  })
+
   it('restores NPC, Improvise, Dice, Timer, and Links tabs', () => {
     expect(asToolsTabId('names')).toBe('npc')
     expect(asToolsTabId('npc')).toBe('npc')
@@ -33,17 +38,5 @@ describe('asToolsTabId', () => {
     expect(asToolsTabId('doom')).toBe('dice')
     expect(asToolsTabId('timer')).toBe('timer')
     expect(asToolsTabId('links')).toBe('links')
-  })
-})
-
-describe('groupToolLabel', () => {
-  it('names the open tool, otherwise the group', () => {
-    const prep = [
-      { id: 'npc' as const, label: 'NPC' },
-      { id: 'links' as const, label: 'Links' }
-    ]
-    expect(groupToolLabel(prep, 'Prep', null)).toBe('Prep')
-    expect(groupToolLabel(prep, 'Prep', 'npc')).toBe('NPC')
-    expect(groupToolLabel(prep, 'Prep', 'lookup')).toBe('Prep')
   })
 })

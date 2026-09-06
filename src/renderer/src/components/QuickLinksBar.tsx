@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { CampaignInfo } from '../../../shared/types'
-import {
-  PREP_TOOLS,
-  TABLE_TOOLS,
-  groupToolLabel,
-  type ToolsTabId
-} from '../../../shared/rightPanel'
+import { PREP_TOOLS, TABLE_TOOLS, type ToolsTabId } from '../../../shared/rightPanel'
 import { addDays, addHours, calendarBarLabel, calendarLightLabel, formatCalendar } from '../../../shared/calendar'
 import {
   calendarNoteTemplate,
@@ -142,8 +137,6 @@ export default function QuickLinksBar({
   const barTitle = clock ? calendarBarLabel(clock.definition, clock.now) : ''
   const starter = calendarPreset('gregorian')
   const activeTool = toolsOpen ? toolsTab : null
-  const prepLabel = groupToolLabel(PREP_TOOLS, 'Prep', activeTool)
-  const tableLabel = groupToolLabel(TABLE_TOOLS, 'Table', activeTool)
 
   function pickTool(tab: ToolsTabId): void {
     setOpenId(null)
@@ -282,7 +275,7 @@ export default function QuickLinksBar({
       </button>
       <QuickMenu
         id="prep"
-        label={prepLabel}
+        label="Prep"
         openId={openId}
         onOpenId={setOpenId}
         active={PREP_TOOLS.some((tool) => tool.id === activeTool)}
@@ -301,7 +294,7 @@ export default function QuickLinksBar({
       </QuickMenu>
       <QuickMenu
         id="table"
-        label={tableLabel}
+        label="Table"
         openId={openId}
         onOpenId={setOpenId}
         active={TABLE_TOOLS.some((tool) => tool.id === activeTool)}

@@ -450,7 +450,7 @@ export default function HelpPanel({
                 Open <Action>Combat</Action> or <Action>Music</Action> from the header when you need them. Under the
                 header, <Action>Quick</Action> holds left and right panel glyphs, <Action>Party</Action> (name, AC,
                 save DC, passive perception), <Action>Conditions</Action>, <Action>Lookup</Action>, <Action>Prep</Action>{' '}
-                (NPC, Improvise, Links), <Action>Table</Action> (Dice, Timer), and the in-world{' '}
+                (NPC, Links), <Action>Table</Action> (Dice, Timer, Improvise), and the in-world{' '}
                 <Action>Calendar</Action>. Dice live at the bottom of the left column.
               </>
             ]}
@@ -555,7 +555,7 @@ export default function HelpPanel({
               <>Center: the open note, image, or PDF.</>,
               <>Right: Combat, Music, a Quick-bar tool page, or this panel — one at a time. The right panel icon on
                 the Quick bar hides it; click it again to bring back the last rail. Lookup, Prep, and Table on that bar
-                open Lookup, NPC, Improvise, Links, Dice, and Timer.</>
+                open Lookup, NPC, Links, Dice, Timer, and Improvise.</>
             ]}
           />
           <Sub>Show maps and art</Sub>
@@ -974,16 +974,16 @@ export default function HelpPanel({
             portrait, then <Action>New NPC…</Action> to write a sheet under <Code>NPCs/</Code> with name, species, art,
             and stats. Turn off bundled AI art in <strong>Help & settings → Settings → Artwork</strong>.
           </p>
-          <Sub>Improvise</Sub>
-          <p>
-            <Action>Prep</Action> → <Action>Improvise</Action> has 2024 healing potions (dice and average) and a d10
-            ladder for hazard damage, plus how hard that is by level.
-          </p>
           <Sub>Links</Sub>
           <p>
             <Action>Prep</Action> → <Action>Links</Action> opens curated D&amp;D prep sites in your browser — rules
             lookups, map makers, free art/tokens, GM blogs, generators, ambience, and random tables — grouped by
             category. Tableside does not embed or track them.
+          </p>
+          <Sub>Improvise</Sub>
+          <p>
+            <Action>Table</Action> → <Action>Improvise</Action> has 2024 healing potions (dice and average) and a d10
+            ladder for hazard damage, plus how hard that is by level.
           </p>
           <Sub>Timer</Sub>
           <p>
