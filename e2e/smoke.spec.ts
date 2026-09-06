@@ -98,6 +98,19 @@ test('Dice tray exposes show-to-players and roll-sound toggles', async () => {
   await expect(dmWindow.getByRole('button', { name: 'Dis', exact: true })).toBeVisible()
 })
 
+test('Quick bar tools open, switch, and close the right rail', async () => {
+  const bar = dmWindow.getByRole('navigation', { name: 'Quick links' })
+  await bar.getByRole('button', { name: 'Lookup' }).click()
+  await expect(dmWindow.getByRole('heading', { name: 'Lookup' })).toBeVisible()
+  await openQuickTool('Prep', 'NPC')
+  await expect(dmWindow.getByRole('heading', { name: 'NPC' })).toBeVisible()
+  await expect(dmWindow.getByRole('heading', { name: 'Lookup' })).toHaveCount(0)
+  await bar.getByRole('button', { name: 'Lookup' }).click()
+  await expect(dmWindow.getByRole('heading', { name: 'Lookup' })).toBeVisible()
+  await bar.getByRole('button', { name: 'Lookup' }).click()
+  await expect(dmWindow.getByRole('heading', { name: 'Lookup' })).toHaveCount(0)
+})
+
 test('Lookup opens and searches the offline SRD', async () => {
   const search = dmWindow.getByPlaceholder(/poisoned/i)
   if (!(await search.isVisible().catch(() => false))) {
