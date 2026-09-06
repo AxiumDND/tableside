@@ -109,7 +109,10 @@ export default function QuickLinksBar({
     [calendarMarkdown]
   )
   const readout = clock ? formatCalendar(clock.definition, clock.now) : null
-  const barLabel = clock ? calendarBarLabel(clock.definition, clock.now) : ''
+  const barLabel = readout
+    ? [readout.weekday, readout.date, readout.time].filter(Boolean).join(' · ')
+    : ''
+  const barTitle = clock ? calendarBarLabel(clock.definition, clock.now) : ''
   const starter = calendarPreset('gregorian')
 
   const persist = useCallback(
@@ -238,7 +241,7 @@ export default function QuickLinksBar({
           <>
             <button
               type="button"
-              title={barLabel}
+              title={barTitle}
               onClick={() => onOpenNote(calendarPath)}
               className="min-w-0 truncate text-left text-[12px] text-parchment/90 hover:text-amber"
             >

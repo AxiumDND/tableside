@@ -257,7 +257,7 @@ export default function CalendarSettings({
                   Each row is a month or intercalary day. Festival days sit between months (Harptos-style) or as a
                   short week (Greyhawk-style).
                 </p>
-                <div className="mt-2 space-y-1">
+                <div className="mt-2 max-h-40 space-y-1 overflow-auto pr-1">
                   {draft.units.map((unit, index) => (
                     <div key={`${unit.name}-${index}`} className="grid grid-cols-[1fr_4.5rem_auto_auto] gap-1">
                       <input
