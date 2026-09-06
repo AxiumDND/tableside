@@ -62,7 +62,7 @@ jobs:
             dist/*.blockmap
           generate_release_notes: true
           draft: false
-          prerelease: true
-          make_latest: false
+          prerelease: false
+          make_latest: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
