@@ -333,7 +333,7 @@ export default function QuickLinksBar({
               type="button"
               title={barTitle}
               onClick={() => onOpenNote(calendarPath)}
-              className="min-w-0 truncate rounded bg-ink px-2 py-0.5 text-left text-[12px] text-parchment hover:text-amber"
+              className="min-w-0 truncate rounded border border-line bg-ink px-2.5 py-0.5 text-left text-[12px] text-parchment shadow-[inset_0_1px_0_rgba(0,0,0,0.45)] hover:text-amber"
             >
               {barLabel}
             </button>
