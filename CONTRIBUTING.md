@@ -45,6 +45,7 @@ Report vulnerabilities privately — [SECURITY.md](SECURITY.md). Do not open a p
 | [docs/CAMPAIGN.md](docs/CAMPAIGN.md) | Campaign folder contract |
 | [docs/MARKDOWN.md](docs/MARKDOWN.md) | Note / statblock syntax |
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Near-term direction and starter tasks |
+| [docs/CAMPAIGN-MENU.md](docs/CAMPAIGN-MENU.md) | Possible one Campaign header button (proposal, not built) |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Contributor / architecture notes |
 | [Additional Books/README.md](Additional%20Books/README.md) | Optional book-text Lookup files |
 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Community standards |
