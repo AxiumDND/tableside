@@ -176,6 +176,14 @@ export function addDays(definition: CalendarDefinition, instant: CalendarInstant
   return { ...shiftDays(definition, start, Math.trunc(days)), hour: start.hour }
 }
 
+/** Jump to the next dawn. Before dawn stays on this date; at or after dawn goes to tomorrow. */
+export function nextMorning(definition: CalendarDefinition, instant: CalendarInstant): CalendarInstant {
+  const start = normalizeInstant(definition, instant)
+  const dawn = clampHour(definition.dawnHour, definition.hoursPerDay)
+  if (start.hour < dawn) return { ...start, hour: dawn }
+  return { ...addDays(definition, start, 1), hour: dawn }
+}
+
 export function calendarLight(definition: CalendarDefinition, hour: number): CalendarLight {
   const span = clampHoursPerDay(definition.hoursPerDay)
   const now = clampHour(hour, span)

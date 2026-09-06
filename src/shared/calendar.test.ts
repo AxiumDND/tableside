@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   addDays,
   addHours,
+  nextMorning,
   calendarBarLabel,
   calendarLight,
   findUnitIndex,
@@ -50,6 +51,15 @@ describe('hours and light', () => {
   it('keeps the hour when advancing a day', () => {
     const next = addDays(definition, { year: 2026, unitIndex: 5, day: 6, hour: 14 }, 1)
     expect(next).toMatchObject({ year: 2026, unitIndex: 5, day: 7, hour: 14 })
+  })
+
+  it('jumps to the next dawn, not the next civil midnight', () => {
+    const afterDawn = nextMorning(definition, { year: 2026, unitIndex: 0, day: 1, hour: 9 })
+    expect(afterDawn).toMatchObject({ year: 2026, unitIndex: 0, day: 2, hour: 6 })
+    const beforeDawn = nextMorning(definition, { year: 2026, unitIndex: 0, day: 1, hour: 2 })
+    expect(beforeDawn).toMatchObject({ year: 2026, unitIndex: 0, day: 1, hour: 6 })
+    const atDawn = nextMorning(definition, { year: 2026, unitIndex: 0, day: 1, hour: 6 })
+    expect(atDawn).toMatchObject({ year: 2026, unitIndex: 0, day: 2, hour: 6 })
   })
 
   it('labels dawn, day, dusk, and night', () => {

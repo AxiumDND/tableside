@@ -16,7 +16,7 @@ The header keeps Campaign / Combat / Music / Help. Mid-session facts and the old
 | **Lookup** | Opens the right rail on Lookup. Click again to close. |
 | **Prep ▾** | NPC and Links — opens that page on the right rail. The button stays **Prep**. |
 | **Table ▾** | Dice (Box of Doom), Timer, and Improvise. The button stays **Table**. |
-| **Calendar** | Live in-world date, time, and Day / Night. **◀h** / **▶h** / **+Day**, then **⚙**. Setup is `Calendar/Calendar.md`. Notes: [CALENDAR.md](CALENDAR.md). |
+| **Calendar** | **−Day** / **◀h**, then a darker date-and-time block, Day / Night, **▶h** / **+Day** / **Morning**, then **⚙**. Setup is `Calendar/Calendar.md`. Notes: [CALENDAR.md](CALENDAR.md). |
 
 ## Shape
 

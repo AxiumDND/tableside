@@ -54,9 +54,11 @@ describe('QuickLinksBar', () => {
     expect(screen.getByRole('button', { name: 'Show right panel' })).toBeTruthy()
     expect(await screen.findByRole('button', { name: /1 Fireseek 576 CY/ })).toBeTruthy()
     expect(screen.getByText('Day')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Back one day' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Back one hour' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Forward one hour' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Advance one day' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Advance to next morning' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Calendar settings' })).toBeTruthy()
   })
 
@@ -111,6 +113,18 @@ describe('QuickLinksBar', () => {
     await user.click(screen.getByRole('button', { name: /Conditions/ }))
     await user.click(screen.getByRole('menuitem', { name: /Poisoned/ }))
     expect(screen.getByText(/disadvantage/i)).toBeTruthy()
+  })
+
+  it('jumps to the next morning and writes dawn', async () => {
+    const user = userEvent.setup()
+    render(<QuickLinksBar notes={notes} onOpenNote={() => {}} />)
+    await screen.findByRole('button', { name: /1 Fireseek 576 CY/ })
+    await user.click(screen.getByRole('button', { name: 'Advance to next morning' }))
+    expect(saveFile).toHaveBeenCalled()
+    const written = String(saveFile.mock.calls[0]?.[1] ?? '')
+    expect(written).toMatch(/hour:\s*6/)
+    expect(written).toMatch(/day:\s*2/)
+    expect(written).toMatch(/month:\s*Fireseek/)
   })
 
   it('advances one hour and writes the calendar note', async () => {
