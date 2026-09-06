@@ -23,6 +23,10 @@ export default function CalendarSettings({
   definition,
   now,
   notePath,
+  showQuickBar,
+  showToPlayers,
+  onShowQuickBar,
+  onShowToPlayers,
   onClose,
   onSave,
   onOpenNote
@@ -30,6 +34,10 @@ export default function CalendarSettings({
   definition: CalendarDefinition
   now: CalendarInstant
   notePath: string
+  showQuickBar: boolean
+  showToPlayers: boolean
+  onShowQuickBar: (next: boolean) => void
+  onShowToPlayers: (next: boolean) => void
   onClose: () => void
   onSave: (definition: CalendarDefinition, now: CalendarInstant) => Promise<void>
   onOpenNote: () => void
@@ -98,8 +106,8 @@ export default function CalendarSettings({
             Calendar
           </h3>
           <p className="mt-1 text-[12px] text-muted">
-            Setup lives in <span className="text-parchment/80">{notePath}</span>. The Quick bar is the live clock — never
-            on the player TV.
+            Setup lives in <span className="text-parchment/80">{notePath}</span>. The Quick bar is the live clock. Show
+            to players puts a sunrise, sun, sunset, or moon on the TV — never the date or time.
           </p>
           <p className="mt-2 text-[13px] text-parchment/90">
             {read.weekday ? `${read.weekday} · ` : ''}
@@ -107,6 +115,40 @@ export default function CalendarSettings({
           </p>
         </div>
         <div className="min-h-0 flex-1 space-y-4 overflow-auto px-4 py-3">
+          <fieldset>
+            <legend className="text-[10px] font-semibold uppercase tracking-wider text-muted">On the table</legend>
+            <div className="mt-1 grid gap-1.5">
+              <label className="flex cursor-pointer items-start gap-2 rounded border border-line px-2.5 py-1.5 hover:border-amber/60">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={showQuickBar}
+                  onChange={(event) => onShowQuickBar(event.target.checked)}
+                />
+                <span>
+                  <span className="block text-sm font-semibold text-parchment">Show on Quick bar</span>
+                  <span className="block text-[11px] text-muted">
+                    Hide the clock cluster when you are not using it. A Calendar chip brings it back.
+                  </span>
+                </span>
+              </label>
+              <label className="flex cursor-pointer items-start gap-2 rounded border border-line px-2.5 py-1.5 hover:border-amber/60">
+                <input
+                  type="checkbox"
+                  className="mt-1"
+                  checked={showToPlayers}
+                  onChange={(event) => onShowToPlayers(event.target.checked)}
+                />
+                <span>
+                  <span className="block text-sm font-semibold text-parchment">Show to players</span>
+                  <span className="block text-[11px] text-muted">
+                    Top-right on the TV: sunrise, morning sun, afternoon sun, sunset, or moon. No clock.
+                  </span>
+                </span>
+              </label>
+            </div>
+          </fieldset>
+
           <fieldset>
             <legend className="text-[10px] font-semibold uppercase tracking-wider text-muted">Type</legend>
             <div className="mt-1 grid gap-1.5">

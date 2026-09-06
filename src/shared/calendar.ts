@@ -34,6 +34,11 @@ export type CalendarInstant = {
 
 export type CalendarLight = 'dawn' | 'day' | 'dusk' | 'night'
 
+/** Light-of-day mark on the player TV — symbols only, never a clock. */
+export const PLAYER_CALENDAR_MARKS = ['sunrise', 'morning', 'afternoon', 'sunset', 'night'] as const
+
+export type PlayerCalendarMark = (typeof PLAYER_CALENDAR_MARKS)[number]
+
 export type CalendarReadout = {
   date: string
   time: string
@@ -275,6 +280,35 @@ export function calendarLightLabel(light: CalendarLight): string {
   if (light === 'night') return 'Night'
   if (light === 'dawn') return 'Dawn'
   return 'Dusk'
+}
+
+export function isPlayerCalendarMark(value: unknown): value is PlayerCalendarMark {
+  return typeof value === 'string' && (PLAYER_CALENDAR_MARKS as readonly string[]).includes(value)
+}
+
+/**
+ * Player-TV mark from the live clock. Dawn/dusk/night stay one symbol each.
+ * Day splits at midday (half the day's hours) into morning vs afternoon.
+ */
+export function calendarPlayerMark(
+  definition: CalendarDefinition,
+  instant: CalendarInstant
+): PlayerCalendarMark {
+  const now = normalizeInstant(definition, instant)
+  const light = calendarLight(definition, now.hour)
+  if (light === 'dawn') return 'sunrise'
+  if (light === 'dusk') return 'sunset'
+  if (light === 'night') return 'night'
+  const midday = Math.floor(clampHoursPerDay(definition.hoursPerDay) / 2)
+  return now.hour < midday ? 'morning' : 'afternoon'
+}
+
+export function calendarPlayerMarkLabel(mark: PlayerCalendarMark): string {
+  if (mark === 'sunrise') return 'Sunrise'
+  if (mark === 'morning') return 'Morning'
+  if (mark === 'afternoon') return 'Afternoon'
+  if (mark === 'sunset') return 'Sunset'
+  return 'Night'
 }
 
 export function calendarBarLabel(definition: CalendarDefinition, instant: CalendarInstant): string {

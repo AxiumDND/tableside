@@ -1,8 +1,8 @@
 # In-world calendar
 
-**Status:** first pass (1.8.20 beta). DM console only — never on the player TV.
+**Status:** first pass (1.8.20 beta). The live clock is DM-only. **Show to players** is a light-of-day mark on the TV, not a clock.
 
-The live clock sits on the **Quick** bar. **−Day** / **◀h** sit before a darker date-and-time block, then Day / Night / Dawn / Dusk. After that: **▶h**, **+Day** (same hour, next date), **Morning** (next dawn), and **⚙**. Click the date to open the note.
+The live clock sits on the **Quick** bar. **−Day** / **◀h** sit before a darker date-and-time block, then Day / Night / Dawn / Dusk. After that: **▶h**, **+Day** (same hour, next date), **Morning** (next dawn), **Show to players**, **Hide**, and **⚙**. Click the date to open the note. **Hide** collapses the cluster to a **Calendar** chip. **Show to players** puts sunrise / morning / afternoon / sunset / night on the top-right of the player TV — a symbol and a short word, never the date or hour.
 
 ## Where it lives
 
@@ -73,12 +73,27 @@ Dawn and dusk are hour numbers on that day. The exact dawn/dusk hour labels **Da
 - Hours in a day, dawn, dusk, era suffix
 - Custom: weekday list, month/festival rows, optional leap day
 - **Open note** / **Save calendar**
+- **Show on Quick bar** / **Show to players** (same as the bar)
 
-Save writes the `[!calendar]` fence. The Quick bar updates immediately.
+Save writes the `[!calendar]` fence. The Quick bar updates immediately. Hiding the bar does not turn off the player mark.
+
+## Player TV
+
+When **Show to players** is on, the TV shows one mark in the top-right:
+
+| Clock | Mark |
+| --- | --- |
+| Dawn hour | Sunrise |
+| Day, before midday | Morning sun |
+| Day, midday or later | Afternoon sun |
+| Dusk hour | Sunset |
+| Night | Moon |
+
+Midday is half the hours in that calendar’s day (12 on a 24-hour day). No date, no `9am`.
 
 ## Out of scope (this pass)
 
 - Recurring holidays beyond the festival rows you list
 - Weather, moons, or watches
-- Player-TV chrome
 - A second live clock
+- A player-TV date or hour

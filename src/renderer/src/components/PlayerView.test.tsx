@@ -88,6 +88,30 @@ describe('PlayerView still fades', () => {
   })
 })
 
+describe('PlayerView calendar light', () => {
+  it('shows the morning mark without a clock', () => {
+    const { container } = render(
+      <PlayerView state={{ ...emptyPlayerState(), calendarMark: 'morning' }} />
+    )
+    const mark = container.querySelector('.player-calendar-light')
+    expect(mark?.getAttribute('aria-label')).toBe('Morning')
+    expect(mark?.textContent).toBe('Morning')
+    expect(container.textContent).not.toMatch(/\d+\s?(am|pm)/i)
+  })
+
+  it('hides the mark when the player state has none', () => {
+    const { container } = render(<PlayerView state={emptyPlayerState()} />)
+    expect(container.querySelector('.player-calendar-light')).toBeNull()
+  })
+
+  it('leaves the in-stage mark off in compact preview (overlay owns it)', () => {
+    const { container } = render(
+      <PlayerView state={{ ...emptyPlayerState(), calendarMark: 'sunset' }} compact />
+    )
+    expect(container.querySelector('.player-calendar-light')).toBeNull()
+  })
+})
+
 describe('PlayerView initiative strip', () => {
   const combat = {
     showInitiative: true,

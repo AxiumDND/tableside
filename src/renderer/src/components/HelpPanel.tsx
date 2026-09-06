@@ -451,7 +451,8 @@ export default function HelpPanel({
                 header, <Action>Quick</Action> holds left and right panel glyphs, <Action>Party</Action> (name, AC,
                 save DC, passive perception), <Action>Conditions</Action>, <Action>Lookup</Action>, <Action>Prep</Action>{' '}
                 (NPC, Links), <Action>Table</Action> (Dice, Timer, Improvise), and the in-world{' '}
-                <Action>Calendar</Action>. Dice live at the bottom of the left column.
+                <Action>Calendar</Action> (Hide when unused; Show to players is a sun or moon on the TV). Dice live at
+                the bottom of the left column.
               </>
             ]}
           />
@@ -783,7 +784,9 @@ export default function HelpPanel({
               <>
                 <Code>Calendar/Calendar.md</Code> holds the in-world clock as <Code>[!calendar]…[!/calendar]</Code>. The
                 Quick bar shows the date and time in a darker block; hour, day, and Morning buttons write back to that
-                note.
+                note. <Action>Hide</Action> collapses it to a Calendar chip.{' '}
+                <Action>Show to players</Action> puts sunrise, morning, afternoon, sunset, or night on the top-right of
+                the player TV — a symbol, not the clock.
               </>,
               <>
                 <Code>[!gallery]…[!/gallery]</Code> is an image sequence on the player screen;{' '}

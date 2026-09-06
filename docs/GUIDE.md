@@ -38,7 +38,7 @@ With no campaign yet, Tableside copies **Greystead — The Pale Well** (a level-
 | --- | --- |
 | **Sample** | Open the bundled Greystead one-shot (empty start screen only) |
 | **Campaign** | Menu: recent folders, then **Open campaign…** (any folder) or **New campaign…** (system, look, empty folder) |
-| **Quick links** | Strip under the header: sidebar glyphs, **Party**, **Conditions**, **Lookup**, **Prep**, **Table**, **Calendar** |
+| **Quick links** | Strip under the header: sidebar glyphs, **Party**, **Conditions**, **Lookup**, **Prep**, **Table**, **Calendar** (hide when unused; optional sun / moon on the player TV) |
 
 **Open** reads any folder and fills in missing standard folders. Folders without `"system"` in `campaign.json` run as D&D 5e. You can change the **look** later (Classic, Light, Sci-fi, Vampire, Cyberpunk, Digital rain) from **Help & settings** or **Start Here**. You cannot change the system pack mid-campaign.
 
