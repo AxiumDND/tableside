@@ -104,11 +104,11 @@ describe('PlayerView calendar light', () => {
     expect(container.querySelector('.player-calendar-light')).toBeNull()
   })
 
-  it('leaves the in-stage mark off in compact preview (overlay owns it)', () => {
+  it('keeps the in-stage mark in compact preview so scale matches the TV', () => {
     const { container } = render(
       <PlayerView state={{ ...emptyPlayerState(), calendarMark: 'sunset' }} compact />
     )
-    expect(container.querySelector('.player-calendar-light')).toBeNull()
+    expect(container.querySelector('.player-calendar-light')?.getAttribute('aria-label')).toBe('Sunset')
   })
 })
 

@@ -77,16 +77,10 @@ function MarkIcon({ mark }: { mark: PlayerCalendarMark }) {
   return <NightIcon />
 }
 
-export default function PlayerCalendarLight({
-  mark,
-  compact
-}: {
-  mark: PlayerCalendarMark
-  compact?: boolean
-}) {
+export default function PlayerCalendarLight({ mark }: { mark: PlayerCalendarMark }) {
   const label = calendarPlayerMarkLabel(mark)
   return (
-    <div className={`player-calendar-light is-${mark}${compact ? ' is-compact' : ''}`} aria-label={label}>
+    <div className={`player-calendar-light is-${mark}`} aria-label={label}>
       <MarkIcon mark={mark} />
       <p className="player-calendar-light-label">{label}</p>
     </div>

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
 import type { DisplayInfo, PlayerState } from '../../../shared/types'
-import PlayerCalendarLight from './PlayerCalendarLight'
 import PlayerView from './PlayerView'
 
 /** Virtual stage size for the preview — scaled down so layout matches the TV. */
@@ -206,10 +205,9 @@ export default function PlayerPreview({
           <button
             type="button"
             onClick={() => void togglePicker()}
-            className="relative block w-full overflow-hidden rounded border border-amber-dim/70"
+            className="block w-full overflow-hidden rounded border border-amber-dim/70"
           >
             <ScaledPlayerPreview state={state} />
-            {state.calendarMark ? <PlayerCalendarLight mark={state.calendarMark} compact /> : null}
           </button>
           <p className="mt-1 text-center text-[10px] text-muted">
             {displays.length < 2

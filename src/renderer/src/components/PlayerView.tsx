@@ -165,7 +165,7 @@ export default function PlayerView({
       {state.boxOfDoom ? <OpeningBoxOfDoom roll={state.boxOfDoom} suppressSound={suppressSound} /> : null}
       {state.hourglass ? <OpeningHourglass glass={state.hourglass} /> : null}
       {state.diceShow ? <OpeningDiceShow show={state.diceShow} /> : null}
-      {state.calendarMark && !compact ? <PlayerCalendarLight mark={state.calendarMark} /> : null}
+      {state.calendarMark ? <PlayerCalendarLight mark={state.calendarMark} /> : null}
       {handoutScene ? (
         <aside
           key={handoutScene.id}

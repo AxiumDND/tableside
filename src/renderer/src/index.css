@@ -1889,19 +1889,19 @@ body,
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.12vh;
+  gap: 0.24cqh;
   min-width: 0;
-  padding: 0.22vh 0.28vh 0.24vh;
-  border-radius: 0.45vh;
+  padding: 0.44cqh 0.56cqh 0.48cqh;
+  border-radius: 0.9cqh;
   background: rgba(8, 6, 4, 0.62);
-  box-shadow: 0 0.2vh 0.7vh rgba(0, 0, 0, 0.4);
+  box-shadow: 0 0.4cqh 1.4cqh rgba(0, 0, 0, 0.4);
   color: #f4e6c3;
   pointer-events: none;
 }
 
 .player-calendar-light svg {
-  width: 3.9vh;
-  height: 3.9vh;
+  width: 7.8cqh;
+  height: 7.8cqh;
   fill: none;
   stroke: #f0c14b;
   stroke-width: 2.6;
@@ -1945,32 +1945,11 @@ body,
 .player-calendar-light-label {
   margin: 0;
   font-family: var(--font-ui);
-  font-size: 0.4vh;
+  font-size: 0.8cqh;
   font-weight: 500;
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: #f4e6c3;
-}
-
-.player-calendar-light.is-compact {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 12;
-  min-width: 0;
-  padding: 0.08rem 0.1rem 0.1rem;
-  border-radius: 0.2rem;
-  gap: 0.04rem;
-}
-
-.player-calendar-light.is-compact svg {
-  width: 1.15rem;
-  height: 1.15rem;
-}
-
-.player-calendar-light.is-compact .player-calendar-light-label {
-  font-size: 0.21rem;
-  letter-spacing: 0.02em;
 }
 
 .player-dice-show {
