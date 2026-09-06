@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { calendarPlayerMarkLabel } from '../../../shared/calendar'
 import type { DisplayInfo, PlayerState } from '../../../shared/types'
 import PlayerCalendarLight from './PlayerCalendarLight'
 import PlayerView from './PlayerView'
@@ -151,8 +150,6 @@ export default function PlayerPreview({
                             ? state.boxOfDoom.label || 'Box of Doom'
                             : state.handout
                               ? state.handout.title
-                              : state.calendarMark
-                              ? calendarPlayerMarkLabel(state.calendarMark)
                               : state.imageTitle || 'Nothing showing'}
           </div>
         </button>
@@ -209,11 +206,11 @@ export default function PlayerPreview({
           <button
             type="button"
             onClick={() => void togglePicker()}
-            className="block w-full overflow-hidden rounded border border-amber-dim/70"
+            className="relative block w-full overflow-hidden rounded border border-amber-dim/70"
           >
             <ScaledPlayerPreview state={state} />
+            {state.calendarMark ? <PlayerCalendarLight mark={state.calendarMark} compact /> : null}
           </button>
-          {state.calendarMark ? <PlayerCalendarLight mark={state.calendarMark} compact /> : null}
           <p className="mt-1 text-center text-[10px] text-muted">
             {displays.length < 2
               ? 'Player screen waits for a second monitor'
