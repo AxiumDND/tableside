@@ -87,3 +87,43 @@ describe('PlayerView still fades', () => {
     )
   })
 })
+
+describe('PlayerView initiative strip', () => {
+  const combat = {
+    showInitiative: true,
+    initiative: [{ id: 'a', name: 'Goblin', initiative: 12, active: true }]
+  }
+
+  it('hides the strip under a live campfire chronicle', () => {
+    const { container } = render(
+      <PlayerView
+        state={{
+          ...emptyPlayerState(),
+          ...combat,
+          legend: {
+            title: 'The Pale Well',
+            body: 'The well runs cold.',
+            endSrc: 'tabledm://end.png',
+            startedAt: 1
+          }
+        }}
+      />
+    )
+    expect(container.querySelector('.player-init')).toBeNull()
+  })
+
+  it('shows the strip after the chronicle overlay is cleared onto the end still', () => {
+    const { container } = render(
+      <PlayerView
+        state={{
+          ...emptyPlayerState(),
+          ...combat,
+          imageSrc: 'tabledm://end.png'
+        }}
+      />
+    )
+    expect(container.querySelector('.player-init')).toBeTruthy()
+    expect(container.querySelector('.player-init-name')?.textContent).toBe('Goblin')
+    expect(container.querySelector('.opening-legend')).toBeNull()
+  })
+})

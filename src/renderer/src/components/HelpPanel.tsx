@@ -600,8 +600,9 @@ export default function HelpPanel({
             <Code>look: mist</Code>, <Code>embers</Code>, <Code>crimson</Code>, or <Code>neon</Code>) — mist for gothic
             fog, embers for campfire sparks, crimson for vampire, neon for cyber / sci-fi. Edit title (DM label), body,
             optional <Code>music:</Code>, and optional <Code>end:</Code> still. <Action>Play</Action> is on when the
-            campaign look is Classic, Light, or Vampire. Mood and music timing match the Sci-fi crawl (1:32 sync).{' '}
-            <Action>Stop</Action> fades to black and resumes mood.
+            campaign look is Classic, Light, or Vampire. Mood and music timing match the Sci-fi crawl (1:32 sync). After
+            the tale ends (or you <Action>Stop</Action>), Combat <Action>Show to players</Action> can overlay initiative
+            on that still. <Action>Stop</Action> fades the chronicle and resumes mood.
           </p>
           <Sub>Gallery</Sub>
           <p>

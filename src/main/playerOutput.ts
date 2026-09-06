@@ -13,6 +13,7 @@ import { IPC } from '../shared/ipc'
 import { APP_NAME } from '../shared/version'
 import { CRAWL_FADE_OUT_MS, crawlEndStillAtMs } from '../shared/openingCrawl'
 import { legendEndStillAtMs } from '../shared/openingLegend'
+import { applyPrologueEndStill } from '../shared/prologueEndStill'
 import { BOX_OF_DOOM_FADE_OUT_MS, boxOfDoomHoldMs } from '../shared/boxOfDoom'
 import { HOURGLASS_FADE_OUT_MS } from '../shared/hourglass'
 import type { AppSettings } from '../shared/types'
@@ -419,11 +420,9 @@ function clearProloguePromoteTimers(): void {
 }
 
 function promotePrologueEndStill(startedAt: number): void {
-  const overlay = playerState.legend ?? playerState.crawl
-  if (!overlay || overlay.stoppingAt != null || overlay.startedAt !== startedAt) return
-  const src = overlay.endSrc?.trim()
-  if (!src || playerState.imageSrc === src) return
-  playerState = { ...playerState, imageSrc: src, mapView: null }
+  const next = applyPrologueEndStill(playerState, startedAt)
+  if (next === playerState) return
+  playerState = next
   sendPlayerState()
 }
 
@@ -431,12 +430,13 @@ function promotePrologueEndStill(startedAt: number): void {
 export function scheduleLegendEndStill(): void {
   clearProloguePromoteTimers()
   const legend = playerState.legend
-  const endSrc = legend?.endSrc?.trim()
-  if (!legend || !endSrc) return
+  if (!legend) return
   const startedAt = legend.startedAt
+  const hasEnd = Boolean(legend.endSrc?.trim())
   legendPromoteTimer = setTimeout(() => {
     legendPromoteTimer = null
-    promotePrologueEndStill(startedAt)
+    if (hasEnd) promotePrologueEndStill(startedAt)
+    else if (playerState.legend?.startedAt === startedAt) stopPlayerLegend()
   }, legendEndStillAtMs(legend.title, legend.body))
 }
 
@@ -444,12 +444,13 @@ export function scheduleLegendEndStill(): void {
 export function scheduleCrawlEndStill(): void {
   clearProloguePromoteTimers()
   const crawl = playerState.crawl
-  const endSrc = crawl?.endSrc?.trim()
-  if (!crawl || !endSrc) return
+  if (!crawl) return
   const startedAt = crawl.startedAt
+  const hasEnd = Boolean(crawl.endSrc?.trim())
   crawlPromoteTimer = setTimeout(() => {
     crawlPromoteTimer = null
-    promotePrologueEndStill(startedAt)
+    if (hasEnd) promotePrologueEndStill(startedAt)
+    else if (playerState.crawl?.startedAt === startedAt) stopPlayerCrawl()
   }, crawlEndStillAtMs(crawl.preface))
 }
 

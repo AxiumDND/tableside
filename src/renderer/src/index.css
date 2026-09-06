@@ -648,7 +648,7 @@ body,
   top: 0;
   bottom: 0;
   left: 0;
-  z-index: 6;
+  z-index: 21;
   display: flex;
   width: min(28rem, 38%);
   flex-direction: column;

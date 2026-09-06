@@ -48,4 +48,32 @@ describe('playerInitiativeVisible', () => {
       })
     ).toBe(true)
   })
+
+  it('hides initiative under a live campfire chronicle', () => {
+    expect(
+      playerInitiativeVisible({
+        ...base,
+        legend: { title: 'The Pale Well', body: 'Go.', startedAt: 1, endSrc: 'tabledm://end.png' }
+      })
+    ).toBe(false)
+  })
+
+  it('returns initiative after the chronicle overlay is cleared onto the end still', () => {
+    expect(
+      playerInitiativeVisible({
+        ...base,
+        imageSrc: 'tabledm://end.png'
+      })
+    ).toBe(true)
+  })
+
+  it('returns initiative while a chronicle is fading out', () => {
+    expect(
+      playerInitiativeVisible({
+        ...base,
+        imageSrc: 'tabledm://end.png',
+        legend: { title: 'The Pale Well', body: 'Go.', startedAt: 1, endSrc: 'tabledm://end.png', stoppingAt: 2 }
+      })
+    ).toBe(true)
+  })
 })
