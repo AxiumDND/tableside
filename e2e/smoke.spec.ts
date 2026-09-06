@@ -61,7 +61,7 @@ test('quick links bar shows the Greystead in-world calendar', async () => {
   await dmWindow.getByRole('radio', { name: /Greyhawk/ }).click()
   await expect(dmWindow.getByText(/1 Fireseek 576 CY/)).toBeVisible()
   await dmWindow.getByRole('button', { name: 'Cancel' }).click()
-  await expect(bar.getByRole('button', { name: /1 Seedmoon 412 AF/ })).toBeVisible()
+  await expect(bar.getByRole('button', { name: /2 Seedmoon 412 AF/ })).toBeVisible()
 })
 
 test('Dice tool and built-in Sfx oneshots are on the console', async () => {
