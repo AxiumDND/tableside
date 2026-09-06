@@ -33,6 +33,23 @@ test('quick links bar lists party stats and conditions', async () => {
   await expect(dmWindow.getByRole('menuitem', { name: /Poisoned/ })).toBeVisible()
 })
 
+test('quick links bar shows the Greystead in-world calendar', async () => {
+  const bar = dmWindow.getByRole('navigation', { name: 'Quick links' })
+  await dmWindow.keyboard.press('Escape')
+  await expect(bar.getByRole('button', { name: /1 Seedmoon 412 AF/ })).toBeVisible()
+  await expect(bar.getByRole('button', { name: 'Forward one hour' })).toBeVisible()
+  await expect(bar.getByRole('button', { name: 'Advance one day' })).toBeVisible()
+  await expect(bar.getByRole('button', { name: 'Calendar settings' })).toBeVisible()
+  await bar.getByRole('button', { name: 'Forward one hour' }).click()
+  await expect(bar.getByRole('button', { name: /10am/ })).toBeVisible()
+  await bar.getByRole('button', { name: 'Calendar settings' }).click()
+  await expect(dmWindow.getByRole('dialog', { name: 'Calendar' })).toBeVisible()
+  await dmWindow.getByRole('radio', { name: /Greyhawk/ }).click()
+  await expect(dmWindow.getByText(/1 Fireseek 576 CY/)).toBeVisible()
+  await dmWindow.getByRole('button', { name: 'Cancel' }).click()
+  await expect(bar.getByRole('button', { name: /1 Seedmoon 412 AF/ })).toBeVisible()
+})
+
 test('Dice tool and built-in Sfx oneshots are on the console', async () => {
   const tools = dmWindow.getByRole('button', { name: 'Tools' })
   await tools.click()

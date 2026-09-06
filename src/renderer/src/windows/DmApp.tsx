@@ -119,6 +119,7 @@ export default function DmApp() {
   const [toolsTab, setToolsTab] = useState<ToolsTabId>('lookup')
   const [diceCheckSound, setDiceCheckSound] = useState(true)
   const [hideNpcPortraits, setHideNpcPortraits] = useState(false)
+  const [noteReloadToken, setNoteReloadToken] = useState(0)
   const {
     openPath,
     openKind,
@@ -434,6 +435,8 @@ export default function DmApp() {
           notes={flattenNotes(campaign.tree)}
           system={campaign.system}
           onOpenNote={openNote}
+          onCampaignChange={setCampaign}
+          onNotesReload={() => setNoteReloadToken((n) => n + 1)}
         />
       ) : null}
       <div>
@@ -509,6 +512,7 @@ export default function DmApp() {
         <SessionNotes
           path={openPath}
           kind={openKind}
+          noteReloadToken={noteReloadToken}
           imageUrl={
             openKind === 'image' || openKind === 'pdf' || openKind === 'audio'
               ? campaignFileUrl(openPath)

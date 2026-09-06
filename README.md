@@ -126,6 +126,7 @@ The bundled sample is **[examples/greystead](examples/greystead)**. Tableside co
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Near-term direction and starter tasks |
 | [docs/CAMPAIGN-MENU.md](docs/CAMPAIGN-MENU.md) | Campaign ▾ header menu (built in 1.8.17) |
 | [docs/QUICK-LINKS.md](docs/QUICK-LINKS.md) | Quick links bar under the header (Party / Conditions / Calendar) |
+| [docs/CALENDAR.md](docs/CALENDAR.md) | In-world clock on the Quick bar (`Calendar/Calendar.md`) |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Pull request expectations |
 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Community standards |
 | [SECURITY.md](SECURITY.md) | Vulnerability reports |

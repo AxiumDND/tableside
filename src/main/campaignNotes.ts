@@ -448,6 +448,7 @@ export async function saveCampaignFile(
   if (!campaignFolder) return null
   const posixPath = toPosix(relativePath)
   const source = safeJoin(campaignFolder, posixPath)
+  await ensureDir(dirname(source))
   await writeFile(source, contents, 'utf8')
 
   const ext = extname(source)

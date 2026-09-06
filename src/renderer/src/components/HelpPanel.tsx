@@ -449,8 +449,9 @@ export default function HelpPanel({
               <>
                 Open <Action>Combat</Action> or <Action>Tools</Action> from the header when you need them. Under the
                 header, <Action>Quick</Action> links hold <Action>Party</Action> (name, AC, save DC, passive
-                perception), <Action>Conditions</Action>, and <Action>Calendar</Action> notes in{' '}
-                <Code>Reference/</Code>. Dice live at the bottom of the left column.
+                perception), <Action>Conditions</Action>, and the in-world <Action>Calendar</Action> (date, time,
+                Day or Night, hour and day buttons; settings live in <Code>Calendar/Calendar.md</Code>). Dice live at
+                the bottom of the left column.
               </>
             ]}
           />
@@ -778,6 +779,10 @@ export default function HelpPanel({
               </>,
               <>
                 <Code>[!legend]…[!/legend]</Code> is an Opening legend card (Classic, Light, Vampire).
+              </>,
+              <>
+                <Code>Calendar/Calendar.md</Code> holds the in-world clock as <Code>[!calendar]…[!/calendar]</Code>. The
+                Quick bar shows the date and time; hour and day buttons write back to that note.
               </>,
               <>
                 <Code>[!gallery]…[!/gallery]</Code> is an image sequence on the player screen;{' '}

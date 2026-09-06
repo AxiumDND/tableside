@@ -38,6 +38,7 @@ export const HIDDEN_FILE_NAMES = new Set(['campaign.json', 'combat.json', 'audio
 export const FOLDER_ORDER = [
   'start here',
   'sessions',
+  'calendar',
   'party',
   'npcs',
   'bestiary',
@@ -57,6 +58,7 @@ export const GEAR_SECTIONS = ['Weapons', 'Armor', 'Equipment', 'Trade Goods', 'M
 
 export const STANDARD_LAYOUT: { canonical: string; name: string; extras: string[] }[] = [
   { canonical: 'sessions', name: 'Sessions', extras: ['Art'] },
+  { canonical: 'calendar', name: 'Calendar', extras: [] },
   { canonical: 'party', name: 'Party', extras: ['Art'] },
   { canonical: 'npcs', name: 'NPCs', extras: ['Art'] },
   { canonical: 'bestiary', name: 'Bestiary', extras: ['Art'] },
@@ -112,7 +114,12 @@ const FOLDER_ALIASES: Record<string, string> = {
   faction: 'factions',
   audio: 'audio',
   sounds: 'audio',
-  sound: 'audio'
+  sound: 'audio',
+  calendar: 'calendar',
+  calendars: 'calendar',
+  almanac: 'calendar',
+  datebook: 'calendar',
+  'date book': 'calendar'
 }
 
 export function canonicalFolder(name: string): string {
@@ -155,6 +162,10 @@ export function isBestiaryFolderName(name: string): boolean {
 
 export function isSessionsFolderName(name: string): boolean {
   return canonicalFolder(name) === 'sessions'
+}
+
+export function isCalendarFolderName(name: string): boolean {
+  return canonicalFolder(name) === 'calendar'
 }
 
 export function isSpellsFolderName(name: string): boolean {

@@ -109,6 +109,11 @@ describe('fenced callouts', () => {
     expect(splitCalloutBlocks('[!incoming] Lodin\n[!/incoming]')[0]?.kind).toBe('phone')
   })
 
+  it('maps calendar aliases', () => {
+    expect(splitCalloutBlocks('[!calendar]\ntype: custom\n[!/calendar]')[0]?.kind).toBe('calendar')
+    expect(splitCalloutBlocks('[!almanac]\nyear: 1\n[!/almanac]')[0]?.kind).toBe('calendar')
+  })
+
   it('maps hyperspace aliases', () => {
     expect(splitCalloutBlocks('[!jump] Alderaan\n[!/jump]')[0]?.kind).toBe('hyperspace')
     expect(splitCalloutBlocks('[!lightspeed] Kessel\n[!/lightspeed]')[0]?.kind).toBe('hyperspace')

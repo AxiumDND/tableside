@@ -7,7 +7,7 @@ How the DM console and player window work during a session. **New to Tableside?*
 | Area | Role |
 | --- | --- |
 | Header | Campaign name, **Campaign** menu (recents + Open / New), Combat / Music / Tools / Help & settings, player display picker, Clear |
-| Quick links | One-button strip under the header (campaign open): **Party** (name / AC / spell save DC / PP → open sheet), **Conditions** (lookup text), **Calendar** (notes in `Reference/` or named calendar). Never on the player TV. |
+| Quick links | One-button strip under the header (campaign open): **Party** (name / AC / spell save DC / PP → open sheet), **Conditions** (lookup text), **Calendar** (live in-world date / time / Day or Night, ◀h ▶h +Day, settings). Never on the player TV. |
 | Left column | Mini **Players see** preview, campaign file tree, dice tray |
 | Center | Open note, image, PDF, or audio preview |
 | Right (optional) | Combat tracker, Music mixer, Tools (Lookup, NPC, Improvise, Dice, Timer, Links), or Help & settings |

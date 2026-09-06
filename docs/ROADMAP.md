@@ -44,7 +44,7 @@ If a feature mainly helps remote / online play, it does not belong here.
 - Optional music cues when a scene Plays
 - Printable handout export from a note
 - **Campaign zip backup** — one-click export of the open campaign folder to a `.zip` (and optional import/restore into a chosen folder). For backing up before a session, moving a one-shot to another PC, or sharing a self-contained night with a friend. Stays local files only — no cloud upload. Skip huge regenerable caches if any; keep notes, art, audio, and `campaign.json` / `combat.json` / `audio.json`.
-- **Party glance strip** — first pass in 1.8.19: DM-only **Quick links** bar under the header (**Party** name / AC / save DC / PP, **Conditions**, **Calendar** notes). Never on the player TV. Later: hide toggle, in-world date, more menus. Notes: [QUICK-LINKS.md](QUICK-LINKS.md).
+- **Party glance strip** — first pass in 1.8.19: DM-only **Quick links** bar under the header (**Party** name / AC / save DC / PP, **Conditions**). 1.8.20 adds the live in-world calendar on that bar. Later: hide toggle, more menus. Notes: [QUICK-LINKS.md](QUICK-LINKS.md), [CALENDAR.md](CALENDAR.md).
 - **Linux build** — ship a packaged Linux app alongside the Windows installer (AppImage and/or `.deb` via electron-builder). Keep the same table-first dual-monitor flow; document display/VNC quirks for contributors. macOS packaging stays optional until there is real demand.
 
 ## System support
