@@ -1951,19 +1951,23 @@ body,
   color: #f4e6c3;
 }
 
-.player-stage-compact .player-calendar-light {
+.player-calendar-light.is-compact {
+  position: absolute;
+  top: 0.35rem;
+  right: 0.35rem;
+  z-index: 12;
   min-width: 3.4rem;
-  padding: 0.35rem 0.45rem 0.4rem;
-  border-radius: 0.45rem;
-  gap: 0.15rem;
+  padding: 0.3rem 0.4rem 0.35rem;
+  border-radius: 0.4rem;
+  gap: 0.12rem;
 }
 
-.player-stage-compact .player-calendar-light svg {
-  width: 1.7rem;
-  height: 1.7rem;
+.player-calendar-light.is-compact svg {
+  width: 1.65rem;
+  height: 1.65rem;
 }
 
-.player-stage-compact .player-calendar-light-label {
+.player-calendar-light.is-compact .player-calendar-light-label {
   font-size: 0.62rem;
   letter-spacing: 0.08em;
 }

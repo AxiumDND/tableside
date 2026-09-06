@@ -103,6 +103,13 @@ describe('PlayerView calendar light', () => {
     const { container } = render(<PlayerView state={emptyPlayerState()} />)
     expect(container.querySelector('.player-calendar-light')).toBeNull()
   })
+
+  it('leaves the in-stage mark off in compact preview (overlay owns it)', () => {
+    const { container } = render(
+      <PlayerView state={{ ...emptyPlayerState(), calendarMark: 'sunset' }} compact />
+    )
+    expect(container.querySelector('.player-calendar-light')).toBeNull()
+  })
 })
 
 describe('PlayerView initiative strip', () => {
