@@ -1,25 +1,28 @@
 # Quick links bar
 
-**Status:** first pass (1.8.19), calendar clock in 1.8.20 beta. A one-button-high strip under the main header when a campaign is open. DM console only — never on the player TV.
+**Status:** first pass (1.8.19), calendar in 1.8.20, tools and panel toggles moved here from the header. DM console only — never on the player TV. The strip is always on, campaign or not.
 
 ## Why
 
-The main header stays Campaign / Tools / Combat / Music / Help. Mid-session you still need a few facts without opening a night sheet or Tools. This bar is the home for those.
+The header keeps Campaign / Combat / Music / Help. Mid-session facts and the old Tools pages live on this bar so you do not hunt a second header button.
 
-## First menus
+## On the bar
 
-| Menu | What it does |
+| Control | What it does |
 | --- | --- |
+| **Left / right panel** | Same sidebar and right-rail glyphs that used to sit on the header. |
 | **Party** | Every `Party/` sheet (not the roster). Name, AC, spell save DC, passive perception. Click opens the sheet. Put **Save DC** on the PC infobox when they have one. |
 | **Conditions** | Lookup conditions for the campaign’s system pack. Filter, then click a name for the short rules text. Does not toggle combat Cnd chips. |
-| **Calendar** | Live in-world date, time, and Day / Night on the bar. **◀h** / **▶h** / **+Day**, then **⚙** for type (Gregorian, Forgotten Realms, Greyhawk, custom). Setup is `Calendar/Calendar.md`. Notes: [CALENDAR.md](CALENDAR.md). |
+| **Lookup** | Opens the right rail on Lookup. Click again to close. |
+| **Prep ▾** | NPC, Improvise, Links — opens that page on the right rail. The button names the open page. |
+| **Table ▾** | Dice (Box of Doom) and Timer. Same pattern. |
+| **Calendar** | Live in-world date, time, and Day / Night. **◀h** / **▶h** / **+Day**, then **⚙**. Setup is `Calendar/Calendar.md`. Notes: [CALENDAR.md](CALENDAR.md). |
 
 ## Shape
 
 - One control row (`h-9`), same button chrome as **Campaign ▾**.
-- Menus, not extra header buttons. Add new table facts as another `QuickMenu`, not a third header.
+- Glance menus (Party, Conditions) stay dropdowns. Full tools still use the right rail.
 - Empty states stay short. Do not invent a date or a party that is not on disk.
-- Cheap to hide later (Help setting) if a laptop needs the row back.
 
 ## Out of scope (this pass)
 

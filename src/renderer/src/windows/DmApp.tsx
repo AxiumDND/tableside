@@ -407,11 +407,36 @@ export default function DmApp() {
         rightPanel={rightPanel}
         combatCount={combat.combatants.length}
         mixerActive={mixerIsActive(mixer)}
-        sidebarOpen={showLeftSidebar}
         onNewCampaign={() => void newCampaign()}
         onOpenCampaign={openFolder}
         recentCampaigns={recentCampaigns}
         onOpenRecent={(folder) => void openRecent(folder)}
+        onToggleCombat={() => changeRightPanel((open) => (open === 'combat' ? null : 'combat'))}
+        onToggleMusic={() => {
+          changeRightPanel((open) => (open === 'music' ? null : 'music'))
+          void window.tabledm.getMixer().then(setMixer)
+        }}
+        onToggleHelp={() => changeRightPanel((open) => (open === 'help' ? null : 'help'))}
+      />
+      <QuickLinksBar
+        notes={campaign ? flattenNotes(campaign.tree) : []}
+        system={campaign?.system}
+        onOpenNote={openNote}
+        onCampaignChange={setCampaign}
+        onNotesReload={() => setNoteReloadToken((n) => n + 1)}
+        toolsTab={toolsTab}
+        toolsOpen={rightPanel === 'tools'}
+        sidebarOpen={showLeftSidebar}
+        rightPanelOpen={rightPanel !== null}
+        onOpenTool={(tab) => {
+          if (rightPanel === 'tools' && toolsTab === tab) {
+            changeRightPanel(null)
+            return
+          }
+          setToolsTab(tab)
+          void window.tabledm.saveSettings({ toolsTab: tab })
+          changeRightPanel('tools')
+        }}
         onToggleSidebar={() => {
           setShowLeftSidebar((open) => {
             const next = !open
@@ -422,23 +447,7 @@ export default function DmApp() {
         onToggleRightPanel={() => {
           changeRightPanel((open) => (open ? null : lastRightPanel))
         }}
-        onToggleTools={() => changeRightPanel((open) => (open === 'tools' ? null : 'tools'))}
-        onToggleCombat={() => changeRightPanel((open) => (open === 'combat' ? null : 'combat'))}
-        onToggleMusic={() => {
-          changeRightPanel((open) => (open === 'music' ? null : 'music'))
-          void window.tabledm.getMixer().then(setMixer)
-        }}
-        onToggleHelp={() => changeRightPanel((open) => (open === 'help' ? null : 'help'))}
       />
-      {campaign ? (
-        <QuickLinksBar
-          notes={flattenNotes(campaign.tree)}
-          system={campaign.system}
-          onOpenNote={openNote}
-          onCampaignChange={setCampaign}
-          onNotesReload={() => setNoteReloadToken((n) => n + 1)}
-        />
-      ) : null}
       <div>
       <UpdateBanner
         notice={updateNotice}

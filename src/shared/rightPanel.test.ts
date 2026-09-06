@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { asRightPanelId, asToolsTabId } from './rightPanel'
+import { asRightPanelId, asToolsTabId, groupToolLabel } from './rightPanel'
 
 describe('asRightPanelId', () => {
   it('keeps current panel ids', () => {
@@ -33,5 +33,17 @@ describe('asToolsTabId', () => {
     expect(asToolsTabId('doom')).toBe('dice')
     expect(asToolsTabId('timer')).toBe('timer')
     expect(asToolsTabId('links')).toBe('links')
+  })
+})
+
+describe('groupToolLabel', () => {
+  it('names the open tool, otherwise the group', () => {
+    const prep = [
+      { id: 'npc' as const, label: 'NPC' },
+      { id: 'links' as const, label: 'Links' }
+    ]
+    expect(groupToolLabel(prep, 'Prep', null)).toBe('Prep')
+    expect(groupToolLabel(prep, 'Prep', 'npc')).toBe('NPC')
+    expect(groupToolLabel(prep, 'Prep', 'lookup')).toBe('Prep')
   })
 })

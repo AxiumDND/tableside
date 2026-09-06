@@ -31,7 +31,7 @@ test('Help Updates can opt into test (beta) updates', async () => {
   await dmWindow.getByRole('button', { name: 'Help & settings' }).click()
 })
 
-test('header panel icon hides and restores the left sidebar', async () => {
+test('Quick bar panel icon hides and restores the left sidebar', async () => {
   await expect(dmWindow.getByText('Players see')).toBeVisible()
   await expect(dmWindow.getByRole('button', { name: 'Show sidebar' })).toHaveCount(0)
 
@@ -44,7 +44,7 @@ test('header panel icon hides and restores the left sidebar', async () => {
   await expect(dmWindow.getByRole('button', { name: 'Hide sidebar' })).toBeVisible()
 })
 
-test('header panel icon hides and restores the right panel', async () => {
+test('Quick bar panel icon hides and restores the right panel', async () => {
   await dmWindow.getByRole('button', { name: 'Combat' }).click()
   await expect(dmWindow.getByRole('heading', { name: 'Combat' })).toBeVisible()
 

@@ -6,11 +6,11 @@ How the DM console and player window work during a session. **New to Tableside?*
 
 | Area | Role |
 | --- | --- |
-| Header | Campaign name, **Campaign** menu (recents + Open / New), Combat / Music / Tools / Help & settings, player display picker, Clear |
-| Quick links | One-button strip under the header (campaign open): **Party** (name / AC / spell save DC / PP → open sheet), **Conditions** (lookup text), **Calendar** (live in-world date / time / Day or Night, ◀h ▶h +Day, settings). Never on the player TV. |
+| Header | Campaign name, **Campaign** menu (recents + Open / New), Combat / Music / Help & settings |
+| Quick links | Strip under the header: left/right panel glyphs, **Party**, **Conditions**, **Lookup**, **Prep** (NPC / Improvise / Links), **Table** (Dice / Timer), **Calendar**. Never on the player TV. |
 | Left column | Mini **Players see** preview, campaign file tree, dice tray |
 | Center | Open note, image, PDF, or audio preview |
-| Right (optional) | Combat tracker, Music mixer, Tools (Lookup, NPC, Improvise, Dice, Timer, Links), or Help & settings |
+| Right (optional) | Combat tracker, Music mixer, a Quick-bar tool page (Lookup, NPC, Improvise, Dice, Timer, Links), or Help & settings |
 
 Two Electron windows open: the DM console, and a fullscreen **player** window on a second monitor. **Close** on the Players see preview shuts the player window so you can use the TV for something else. Pick a monitor or **Show to players** to open it again. **Theme** is a campaign setting (Classic fantasy, Light, Sci-fi, Vampire, Cyberpunk, Digital rain): New campaign asks for it, Open applies `campaign.json`, and you can change it from **Help & settings** or **Start Here**. Sci-fi can turn on **Hologram portraits** for party, NPC, beast, and gear art. Digital rain can turn on **Falling code** in the file list and notes. The player TV stays black.
 
@@ -104,9 +104,9 @@ State saves to `combat.json` in the campaign folder.
 - Conditions you set on a row (Poisoned, Prone, …) also appear
 - No extra secrets (full HP pools stay on the DM tracker)
 
-## Tools panel
+## Tools (Quick bar)
 
-**Tools** in the header opens the right rail. Pick **Lookup**, **NPC**, **Improvise**, **Dice**, **Timer**, or **Links**.
+**Lookup**, **Prep ▾**, and **Table ▾** on the Quick bar open the right rail. There is no Tools header button. Pick **Lookup**, or **NPC** / **Improvise** / **Links** under Prep, or **Dice** / **Timer** under Table. Click the same page again to close the rail. Left and right panel glyphs on that bar hide the file column and the right rail.
 
 ### Lookup
 
