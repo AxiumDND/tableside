@@ -55,7 +55,7 @@ Audio/
   Music/          mood playlists (Combat, Creepy, General — add more folders as needed)
   Ambience/       looping beds (Crowd, Rain, or loose files)
   Sfx/            soundboard one-shots (subfolders become headings)
-Reference/        tracker, calendars, cheat sheets
+Reference/        tracker, calendars, cheat sheets (markdown you write; a live in-world calendar is only a [proposal](CALENDAR.md))
 Archive/          recaps, transcripts, old drafts
 ```
 

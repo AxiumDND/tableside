@@ -40,6 +40,7 @@ If a feature mainly helps remote / online play, it does not belong here.
 
 ## Later
 
+- **In-world calendar (possible)** — track the campaign’s date and time of day so recaps, travel, and “until dawn” are not a shrug. Not the hourglass (that is real minutes). A Tools panel + DM header chip: year, month, day, weekday, and a day part (dawn / morning / midday / afternoon / dusk / evening / night). Weeks may be 5–10 days; months may differ in length; optional festival days that sit between months. Advance with +1 hour / +1 watch / +1 day / jump to dawn or dusk. Optional Show to players (date + day part, no ticking clock). Ship one **original** Tableside calendar plus a plain Gregorian preset; let the DM rename months and weekdays. Do **not** bundle published-setting calendars. Watches for overnight camp; light hint (bright / dim / dark) from the day part only — not a lighting engine. Persist in hidden `calendar.json`. Design sketch: [CALENDAR.md](CALENDAR.md).
 - Prep import polish (paste / Beyond → campaign sheet without becoming a sync client)
 - Optional music cues when a scene Plays
 - Printable handout export from a note
