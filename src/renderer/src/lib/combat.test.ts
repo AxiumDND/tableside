@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   advanceCombatTurn,
+  rewindCombatTurn,
   combatOverlayTags,
   combatantCondition,
   combatProfileFor,
@@ -149,6 +150,9 @@ describe('combat helpers', () => {
     const wrap = advanceCombatTurn(next)
     expect(wrap.activeId).toBe('a')
     expect(wrap.round).toBe(2)
+    expect(rewindCombatTurn(wrap)).toEqual(next)
+    expect(rewindCombatTurn(next)).toEqual(started)
+    expect(rewindCombatTurn(started)).toEqual(started)
   })
 
   it('rolls only unrolled non-PCs', () => {

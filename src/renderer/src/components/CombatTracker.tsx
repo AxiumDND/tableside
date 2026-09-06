@@ -3,7 +3,14 @@ import { COMBAT_MUSIC_PLAYLIST_ID, GENERAL_MUSIC_PLAYLIST_ID } from '../../../sh
 import { combatStatusesFor, toggleStatus } from '../../../shared/combatConditions'
 import { conditionLabel } from '../../../shared/systemPack'
 import type { Combatant, CombatantKind, CombatState } from '../../../shared/types'
-import { advanceCombatTurn, combatantCondition, combatProfileFor, initiativeBonus, sortCombatants } from '../lib/combat'
+import {
+  advanceCombatTurn,
+  combatantCondition,
+  combatProfileFor,
+  initiativeBonus,
+  rewindCombatTurn,
+  sortCombatants
+} from '../lib/combat'
 import { formatMod, rollD20 } from '../lib/dice'
 import { statBlockToParsed } from '../lib/statblock'
 import { CombatConditionChips, CombatConditionPicker } from './CombatConditionPicker'
@@ -154,6 +161,15 @@ export default function CombatTracker({
     onChange(next)
   }
 
+  function previousTurn(): void {
+    const prev = rewindCombatTurn(combat)
+    if (prev === combat) return
+    if (prev.activeId) setViewedId(prev.activeId)
+    onChange(prev)
+  }
+
+  const canRewindTurn = rewindCombatTurn(combat) !== combat
+
   function rollOne(c: Combatant) {
     const bonus = initiativeBonus(c)
     return { ...rollD20(bonus, 'Init'), bonus }
@@ -277,6 +293,14 @@ export default function CombatTracker({
             className="rounded border border-line px-2 py-1 text-[11px] hover:border-amber"
           >
             Roll NPCs
+          </button>
+          <button
+            type="button"
+            disabled={!canRewindTurn}
+            onClick={previousTurn}
+            className="text-[11px] text-amber hover:underline disabled:text-muted"
+          >
+            Previous turn
           </button>
           <button
             type="button"

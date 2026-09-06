@@ -33,6 +33,7 @@ export type CalloutKind =
   | 'danger'
   | 'success'
   | 'info'
+  | 'calendar'
   | 'other'
 
 export interface CalloutBlock {
@@ -78,6 +79,7 @@ export function calloutKind(type: string): CalloutKind {
   if (folded === 'gear' || folded === 'item' || folded === 'equipment') return 'gear'
   if (folded === 'spell') return 'spell'
   if (folded === 'infobox') return 'infobox'
+  if (folded === 'calendar' || folded === 'almanac' || folded === 'datebook') return 'calendar'
   if (
     folded === 'tip' ||
     folded === 'warning' ||
@@ -156,6 +158,8 @@ export function canonicalCalloutType(kind: CalloutKind, rawType: string): string
       return 'spell'
     case 'infobox':
       return 'infobox'
+    case 'calendar':
+      return 'calendar'
     case 'prose':
     case 'other':
       return rawType.toLowerCase()

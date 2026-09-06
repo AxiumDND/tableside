@@ -7,7 +7,8 @@ export default function QuickMenu({
   openId,
   onOpenId,
   children,
-  menuClassName = 'w-72'
+  menuClassName = 'w-72',
+  active = false
 }: {
   id: string
   label: string
@@ -15,6 +16,7 @@ export default function QuickMenu({
   onOpenId: (id: string | null) => void
   children: ReactNode
   menuClassName?: string
+  active?: boolean
 }) {
   const open = openId === id
   const rootRef = useRef<HTMLDivElement>(null)
@@ -40,7 +42,9 @@ export default function QuickMenu({
       <button
         type="button"
         onClick={() => onOpenId(open ? null : id)}
-        className="rounded border border-line px-3 py-1 text-sm hover:border-amber"
+        className={`rounded px-3 py-1 text-sm ${
+          active ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
+        }`}
         aria-expanded={open}
         aria-haspopup="menu"
       >

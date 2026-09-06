@@ -1,6 +1,6 @@
 # How to use Tableside
 
-Step-by-step for a night at the table. Current release: **1.8.18**.
+Step-by-step for a night at the table. Current release: **1.8.24**.
 
 Tableside is a **local Windows DM console for the laptop at your table**. People sit together in the room; a second monitor (TV) shows players a clean picture — maps, art, initiative, or a sci-fi opening crawl. It is **not** a full virtual tabletop for online play. There is no account and no internet required once the app is installed.
 
@@ -23,7 +23,7 @@ Deeper reference: [TABLE.md](TABLE.md) (every control), [CAMPAIGN.md](CAMPAIGN.m
 
 ## Install
 
-1. Download **[Tableside-Setup-1.8.18.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
+1. Download **[Tableside-Setup-1.8.24.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
 2. Run it. Per-user install — Start Menu + desktop shortcut. No admin.
 3. If Windows says **Windows protected your PC**, click **More info**, then **Run anyway**. The installer is not code-signed. That is expected.
 4. Open **Tableside**.
@@ -38,7 +38,7 @@ With no campaign yet, Tableside copies **Greystead — The Pale Well** (a level-
 | --- | --- |
 | **Sample** | Open the bundled Greystead one-shot (empty start screen only) |
 | **Campaign** | Menu: recent folders, then **Open campaign…** (any folder) or **New campaign…** (system, look, empty folder) |
-| **Quick links** | Second header strip: **Party** (AC / save DC / PP), **Conditions**, **Calendar** |
+| **Quick links** | Strip under the header: sidebar glyphs, **Party**, **Conditions**, **Lookup**, **Prep**, **Table**, **Calendar** (hide when unused; optional sun / moon on the player TV) |
 
 **Open** reads any folder and fills in missing standard folders. Folders without `"system"` in `campaign.json` run as D&D 5e. You can change the **look** later (Classic, Light, Sci-fi, Vampire, Cyberpunk, Digital rain) from **Help & settings** or **Start Here**. You cannot change the system pack mid-campaign.
 
@@ -46,7 +46,7 @@ With no campaign yet, Tableside copies **Greystead — The Pale Well** (a level-
 
 | Window | What it is for |
 | --- | --- |
-| **DM console** | Notes, combat, music, Tools, dice. Only you see this. |
+| **DM console** | Notes, combat, music, Quick-bar tools, dice. Only you see this. |
 | **Player view** | Fullscreen on the TV. Picture, map (crop / fog / tokens), initiative overlay, or crawl. Black when idle. |
 
 Click the left **Players see** preview to place the player window on the table TV. **Close** on that preview shuts the player window so you can use the TV for something else. **Show to players** or picking a monitor opens it again.
@@ -57,7 +57,7 @@ Click the left **Players see** preview to place the player window on the table T
 
 ### 1. Open tonight’s notes
 
-The left **Files** list is your campaign folder. Click a note to open it in the center. The **Quick** strip under the header keeps Party AC / save DC / PP, condition text, and calendar notes one click away.
+The left **Files** list is your campaign folder. Click a note to open it in the center. The **Quick** strip under the header keeps Party AC / save DC / PP, condition text, Lookup / Prep / Table, and the in-world date one click away. **−Day** / **◀h** sit before the date; **▶h** / **+Day** / **Morning** sit after Day / Night. **⚙** picks Gregorian, Forgotten Realms, Greyhawk, or a custom week. The left and right panel buttons on that strip hide the file column and the right rail.
 
 - Folders start collapsed. Opening a file expands its folder.
 - Click the search icon next to Files, or press `Ctrl+F` / `/`, to find a note by name. `Esc` clears, then hides the box.
@@ -112,7 +112,7 @@ At the table:
 1. Open the sheet. Press **Add to initiative** on that combat section.
 2. Open **Combat** in the header if it is not already open.
 3. Type PC initiative from the table. NPCs at 0 are rolled for you. Use **Roll all** / **Roll NPCs** if you need to re-roll.
-4. **Start combat**, then advance turns (`Alt+T`). Click **Cnd** on a row to toggle conditions (Poisoned, Prone, and the rest of the pack). With **Combat music** ticked, Start combat plays `Audio/Music/Combat`.
+4. **Start combat**, then **Next turn** (`Alt+T`) or **Previous turn** (`Alt+Shift+T`) if you skip someone. Click **Cnd** on a row to toggle conditions (Poisoned, Prone, and the rest of the pack). With **Combat music** ticked, Start combat plays `Audio/Music/Combat`.
 5. Optionally **Show to players** on the Combat panel to overlay order on the current picture. Players see names, pack tags (5e Bloodied / 0 HP; PF2e Wounded / Dying; V5 Health, Willpower, Hunger), and any conditions you set. They never see HP numbers.
 6. **End combat** empties the tracker (asks first). With **Combat music** ticked, it returns to `Audio/Music/General`. Untick Combat music if you want to leave the mixer alone.
 
@@ -171,7 +171,7 @@ Other looks still show the card so the note stays readable. Play stays disabled 
 
 ### 7. Look something up
 
-**Tools → Lookup** searches the open campaign’s system pack offline.
+**Quick → Lookup** searches the open campaign’s system pack offline.
 
 | Pack | What you get |
 | --- | --- |
@@ -183,13 +183,13 @@ Filter chips narrow the category. From a result you can **Add to combat** (monst
 
 Optional PHB / DMG text dumps go in the app `Additional Books/` folder — not in the campaign. Details: [Additional Books/README.md](../Additional%20Books/README.md). Use the **Additional books** link in Lookup.
 
-**Tools → NPC** rolls a few names from race (5e) or ancestry (Pathfinder 2e), with a **Name flavor** picker (Classic fantasy, Norse, Greek mythology, Celtic, Roman, Arabic / desert-fantasy, Slavic, East Asian–inspired). Vampire uses name tradition instead. Copy one, or **New NPC…** to write a sheet under `NPCs/`.
+**Quick → Prep → NPC** rolls a few names from race (5e) or ancestry (Pathfinder 2e), with a **Name flavor** picker (Classic fantasy, Norse, Greek mythology, Celtic, Roman, Arabic / desert-fantasy, Slavic, East Asian–inspired). Vampire uses name tradition instead. Copy one, or **New NPC…** to write a sheet under `NPCs/`.
 
-**Tools → Improvise** is 2024 potions of healing and on-the-fly hazard damage.
+**Quick → Table → Improvise** is 2024 potions of healing and on-the-fly hazard damage.
 
-**Tools → Links** is a short list of curated D&D reference sites (opens in your browser).
+**Quick → Prep → Links** is a short list of curated D&D reference sites (opens in your browser).
 
-**Tools → Timer** fades a full hourglass onto the player TV. **Show** first, then **Start** when the table should begin deciding. Change the minutes while it waits to retune the glass. Pause, reset, or fade out. Optional chime on the Music soundboard Sfx layer at zero.
+**Quick → Table → Timer** fades a full hourglass onto the player TV. **Show** first, then **Start** when the table should begin deciding. Change the minutes while it waits to retune the glass. Pause, reset, or fade out. Optional chime on the Music soundboard Sfx layer at zero.
 
 ### 8. Roll dice
 

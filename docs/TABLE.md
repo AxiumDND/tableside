@@ -6,11 +6,11 @@ How the DM console and player window work during a session. **New to Tableside?*
 
 | Area | Role |
 | --- | --- |
-| Header | Campaign name, **Campaign** menu (recents + Open / New), Combat / Music / Tools / Help & settings, player display picker, Clear |
-| Quick links | One-button strip under the header (campaign open): **Party** (name / AC / spell save DC / PP → open sheet), **Conditions** (lookup text), **Calendar** (notes in `Reference/` or named calendar). Never on the player TV. |
+| Header | Campaign name, **Campaign** menu (recents + Open / New), Combat / Music / Help & settings |
+| Quick links | Strip under the header: left/right panel glyphs, **Party**, **Conditions**, **Lookup**, **Prep** (NPC / Links), **Table** (Dice / Timer / Improvise), **Calendar**. The calendar can hide; **Show to players** is a sun / moon mark on the TV, not the clock. |
 | Left column | Mini **Players see** preview, campaign file tree, dice tray |
 | Center | Open note, image, PDF, or audio preview |
-| Right (optional) | Combat tracker, Music mixer, Tools (Lookup, NPC, Improvise, Dice, Timer, Links), or Help & settings |
+| Right (optional) | Combat tracker, Music mixer, a Quick-bar tool page (Lookup, NPC, Improvise, Dice, Timer, Links), or Help & settings |
 
 Two Electron windows open: the DM console, and a fullscreen **player** window on a second monitor. **Close** on the Players see preview shuts the player window so you can use the TV for something else. Pick a monitor or **Show to players** to open it again. **Theme** is a campaign setting (Classic fantasy, Light, Sci-fi, Vampire, Cyberpunk, Digital rain): New campaign asks for it, Open applies `campaign.json`, and you can change it from **Help & settings** or **Start Here**. Sci-fi can turn on **Hologram portraits** for party, NPC, beast, and gear art. Digital rain can turn on **Falling code** in the file list and notes. The player TV stays black.
 
@@ -86,7 +86,7 @@ Open with **Combat** in the header.
 | Bestiary filter + click | Adds that creature from `Bestiary/` |
 | Manual row | Name / Init / HP, plus AC (5e/PF2e) or Willpower and Hunger (Vampire 5th) |
 | d20 on a row | Rolls initiative for that combatant (PCs: type their table roll into Init) |
-| **Start combat** / next-round controls | Begins round 1 and advances whose turn it is. With **Combat music** ticked, starts the `Audio/Music/Combat` playlist |
+| **Start combat** / next-round controls | Begins round 1. **Previous turn** / **Next turn** step back or forward on the list (Previous undoes a too-fast Next, including wrapping the round). With **Combat music** ticked, Start combat plays the `Audio/Music/Combat` playlist |
 | Eye / view | Opens that combatant’s rollable statblock without changing the turn |
 | **Cnd** | Toggle conditions (Poisoned, Prone, …) on that PC, NPC, or monster. Same picker on a map token that is in this fight |
 | **Show to players** | Superimposes initiative order on the current player image |
@@ -104,9 +104,9 @@ State saves to `combat.json` in the campaign folder.
 - Conditions you set on a row (Poisoned, Prone, …) also appear
 - No extra secrets (full HP pools stay on the DM tracker)
 
-## Tools panel
+## Tools (Quick bar)
 
-**Tools** in the header opens the right rail. Pick **Lookup**, **NPC**, **Improvise**, **Dice**, **Timer**, or **Links**.
+**Lookup**, **Prep ▾**, and **Table ▾** on the Quick bar open the right rail. There is no Tools header button. Pick **Lookup**, or **NPC** / **Links** under Prep, or **Dice** / **Timer** / **Improvise** under Table. Click the same page again to close the rail. Left and right panel glyphs on that bar hide the file column and the right rail.
 
 ### Lookup
 
@@ -157,6 +157,7 @@ Bottom of the left column: quick d4–d100 buttons plus a custom expression fiel
 | Alt+I | Show item/place/spell details to players (Shift includes GM-only) |
 | Alt+X | Clear player screen |
 | Alt+T | Next combat turn (opens Combat) |
+| Alt+Shift+T | Previous combat turn (opens Combat) |
 | Ctrl+S (while editing) | Save note |
 | Esc (while editing) | Cancel edit (prompts if dirty) |
 | Esc (dialogs) | Dismiss confirm dialogs |

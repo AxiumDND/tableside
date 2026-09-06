@@ -1881,6 +1881,77 @@ body,
   }
 }
 
+.player-calendar-light {
+  position: absolute;
+  top: 0.15%;
+  right: 0.15%;
+  z-index: 10;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.24cqh;
+  min-width: 0;
+  padding: 0.44cqh 0.56cqh 0.48cqh;
+  border-radius: 0.9cqh;
+  background: rgba(8, 6, 4, 0.62);
+  box-shadow: 0 0.4cqh 1.4cqh rgba(0, 0, 0, 0.4);
+  color: #f4e6c3;
+  pointer-events: none;
+}
+
+.player-calendar-light svg {
+  width: 7.8cqh;
+  height: 7.8cqh;
+  fill: none;
+  stroke: #f0c14b;
+  stroke-width: 2.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.player-calendar-light svg circle,
+.player-calendar-light svg path {
+  fill: #f0c14b;
+  stroke: #f0c14b;
+}
+
+.player-calendar-light.is-afternoon svg {
+  stroke: #e08a3c;
+}
+
+.player-calendar-light.is-afternoon svg circle {
+  fill: #e08a3c;
+  stroke: #e08a3c;
+}
+
+.player-calendar-light.is-sunset svg {
+  stroke: #d46a2e;
+}
+
+.player-calendar-light.is-sunset svg path {
+  fill: #d46a2e;
+  stroke: #d46a2e;
+}
+
+.player-calendar-light.is-night svg {
+  stroke: #c9d4e8;
+}
+
+.player-calendar-light.is-night svg path {
+  fill: #c9d4e8;
+  stroke: #c9d4e8;
+}
+
+.player-calendar-light-label {
+  margin: 0;
+  font-family: var(--font-ui);
+  font-size: 0.8cqh;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #f4e6c3;
+}
+
 .player-dice-show {
   position: absolute;
   top: 6%;

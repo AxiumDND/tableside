@@ -1,6 +1,7 @@
 import { ipcMain, screen } from 'electron'
 import type { PlayerState } from '../shared/types'
 import { IPC } from '../shared/ipc'
+import { isPlayerCalendarMark } from '../shared/calendar'
 import {
   clampBoxOfDoomDc,
   clampBoxOfDoomMod,
@@ -582,6 +583,18 @@ export function registerPlayerIpc(): void {
         initiative: payload.entries ?? [],
         showInitiative: Boolean(payload.show),
         initiativeRound: Number(payload.round ?? 0)
+      })
+    }
+  )
+
+  ipcMain.handle(
+    IPC.playerSetCalendarLight,
+    (_e, payload: { show?: boolean; mark?: PlayerState['calendarMark'] }) => {
+      const show = Boolean(payload?.show)
+      const mark = show && isPlayerCalendarMark(payload?.mark) ? payload.mark : null
+      return setPlayerState({
+        ...getPlayerState(),
+        calendarMark: mark
       })
     }
   )

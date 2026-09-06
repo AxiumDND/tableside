@@ -146,6 +146,35 @@ describe('CombatTracker', () => {
     expect(next.round).toBe(0)
   })
 
+  it('steps back up the turn list after Next turn', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    const combat = makeCombat([
+      combatant({ id: 'low', name: 'Goblin Scout', initiative: 12 }),
+      combatant({ id: 'high', name: 'Bandit Captain', initiative: 18 })
+    ])
+    const { rerender } = render(<CombatTracker combat={combat} onChange={onChange} />)
+
+    expect(screen.getByRole('button', { name: 'Previous turn' })).toHaveProperty('disabled', true)
+    await user.click(screen.getByRole('button', { name: /start combat/i }))
+    const started = onChange.mock.calls[0][0] as CombatState
+    expect(started.activeId).toBe('high')
+
+    rerender(<CombatTracker combat={started} onChange={onChange} />)
+    expect(screen.getByRole('button', { name: 'Previous turn' })).toHaveProperty('disabled', true)
+    await user.click(screen.getByRole('button', { name: 'Next turn' }))
+    const advanced = onChange.mock.calls[1][0] as CombatState
+    expect(advanced.activeId).toBe('low')
+    expect(advanced.round).toBe(1)
+
+    rerender(<CombatTracker combat={advanced} onChange={onChange} />)
+    expect(screen.getByRole('button', { name: 'Previous turn' })).toHaveProperty('disabled', false)
+    await user.click(screen.getByRole('button', { name: 'Previous turn' }))
+    const rewound = onChange.mock.calls[2][0] as CombatState
+    expect(rewound.activeId).toBe('high')
+    expect(rewound.round).toBe(1)
+  })
+
   it('plays Combat music on start and General on end when the cue is on', async () => {
     const user = userEvent.setup()
     const mixerPlayMusic = vi.fn().mockResolvedValue({})

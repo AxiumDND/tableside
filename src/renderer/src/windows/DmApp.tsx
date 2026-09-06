@@ -22,7 +22,7 @@ import SessionNotes from '../components/SessionNotes'
 import SystemPicker from '../components/SystemPicker'
 import ThemeSetup from '../components/ThemeSetup'
 import DigitalRain from '../components/DigitalRain'
-import { combatToPlayerInitiative, combatProfileFor, advanceCombatTurn } from '../lib/combat'
+import { combatToPlayerInitiative, combatProfileFor, advanceCombatTurn, rewindCombatTurn } from '../lib/combat'
 import { flattenImages, flattenVideos, imageTitle } from '../lib/images'
 import { allPartyNotes, bestiaryNotes, flattenNotes, sheetDisplayName } from '../lib/notes'
 import { libraryFolderFor, recordToCampaignMarkdown, gearSubfolderFor } from '../lib/lookupNotes'
@@ -119,6 +119,7 @@ export default function DmApp() {
   const [toolsTab, setToolsTab] = useState<ToolsTabId>('lookup')
   const [diceCheckSound, setDiceCheckSound] = useState(true)
   const [hideNpcPortraits, setHideNpcPortraits] = useState(false)
+  const [noteReloadToken, setNoteReloadToken] = useState(0)
   const {
     openPath,
     openKind,
@@ -393,6 +394,14 @@ export default function DmApp() {
       if (!live || live.combatants.length === 0) return
       changeRightPanel('combat')
       void saveCombat(advanceCombatTurn(live))
+    },
+    onRewindTurn: () => {
+      const live = campaign?.combat
+      if (!live || live.combatants.length === 0) return
+      const prev = rewindCombatTurn(live)
+      if (prev === live) return
+      changeRightPanel('combat')
+      void saveCombat(prev)
     }
   })
 
@@ -406,11 +415,36 @@ export default function DmApp() {
         rightPanel={rightPanel}
         combatCount={combat.combatants.length}
         mixerActive={mixerIsActive(mixer)}
-        sidebarOpen={showLeftSidebar}
         onNewCampaign={() => void newCampaign()}
         onOpenCampaign={openFolder}
         recentCampaigns={recentCampaigns}
         onOpenRecent={(folder) => void openRecent(folder)}
+        onToggleCombat={() => changeRightPanel((open) => (open === 'combat' ? null : 'combat'))}
+        onToggleMusic={() => {
+          changeRightPanel((open) => (open === 'music' ? null : 'music'))
+          void window.tabledm.getMixer().then(setMixer)
+        }}
+        onToggleHelp={() => changeRightPanel((open) => (open === 'help' ? null : 'help'))}
+      />
+      <QuickLinksBar
+        notes={campaign ? flattenNotes(campaign.tree) : []}
+        system={campaign?.system}
+        onOpenNote={openNote}
+        onCampaignChange={setCampaign}
+        onNotesReload={() => setNoteReloadToken((n) => n + 1)}
+        toolsTab={toolsTab}
+        toolsOpen={rightPanel === 'tools'}
+        sidebarOpen={showLeftSidebar}
+        rightPanelOpen={rightPanel !== null}
+        onOpenTool={(tab) => {
+          if (rightPanel === 'tools' && toolsTab === tab) {
+            changeRightPanel(null)
+            return
+          }
+          setToolsTab(tab)
+          void window.tabledm.saveSettings({ toolsTab: tab })
+          changeRightPanel('tools')
+        }}
         onToggleSidebar={() => {
           setShowLeftSidebar((open) => {
             const next = !open
@@ -421,21 +455,7 @@ export default function DmApp() {
         onToggleRightPanel={() => {
           changeRightPanel((open) => (open ? null : lastRightPanel))
         }}
-        onToggleTools={() => changeRightPanel((open) => (open === 'tools' ? null : 'tools'))}
-        onToggleCombat={() => changeRightPanel((open) => (open === 'combat' ? null : 'combat'))}
-        onToggleMusic={() => {
-          changeRightPanel((open) => (open === 'music' ? null : 'music'))
-          void window.tabledm.getMixer().then(setMixer)
-        }}
-        onToggleHelp={() => changeRightPanel((open) => (open === 'help' ? null : 'help'))}
       />
-      {campaign ? (
-        <QuickLinksBar
-          notes={flattenNotes(campaign.tree)}
-          system={campaign.system}
-          onOpenNote={openNote}
-        />
-      ) : null}
       <div>
       <UpdateBanner
         notice={updateNotice}
@@ -509,6 +529,7 @@ export default function DmApp() {
         <SessionNotes
           path={openPath}
           kind={openKind}
+          noteReloadToken={noteReloadToken}
           imageUrl={
             openKind === 'image' || openKind === 'pdf' || openKind === 'audio'
               ? campaignFileUrl(openPath)
