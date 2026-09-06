@@ -72,10 +72,11 @@ describe('QuickLinksBar', () => {
     expect(onOpenTool).toHaveBeenCalledWith('dice')
   })
 
-  it('names the open Prep or Table page on the group button', () => {
+  it('names the open Prep or Table page on the group button', async () => {
     render(
       <QuickLinksBar notes={notes} onOpenNote={() => {}} toolsTab="dice" toolsOpen />
     )
+    await screen.findByRole('button', { name: /1 Fireseek 576 CY/ })
     expect(screen.getByRole('button', { name: /^Dice/ })).toBeTruthy()
     expect(screen.queryByRole('button', { name: /^Table/ })).toBeNull()
   })
