@@ -58,7 +58,7 @@ Obsidian callout form:
 | `gmonly` | `secret` | Collapsible GM-only. On Gear / Spells / Places / Factions, **Show item to players** omits these unless you Shift+click (or Alt+Shift+I). |
 | `infobox` | — | Sheet header (often with portrait + facts table); not split like other callouts |
 | `tip` `warning` `note` `info` `danger` `success` `example` `abstract` | — | Styled callout cards |
-| `calendar` | `almanac`, `datebook` | In-world clock. Lives in `Calendar/Calendar.md`. The Quick bar reads this fence for date, time, and Day / Night. See [CALENDAR.md](CALENDAR.md). |
+| `calendar` | `almanac`, `datebook` | In-world clock. Lives in `Calendar/Calendar.md`. The Quick bar reads this fence for date, time, and Day / Night. Optional player-TV sun / moon mark. See [CALENDAR.md](CALENDAR.md). |
 | other | — | Generic callout |
 
 Trailing `+` / `-` on the type (Obsidian fold) is accepted; fold state is not persisted.

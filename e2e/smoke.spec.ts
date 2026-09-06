@@ -64,6 +64,24 @@ test('quick links bar shows the Greystead in-world calendar', async () => {
   await expect(bar.getByRole('button', { name: /2 Seedmoon 412 AF/ })).toBeVisible()
 })
 
+test('calendar can hide and show a light mark to players', async () => {
+  const bar = dmWindow.getByRole('navigation', { name: 'Quick links' })
+  await dmWindow.keyboard.press('Escape')
+  await expect(bar.getByRole('button', { name: /Seedmoon/ })).toBeVisible()
+  await expect(bar.getByRole('checkbox', { name: 'Show to players' })).toBeVisible()
+  await bar.getByRole('checkbox', { name: 'Show to players' }).check()
+  await expect(dmWindow.locator('.player-calendar-light')).toHaveAttribute('aria-label', /Sunrise|Morning|Afternoon|Sunset|Night/)
+  await expect(dmWindow.locator('.player-calendar-light')).not.toContainText(/am|pm/i)
+  await bar.getByRole('button', { name: 'Hide calendar on Quick bar' }).click()
+  await expect(bar.getByRole('button', { name: 'Show calendar on Quick bar' })).toBeVisible()
+  await expect(bar.getByRole('button', { name: /Seedmoon/ })).toHaveCount(0)
+  await expect(dmWindow.locator('.player-calendar-light')).toBeVisible()
+  await bar.getByRole('button', { name: 'Show calendar on Quick bar' }).click()
+  await expect(bar.getByRole('button', { name: /Seedmoon/ })).toBeVisible()
+  await bar.getByRole('checkbox', { name: 'Show to players' }).uncheck()
+  await expect(dmWindow.locator('.player-calendar-light')).toHaveCount(0)
+})
+
 test('Dice tool and built-in Sfx oneshots are on the console', async () => {
   await openQuickTool('Table', 'Dice')
   await expect(dmWindow.getByRole('button', { name: 'Show', exact: true })).toBeVisible()

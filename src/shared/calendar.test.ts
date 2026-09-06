@@ -5,6 +5,8 @@ import {
   nextMorning,
   calendarBarLabel,
   calendarLight,
+  calendarPlayerMark,
+  calendarPlayerMarkLabel,
   findUnitIndex,
   formatCalendar,
   normalizeInstant,
@@ -67,6 +69,25 @@ describe('hours and light', () => {
     expect(calendarLight(definition, 9)).toBe('day')
     expect(calendarLight(definition, 18)).toBe('dusk')
     expect(calendarLight(definition, 22)).toBe('night')
+  })
+
+  it('maps the clock to a player-TV mark without a time of day clock', () => {
+    const at = (hour: number) => calendarPlayerMark(definition, { year: 2026, unitIndex: 0, day: 1, hour })
+    expect(at(6)).toBe('sunrise')
+    expect(at(9)).toBe('morning')
+    expect(at(11)).toBe('morning')
+    expect(at(12)).toBe('afternoon')
+    expect(at(17)).toBe('afternoon')
+    expect(at(18)).toBe('sunset')
+    expect(at(22)).toBe('night')
+    expect(calendarPlayerMarkLabel('morning')).toBe('Morning')
+    expect(calendarPlayerMarkLabel('afternoon')).toBe('Afternoon')
+  })
+
+  it('splits a short day at midday, not civil noon', () => {
+    const ten = { ...definition, hoursPerDay: 10, dawnHour: 2, duskHour: 8 }
+    expect(calendarPlayerMark(ten, { year: 1, unitIndex: 0, day: 1, hour: 3 })).toBe('morning')
+    expect(calendarPlayerMark(ten, { year: 1, unitIndex: 0, day: 1, hour: 5 })).toBe('afternoon')
   })
 
   it('prints Hour n/span when a day is not 24 hours', () => {

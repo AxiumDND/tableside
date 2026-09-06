@@ -1,6 +1,6 @@
 # Quick links bar
 
-**Status:** first pass (1.8.19), calendar in 1.8.20, tools and panel toggles moved here from the header. DM console only — never on the player TV. The strip is always on, campaign or not.
+**Status:** first pass (1.8.19), calendar in 1.8.20, tools and panel toggles moved here from the header. The strip is DM console chrome. **Show to players** on the calendar is a light-of-day mark only. The strip is always on, campaign or not.
 
 ## Why
 
@@ -16,7 +16,7 @@ The header keeps Campaign / Combat / Music / Help. Mid-session facts and the old
 | **Lookup** | Opens the right rail on Lookup. Click again to close. |
 | **Prep ▾** | NPC and Links — opens that page on the right rail. The button stays **Prep**. |
 | **Table ▾** | Dice (Box of Doom), Timer, and Improvise. The button stays **Table**. |
-| **Calendar** | **−Day** / **◀h**, then a darker date-and-time block, Day / Night, **▶h** / **+Day** / **Morning**, then **⚙**. Setup is `Calendar/Calendar.md`. Notes: [CALENDAR.md](CALENDAR.md). |
+| **Calendar** | **−Day** / **◀h**, then a darker date-and-time block, Day / Night, **▶h** / **+Day** / **Morning**, **Show to players**, **Hide**, then **⚙**. **Hide** leaves a **Calendar** chip. **Show to players** is a sun / moon mark on the TV, not the clock. Setup is `Calendar/Calendar.md`. Notes: [CALENDAR.md](CALENDAR.md). |
 
 ## Shape
 
@@ -28,5 +28,4 @@ The header keeps Campaign / Combat / Music / Help. Mid-session facts and the old
 
 - Showing HP or combat conditions on the Party rows
 - Editing sheets from the menu
-- Player-TV chrome
 - Holiday lists beyond the festival rows on the calendar note

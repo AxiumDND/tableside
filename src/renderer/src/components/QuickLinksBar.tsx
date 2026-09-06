@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { CampaignInfo } from '../../../shared/types'
 import { PREP_TOOLS, TABLE_TOOLS, type ToolsTabId } from '../../../shared/rightPanel'
 import {
@@ -6,6 +6,7 @@ import {
   addHours,
   calendarBarLabel,
   calendarLightLabel,
+  calendarPlayerMark,
   formatCalendar,
   nextMorning
 } from '../../../shared/calendar'
@@ -73,6 +74,9 @@ export default function QuickLinksBar({
   const [calendarMarkdown, setCalendarMarkdown] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [busy, setBusy] = useState(false)
+  const [showQuickBarCalendar, setShowQuickBarCalendar] = useState(true)
+  const [showCalendarLightToPlayers, setShowCalendarLightToPlayers] = useState(false)
+  const calendarPrefsTouched = useRef(false)
 
   const party = useMemo(() => quickPartyRows(notes, sheets), [notes, sheets])
   const conditions = useMemo(() => lookupConditions(system), [system])
@@ -127,6 +131,18 @@ export default function QuickLinksBar({
   }, [calendarPath, notes.length])
 
   useEffect(() => {
+    let cancelled = false
+    void window.tabledm.getSettings().then((prefs) => {
+      if (cancelled || calendarPrefsTouched.current) return
+      setShowQuickBarCalendar(prefs.showQuickBarCalendar !== false)
+      setShowCalendarLightToPlayers(Boolean(prefs.showCalendarLightToPlayers))
+    })
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  useEffect(() => {
     if (openId !== 'conditions') {
       setConditionQuery('')
       setPickedCondition(null)
@@ -149,6 +165,18 @@ export default function QuickLinksBar({
     setOpenId(null)
     onOpenTool?.(tab)
   }
+
+  useEffect(() => {
+    if (!window.tabledm.setPlayerCalendarLight) return
+    if (!showCalendarLightToPlayers || !clock) {
+      void window.tabledm.setPlayerCalendarLight({ show: false })
+      return
+    }
+    void window.tabledm.setPlayerCalendarLight({
+      show: true,
+      mark: calendarPlayerMark(clock.definition, clock.now)
+    })
+  }, [showCalendarLightToPlayers, clock])
 
   const persist = useCallback(
     async (markdown: string) => {
@@ -185,6 +213,25 @@ export default function QuickLinksBar({
   ): Promise<void> {
     const base = calendarMarkdown ?? calendarNoteTemplate(definition, instant)
     await persist(writeCalendarIntoNote(base, definition, instant))
+  }
+
+  function persistBarPref(partial: {
+    showQuickBarCalendar?: boolean
+    showCalendarLightToPlayers?: boolean
+  }): void {
+    void window.tabledm.saveSettings(partial)
+  }
+
+  function setBarVisible(next: boolean): void {
+    calendarPrefsTouched.current = true
+    setShowQuickBarCalendar(next)
+    persistBarPref({ showQuickBarCalendar: next })
+  }
+
+  function setPlayersLight(next: boolean): void {
+    calendarPrefsTouched.current = true
+    setShowCalendarLightToPlayers(next)
+    persistBarPref({ showCalendarLightToPlayers: next })
   }
 
   return (
@@ -321,7 +368,17 @@ export default function QuickLinksBar({
         ))}
       </QuickMenu>
       <div className="ml-auto flex min-w-0 items-center gap-1.5">
-        {clock && readout ? (
+        {clock && readout && !showQuickBarCalendar ? (
+          <button
+            type="button"
+            className={chipBtn}
+            aria-label="Show calendar on Quick bar"
+            title="Show the in-world calendar"
+            onClick={() => setBarVisible(true)}
+          >
+            Calendar
+          </button>
+        ) : clock && readout ? (
           <>
             <button type="button" className={chipBtn} disabled={busy} aria-label="Back one day" onClick={() => void shift('day', -1)}>
               −Day
@@ -364,6 +421,26 @@ export default function QuickLinksBar({
             >
               Morning
             </button>
+            <label
+              className="flex shrink-0 items-center gap-1 whitespace-nowrap text-[10px] text-muted"
+              title="Show a sunrise, sun, sunset, or moon on the player TV — not the clock"
+            >
+              <input
+                type="checkbox"
+                checked={showCalendarLightToPlayers}
+                onChange={(event) => setPlayersLight(event.target.checked)}
+              />
+              Show to players
+            </label>
+            <button
+              type="button"
+              className={chipBtn}
+              aria-label="Hide calendar on Quick bar"
+              title="Hide the calendar until you need it"
+              onClick={() => setBarVisible(false)}
+            >
+              Hide
+            </button>
             <button
               type="button"
               className={chipBtn}
@@ -387,6 +464,10 @@ export default function QuickLinksBar({
           definition={clock?.definition ?? starter.definition}
           now={clock?.now ?? starter.now}
           notePath={calendarPath}
+          showQuickBar={showQuickBarCalendar}
+          showToPlayers={showCalendarLightToPlayers}
+          onShowQuickBar={setBarVisible}
+          onShowToPlayers={setPlayersLight}
           onClose={() => setSettingsOpen(false)}
           onSave={saveSettings}
           onOpenNote={() => {

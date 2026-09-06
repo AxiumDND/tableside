@@ -11,10 +11,19 @@ const calendarMd = calendarNoteTemplate(greyhawk.definition, greyhawk.now)
 
 describe('QuickLinksBar', () => {
   const saveFile = vi.fn()
+  const getSettings = vi.fn()
+  const saveSettings = vi.fn()
+  const setPlayerCalendarLight = vi.fn()
 
   beforeEach(() => {
     saveFile.mockReset()
     saveFile.mockResolvedValue({ campaign: { name: 'C' }, path: 'Calendar/Calendar.md', renamed: false })
+    getSettings.mockReset()
+    getSettings.mockResolvedValue({})
+    saveSettings.mockReset()
+    saveSettings.mockResolvedValue({})
+    setPlayerCalendarLight.mockReset()
+    setPlayerCalendarLight.mockResolvedValue({})
     window.tabledm = {
       readFile: vi.fn(async (path: string) => {
         if (path.includes('Ilya')) {
@@ -23,7 +32,10 @@ describe('QuickLinksBar', () => {
         if (path.startsWith('Calendar/')) return calendarMd
         return '| **AC** | 16 |\n| **Passive Perception** | 13 |\n'
       }),
-      saveFile
+      saveFile,
+      getSettings,
+      saveSettings,
+      setPlayerCalendarLight
     } as unknown as Window['tabledm']
   })
 
@@ -60,6 +72,30 @@ describe('QuickLinksBar', () => {
     expect(screen.getByRole('button', { name: 'Advance one day' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Advance to next morning' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Calendar settings' })).toBeTruthy()
+    expect(screen.getByRole('checkbox', { name: 'Show to players' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Hide calendar on Quick bar' })).toBeTruthy()
+  })
+
+  it('hides the clock cluster and shows a Calendar chip', async () => {
+    const user = userEvent.setup()
+    render(<QuickLinksBar notes={notes} onOpenNote={() => {}} />)
+    await screen.findByRole('button', { name: /1 Fireseek 576 CY/ })
+    await user.click(screen.getByRole('button', { name: 'Hide calendar on Quick bar' }))
+    expect(saveSettings).toHaveBeenCalledWith({ showQuickBarCalendar: false })
+    expect(screen.getByRole('button', { name: 'Show calendar on Quick bar' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /1 Fireseek 576 CY/ })).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'Show calendar on Quick bar' }))
+    expect(saveSettings).toHaveBeenCalledWith({ showQuickBarCalendar: true })
+    expect(await screen.findByRole('button', { name: /1 Fireseek 576 CY/ })).toBeTruthy()
+  })
+
+  it('sends a morning mark to the player TV when Show to players is ticked', async () => {
+    const user = userEvent.setup()
+    render(<QuickLinksBar notes={notes} onOpenNote={() => {}} />)
+    await screen.findByRole('button', { name: /1 Fireseek 576 CY/ })
+    await user.click(screen.getByRole('checkbox', { name: 'Show to players' }))
+    expect(saveSettings).toHaveBeenCalledWith({ showCalendarLightToPlayers: true })
+    expect(setPlayerCalendarLight).toHaveBeenCalledWith({ show: true, mark: 'morning' })
   })
 
   it('opens a grouped tool from Prep and Table', async () => {
@@ -143,6 +179,8 @@ describe('QuickLinksBar', () => {
     render(<QuickLinksBar notes={notes} onOpenNote={() => {}} />)
     await user.click(await screen.findByRole('button', { name: 'Calendar settings' }))
     expect(screen.getByRole('dialog', { name: 'Calendar' })).toBeTruthy()
+    expect(screen.getByRole('checkbox', { name: /Show on Quick bar/ })).toBeTruthy()
+    expect(screen.getAllByRole('checkbox', { name: /Show to players/ }).length).toBeGreaterThan(0)
     await user.click(screen.getByRole('radio', { name: /Forgotten Realms/ }))
     expect(screen.getByText(/1 Hammer 1492 DR/)).toBeTruthy()
   })
