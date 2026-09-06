@@ -4,13 +4,13 @@ export type ToolsTabId = 'lookup' | 'npc' | 'improvise' | 'dice' | 'timer' | 'li
 
 export const PREP_TOOLS: { id: ToolsTabId; label: string }[] = [
   { id: 'npc', label: 'NPC' },
-  { id: 'improvise', label: 'Improvise' },
   { id: 'links', label: 'Links' }
 ]
 
 export const TABLE_TOOLS: { id: ToolsTabId; label: string }[] = [
   { id: 'dice', label: 'Dice' },
-  { id: 'timer', label: 'Timer' }
+  { id: 'timer', label: 'Timer' },
+  { id: 'improvise', label: 'Improvise' }
 ]
 
 export const TOOL_TABS: { id: ToolsTabId; label: string }[] = [

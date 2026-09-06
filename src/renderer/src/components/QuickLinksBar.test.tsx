@@ -72,6 +72,17 @@ describe('QuickLinksBar', () => {
     expect(onOpenTool).toHaveBeenCalledWith('dice')
   })
 
+  it('lists Improvise under Table, not Prep', async () => {
+    const user = userEvent.setup()
+    render(<QuickLinksBar notes={notes} onOpenNote={() => {}} onOpenTool={() => {}} />)
+    await user.click(screen.getByRole('button', { name: /Prep/ }))
+    expect(screen.getByRole('menuitem', { name: 'NPC' })).toBeTruthy()
+    expect(screen.queryByRole('menuitem', { name: 'Improvise' })).toBeNull()
+    await user.click(screen.getByRole('button', { name: /Table/ }))
+    expect(screen.getByRole('menuitem', { name: 'Improvise' })).toBeTruthy()
+    expect(screen.getByRole('menuitem', { name: 'Dice' })).toBeTruthy()
+  })
+
   it('keeps Prep and Table labels when a grouped page is open', async () => {
     render(
       <QuickLinksBar notes={notes} onOpenNote={() => {}} toolsTab="dice" toolsOpen />

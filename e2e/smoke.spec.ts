@@ -15,7 +15,7 @@ test.afterAll(async () => {
 })
 
 async function openQuickTool(group: 'Prep' | 'Table', tool: 'NPC' | 'Improvise' | 'Links' | 'Dice' | 'Timer'): Promise<void> {
-  if (await dmWindow.getByRole('heading', { name: tool }).isVisible().catch(() => false)) return
+  if (await dmWindow.getByRole('heading', { name: tool, exact: true }).isVisible().catch(() => false)) return
   const bar = dmWindow.getByRole('navigation', { name: 'Quick links' })
   await bar.getByRole('button', { name: group }).click()
   await dmWindow.getByRole('menuitem', { name: tool }).click()

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { asRightPanelId, asToolsTabId } from './rightPanel'
+import { PREP_TOOLS, TABLE_TOOLS, asRightPanelId, asToolsTabId } from './rightPanel'
 
 describe('asRightPanelId', () => {
   it('keeps current panel ids', () => {
@@ -23,6 +23,11 @@ describe('asToolsTabId', () => {
   it('defaults to Lookup', () => {
     expect(asToolsTabId(undefined)).toBe('lookup')
     expect(asToolsTabId('lookup')).toBe('lookup')
+  })
+
+  it('puts Improvise with Table, not Prep', () => {
+    expect(PREP_TOOLS.map((tool) => tool.id)).toEqual(['npc', 'links'])
+    expect(TABLE_TOOLS.map((tool) => tool.id)).toEqual(['dice', 'timer', 'improvise'])
   })
 
   it('restores NPC, Improvise, Dice, Timer, and Links tabs', () => {
