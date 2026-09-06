@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import type { CampaignInfo } from '../../../shared/types'
+import {
+  PREP_TOOLS,
+  TABLE_TOOLS,
+  groupToolLabel,
+  type ToolsTabId
+} from '../../../shared/rightPanel'
 import { addDays, addHours, calendarBarLabel, calendarLightLabel, formatCalendar } from '../../../shared/calendar'
 import {
   calendarNoteTemplate,
@@ -15,6 +21,7 @@ import {
   quickPartyRows
 } from '../lib/quickLinks'
 import CalendarSettings from './CalendarSettings'
+import PanelToggle from './PanelToggle'
 import QuickMenu from './QuickMenu'
 
 function dash(value: string): string {
@@ -24,18 +31,38 @@ function dash(value: string): string {
 const chipBtn =
   'rounded border border-line px-1.5 py-0.5 text-[11px] font-semibold text-parchment/85 hover:border-amber disabled:opacity-40'
 
+function toolButtonClass(active: boolean): string {
+  return `rounded px-3 py-1 text-sm ${
+    active ? 'bg-amber font-semibold text-on-amber' : 'border border-line hover:border-amber'
+  }`
+}
+
 export default function QuickLinksBar({
   notes,
   system,
   onOpenNote,
   onCampaignChange,
-  onNotesReload
+  onNotesReload,
+  toolsTab = null,
+  toolsOpen = false,
+  sidebarOpen = true,
+  rightPanelOpen = false,
+  onOpenTool,
+  onToggleSidebar,
+  onToggleRightPanel
 }: {
   notes: CampaignNote[]
   system?: string | null
   onOpenNote: (path: string) => void
   onCampaignChange?: (campaign: CampaignInfo) => void
   onNotesReload?: () => void
+  toolsTab?: ToolsTabId | null
+  toolsOpen?: boolean
+  sidebarOpen?: boolean
+  rightPanelOpen?: boolean
+  onOpenTool?: (tab: ToolsTabId) => void
+  onToggleSidebar?: () => void
+  onToggleRightPanel?: () => void
 }) {
   const [openId, setOpenId] = useState<string | null>(null)
   const [sheets, setSheets] = useState<Record<string, string>>({})
@@ -114,6 +141,14 @@ export default function QuickLinksBar({
     : ''
   const barTitle = clock ? calendarBarLabel(clock.definition, clock.now) : ''
   const starter = calendarPreset('gregorian')
+  const activeTool = toolsOpen ? toolsTab : null
+  const prepLabel = groupToolLabel(PREP_TOOLS, 'Prep', activeTool)
+  const tableLabel = groupToolLabel(TABLE_TOOLS, 'Table', activeTool)
+
+  function pickTool(tab: ToolsTabId): void {
+    setOpenId(null)
+    onOpenTool?.(tab)
+  }
 
   const persist = useCallback(
     async (markdown: string) => {
@@ -153,9 +188,9 @@ export default function QuickLinksBar({
   return (
     <nav
       aria-label="Quick links"
-      className="flex h-9 shrink-0 items-center gap-2 border-b border-line bg-panel px-4"
+      className="flex h-9 shrink-0 items-center gap-2 border-b border-line bg-panel px-3"
     >
-      <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-muted">Quick</span>
+      {onToggleSidebar ? <PanelToggle side="left" open={sidebarOpen} onToggle={onToggleSidebar} /> : null}
       <QuickMenu id="party" label="Party" openId={openId} onOpenId={setOpenId} menuClassName="w-[26rem]">
         {party.length === 0 ? (
           <p className="px-3 py-2 text-[13px] text-muted">No Party sheets yet.</p>
@@ -236,6 +271,53 @@ export default function QuickLinksBar({
           )}
         </ul>
       </QuickMenu>
+      <span className="mx-0.5 h-4 w-px shrink-0 bg-line" aria-hidden="true" />
+      <button
+        type="button"
+        className={toolButtonClass(activeTool === 'lookup')}
+        aria-pressed={activeTool === 'lookup'}
+        onClick={() => pickTool('lookup')}
+      >
+        Lookup
+      </button>
+      <QuickMenu
+        id="prep"
+        label={prepLabel}
+        openId={openId}
+        onOpenId={setOpenId}
+        active={PREP_TOOLS.some((tool) => tool.id === activeTool)}
+      >
+        {PREP_TOOLS.map((tool) => (
+          <button
+            key={tool.id}
+            type="button"
+            role="menuitem"
+            onClick={() => pickTool(tool.id)}
+            className="w-full px-3 py-1.5 text-left text-[13px] text-parchment/90 hover:bg-panel-2 hover:text-amber"
+          >
+            {tool.label}
+          </button>
+        ))}
+      </QuickMenu>
+      <QuickMenu
+        id="table"
+        label={tableLabel}
+        openId={openId}
+        onOpenId={setOpenId}
+        active={TABLE_TOOLS.some((tool) => tool.id === activeTool)}
+      >
+        {TABLE_TOOLS.map((tool) => (
+          <button
+            key={tool.id}
+            type="button"
+            role="menuitem"
+            onClick={() => pickTool(tool.id)}
+            className="w-full px-3 py-1.5 text-left text-[13px] text-parchment/90 hover:bg-panel-2 hover:text-amber"
+          >
+            {tool.label}
+          </button>
+        ))}
+      </QuickMenu>
       <div className="ml-auto flex min-w-0 items-center gap-1.5">
         {clock && readout ? (
           <>
@@ -281,6 +363,9 @@ export default function QuickLinksBar({
             Set calendar…
           </button>
         )}
+        {onToggleRightPanel ? (
+          <PanelToggle side="right" open={rightPanelOpen} onToggle={onToggleRightPanel} />
+        ) : null}
       </div>
       {settingsOpen ? (
         <CalendarSettings

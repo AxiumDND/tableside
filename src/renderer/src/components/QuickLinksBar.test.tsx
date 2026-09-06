@@ -36,16 +36,49 @@ describe('QuickLinksBar', () => {
     { relativePath: 'Calendar/Calendar.md', name: 'Calendar.md', stem: 'Calendar' }
   ]
 
-  it('shows Party, Conditions, and the live calendar clock', async () => {
-    render(<QuickLinksBar notes={notes} onOpenNote={() => {}} />)
+  it('shows Party, Conditions, tools, panel toggles, and the live calendar clock', async () => {
+    render(
+      <QuickLinksBar
+        notes={notes}
+        onOpenNote={() => {}}
+        onToggleSidebar={() => {}}
+        onToggleRightPanel={() => {}}
+      />
+    )
     expect(screen.getByRole('button', { name: /Party/ })).toBeTruthy()
     expect(screen.getByRole('button', { name: /Conditions/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Lookup' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Prep/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Table/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Hide sidebar' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Show right panel' })).toBeTruthy()
     expect(await screen.findByRole('button', { name: /1 Fireseek 576 CY/ })).toBeTruthy()
     expect(screen.getByText('Day')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Back one hour' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Forward one hour' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Advance one day' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Calendar settings' })).toBeTruthy()
+  })
+
+  it('opens a grouped tool from Prep and Table', async () => {
+    const user = userEvent.setup()
+    const onOpenTool = vi.fn()
+    render(<QuickLinksBar notes={notes} onOpenNote={() => {}} onOpenTool={onOpenTool} />)
+    await user.click(screen.getByRole('button', { name: /Prep/ }))
+    await user.click(screen.getByRole('menuitem', { name: 'NPC' }))
+    expect(onOpenTool).toHaveBeenCalledWith('npc')
+    await user.click(screen.getByRole('button', { name: /Table/ }))
+    await user.click(screen.getByRole('menuitem', { name: 'Dice' }))
+    expect(onOpenTool).toHaveBeenCalledWith('dice')
+  })
+
+  it('names the open Prep or Table page on the group button', async () => {
+    render(
+      <QuickLinksBar notes={notes} onOpenNote={() => {}} toolsTab="dice" toolsOpen />
+    )
+    await screen.findByRole('button', { name: /1 Fireseek 576 CY/ })
+    expect(screen.getByRole('button', { name: /^Dice/ })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /^Table/ })).toBeNull()
   })
 
   it('lists party AC, save DC, and PP, then opens the sheet', async () => {

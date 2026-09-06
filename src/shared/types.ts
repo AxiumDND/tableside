@@ -320,7 +320,7 @@ export interface AppSettings {
   rightPanel?: 'combat' | 'tools' | 'help' | 'music' | null
   /** Last tool in the right column, restored when the panel icon shows it again. */
   lastRightPanel?: 'combat' | 'tools' | 'help' | 'music'
-  /** Last page inside Tools (Lookup, NPC, Improvise, Dice, Timer, or Links). */
+  /** Last Quick-bar tool page (Lookup, NPC, Improvise, Dice, Timer, or Links). */
   toolsTab?: 'lookup' | 'npc' | 'names' | 'improvise' | 'dice' | 'timer' | 'links'
   /** Play roll sound on the mixer Sfx layer. Default on. */
   diceCheckSound?: boolean

@@ -15,30 +15,29 @@ const campaign = {
 const noopHandlers = {
   onNewCampaign: () => {},
   onOpenCampaign: () => {},
-  onToggleSidebar: () => {},
-  onToggleRightPanel: () => {},
-  onToggleTools: () => {},
   onToggleCombat: () => {},
   onToggleMusic: () => {},
   onToggleHelp: () => {}
 }
 
 describe('DmHeader', () => {
-  it('renders the toolbar buttons and the open campaign name', () => {
+  it('renders campaign name and session buttons, not Tools', () => {
     render(
       <DmHeader
         campaign={campaign}
         rightPanel={null}
         combatCount={0}
         mixerActive={false}
-        sidebarOpen
         {...noopHandlers}
       />
     )
     expect(screen.getByText('Greystead')).toBeTruthy()
-    for (const label of ['Campaign', 'Tools', 'Combat', 'Music', 'Help']) {
+    for (const label of ['Campaign', 'Combat', 'Music', 'Help']) {
       expect(screen.getByRole('button', { name: new RegExp(label, 'i') })).toBeTruthy()
     }
+    expect(screen.queryByRole('button', { name: 'Tools' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Hide sidebar' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Show right panel' })).toBeNull()
   })
 
   it('shows a placeholder when no campaign is open', () => {
@@ -48,7 +47,6 @@ describe('DmHeader', () => {
         rightPanel={null}
         combatCount={0}
         mixerActive={false}
-        sidebarOpen
         {...noopHandlers}
       />
     )
@@ -62,7 +60,6 @@ describe('DmHeader', () => {
         rightPanel="combat"
         combatCount={3}
         mixerActive={true}
-        sidebarOpen
         {...noopHandlers}
       />
     )
@@ -73,53 +70,18 @@ describe('DmHeader', () => {
   it('fires the matching toggle handler on click', async () => {
     const user = userEvent.setup()
     const onToggleCombat = vi.fn()
-    const onToggleTools = vi.fn()
     render(
       <DmHeader
         campaign={campaign}
         rightPanel={null}
         combatCount={0}
         mixerActive={false}
-        sidebarOpen
         {...noopHandlers}
         onToggleCombat={onToggleCombat}
-        onToggleTools={onToggleTools}
       />
     )
     await user.click(screen.getByRole('button', { name: /Combat/ }))
-    await user.click(screen.getByRole('button', { name: 'Tools' }))
     expect(onToggleCombat).toHaveBeenCalledOnce()
-    expect(onToggleTools).toHaveBeenCalledOnce()
-  })
-
-  it('toggles the sidebar from the header icon', async () => {
-    const user = userEvent.setup()
-    const onToggleSidebar = vi.fn()
-    const { rerender } = render(
-      <DmHeader
-        campaign={campaign}
-        rightPanel={null}
-        combatCount={0}
-        mixerActive={false}
-        sidebarOpen
-        {...noopHandlers}
-        onToggleSidebar={onToggleSidebar}
-      />
-    )
-    await user.click(screen.getByRole('button', { name: 'Hide sidebar' }))
-    expect(onToggleSidebar).toHaveBeenCalledOnce()
-    rerender(
-      <DmHeader
-        campaign={campaign}
-        rightPanel={null}
-        combatCount={0}
-        mixerActive={false}
-        sidebarOpen={false}
-        {...noopHandlers}
-        onToggleSidebar={onToggleSidebar}
-      />
-    )
-    expect(screen.getByRole('button', { name: 'Show sidebar' })).toBeTruthy()
   })
 
   it('opens a recent from the Campaign menu', async () => {
@@ -131,7 +93,6 @@ describe('DmHeader', () => {
         rightPanel={null}
         combatCount={0}
         mixerActive={false}
-        sidebarOpen
         recentCampaigns={[
           { name: 'Greystead', folder: '/tmp/greystead' },
           { name: 'Other', folder: '/tmp/other' }
@@ -153,7 +114,6 @@ describe('DmHeader', () => {
         rightPanel={null}
         combatCount={0}
         mixerActive={false}
-        sidebarOpen
         recentCampaigns={[{ name: 'Greystead', folder: '/tmp/greystead' }]}
         onOpenRecent={() => {}}
         {...noopHandlers}
