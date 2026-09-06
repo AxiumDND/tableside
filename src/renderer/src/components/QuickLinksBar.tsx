@@ -1,33 +1,51 @@
-import { useEffect, useMemo, useState } from 'react'
-import { allPartyNotes, sheetDisplayName, type CampaignNote } from '../lib/notes'
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import type { CampaignInfo } from '../../../shared/types'
+import { addDays, addHours, calendarBarLabel, calendarLightLabel, formatCalendar } from '../../../shared/calendar'
+import {
+  calendarNoteTemplate,
+  parseCampaignCalendar,
+  preferredCalendarNotePath,
+  writeCalendarIntoNote
+} from '../../../shared/calendarNote'
+import { calendarPreset } from '../../../shared/calendarPresets'
+import { allPartyNotes, type CampaignNote } from '../lib/notes'
 import {
   filterQuickConditions,
   lookupConditions,
-  quickCalendarNotes,
   quickPartyRows
 } from '../lib/quickLinks'
+import CalendarSettings from './CalendarSettings'
 import QuickMenu from './QuickMenu'
 
 function dash(value: string): string {
   return value.trim() || '—'
 }
 
+const chipBtn =
+  'rounded border border-line px-1.5 py-0.5 text-[11px] font-semibold text-parchment/85 hover:border-amber disabled:opacity-40'
+
 export default function QuickLinksBar({
   notes,
   system,
-  onOpenNote
+  onOpenNote,
+  onCampaignChange,
+  onNotesReload
 }: {
   notes: CampaignNote[]
   system?: string | null
   onOpenNote: (path: string) => void
+  onCampaignChange?: (campaign: CampaignInfo) => void
+  onNotesReload?: () => void
 }) {
   const [openId, setOpenId] = useState<string | null>(null)
   const [sheets, setSheets] = useState<Record<string, string>>({})
   const [conditionQuery, setConditionQuery] = useState('')
   const [pickedCondition, setPickedCondition] = useState<string | null>(null)
+  const [calendarMarkdown, setCalendarMarkdown] = useState<string | null>(null)
+  const [settingsOpen, setSettingsOpen] = useState(false)
+  const [busy, setBusy] = useState(false)
 
   const party = useMemo(() => quickPartyRows(notes, sheets), [notes, sheets])
-  const calendars = useMemo(() => quickCalendarNotes(notes), [notes])
   const conditions = useMemo(() => lookupConditions(system), [system])
   const shownConditions = useMemo(
     () => filterQuickConditions(conditions, conditionQuery),
@@ -35,6 +53,10 @@ export default function QuickLinksBar({
   )
   const partyPaths = useMemo(() => allPartyNotes(notes).map((note) => note.relativePath), [notes])
   const loadKey = partyPaths.join('|')
+  const calendarPath = useMemo(
+    () => preferredCalendarNotePath(notes.map((note) => note.relativePath)),
+    [notes]
+  )
 
   useEffect(() => {
     if (!loadKey) {
@@ -61,11 +83,69 @@ export default function QuickLinksBar({
   }, [loadKey])
 
   useEffect(() => {
+    let cancelled = false
+    void window.tabledm
+      .readFile(calendarPath)
+      .then((body) => {
+        if (!cancelled) setCalendarMarkdown(body)
+      })
+      .catch(() => {
+        if (!cancelled) setCalendarMarkdown(null)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [calendarPath, notes.length])
+
+  useEffect(() => {
     if (openId !== 'conditions') {
       setConditionQuery('')
       setPickedCondition(null)
     }
   }, [openId])
+
+  const clock = useMemo(
+    () => (calendarMarkdown ? parseCampaignCalendar(calendarMarkdown) : null),
+    [calendarMarkdown]
+  )
+  const readout = clock ? formatCalendar(clock.definition, clock.now) : null
+  const barLabel = clock ? calendarBarLabel(clock.definition, clock.now) : ''
+  const starter = calendarPreset('gregorian')
+
+  const persist = useCallback(
+    async (markdown: string) => {
+      const result = await window.tabledm.saveFile(calendarPath, markdown)
+      if (!result) throw new Error('save failed')
+      setCalendarMarkdown(markdown)
+      onCampaignChange?.(result.campaign)
+      onNotesReload?.()
+      return result
+    },
+    [calendarPath, onCampaignChange, onNotesReload]
+  )
+
+  async function shift(kind: 'hour' | 'day', delta: number): Promise<void> {
+    if (!clock || !calendarMarkdown || busy) return
+    setBusy(true)
+    try {
+      const next =
+        kind === 'hour'
+          ? addHours(clock.definition, clock.now, delta)
+          : addDays(clock.definition, clock.now, delta)
+      await persist(writeCalendarIntoNote(calendarMarkdown, clock.definition, next))
+    } catch {
+      /* keep the last good clock */
+    }
+    setBusy(false)
+  }
+
+  async function saveSettings(
+    definition: typeof starter.definition,
+    instant: typeof starter.now
+  ): Promise<void> {
+    const base = calendarMarkdown ?? calendarNoteTemplate(definition, instant)
+    await persist(writeCalendarIntoNote(base, definition, instant))
+  }
 
   return (
     <nav
@@ -153,32 +233,65 @@ export default function QuickLinksBar({
           )}
         </ul>
       </QuickMenu>
-      <QuickMenu id="calendar" label="Calendar" openId={openId} onOpenId={setOpenId}>
-        {calendars.length === 0 ? (
-          <p className="px-3 py-2 text-[13px] leading-snug text-muted">
-            No calendar notes yet. Add one in <span className="text-parchment/80">Reference/</span> — an in-world
-            date tracker is planned.
-          </p>
+      <div className="ml-auto flex min-w-0 items-center gap-1.5">
+        {clock && readout ? (
+          <>
+            <button
+              type="button"
+              title={barLabel}
+              onClick={() => onOpenNote(calendarPath)}
+              className="min-w-0 truncate text-left text-[12px] text-parchment/90 hover:text-amber"
+            >
+              {barLabel}
+            </button>
+            <span
+              className={`shrink-0 rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
+                readout.light === 'night'
+                  ? 'bg-ink text-parchment/70'
+                  : readout.light === 'day'
+                    ? 'bg-amber/15 text-amber'
+                    : 'bg-panel-2 text-muted'
+              }`}
+            >
+              {calendarLightLabel(readout.light)}
+            </span>
+            <button type="button" className={chipBtn} disabled={busy} aria-label="Back one hour" onClick={() => void shift('hour', -1)}>
+              ◀h
+            </button>
+            <button type="button" className={chipBtn} disabled={busy} aria-label="Forward one hour" onClick={() => void shift('hour', 1)}>
+              ▶h
+            </button>
+            <button type="button" className={chipBtn} disabled={busy} aria-label="Advance one day" onClick={() => void shift('day', 1)}>
+              +Day
+            </button>
+            <button
+              type="button"
+              className={chipBtn}
+              aria-label="Calendar settings"
+              onClick={() => setSettingsOpen(true)}
+            >
+              ⚙
+            </button>
+          </>
         ) : (
-          <ul className="max-h-64 overflow-auto">
-            {calendars.map((note) => (
-              <li key={note.relativePath}>
-                <button
-                  type="button"
-                  role="menuitem"
-                  onClick={() => {
-                    setOpenId(null)
-                    onOpenNote(note.relativePath)
-                  }}
-                  className="w-full truncate px-3 py-1.5 text-left text-[13px] text-parchment/90 hover:bg-panel-2 hover:text-amber"
-                >
-                  {sheetDisplayName(note.stem)}
-                </button>
-              </li>
-            ))}
-          </ul>
+          <button type="button" className={chipBtn} onClick={() => setSettingsOpen(true)}>
+            Set calendar…
+          </button>
         )}
-      </QuickMenu>
+      </div>
+      {settingsOpen ? (
+        <CalendarSettings
+          definition={clock?.definition ?? starter.definition}
+          now={clock?.now ?? starter.now}
+          notePath={calendarPath}
+          onClose={() => setSettingsOpen(false)}
+          onSave={saveSettings}
+          onOpenNote={() => {
+            setSettingsOpen(false)
+            onOpenNote(calendarPath)
+          }}
+        />
+      ) : null}
     </nav>
   )
 }

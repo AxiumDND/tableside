@@ -33,6 +33,14 @@ test('quick links bar lists party stats and conditions', async () => {
   await expect(dmWindow.getByRole('menuitem', { name: /Poisoned/ })).toBeVisible()
 })
 
+test('quick links bar shows the Greystead in-world calendar', async () => {
+  const bar = dmWindow.getByRole('navigation', { name: 'Quick links' })
+  await expect(bar.getByRole('button', { name: /1 Seedmoon 412 AF/ })).toBeVisible()
+  await expect(bar.getByRole('button', { name: 'Forward one hour' })).toBeVisible()
+  await expect(bar.getByRole('button', { name: 'Advance one day' })).toBeVisible()
+  await expect(bar.getByRole('button', { name: 'Calendar settings' })).toBeVisible()
+})
+
 test('Dice tool and built-in Sfx oneshots are on the console', async () => {
   const tools = dmWindow.getByRole('button', { name: 'Tools' })
   await tools.click()
