@@ -105,7 +105,7 @@ test('Quick bar tools open, switch, and close the right rail', async () => {
   await expect(bar.getByRole('button', { name: 'Prep' })).toBeVisible()
   await expect(bar.getByRole('button', { name: 'Table' })).toBeVisible()
   await openQuickTool('Table', 'Improvise')
-  await expect(dmWindow.getByRole('heading', { name: 'Improvise' })).toBeVisible()
+  await expect(dmWindow.getByRole('heading', { name: 'Improvise', exact: true })).toBeVisible()
   await expect(bar.getByRole('button', { name: 'Table' })).toBeVisible()
   await bar.getByRole('button', { name: 'Lookup' }).click()
   await expect(dmWindow.getByRole('heading', { name: 'Lookup' })).toBeVisible()
