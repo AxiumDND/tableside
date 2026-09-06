@@ -23,15 +23,6 @@ export function toolTabLabel(tab: ToolsTabId): string {
   return TOOL_TABS.find((item) => item.id === tab)?.label ?? 'Lookup'
 }
 
-export function groupToolLabel(
-  tools: readonly { id: ToolsTabId; label: string }[],
-  fallback: string,
-  activeTab: ToolsTabId | null
-): string {
-  if (!activeTab) return fallback
-  return tools.find((item) => item.id === activeTab)?.label ?? fallback
-}
-
 /** Map saved prefs, including the old Lookup panel id. */
 export function asRightPanelId(value: unknown): RightPanelId | null {
   if (value === 'lookup') return 'tools'
