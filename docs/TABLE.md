@@ -85,7 +85,7 @@ Open with **Combat** in the header.
 | **Add all players** | Loads every `Party/` sheet (skips names already in the list) |
 | Bestiary filter + click | Adds that creature from `Bestiary/` |
 | Manual row | Name / Init / HP, plus AC (5e/PF2e) or Willpower and Hunger (Vampire 5th) |
-| d20 on a row | Rolls initiative for that combatant (PCs: type their table roll into Init) |
+| Init box | The number only. Click it to type a PC’s table roll, step with + / −, set the bonus, or roll 1d20 |
 | **Start combat** / next-round controls | Begins round 1. **Previous turn** / **Next turn** step back or forward on the list (Previous undoes a too-fast Next, including wrapping the round). With **Combat music** ticked, Start combat plays the `Audio/Music/Combat` playlist |
 | Current name | After Start combat, the header shows the current combatant’s full name. Hover a truncated row name for the full name. |
 | Eye / view | Opens that combatant’s rollable statblock without changing the turn |
@@ -147,7 +147,7 @@ Curated D&D prep sites open in your browser (not embedded). Categories: rules & 
 
 ## Dice tray
 
-Bottom of the left column: quick d4–d100 buttons plus a custom expression field (for example `2d6+3`). **Adv** and **Dis** apply to d20 rolls from the tray and statblocks. Uncheck **Show rolls to players** to keep tray and statblock rolls off the player TV; uncheck **Play roll sound** to mute the clatter. One die, two dice, and a handful each have their own recording (same clips on Music → Soundboard as **Dice (one)** / **Dice (two)** / **Dice (handful)**). Box of Doom uses the matching clip. Rolls feed the shared dice log used by combat and statblock clicks — a strip fades in on the right side of the player screen for about 15 seconds, then fades out. In 5e campaigns, damage chips on statblocks also offer **Crit** (double the dice).
+Bottom of the left column: quick d4–d100 buttons plus a custom expression field (for example `2d6+3`). **Adv** and **Dis** apply to d20 rolls from the tray and statblocks. Uncheck **Show rolls to players** to keep tray and statblock rolls off the player TV; uncheck **Play roll sound** to mute the clatter. One die, two dice, and a handful each have their own recording (same clips on Music → Soundboard as **Dice (one)** / **Dice (two)** / **Dice (handful)**). Box of Doom uses the matching clip. The tray keeps the latest roll plus four lines; **View log** opens every roll this session with the full face breakdown. **Clear log** empties both. Rolls also feed the player-TV strip — it fades in on the right for about 15 seconds, then fades out. In 5e campaigns, damage chips on statblocks also offer **Crit** (double the dice).
 
 ## Keyboard and mouse
 

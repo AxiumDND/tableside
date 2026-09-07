@@ -46,6 +46,7 @@ export default function CombatTracker({
   const [bestiaryOpen, setBestiaryOpen] = useState(false)
   const [hpEdit, setHpEdit] = useState<Combatant | null>(null)
   const [hpAmount, setHpAmount] = useState('')
+  const [initEdit, setInitEdit] = useState<Combatant | null>(null)
   const [viewedId, setViewedId] = useState<string | null>(null)
   const [confirmClear, setConfirmClear] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState<Combatant | null>(null)
@@ -71,6 +72,9 @@ export default function CombatTracker({
   const hpEditLive = hpEdit
     ? (combat.combatants.find((c) => c.id === hpEdit.id) ?? hpEdit)
     : null
+  const initEditLive = initEdit
+    ? (combat.combatants.find((c) => c.id === initEdit.id) ?? initEdit)
+    : null
   const conditionEditLive = conditionEdit
     ? (combat.combatants.find((c) => c.id === conditionEdit.id) ?? conditionEdit)
     : null
@@ -93,18 +97,19 @@ export default function CombatTracker({
   }, [])
 
   useEffect(() => {
-    if (!confirmClear && !confirmRemove && !hpEdit && !conditionEdit) return
+    if (!confirmClear && !confirmRemove && !hpEdit && !initEdit && !conditionEdit) return
     const onKey = (e: KeyboardEvent): void => {
       if (e.key === 'Escape') {
         setConfirmClear(false)
         setConfirmRemove(null)
         setHpEdit(null)
+        setInitEdit(null)
         setConditionEdit(null)
       }
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [confirmClear, confirmRemove, hpEdit, conditionEdit])
+  }, [confirmClear, confirmRemove, hpEdit, initEdit, conditionEdit])
 
   function update(partial: Partial<CombatState>): void {
     onChange({ ...combat, ...partial })
@@ -193,6 +198,7 @@ export default function CombatTracker({
     setViewedId(null)
     setHpEdit(null)
     setHpAmount('')
+    setInitEdit(null)
     setConfirmClear(false)
     setConfirmRemove(null)
     setConditionEdit(null)
@@ -206,6 +212,7 @@ export default function CombatTracker({
       setHpEdit(null)
       setHpAmount('')
     }
+    if (initEdit?.id === id) setInitEdit(null)
     if (conditionEdit?.id === id) setConditionEdit(null)
     const next = removeCombatantFromCombat(combat, id)
     if (viewedId === id) setViewedId(next.activeId)
@@ -213,8 +220,39 @@ export default function CombatTracker({
   }
 
   function openHpEdit(c: Combatant): void {
+    setInitEdit(null)
     setHpEdit(c)
     setHpAmount('')
+  }
+
+  function openInitEdit(c: Combatant): void {
+    setHpEdit(null)
+    setHpAmount('')
+    setInitEdit(c)
+  }
+
+  function setInitiativeTotal(id: string, value: number): void {
+    if (!Number.isFinite(value)) return
+    patchCombatant(id, { initiative: Math.trunc(value) })
+  }
+
+  function setInitiativeBonus(id: string, value: number): void {
+    if (!Number.isFinite(value)) return
+    const live = combat.combatants.find((c) => c.id === id)
+    if (!live) return
+    patchCombatant(id, {
+      statBlock: {
+        name: live.statBlock?.name ?? live.name,
+        ...live.statBlock,
+        initiativeBonus: Math.trunc(value)
+      }
+    })
+  }
+
+  function rollInitiative(c: Combatant): void {
+    const rolled = rollOne(c)
+    patchCombatant(c.id, { initiative: rolled.total })
+    dice.record(rolled, c.name.split('(')[0].trim())
   }
 
   function applyHpChange(direction: 'damage' | 'heal'): void {
@@ -353,14 +391,13 @@ export default function CombatTracker({
       <div className="min-h-0 flex-1 overflow-auto">
         <div className="flex items-center justify-between px-3 py-2">
           <h3 className="text-xs uppercase tracking-wider text-muted">Initiative</h3>
-          <p className="text-[10px] text-muted">PCs: type their roll · NPCs: Roll NPCs</p>
+          <p className="text-[10px] text-muted">Click a number to type or roll · NPCs: Roll NPCs</p>
         </div>
         <ul>
           {ordered.map((c) => {
             const onTurn = c.id === turnId
             const inspecting = viewed?.id === c.id
             const ratio = c.maxHp > 0 ? c.hp / c.maxHp : 0
-            const bonus = initiativeBonus(c)
             const condition = combatantCondition(c, profile)
             const tag = conditionLabel(condition)
             return (
@@ -371,29 +408,13 @@ export default function CombatTracker({
                 <div className="flex items-center gap-2">
                   <button
                     type="button"
-                    title={`Roll initiative 1d20${formatMod(bonus)}`}
-                    onClick={() => {
-                      const rolled = rollOne(c)
-                      patchCombatant(c.id, { initiative: rolled.total })
-                      const name = c.name.split('(')[0].trim()
-                      dice.record(rolled, name)
-                    }}
-                    className="shrink-0 rounded border border-line px-1.5 py-0.5 text-[11px] font-semibold text-amber hover:border-amber"
+                    title="Edit initiative"
+                    aria-label={`${c.name} initiative ${c.initiative}`}
+                    onClick={() => openInitEdit(c)}
+                    className="w-9 shrink-0 rounded border border-line bg-ink px-0.5 text-center text-sm tabular-nums hover:border-amber"
                   >
-                    Roll
+                    {c.initiative}
                   </button>
-                  <input
-                    type="number"
-                    value={c.initiative}
-                    onChange={(e) =>
-                      patchCombatant(c.id, { initiative: Number(e.target.value) })
-                    }
-                    className="w-12 rounded border border-line bg-ink px-1 text-center text-sm"
-                    title="Initiative total — type a PC's roll here"
-                  />
-                  <span className="w-7 shrink-0 text-[11px] text-muted" title="Initiative bonus">
-                    {formatMod(bonus)}
-                  </span>
                   <button
                     type="button"
                     onClick={() => setViewedId(c.id)}
@@ -636,6 +657,89 @@ export default function CombatTracker({
           onToggle={(id) => toggleCombatantStatus(conditionEditLive.id, id)}
           onClose={() => setConditionEdit(null)}
         />
+      ) : null}
+
+      {initEditLive ? (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 p-4"
+          onClick={() => setInitEdit(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="init-edit-title"
+            className="w-full max-w-sm rounded border border-line bg-panel p-4"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <h3 id="init-edit-title" className="font-display text-lg text-amber">
+              {initEditLive.name}
+            </h3>
+            <p className="mt-1 text-sm text-muted">Initiative</p>
+            <div className="mt-3 flex items-center justify-center gap-2">
+              <button
+                type="button"
+                aria-label={`Decrease ${initEditLive.name} initiative`}
+                onClick={() => setInitiativeTotal(initEditLive.id, initEditLive.initiative - 1)}
+                className="rounded border border-line px-3 py-1.5 text-lg leading-none hover:border-amber"
+              >
+                −
+              </button>
+              <input
+                autoFocus
+                type="number"
+                inputMode="numeric"
+                value={initEditLive.initiative}
+                onChange={(e) => setInitiativeTotal(initEditLive.id, Number(e.target.value))}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    setInitEdit(null)
+                  }
+                }}
+                aria-label={`${initEditLive.name} initiative`}
+                className="w-20 rounded border border-line bg-ink px-2 py-2 text-center text-lg tabular-nums"
+              />
+              <button
+                type="button"
+                aria-label={`Increase ${initEditLive.name} initiative`}
+                onClick={() => setInitiativeTotal(initEditLive.id, initEditLive.initiative + 1)}
+                className="rounded border border-line px-3 py-1.5 text-lg leading-none hover:border-amber"
+              >
+                +
+              </button>
+            </div>
+            <label className="mt-3 block text-xs text-muted">
+              Bonus
+              <input
+                type="number"
+                inputMode="numeric"
+                value={initiativeBonus(initEditLive)}
+                onChange={(e) => setInitiativeBonus(initEditLive.id, Number(e.target.value))}
+                aria-label={`${initEditLive.name} initiative bonus`}
+                className="mt-1 w-full rounded border border-line bg-ink px-3 py-2 text-center text-sm"
+              />
+            </label>
+            <p className="mt-1 text-[11px] text-muted">
+              Rolls use 1d20{formatMod(initiativeBonus(initEditLive))}
+            </p>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => rollInitiative(initEditLive)}
+                className="rounded border border-line px-3 py-1.5 text-sm font-semibold text-amber hover:border-amber"
+              >
+                Roll 1d20{formatMod(initiativeBonus(initEditLive))}
+              </button>
+              <button
+                type="button"
+                onClick={() => setInitEdit(null)}
+                className="rounded bg-amber px-3 py-1.5 text-sm font-semibold text-on-amber"
+              >
+                Done
+              </button>
+            </div>
+          </div>
+        </div>
       ) : null}
 
       {hpEditLive ? (
