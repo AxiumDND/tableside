@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { useState } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -109,6 +110,55 @@ describe('CombatTracker', () => {
     await user.click(screen.getByRole('button', { name: /goblin/i }))
 
     expect(onAddBestiary).toHaveBeenCalledWith('Bestiary/Goblin.md')
+  })
+
+  it('opens an initiative editor from the number box', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    function Harness() {
+      const [combat, setCombat] = useState(
+        makeCombat([
+          combatant({
+            id: 'a',
+            name: 'Goblin Scout',
+            initiative: 12,
+            statBlock: { name: 'Goblin Scout', initiativeBonus: 2 }
+          })
+        ])
+      )
+      return (
+        <CombatTracker
+          combat={combat}
+          onChange={(next) => {
+            onChange(next)
+            setCombat(next)
+          }}
+        />
+      )
+    }
+    render(<Harness />)
+
+    expect(screen.queryByRole('button', { name: 'Roll' })).toBeNull()
+    expect(screen.queryByRole('dialog', { name: 'Goblin Scout' })).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: 'Goblin Scout initiative 12' }))
+    const dialog = screen.getByRole('dialog', { name: 'Goblin Scout' })
+    expect(within(dialog).getByLabelText('Goblin Scout initiative bonus')).toHaveProperty('value', '2')
+
+    await user.click(screen.getByRole('button', { name: 'Increase Goblin Scout initiative' }))
+    expect(screen.getByRole('button', { name: 'Goblin Scout initiative 13' })).toBeTruthy()
+
+    await user.clear(within(dialog).getByLabelText('Goblin Scout initiative'))
+    await user.type(within(dialog).getByLabelText('Goblin Scout initiative'), '18')
+    expect(screen.getByRole('button', { name: 'Goblin Scout initiative 18' })).toBeTruthy()
+
+    await user.click(screen.getByRole('button', { name: 'Roll 1d20+2' }))
+    const rolled = onChange.mock.calls.at(-1)![0] as CombatState
+    expect(rolled.combatants[0].initiative).toBeGreaterThanOrEqual(3)
+    expect(rolled.combatants[0].initiative).toBeLessThanOrEqual(22)
+
+    await user.click(screen.getByRole('button', { name: 'Done' }))
+    expect(screen.queryByRole('dialog', { name: 'Goblin Scout' })).toBeNull()
   })
 
   it('opens a damage/heal window from the HP total', async () => {

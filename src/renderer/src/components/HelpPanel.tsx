@@ -885,8 +885,8 @@ export default function HelpPanel({
                 Willpower, and Hunger instead.
               </>,
               <>
-                PCs: type their table roll into Init. NPCs: use <Action>Roll NPCs</Action> or the d20 on a row.{' '}
-                <Action>Roll all</Action> re-rolls everyone.
+                PCs: click the initiative number and type their table roll. That same window has + / −, the bonus,
+                and a 1d20 roll. NPCs: use <Action>Roll NPCs</Action>. <Action>Roll all</Action> re-rolls everyone.
               </>,
               <>
                 <Action>Start combat</Action> begins round 1. The header then shows the current combatant’s full name.

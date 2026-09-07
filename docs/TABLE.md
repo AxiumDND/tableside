@@ -85,7 +85,7 @@ Open with **Combat** in the header.
 | **Add all players** | Loads every `Party/` sheet (skips names already in the list) |
 | Bestiary filter + click | Adds that creature from `Bestiary/` |
 | Manual row | Name / Init / HP, plus AC (5e/PF2e) or Willpower and Hunger (Vampire 5th) |
-| d20 on a row | Rolls initiative for that combatant (PCs: type their table roll into Init) |
+| Init box | The number only. Click it to type a PC’s table roll, step with + / −, set the bonus, or roll 1d20 |
 | **Start combat** / next-round controls | Begins round 1. **Previous turn** / **Next turn** step back or forward on the list (Previous undoes a too-fast Next, including wrapping the round). With **Combat music** ticked, Start combat plays the `Audio/Music/Combat` playlist |
 | Current name | After Start combat, the header shows the current combatant’s full name. Hover a truncated row name for the full name. |
 | Eye / view | Opens that combatant’s rollable statblock without changing the turn |
