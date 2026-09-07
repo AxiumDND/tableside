@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import {
   advanceCombatTurn,
+  removeCombatantFromCombat,
   rewindCombatTurn,
   combatOverlayTags,
   combatantCondition,
@@ -153,6 +154,39 @@ describe('combat helpers', () => {
     expect(rewindCombatTurn(wrap)).toEqual(next)
     expect(rewindCombatTurn(next)).toEqual(started)
     expect(rewindCombatTurn(started)).toEqual(started)
+  })
+
+  it('passes the turn to the next combatant when the current one is removed', () => {
+    const combat: CombatState = {
+      combatants: [
+        foe({ id: 'a', name: 'A', initiative: 15 }),
+        foe({ id: 'b', name: 'B', initiative: 10 }),
+        foe({ id: 'c', name: 'C', initiative: 5 })
+      ],
+      activeId: 'b',
+      round: 1,
+      showOrderToPlayers: false
+    }
+    const mid = removeCombatantFromCombat(combat, 'b')
+    expect(mid.combatants.map((row) => row.id)).toEqual(['a', 'c'])
+    expect(mid.activeId).toBe('c')
+    expect(mid.round).toBe(1)
+
+    const wrap = removeCombatantFromCombat({ ...combat, activeId: 'c' }, 'c')
+    expect(wrap.combatants.map((row) => row.id)).toEqual(['a', 'b'])
+    expect(wrap.activeId).toBe('a')
+    expect(wrap.round).toBe(2)
+
+    const kept = removeCombatantFromCombat(combat, 'a')
+    expect(kept.activeId).toBe('b')
+    expect(kept.round).toBe(1)
+
+    const last = removeCombatantFromCombat(
+      { ...combat, combatants: [foe({ id: 'b', name: 'B', initiative: 10 })], activeId: 'b' },
+      'b'
+    )
+    expect(last.combatants).toEqual([])
+    expect(last.activeId).toBeNull()
   })
 
   it('rolls only unrolled non-PCs', () => {

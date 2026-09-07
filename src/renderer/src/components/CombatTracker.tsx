@@ -8,6 +8,7 @@ import {
   combatantCondition,
   combatProfileFor,
   initiativeBonus,
+  removeCombatantFromCombat,
   rewindCombatTurn,
   sortCombatants
 } from '../lib/combat'
@@ -45,7 +46,6 @@ export default function CombatTracker({
   const [bestiaryOpen, setBestiaryOpen] = useState(false)
   const [hpEdit, setHpEdit] = useState<Combatant | null>(null)
   const [hpAmount, setHpAmount] = useState('')
-  const [lastRoll, setLastRoll] = useState('')
   const [viewedId, setViewedId] = useState<string | null>(null)
   const [confirmClear, setConfirmClear] = useState(false)
   const [confirmRemove, setConfirmRemove] = useState<Combatant | null>(null)
@@ -58,8 +58,9 @@ export default function CombatTracker({
   const started = round > 0
   const turnId =
     started && combat.activeId && ordered.some((c) => c.id === combat.activeId) ? combat.activeId : null
+  const currentTurn = turnId ? (ordered.find((c) => c.id === turnId) ?? null) : null
   const viewed =
-    ordered.find((c) => c.id === viewedId) ?? ordered.find((c) => c.id === turnId) ?? ordered[0] ?? null
+    ordered.find((c) => c.id === viewedId) ?? currentTurn ?? ordered[0] ?? null
   const viewedParsed = viewed ? statBlockToParsed(combatantToBlock(viewed) ?? { name: viewed.name }, viewed.name) : null
   const partyInCombat = combat.combatants.filter((c) => c.kind === 'pc').length
   const beasts = useMemo(() => {
@@ -176,23 +177,19 @@ export default function CombatTracker({
   }
 
   function applyRolls(which: CombatantKind[] | 'all'): void {
-    const notes: string[] = []
     const batch: { result: ReturnType<typeof rollD20>; source: string }[] = []
     const next = combat.combatants.map((c) => {
       if (which !== 'all' && !which.includes(c.kind)) return c
       const rolled = rollOne(c)
       const name = c.name.split('(')[0].trim()
-      notes.push(`${name} ${rolled.total} (${rolled.detail})`)
       batch.push({ result: rolled, source: name })
       return { ...c, initiative: rolled.total }
     })
     update({ combatants: next })
-    setLastRoll(notes.join(' · '))
     dice.recordMany(batch)
   }
 
   function clearCombat(): void {
-    setLastRoll('')
     setViewedId(null)
     setHpEdit(null)
     setHpAmount('')
@@ -205,16 +202,14 @@ export default function CombatTracker({
 
   function removeCombatant(id: string): void {
     setConfirmRemove(null)
-    if (viewedId === id) setViewedId(null)
     if (hpEdit?.id === id) {
       setHpEdit(null)
       setHpAmount('')
     }
     if (conditionEdit?.id === id) setConditionEdit(null)
-    update({
-      combatants: combat.combatants.filter((x) => x.id !== id),
-      activeId: combat.activeId === id ? null : combat.activeId
-    })
+    const next = removeCombatantFromCombat(combat, id)
+    if (viewedId === id) setViewedId(next.activeId)
+    onChange(next)
   }
 
   function openHpEdit(c: Combatant): void {
@@ -348,7 +343,11 @@ export default function CombatTracker({
             End combat
           </button>
         </div>
-        {lastRoll ? <p className="mt-2 text-[11px] leading-snug text-muted">{lastRoll}</p> : null}
+        {currentTurn ? (
+          <p className="mt-2 break-words font-display text-base leading-snug text-amber" title={currentTurn.name}>
+            {currentTurn.name}
+          </p>
+        ) : null}
       </header>
 
       <div className="min-h-0 flex-1 overflow-auto">
@@ -377,7 +376,6 @@ export default function CombatTracker({
                       const rolled = rollOne(c)
                       patchCombatant(c.id, { initiative: rolled.total })
                       const name = c.name.split('(')[0].trim()
-                      setLastRoll(`${name} ${rolled.total} (${rolled.detail})`)
                       dice.record(rolled, name)
                     }}
                     className="shrink-0 rounded border border-line px-1.5 py-0.5 text-[11px] font-semibold text-amber hover:border-amber"
@@ -402,7 +400,7 @@ export default function CombatTracker({
                     className={`min-w-0 flex-1 truncate text-left font-medium ${
                       inspecting ? 'text-amber' : condition ? 'text-blood' : ''
                     } ${condition === 'dead' || condition === 'unconscious' || condition === 'dying' ? 'line-through' : ''}`}
-                    title="Show stats and rolls — does not change whose turn it is"
+                    title={c.name}
                   >
                     {c.name}
                     <span className="ml-2 text-[10px] uppercase text-muted">{c.kind}</span>
@@ -485,6 +483,7 @@ export default function CombatTracker({
                     type="button"
                     className="text-muted hover:text-blood"
                     title={`Remove ${c.name}`}
+                    aria-label={`Remove ${c.name}`}
                     onClick={() => setConfirmRemove(c)}
                   >
                     ×
