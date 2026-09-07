@@ -92,6 +92,7 @@ Open with **Combat** in the header.
 | **Cnd** | Toggle conditions (Poisoned, Prone, …) on that PC, NPC, or monster. Same picker on a map token that is in this fight |
 | **Show to players** | Superimposes initiative order on the current player image |
 | **Combat music** | Tick to switch music on Start / End combat. Untick to leave the mixer alone |
+| **×** on a row | Removes that combatant (asks first). If it was their turn, the next name in initiative takes the turn |
 | **End combat** | Empties the tracker (confirm dialog). With **Combat music** ticked, returns to the `Audio/Music/General` playlist |
 
 State saves to `combat.json` in the campaign folder.

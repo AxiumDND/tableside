@@ -8,6 +8,7 @@ import {
   combatantCondition,
   combatProfileFor,
   initiativeBonus,
+  removeCombatantFromCombat,
   rewindCombatTurn,
   sortCombatants
 } from '../lib/combat'
@@ -201,16 +202,14 @@ export default function CombatTracker({
 
   function removeCombatant(id: string): void {
     setConfirmRemove(null)
-    if (viewedId === id) setViewedId(null)
     if (hpEdit?.id === id) {
       setHpEdit(null)
       setHpAmount('')
     }
     if (conditionEdit?.id === id) setConditionEdit(null)
-    update({
-      combatants: combat.combatants.filter((x) => x.id !== id),
-      activeId: combat.activeId === id ? null : combat.activeId
-    })
+    const next = removeCombatantFromCombat(combat, id)
+    if (viewedId === id) setViewedId(next.activeId)
+    onChange(next)
   }
 
   function openHpEdit(c: Combatant): void {
@@ -484,6 +483,7 @@ export default function CombatTracker({
                     type="button"
                     className="text-muted hover:text-blood"
                     title={`Remove ${c.name}`}
+                    aria-label={`Remove ${c.name}`}
                     onClick={() => setConfirmRemove(c)}
                   >
                     ×

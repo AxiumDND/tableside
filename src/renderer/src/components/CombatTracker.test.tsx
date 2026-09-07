@@ -195,6 +195,31 @@ describe('CombatTracker', () => {
     expect(rewound.round).toBe(1)
   })
 
+  it('moves the turn to the next combatant when the current one is removed', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    const combat = {
+      ...makeCombat([
+        combatant({ id: 'low', name: 'Goblin Scout', initiative: 12 }),
+        combatant({ id: 'high', name: 'Bandit Captain', initiative: 18 })
+      ]),
+      activeId: 'high',
+      round: 1
+    }
+    const { rerender } = render(<CombatTracker combat={combat} onChange={onChange} />)
+
+    await user.click(screen.getByRole('button', { name: 'Remove Bandit Captain' }))
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Remove' }))
+
+    const next = onChange.mock.calls.at(-1)![0] as CombatState
+    expect(next.combatants.map((row) => row.id)).toEqual(['low'])
+    expect(next.activeId).toBe('low')
+    expect(next.round).toBe(1)
+
+    rerender(<CombatTracker combat={next} onChange={onChange} />)
+    expect(document.querySelector('header p.font-display')?.textContent).toBe('Goblin Scout')
+  })
+
   it('plays Combat music on start and General on end when the cue is on', async () => {
     const user = userEvent.setup()
     const mixerPlayMusic = vi.fn().mockResolvedValue({})

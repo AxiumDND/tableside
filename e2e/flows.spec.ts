@@ -115,6 +115,17 @@ test('combat tracker adds a combatant and starts a round', async () => {
   await expect(poisoned).toHaveAttribute('aria-pressed', 'true')
   await dmWindow.getByRole('button', { name: 'Done' }).click()
   await expect(dmWindow.getByRole('button', { name: 'Clear Poisoned' })).toBeVisible()
+
+  await dmWindow.getByPlaceholder('Name').fill('Goblin Scout')
+  await init.fill('8')
+  await dmWindow.getByRole('button', { name: 'Add', exact: true }).click()
+  await expect(dmWindow.getByText('Goblin Scout').first()).toBeVisible()
+  await expect(dmWindow.locator('header p.font-display')).toHaveText('Dire Wolf')
+
+  await dmWindow.getByRole('button', { name: 'Remove Dire Wolf' }).click()
+  await dmWindow.getByRole('dialog').getByRole('button', { name: 'Remove' }).click()
+  await expect(dmWindow.getByRole('button', { name: 'Remove Dire Wolf' })).toHaveCount(0)
+  await expect(dmWindow.locator('header p.font-display')).toHaveText('Goblin Scout')
 })
 
 test('map note exposes fog tools and covers the map without error', async () => {
