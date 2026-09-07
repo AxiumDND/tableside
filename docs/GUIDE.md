@@ -1,6 +1,6 @@
 # How to use Tableside
 
-Step-by-step for a night at the table. Current release: **1.8.25**.
+Step-by-step for a night at the table. Current release: **1.8.26**.
 
 Tableside is a **local Windows DM console for the laptop at your table**. People sit together in the room; a second monitor (TV) shows players a clean picture — maps, art, initiative, or a sci-fi opening crawl. It is **not** a full virtual tabletop for online play. There is no account and no internet required once the app is installed.
 
@@ -23,7 +23,7 @@ Deeper reference: [TABLE.md](TABLE.md) (every control), [CAMPAIGN.md](CAMPAIGN.m
 
 ## Install
 
-1. Download **[Tableside-Setup-1.8.25.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
+1. Download **[Tableside-Setup-1.8.26.exe](https://github.com/AxiumDND/tableside/releases/latest)**.
 2. Run it. Per-user install — Start Menu + desktop shortcut. No admin.
 3. If Windows says **Windows protected your PC**, click **More info**, then **Run anyway**. The installer is not code-signed. That is expected.
 4. Open **Tableside**.
@@ -111,7 +111,7 @@ At the table:
 
 1. Open the sheet. Press **Add to initiative** on that combat section.
 2. Open **Combat** in the header if it is not already open.
-3. Type PC initiative from the table. NPCs at 0 are rolled for you. Use **Roll all** / **Roll NPCs** if you need to re-roll.
+3. Click a combatant’s initiative number to type a PC’s table roll, step it, set the bonus, or roll 1d20. NPCs at 0 are rolled for you. Use **Roll all** / **Roll NPCs** if you need to re-roll.
 4. **Start combat**, then **Next turn** (`Alt+T`) or **Previous turn** (`Alt+Shift+T`) if you skip someone. The header shows the current combatant’s full name; hover a clipped row name to read it. Removing the current combatant (×) — for example a dead monster — passes the turn to the next name. Click **Cnd** on a row to toggle conditions (Poisoned, Prone, and the rest of the pack). With **Combat music** ticked, Start combat plays `Audio/Music/Combat`.
 5. Optionally **Show to players** on the Combat panel to overlay order on the current picture. Players see names, pack tags (5e Bloodied / 0 HP; PF2e Wounded / Dying; V5 Health, Willpower, Hunger), and any conditions you set. They never see HP numbers.
 6. **End combat** empties the tracker (asks first). With **Combat music** ticked, it returns to `Audio/Music/General`. Untick Combat music if you want to leave the mixer alone.
@@ -193,7 +193,7 @@ Optional PHB / DMG text dumps go in the app `Additional Books/` folder — not i
 
 ### 8. Roll dice
 
-The **dice tray** sits at the bottom of the left column. Quick d4–d20 buttons, plus a custom expression (`2d6+3`). Rolls feed the same log as combat and statblock clicks.
+The **dice tray** sits at the bottom of the left column. Quick d4–d20 buttons, plus a custom expression (`2d6+3`). **View log** opens every roll this session with the full breakdown. Rolls also feed combat and statblock clicks.
 
 ## After the session
 
