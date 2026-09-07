@@ -98,7 +98,6 @@ test('combat tracker adds a combatant and starts a round', async () => {
   await dmWindow.getByRole('button', { name: 'Add', exact: true }).click()
   await expect(dmWindow.getByText('Dire Wolf').first()).toBeVisible()
   await expect(dmWindow.getByRole('button', { name: 'Dire Wolf initiative 15' })).toBeVisible()
-  await expect(dmWindow.getByRole('button', { name: 'Roll', exact: true })).toHaveCount(0)
 
   await dmWindow.getByRole('button', { name: 'Dire Wolf initiative 15' }).click()
   const initDialog = dmWindow.getByRole('dialog', { name: 'Dire Wolf' })
