@@ -117,6 +117,12 @@ test('Dice tray exposes show-to-players and roll-sound toggles', async () => {
   await expect(dmWindow.getByText('Play roll sound')).toBeVisible()
   await expect(dmWindow.getByRole('button', { name: 'Adv', exact: true })).toBeVisible()
   await expect(dmWindow.getByRole('button', { name: 'Dis', exact: true })).toBeVisible()
+  await dmWindow.getByRole('button', { name: 'd20' }).click()
+  await dmWindow.getByRole('button', { name: 'View log' }).click()
+  await expect(dmWindow.getByRole('dialog', { name: 'Dice log' })).toBeVisible()
+  await expect(dmWindow.getByRole('dialog', { name: 'Dice log' })).toContainText('1d20')
+  await dmWindow.getByRole('dialog', { name: 'Dice log' }).getByRole('button', { name: 'Done' }).click()
+  await expect(dmWindow.getByRole('dialog', { name: 'Dice log' })).toHaveCount(0)
 })
 
 test('Quick bar tools open, switch, and close the right rail', async () => {

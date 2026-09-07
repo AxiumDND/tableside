@@ -1009,8 +1009,10 @@ export default function HelpPanel({
             Bottom of the left column: d4–d100 plus a custom expression such as <Code>2d6+3</Code>. Use{' '}
             <Action>Adv</Action> or <Action>Dis</Action> for d20 rolls. Uncheck <Action>Show rolls to players</Action>{' '}
             to keep tray and statblock rolls off the player TV; uncheck <Action>Play roll sound</Action> to mute the
-            clatter (one die, two dice, and a handful each have their own recording). Rolls feed the same log as combat and statblock clicks — a strip fades in on the right side of the
-            player screen for about 15 seconds, then fades out. In 5e campaigns, damage chips on statblocks also offer{' '}
+            clatter (one die, two dice, and a handful each have their own recording). The tray keeps the latest roll plus
+            four lines; <Action>View log</Action> opens every roll this session with the faces and bonus.{' '}
+            <Action>Clear log</Action> empties both. A strip also fades in on the right side of the player screen for
+            about 15 seconds, then fades out. In 5e campaigns, damage chips on statblocks also offer{' '}
             <Action>Crit</Action> (double the dice).
           </p>
           <Sub>Box of Doom</Sub>

@@ -26,6 +26,39 @@ describe('DiceTray', () => {
     expect(container.querySelector('section')?.className).toContain('h-60')
   })
 
+  it('opens a full dice log from View log', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5)
+    const user = userEvent.setup()
+    renderTray()
+
+    expect(screen.queryByRole('dialog', { name: 'Dice log' })).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'd20' }))
+    await user.click(screen.getByRole('button', { name: 'd6' }))
+    await user.click(screen.getByRole('button', { name: 'View log' }))
+
+    const dialog = screen.getByRole('dialog', { name: 'Dice log' })
+    expect(dialog.textContent).toMatch(/2 rolls this session/)
+    expect(dialog.textContent).toMatch(/1d20/)
+    expect(dialog.textContent).toMatch(/1d6/)
+    expect(dialog.textContent).toMatch(/\[11\]/)
+    expect(dialog.textContent).toMatch(/\[4\]/)
+
+    await user.click(screen.getByRole('button', { name: 'Done' }))
+    expect(screen.queryByRole('dialog', { name: 'Dice log' })).toBeNull()
+  })
+
+  it('keeps more than the tray slots in View log', async () => {
+    vi.spyOn(Math, 'random').mockReturnValue(0.5)
+    const user = userEvent.setup()
+    renderTray()
+    for (let i = 0; i < 6; i += 1) {
+      await user.click(screen.getByRole('button', { name: 'd20' }))
+    }
+    expect(document.querySelectorAll('section ul li')).toHaveLength(4)
+    await user.click(screen.getByRole('button', { name: 'View log' }))
+    expect(screen.getByRole('dialog', { name: 'Dice log' }).textContent).toMatch(/6 rolls this session/)
+  })
+
   it('always reserves four previous-result slots', () => {
     const { container } = renderTray()
     expect(container.querySelectorAll('li')).toHaveLength(4)
