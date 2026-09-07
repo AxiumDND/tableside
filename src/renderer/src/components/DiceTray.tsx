@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { builtinDiceRollPath } from '../../../shared/diceRollSound'
 import { SKIP_PLAYER_DICE_SOURCES } from '../../../shared/playerDiceShow'
 import { dicePhysicalCount, rollExpr, type DiceMode, type DiceResult, formatDiceRollSummary } from '../lib/dice'
@@ -363,7 +364,8 @@ export default function DiceTray() {
       </ul>
     </section>
 
-    {logOpen ? (
+    {logOpen
+      ? createPortal(
       <div
         className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 p-4"
         onClick={() => setLogOpen(false)}
@@ -427,8 +429,10 @@ export default function DiceTray() {
             </button>
           </div>
         </div>
-      </div>
-    ) : null}
+      </div>,
+          document.body
+        )
+      : null}
     </>
   )
 }
