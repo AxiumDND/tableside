@@ -56,6 +56,26 @@ describe('CombatTracker', () => {
     expect(next.activeId).toBe('high')
   })
 
+  it('shows the current combatant full name in the header and a name tooltip', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    const combat = makeCombat([
+      combatant({ id: 'low', name: 'Swarm of Bats 1', initiative: 12 }),
+      combatant({ id: 'high', name: 'Swarm of Bats 2', initiative: 18 })
+    ])
+    const { rerender } = render(<CombatTracker combat={combat} onChange={onChange} />)
+
+    expect(document.querySelector('header .font-display.text-base')).toBeNull()
+    await user.click(screen.getByRole('button', { name: /start combat/i }))
+    const started = onChange.mock.calls[0][0] as CombatState
+    rerender(<CombatTracker combat={started} onChange={onChange} />)
+
+    const heading = document.querySelector('header p.font-display')
+    expect(heading?.textContent).toBe('Swarm of Bats 2')
+    expect(document.querySelector('button[title="Swarm of Bats 1"]')).toBeTruthy()
+    expect(document.querySelector('button[title="Swarm of Bats 2"]')).toBeTruthy()
+  })
+
   it('adds a manual combatant from the form', async () => {
     const user = userEvent.setup()
     const onChange = vi.fn()

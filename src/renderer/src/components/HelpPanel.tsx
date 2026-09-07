@@ -889,7 +889,8 @@ export default function HelpPanel({
                 <Action>Roll all</Action> re-rolls everyone.
               </>,
               <>
-                <Action>Start combat</Action> begins round 1. With <Action>Combat music</Action> ticked, that starts
+                <Action>Start combat</Action> begins round 1. The header then shows the current combatant’s full name.
+                Hover a truncated row name to read it in full. With <Action>Combat music</Action> ticked, that starts
                 the <Code>Audio/Music/Combat</Code> playlist. <Code>Alt+T</Code> advances the turn (opens Combat if
                 needed). <Action>Previous turn</Action> or <Code>Alt+Shift+T</Code> steps back if you skip someone.
                 Adjust HP on the row. <Action>Cnd</Action> toggles conditions (Poisoned, Prone, and the rest of
