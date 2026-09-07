@@ -120,6 +120,31 @@ export function advanceCombatTurn(combat: CombatState): CombatState {
   }
 }
 
+/** Remove a combatant. If it was their turn, pass the turn to the next in order. */
+export function removeCombatantFromCombat(combat: CombatState, id: string): CombatState {
+  if (!combat.combatants.some((c) => c.id === id)) return combat
+  const remaining = combat.combatants.filter((c) => c.id !== id)
+  if (combat.activeId !== id) {
+    return { ...combat, combatants: remaining }
+  }
+  if (remaining.length === 0) {
+    return { ...combat, combatants: remaining, activeId: null }
+  }
+  const round = combat.round ?? 0
+  if (round <= 0) {
+    return { ...combat, combatants: remaining, activeId: null }
+  }
+  const ordered = sortCombatants(combat.combatants)
+  const idx = ordered.findIndex((c) => c.id === id)
+  const nextIdx = (idx + 1) % ordered.length
+  return {
+    ...combat,
+    combatants: remaining,
+    activeId: ordered[nextIdx].id,
+    round: nextIdx === 0 ? round + 1 : round
+  }
+}
+
 /** Step back one combatant (and drop the round when wrapping to the last). */
 export function rewindCombatTurn(combat: CombatState): CombatState {
   const ordered = sortCombatants(combat.combatants)

@@ -87,10 +87,12 @@ Open with **Combat** in the header.
 | Manual row | Name / Init / HP, plus AC (5e/PF2e) or Willpower and Hunger (Vampire 5th) |
 | d20 on a row | Rolls initiative for that combatant (PCs: type their table roll into Init) |
 | **Start combat** / next-round controls | Begins round 1. **Previous turn** / **Next turn** step back or forward on the list (Previous undoes a too-fast Next, including wrapping the round). With **Combat music** ticked, Start combat plays the `Audio/Music/Combat` playlist |
+| Current name | After Start combat, the header shows the current combatant’s full name. Hover a truncated row name for the full name. |
 | Eye / view | Opens that combatant’s rollable statblock without changing the turn |
 | **Cnd** | Toggle conditions (Poisoned, Prone, …) on that PC, NPC, or monster. Same picker on a map token that is in this fight |
 | **Show to players** | Superimposes initiative order on the current player image |
 | **Combat music** | Tick to switch music on Start / End combat. Untick to leave the mixer alone |
+| **×** on a row | Removes that combatant (asks first). If it was their turn, the next name in initiative takes the turn |
 | **End combat** | Empties the tracker (confirm dialog). With **Combat music** ticked, returns to the `Audio/Music/General` playlist |
 
 State saves to `combat.json` in the campaign folder.
