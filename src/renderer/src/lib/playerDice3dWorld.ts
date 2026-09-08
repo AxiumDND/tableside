@@ -9,6 +9,7 @@ import {
   extractDieFaces,
   faceLabels,
   landingQuaternion,
+  landingTarget,
   resultDieFace,
   type DieFace
 } from './playerDice3dFaces'
@@ -93,13 +94,17 @@ function highlightFor(spec: PlayerDice3dDie, label: string): 'none' | 'nat20' | 
 }
 
 function orientFaceDecal(mesh: THREE.Mesh, normal: THREE.Vector3): void {
-  const z = new THREE.Vector3(0, 0, 1)
-  mesh.quaternion.setFromUnitVectors(z, normal.clone().normalize())
-  const landing = new THREE.Quaternion().setFromUnitVectors(normal.clone().normalize(), new THREE.Vector3(0, 1, 0))
+  const face = normal.clone().normalize()
+  const localZ = new THREE.Vector3(0, 0, 1)
+  mesh.quaternion.setFromUnitVectors(localZ, face)
+  const target = landingTarget()
+  const landing = new THREE.Quaternion().setFromUnitVectors(face, target)
   const after = new THREE.Vector3(0, 1, 0).applyQuaternion(mesh.quaternion).applyQuaternion(landing)
-  const current = Math.atan2(after.x, after.z)
-  const desired = Math.atan2(0, -1)
-  mesh.rotateOnAxis(z, desired - current)
+  const desired = new THREE.Vector3(0, 0, -1)
+  desired.addScaledVector(target, -desired.dot(target)).normalize()
+  const cross = new THREE.Vector3().crossVectors(after, desired)
+  const angle = Math.atan2(target.dot(cross), after.dot(desired))
+  mesh.rotateOnAxis(localZ, angle)
 }
 
 function easeOutCubic(t: number): number {
@@ -129,34 +134,18 @@ function makeDie(spec: PlayerDice3dDie): { group: THREE.Group; spinner: THREE.Gr
   const geometry = dieGeometry(spec.sides)
   const labels = faceLabels(spec)
   const faces = extractDieFaces(geometry, labels)
-  const cube = spec.sides === 6
   const result = resultDieFace(faces, spec)
   const body = new THREE.Mesh(
     geometry,
-    cube
-      ? faces.map(
-          (face) =>
-            new THREE.MeshStandardMaterial({
-              map: faceTexture(face.label, {
-                dropped: Boolean(spec.dropped),
-                highlight: highlightFor(spec, face.label),
-                fill: true
-              }),
-              roughness: 0.46,
-              metalness: 0.22,
-              transparent: Boolean(spec.dropped),
-              opacity: spec.dropped ? 0.58 : 1
-            })
-        )
-      : new THREE.MeshStandardMaterial({
-          color: spec.dropped ? 0x2a2418 : 0x2c1c0c,
-          roughness: 0.42,
-          metalness: 0.28,
-          emissive: 0x140e08,
-          emissiveIntensity: 0.12,
-          transparent: Boolean(spec.dropped),
-          opacity: spec.dropped ? 0.55 : 1
-        })
+    new THREE.MeshStandardMaterial({
+      color: spec.dropped ? 0x2a2418 : 0x2c1c0c,
+      roughness: 0.42,
+      metalness: 0.28,
+      emissive: 0x140e08,
+      emissiveIntensity: 0.12,
+      transparent: Boolean(spec.dropped),
+      opacity: spec.dropped ? 0.55 : 1
+    })
   )
   const edges = new THREE.LineSegments(
     new THREE.EdgesGeometry(geometry, 18),
@@ -167,28 +156,26 @@ function makeDie(spec: PlayerDice3dDie): { group: THREE.Group; spinner: THREE.Gr
     })
   )
   spinner.add(body, edges)
-  if (!cube) {
-    for (const face of faces) {
-      const decal = new THREE.Mesh(
-        new THREE.PlaneGeometry(1, 1),
-        new THREE.MeshBasicMaterial({
-          map: faceTexture(face.label, {
-            dropped: Boolean(spec.dropped),
-            highlight: highlightFor(spec, face.label),
-            fill: false
-          }),
-          transparent: true,
-          depthWrite: false,
-          polygonOffset: true,
-          polygonOffsetFactor: -1,
-          polygonOffsetUnits: -1
-        })
-      )
-      decal.position.copy(face.center).addScaledVector(face.normal, 0.035)
-      orientFaceDecal(decal, face.normal)
-      decal.scale.setScalar(face.size)
-      spinner.add(decal)
-    }
+  for (const face of faces) {
+    const decal = new THREE.Mesh(
+      new THREE.PlaneGeometry(1, 1),
+      new THREE.MeshBasicMaterial({
+        map: faceTexture(face.label, {
+          dropped: Boolean(spec.dropped),
+          highlight: highlightFor(spec, face.label),
+          fill: false
+        }),
+        transparent: true,
+        depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: -1,
+        polygonOffsetUnits: -1
+      })
+    )
+    decal.position.copy(face.center).addScaledVector(face.normal, 0.035)
+    orientFaceDecal(decal, face.normal)
+    decal.scale.setScalar(face.size)
+    spinner.add(decal)
   }
   const shadow = new THREE.Mesh(
     new THREE.CircleGeometry(0.85, 24),

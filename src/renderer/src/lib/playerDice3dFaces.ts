@@ -226,9 +226,14 @@ export function resultDieFace(faces: DieFace[], die: PlayerDice3dDie): DieFace {
   )
 }
 
-export function landingQuaternion(faceNormal: THREE.Vector3, tilt = 0.34): THREE.Quaternion {
-  const target = new THREE.Vector3(0, 1, tilt).normalize()
-  return new THREE.Quaternion().setFromUnitVectors(faceNormal.clone().normalize(), target)
+export const DICE_3D_LANDING_TILT = 0.34
+
+export function landingTarget(tilt = DICE_3D_LANDING_TILT): THREE.Vector3 {
+  return new THREE.Vector3(0, 1, tilt).normalize()
+}
+
+export function landingQuaternion(faceNormal: THREE.Vector3, tilt = DICE_3D_LANDING_TILT): THREE.Quaternion {
+  return new THREE.Quaternion().setFromUnitVectors(faceNormal.clone().normalize(), landingTarget(tilt))
 }
 
 export function faceLabels(die: PlayerDice3dDie): string[] {
