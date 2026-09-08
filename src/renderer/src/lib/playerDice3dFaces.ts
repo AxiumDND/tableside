@@ -187,7 +187,11 @@ export function extractDieFaces(geometry: THREE.BufferGeometry, labels: string[]
     }
   }
 
-  const ordered = sortClusters(clusters).slice(0, labels.length)
+  const reading =
+    clusters.length > labels.length
+      ? [...clusters].sort((left, right) => right.area - left.area).slice(0, labels.length)
+      : clusters
+  const ordered = sortClusters(reading)
   geometry.clearGroups()
   ordered.forEach((cluster, materialIndex) => {
     for (const start of cluster.starts) {

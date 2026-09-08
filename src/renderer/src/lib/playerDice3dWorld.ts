@@ -7,7 +7,6 @@ import {
 import {
   DICE_3D_CAMERA_POSITION,
   DICE_3D_LOOK_AT,
-  createD10Geometry,
   d4CornerMarks,
   d4LandingQuaternion,
   extractDieFaces,
@@ -17,6 +16,7 @@ import {
   resultDieFace,
   type DieFace
 } from './playerDice3dFaces'
+import { createDieGeometry } from './playerDice3dMeshes'
 import {
   DIE_GLYPH_CANVAS,
   dieBodyScale,
@@ -55,13 +55,8 @@ function webglAvailable(): boolean {
   }
 }
 
-function dieGeometry(sides: number): THREE.BufferGeometry {
-  if (sides <= 4) return new THREE.TetrahedronGeometry(1.12)
-  if (sides <= 6) return new THREE.BoxGeometry(1.28, 1.28, 1.28)
-  if (sides <= 8) return new THREE.OctahedronGeometry(1.12)
-  if (sides <= 10) return createD10Geometry()
-  if (sides <= 12) return new THREE.DodecahedronGeometry(1.14)
-  return new THREE.IcosahedronGeometry(1.2)
+function dieGeometry(spec: PlayerDice3dDie): THREE.BufferGeometry {
+  return createDieGeometry(spec)
 }
 
 function faceMaps(
@@ -297,7 +292,7 @@ function makeDie(
 ): { group: THREE.Group; spinner: THREE.Group; result: DieFace; faces: DieFace[]; scale: number } {
   const group = new THREE.Group()
   const spinner = new THREE.Group()
-  const geometry = dieGeometry(spec.sides)
+  const geometry = dieGeometry(spec)
   const labels = faceLabels(spec)
   const faces = extractDieFaces(geometry, labels)
   const result = resultDieFace(faces, spec)
@@ -317,20 +312,13 @@ function makeDie(
       ior: 1.5,
       specularIntensity: 0.5,
       envMapIntensity: 0.85,
+      vertexColors: Boolean(geometry.getAttribute('color')),
       transparent: Boolean(spec.dropped),
       opacity: spec.dropped ? 0.5 : 1
     })
   )
-  const edges = new THREE.LineSegments(
-    new THREE.EdgesGeometry(geometry, 22),
-    new THREE.LineBasicMaterial({
-      color: 0x5a4632,
-      transparent: true,
-      opacity: spec.dropped ? 0.08 : 0.12
-    })
-  )
   spinner.scale.setScalar(scale)
-  spinner.add(body, edges)
+  spinner.add(body)
   if (spec.sides <= 4) {
     for (const mark of d4CornerMarks(faces)) {
       const toward = mark.vertex.clone().sub(mark.face.center)
