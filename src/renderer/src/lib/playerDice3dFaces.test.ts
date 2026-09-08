@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest'
 import * as THREE from 'three'
 import {
   createD10Geometry,
+  d4CornerMarks,
+  d4SitQuaternion,
   extractDieFaces,
   landingQuaternion,
   landingTarget,
@@ -35,7 +37,11 @@ describe('extractDieFaces', () => {
 
   it('finds four faces on a tetrahedron', () => {
     const labels = ['1', '2', '3', '4']
-    expect(extractDieFaces(new THREE.TetrahedronGeometry(1.12), labels)).toHaveLength(4)
+    const faces = extractDieFaces(new THREE.TetrahedronGeometry(1.12), labels)
+    expect(faces).toHaveLength(4)
+    for (const face of faces) {
+      expect(face.vertices).toHaveLength(3)
+    }
   })
 
   it('points every d10 face outward so 00 is not the same as 50', () => {
@@ -75,5 +81,32 @@ describe('landingQuaternion', () => {
       faces.find((face) => face.label === label)!.normal.clone().applyQuaternion(q).dot(target)
     expect(toward('00')).toBeGreaterThan(0.999)
     expect(toward('50')).toBeLessThan(-0.8)
+  })
+})
+
+describe('d4 sit and vertex numbers', () => {
+  const labels = ['1', '2', '3', '4']
+
+  it('sits on the result face so the opposite point is up', () => {
+    const faces = extractDieFaces(new THREE.TetrahedronGeometry(1.12), labels)
+    const result = resultDieFace(faces, { sides: 4, value: 4, label: '4' })
+    const q = d4SitQuaternion(result.normal)
+    const down = result.normal.clone().applyQuaternion(q)
+    expect(down.dot(new THREE.Vector3(0, -1, 0))).toBeGreaterThan(0.999)
+    const ys = faces.map((face) => face.center.clone().applyQuaternion(q).y)
+    expect(Math.min(...ys)).toBeCloseTo(result.center.clone().applyQuaternion(q).y, 5)
+  })
+
+  it('puts the result number at the top point of the three standing faces', () => {
+    const faces = extractDieFaces(new THREE.TetrahedronGeometry(1.12), labels)
+    const marks = d4CornerMarks(faces)
+    expect(marks).toHaveLength(12)
+    const fours = marks.filter((mark) => mark.label === '4')
+    expect(fours).toHaveLength(3)
+    const first = fours[0]!.vertex
+    for (const mark of fours) {
+      expect(mark.vertex.distanceTo(first)).toBeLessThan(1e-4)
+      expect(mark.face.label).not.toBe('4')
+    }
   })
 })
