@@ -142,16 +142,15 @@ function makeDie(spec: PlayerDice3dDie): THREE.Group {
       opacity: spec.dropped ? 0.4 : 0.9
     })
   )
-  const plate = new THREE.Mesh(
-    new THREE.PlaneGeometry(1.15, 1.15),
-    new THREE.MeshBasicMaterial({
+  const plate = new THREE.Sprite(
+    new THREE.SpriteMaterial({
       map: numberTexture(spec.label, Boolean(spec.dropped), nat),
       transparent: true,
       depthWrite: false
     })
   )
-  plate.position.y = 1.22
-  plate.rotation.x = -Math.PI / 2
+  plate.position.y = 1.35
+  plate.scale.set(1.45, 1.45, 1)
   const shadow = new THREE.Mesh(
     new THREE.CircleGeometry(0.85, 24),
     new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.28 })
@@ -282,6 +281,8 @@ export function mountPlayerDice3d(
       scene.traverse((obj) => {
         if (obj instanceof THREE.Mesh || obj instanceof THREE.LineSegments) {
           obj.geometry.dispose()
+        }
+        if (obj instanceof THREE.Mesh || obj instanceof THREE.LineSegments || obj instanceof THREE.Sprite) {
           const materials = Array.isArray(obj.material) ? obj.material : [obj.material]
           for (const material of materials) {
             const map = (material as THREE.MeshBasicMaterial).map

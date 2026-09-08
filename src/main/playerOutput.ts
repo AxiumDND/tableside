@@ -6,6 +6,8 @@ import { clampPlayerImagePadPct, playerImagePadFromSettings } from '../shared/pl
 import { getSettings } from './appSettings'
 import {
   playerOutputScaleMismatch,
+  FORCE_PLAYER_WINDOW_ENV,
+  playerWindowForced,
   playerWindowNeedsRebuild,
   shouldShowPlayerWindow
 } from '../shared/playerWindow'
@@ -137,6 +139,7 @@ export function dmDisplayId(): number {
 }
 
 export function hasSecondDisplay(): boolean {
+  if (playerWindowForced(process.env[FORCE_PLAYER_WINDOW_ENV])) return true
   return screen.getAllDisplays().length > 1
 }
 
@@ -231,7 +234,10 @@ export function showPlayerWindow(display?: Electron.Display, forceRebuild = fals
 function createPlayerWindow(display = targetPlayerDisplay()): void {
   if (!hasSecondDisplay()) return
   if (playerWindow && !playerWindow.isDestroyed()) destroyPlayerWindow()
-  const bounds = display.bounds
+  const forced = playerWindowForced(process.env[FORCE_PLAYER_WINDOW_ENV])
+  const bounds = forced
+    ? { x: 80, y: 48, width: 1280, height: 720 }
+    : display.bounds
   const icon = deps.appIconPath()
   playerWindow = new BrowserWindow({
     x: bounds.x,
@@ -268,16 +274,17 @@ function createPlayerWindow(display = targetPlayerDisplay()): void {
   })
   playerWindow.once('ready-to-show', () => {
     if (!playerWindow || playerWindow.isDestroyed()) return
-    if (playerWindowWarmup) {
+    if (playerWindowWarmup && !forced) {
       playerWindowWarmup = false
       destroyPlayerWindow(false)
       createPlayerWindow(display)
       return
     }
+    playerWindowWarmup = false
     playerWindow.setBounds(bounds)
     playerWindow.setSkipTaskbar(false)
     playerWindow.show()
-    playerWindow.setFullScreen(true)
+    if (!forced) playerWindow.setFullScreen(true)
     applyPlayerOutputScale()
     broadcastPlayerWindow()
     void verifyPlayerOutputScale(created, display)

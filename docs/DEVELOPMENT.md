@@ -63,7 +63,7 @@ docs/             Authoring and contributor docs
 ## Two windows
 
 - **DM window** — campaign tree, notes, combat, dice, Lookup
-- **Player window** — fullscreen image (and optional initiative overlay) on the second display when available
+- **Player window** — fullscreen image (and optional initiative overlay) on the second display when available. `TABLESIDE_FORCE_PLAYER=1` opens a windowed player view on the primary display so you can demo TV overlays without a second monitor.
 
 Main process entry is `src/main/index.ts` (windows + app lifecycle). IPC handlers live in `registerAppIpc.ts`, `registerPlayerIpc.ts`, `registerMixerIpc.ts`, and `registerCampaignIpc.ts`. Sample campaign copy lives in `src/main/sampleCampaign.ts`; folder load/tree/templates in `src/main/campaignFolder.ts`; note/file mutations in `src/main/campaignNotes.ts`; mixer/library in `src/main/campaignMixer.ts`; player window/state in `src/main/playerOutput.ts`; settings/folders in `src/main/appSettings.ts`. Shared campaign folder rules live in `src/shared/campaignLayout.ts`.
 
