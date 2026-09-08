@@ -1999,11 +1999,19 @@ body,
 }
 
 .player-dice-3d-css-die.is-d4 {
+  width: min(16vmin, 8.4rem);
+  height: min(16vmin, 8.4rem);
   clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
 }
 
 .player-dice-3d-css-die.is-d6 {
+  width: min(13vmin, 6.9rem);
+  height: min(13vmin, 6.9rem);
   border-radius: 0.7vmin;
+}
+
+.player-dice-3d-css-die.is-d6 .player-dice-3d-css-face {
+  font-size: 5.4vmin;
 }
 
 .player-dice-3d-css-die.is-d8,
@@ -2038,6 +2046,20 @@ body,
   line-height: 1;
   color: #1c140e;
   text-shadow: 0 0.15vmin 0 rgba(255, 248, 230, 0.45);
+}
+
+.player-dice-3d-css-face.is-wide {
+  font-size: 3.6vmin;
+}
+
+.player-dice-3d-css-face.is-dotted::after {
+  content: '';
+  display: block;
+  width: 0.45vmin;
+  height: 0.45vmin;
+  margin: 0.2vmin auto 0;
+  border-radius: 50%;
+  background: currentColor;
 }
 
 @keyframes player-dice-3d-throw {

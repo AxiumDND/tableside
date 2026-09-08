@@ -39,4 +39,25 @@ describe('OpeningDice3d', () => {
     })
     expect(container.querySelectorAll('.player-dice-3d-css-die')).toHaveLength(2)
   })
+
+  it('dots a 6 on the CSS fallback and shrinks two-digit tens', async () => {
+    vi.mocked(mountPlayerDice3d).mockReturnValue(null)
+    const { container } = render(
+      <OpeningDice3d
+        show={show({
+          expr: 'd100',
+          total: 6,
+          bonus: 0,
+          groups: [{ sides: 100, rolls: [6] }]
+        })}
+      />
+    )
+    await waitFor(() => {
+      expect(container.querySelector('[data-dice-3d="css"]')).toBeTruthy()
+    })
+    const faces = [...container.querySelectorAll('.player-dice-3d-css-face')]
+    expect(faces.map((node) => node.textContent)).toEqual(['00', '6'])
+    expect(faces[0]?.classList.contains('is-wide')).toBe(true)
+    expect(faces[1]?.classList.contains('is-dotted')).toBe(true)
+  })
 })

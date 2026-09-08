@@ -6,6 +6,7 @@ import {
   type PlayerDice3dDie
 } from '../../../shared/playerDice3d'
 import type { PlayerDiceShow } from '../../../shared/playerDiceShow'
+import { dieGlyphShouldDot } from '../lib/playerDice3dLook'
 import type { PlayerDice3dHandle } from '../lib/playerDice3dWorld'
 
 function CssDiceThrow({ dice, fadingOut }: { dice: PlayerDice3dDie[]; fadingOut: boolean }) {
@@ -21,7 +22,13 @@ function CssDiceThrow({ dice, fadingOut }: { dice: PlayerDice3dDie[]; fadingOut:
             animationDuration: `${DICE_3D_THROW_MS}ms`
           }}
         >
-          <span className="player-dice-3d-css-face">{die.label}</span>
+          <span
+            className={`player-dice-3d-css-face${dieGlyphShouldDot(die.label) ? ' is-dotted' : ''}${
+              die.label.length > 1 ? ' is-wide' : ''
+            }`}
+          >
+            {die.label}
+          </span>
         </div>
       ))}
     </div>
