@@ -11,11 +11,25 @@ export const DICE_3D_RESERVED_RIGHT = 0.26
 
 export const DICE_3D_MAX_MESHES = DICE_SHOW_MAX_FACES
 
+export type PlayerDice3dFaceSet = 'standard' | 'd10-ones' | 'd10-tens'
+
 export type PlayerDice3dDie = {
   sides: number
   value: number
   label: string
   dropped?: boolean
+  faceSet?: PlayerDice3dFaceSet
+}
+
+export function faceLabelsForDie(die: Pick<PlayerDice3dDie, 'sides' | 'faceSet'>): string[] {
+  if (die.faceSet === 'd10-tens') {
+    return ['00', '10', '20', '30', '40', '50', '60', '70', '80', '90']
+  }
+  if (die.faceSet === 'd10-ones') {
+    return ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+  }
+  const sides = Math.max(2, Math.round(die.sides) || 2)
+  return Array.from({ length: sides }, (_, index) => String(index + 1))
 }
 
 export function isPlayerDice3dSource(source: string | undefined): boolean {
@@ -41,8 +55,8 @@ export function percentilePair(value: number): { tens: number; ones: number } {
 function percentileDice(value: number): PlayerDice3dDie[] {
   const { tens, ones } = percentilePair(value)
   return [
-    { sides: 10, value: tens, label: tens.toString().padStart(2, '0') },
-    { sides: 10, value: ones, label: String(ones) }
+    { sides: 10, value: tens, label: tens.toString().padStart(2, '0'), faceSet: 'd10-tens' },
+    { sides: 10, value: ones, label: String(ones), faceSet: 'd10-ones' }
   ]
 }
 

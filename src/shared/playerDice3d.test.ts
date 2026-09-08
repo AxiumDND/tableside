@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import type { PlayerDiceShow } from './playerDiceShow'
 import {
   DICE_3D_MAX_MESHES,
+  faceLabelsForDie,
   percentilePair,
   planPlayerDice3dThrow,
   playerDice3dShouldThrow
@@ -53,8 +54,8 @@ describe('planPlayerDice3dThrow', () => {
 
   it('turns a d100 into two d10s', () => {
     expect(planPlayerDice3dThrow(show({ expr: '1d100', groups: [{ sides: 100, rolls: [23] }], total: 23 }))).toEqual([
-      { sides: 10, value: 20, label: '20' },
-      { sides: 10, value: 3, label: '3' }
+      { sides: 10, value: 20, label: '20', faceSet: 'd10-tens' },
+      { sides: 10, value: 3, label: '3', faceSet: 'd10-ones' }
     ])
   })
 
@@ -62,6 +63,29 @@ describe('planPlayerDice3dThrow', () => {
     const rolls = Array.from({ length: 20 }, (_, i) => (i % 6) + 1)
     const planned = planPlayerDice3dThrow(show({ expr: '20d6', groups: [{ sides: 6, rolls }], total: 70 }))
     expect(planned).toHaveLength(DICE_3D_MAX_MESHES)
+  })
+})
+
+describe('faceLabelsForDie', () => {
+  it('uses 1..N for a standard polyhedron', () => {
+    expect(faceLabelsForDie({ sides: 20 })).toEqual(Array.from({ length: 20 }, (_, i) => String(i + 1)))
+    expect(faceLabelsForDie({ sides: 6 })).toHaveLength(6)
+  })
+
+  it('uses percentile faces for a split d100', () => {
+    expect(faceLabelsForDie({ sides: 10, faceSet: 'd10-tens' })[0]).toBe('00')
+    expect(faceLabelsForDie({ sides: 10, faceSet: 'd10-ones' })).toEqual([
+      '0',
+      '1',
+      '2',
+      '3',
+      '4',
+      '5',
+      '6',
+      '7',
+      '8',
+      '9'
+    ])
   })
 })
 

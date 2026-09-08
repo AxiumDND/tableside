@@ -4,6 +4,14 @@ import {
   DICE_3D_THROW_MS,
   type PlayerDice3dDie
 } from '../../../shared/playerDice3d'
+import {
+  createD10Geometry,
+  extractDieFaces,
+  faceLabels,
+  landingQuaternion,
+  resultDieFace,
+  type DieFace
+} from './playerDice3dFaces'
 
 export type PlayerDice3dHandle = {
   dispose: () => void
@@ -16,6 +24,7 @@ type MountOpts = {
 
 type FlyingDie = {
   group: THREE.Group
+  spinner: THREE.Group
   start: THREE.Vector3
   end: THREE.Vector3
   startQuat: THREE.Quaternion
@@ -32,64 +41,65 @@ function webglAvailable(): boolean {
   }
 }
 
-function createD10Geometry(): THREE.BufferGeometry {
-  const top = new THREE.Vector3(0, 1.05, 0)
-  const bottom = new THREE.Vector3(0, -1.05, 0)
-  const n = 5
-  const r = 0.88
-  const mid = 0.16
-  const upper: THREE.Vector3[] = []
-  const lower: THREE.Vector3[] = []
-  for (let i = 0; i < n; i += 1) {
-    const a = (i / n) * Math.PI * 2 - Math.PI / 2
-    const b = a + Math.PI / n
-    upper.push(new THREE.Vector3(Math.cos(a) * r, mid, Math.sin(a) * r))
-    lower.push(new THREE.Vector3(Math.cos(b) * r, -mid, Math.sin(b) * r))
-  }
-  const positions: number[] = []
-  const push = (a: THREE.Vector3, b: THREE.Vector3, c: THREE.Vector3): void => {
-    positions.push(a.x, a.y, a.z, b.x, b.y, b.z, c.x, c.y, c.z)
-  }
-  for (let i = 0; i < n; i += 1) {
-    const next = (i + 1) % n
-    push(top, upper[i]!, lower[i]!)
-    push(top, lower[i]!, upper[next]!)
-    push(bottom, lower[i]!, upper[next]!)
-    push(bottom, upper[next]!, lower[next]!)
-  }
-  const geometry = new THREE.BufferGeometry()
-  geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
-  geometry.computeVertexNormals()
-  return geometry
-}
-
 function dieGeometry(sides: number): THREE.BufferGeometry {
-  if (sides <= 4) return new THREE.TetrahedronGeometry(1.05)
-  if (sides <= 6) return new THREE.BoxGeometry(1.2, 1.2, 1.2)
-  if (sides <= 8) return new THREE.OctahedronGeometry(1.05)
+  if (sides <= 4) return new THREE.TetrahedronGeometry(1.12)
+  if (sides <= 6) return new THREE.BoxGeometry(1.28, 1.28, 1.28)
+  if (sides <= 8) return new THREE.OctahedronGeometry(1.12)
   if (sides <= 10) return createD10Geometry()
-  if (sides <= 12) return new THREE.DodecahedronGeometry(1.05)
-  return new THREE.IcosahedronGeometry(1.1)
+  if (sides <= 12) return new THREE.DodecahedronGeometry(1.14)
+  return new THREE.IcosahedronGeometry(1.2)
 }
 
-function numberTexture(label: string, dropped: boolean, nat: 'none' | 'nat20' | 'nat1'): THREE.CanvasTexture {
+function faceTexture(
+  label: string,
+  opts: { dropped: boolean; highlight: 'none' | 'nat20' | 'nat1'; fill: boolean }
+): THREE.CanvasTexture {
   const canvas = document.createElement('canvas')
   canvas.width = 256
   canvas.height = 256
   const ctx = canvas.getContext('2d')
   if (ctx) {
     ctx.clearRect(0, 0, 256, 256)
-    ctx.fillStyle = dropped ? 'rgba(196, 165, 116, 0.45)' : nat === 'nat20' ? '#9ed49b' : nat === 'nat1' ? '#e08989' : '#f4e6c3'
-    ctx.font = '700 128px Georgia, "Times New Roman", serif'
+    if (opts.fill) {
+      ctx.fillStyle = opts.dropped ? '#2a2418' : '#2c1c0c'
+      ctx.fillRect(0, 0, 256, 256)
+    }
+    ctx.fillStyle = opts.dropped
+      ? 'rgba(196, 165, 116, 0.55)'
+      : opts.highlight === 'nat20'
+        ? '#9ed49b'
+        : opts.highlight === 'nat1'
+          ? '#e08989'
+          : '#f4e6c3'
+    const size = label.length > 1 ? 108 : 132
+    ctx.font = `700 ${size}px Georgia, "Times New Roman", serif`
     ctx.textAlign = 'center'
     ctx.textBaseline = 'middle'
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.65)'
-    ctx.shadowBlur = 18
-    ctx.fillText(label, 128, 136)
+    ctx.shadowColor = 'rgba(0, 0, 0, 0.7)'
+    ctx.shadowBlur = 12
+    ctx.fillText(label, 128, 140)
   }
   const texture = new THREE.CanvasTexture(canvas)
   texture.colorSpace = THREE.SRGBColorSpace
+  texture.anisotropy = 4
   return texture
+}
+
+function highlightFor(spec: PlayerDice3dDie, label: string): 'none' | 'nat20' | 'nat1' {
+  if (spec.dropped || spec.sides !== 20 || label !== spec.label) return 'none'
+  if (spec.value === 20) return 'nat20'
+  if (spec.value === 1) return 'nat1'
+  return 'none'
+}
+
+function orientFaceDecal(mesh: THREE.Mesh, normal: THREE.Vector3): void {
+  const z = new THREE.Vector3(0, 0, 1)
+  mesh.quaternion.setFromUnitVectors(z, normal.clone().normalize())
+  const landing = new THREE.Quaternion().setFromUnitVectors(normal.clone().normalize(), new THREE.Vector3(0, 1, 0))
+  const after = new THREE.Vector3(0, 1, 0).applyQuaternion(mesh.quaternion).applyQuaternion(landing)
+  const current = Math.atan2(after.x, after.z)
+  const desired = Math.atan2(0, -1)
+  mesh.rotateOnAxis(z, desired - current)
 }
 
 function easeOutCubic(t: number): number {
@@ -113,52 +123,81 @@ function landingGrid(count: number, width: number, depth: number): THREE.Vector3
   return spots
 }
 
-function makeDie(spec: PlayerDice3dDie): THREE.Group {
+function makeDie(spec: PlayerDice3dDie): { group: THREE.Group; spinner: THREE.Group; result: DieFace } {
   const group = new THREE.Group()
+  const spinner = new THREE.Group()
   const geometry = dieGeometry(spec.sides)
-  const nat =
-    spec.sides === 20 && spec.value === 20 && !spec.dropped
-      ? 'nat20'
-      : spec.sides === 20 && spec.value === 1 && !spec.dropped
-        ? 'nat1'
-        : 'none'
+  const labels = faceLabels(spec)
+  const faces = extractDieFaces(geometry, labels)
+  const cube = spec.sides === 6
+  const result = resultDieFace(faces, spec)
   const body = new THREE.Mesh(
     geometry,
-    new THREE.MeshStandardMaterial({
-      color: spec.dropped ? 0x2a2418 : 0x2c1c0c,
-      roughness: 0.42,
-      metalness: 0.28,
-      emissive: nat === 'nat20' ? 0x1c3a18 : nat === 'nat1' ? 0x3a1212 : 0x140e08,
-      emissiveIntensity: nat === 'none' ? 0.12 : 0.35,
-      transparent: Boolean(spec.dropped),
-      opacity: spec.dropped ? 0.55 : 1
-    })
+    cube
+      ? faces.map(
+          (face) =>
+            new THREE.MeshStandardMaterial({
+              map: faceTexture(face.label, {
+                dropped: Boolean(spec.dropped),
+                highlight: highlightFor(spec, face.label),
+                fill: true
+              }),
+              roughness: 0.46,
+              metalness: 0.22,
+              transparent: Boolean(spec.dropped),
+              opacity: spec.dropped ? 0.58 : 1
+            })
+        )
+      : new THREE.MeshStandardMaterial({
+          color: spec.dropped ? 0x2a2418 : 0x2c1c0c,
+          roughness: 0.42,
+          metalness: 0.28,
+          emissive: 0x140e08,
+          emissiveIntensity: 0.12,
+          transparent: Boolean(spec.dropped),
+          opacity: spec.dropped ? 0.55 : 1
+        })
   )
   const edges = new THREE.LineSegments(
     new THREE.EdgesGeometry(geometry, 18),
     new THREE.LineBasicMaterial({
       color: spec.dropped ? 0x7a6848 : 0xe0c27a,
       transparent: true,
-      opacity: spec.dropped ? 0.4 : 0.9
+      opacity: spec.dropped ? 0.4 : 0.92
     })
   )
-  const plate = new THREE.Sprite(
-    new THREE.SpriteMaterial({
-      map: numberTexture(spec.label, Boolean(spec.dropped), nat),
-      transparent: true,
-      depthWrite: false
-    })
-  )
-  plate.position.y = 1.35
-  plate.scale.set(1.45, 1.45, 1)
+  spinner.add(body, edges)
+  if (!cube) {
+    for (const face of faces) {
+      const decal = new THREE.Mesh(
+        new THREE.PlaneGeometry(1, 1),
+        new THREE.MeshBasicMaterial({
+          map: faceTexture(face.label, {
+            dropped: Boolean(spec.dropped),
+            highlight: highlightFor(spec, face.label),
+            fill: false
+          }),
+          transparent: true,
+          depthWrite: false,
+          polygonOffset: true,
+          polygonOffsetFactor: -1,
+          polygonOffsetUnits: -1
+        })
+      )
+      decal.position.copy(face.center).addScaledVector(face.normal, 0.035)
+      orientFaceDecal(decal, face.normal)
+      decal.scale.setScalar(face.size)
+      spinner.add(decal)
+    }
+  }
   const shadow = new THREE.Mesh(
     new THREE.CircleGeometry(0.85, 24),
     new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.28 })
   )
   shadow.rotation.x = -Math.PI / 2
-  shadow.position.y = -0.68
-  group.add(body, edges, plate, shadow)
-  return group
+  shadow.position.y = -0.72
+  group.add(spinner, shadow)
+  return { group, spinner, result }
 }
 
 export function mountPlayerDice3d(
@@ -203,7 +242,7 @@ export function mountPlayerDice3d(
     (spot) => spot.add(new THREE.Vector3(-stageShift, 0, 0))
   )
   const flyers: FlyingDie[] = dice.map((spec, index) => {
-    const group = makeDie(spec)
+    const made = makeDie(spec)
     const end = ends[index] ?? new THREE.Vector3()
     const start = new THREE.Vector3(
       end.x + (Math.random() - 0.5) * 7,
@@ -213,14 +252,13 @@ export function mountPlayerDice3d(
     const startQuat = new THREE.Quaternion().setFromEuler(
       new THREE.Euler(Math.random() * 6, Math.random() * 6, Math.random() * 6)
     )
-    const endQuat = new THREE.Quaternion().setFromEuler(
-      new THREE.Euler(-0.18, (Math.random() - 0.5) * 0.35, 0)
-    )
-    group.position.copy(start)
-    group.quaternion.copy(startQuat)
-    scene.add(group)
+    const endQuat = landingQuaternion(made.result.normal)
+    made.group.position.copy(start)
+    made.spinner.quaternion.copy(startQuat)
+    scene.add(made.group)
     return {
-      group,
+      group: made.group,
+      spinner: made.spinner,
       start,
       end,
       startQuat,
@@ -260,11 +298,11 @@ export function mountPlayerDice3d(
     for (const flyer of flyers) {
       flyer.group.position.lerpVectors(flyer.start, flyer.end, ease)
       flyer.group.position.y = flyer.start.y + (flyer.end.y - flyer.start.y) * ease + Math.sin((1 - t) * Math.PI) * 1.4
-      flyer.group.quaternion.copy(flyer.startQuat).slerp(flyer.endQuat, ease)
+      flyer.spinner.quaternion.copy(flyer.startQuat).slerp(flyer.endQuat, ease)
       spinEuler.set(flyer.spin.x * (1 - ease), flyer.spin.y * (1 - ease), flyer.spin.z * (1 - ease))
       extraSpin.setFromEuler(spinEuler)
-      scratch.copy(flyer.group.quaternion).multiply(extraSpin)
-      flyer.group.quaternion.copy(scratch)
+      scratch.copy(flyer.spinner.quaternion).multiply(extraSpin)
+      flyer.spinner.quaternion.copy(scratch)
     }
     renderer.render(scene, camera)
     if (t < 1) frame = window.requestAnimationFrame(tick)
