@@ -2021,10 +2021,10 @@ body,
 }
 
 .player-dice-3d-css-die {
-  background: linear-gradient(160deg, #5a3d18 0%, #1a1208 70%);
+  background: linear-gradient(160deg, #f4e6c8 0%, #c8a878 58%, #9a7a48 100%);
   box-shadow:
-    0 1.4vmin 3vmin rgba(0, 0, 0, 0.45),
-    0 0 0 0.18vmin #d4b06a;
+    0 1.4vmin 3vmin rgba(0, 0, 0, 0.4),
+    inset 0 0.3vmin 0.6vmin rgba(255, 248, 230, 0.45);
 }
 
 .player-dice-3d-css-die.is-dropped {
@@ -2036,8 +2036,8 @@ body,
   font-family: var(--font-display, Georgia, serif);
   font-size: 4.4vmin;
   line-height: 1;
-  color: #f4e6c3;
-  text-shadow: 0 0.3vmin 0.8vmin rgba(0, 0, 0, 0.55);
+  color: #1c140e;
+  text-shadow: 0 0.15vmin 0 rgba(255, 248, 230, 0.45);
 }
 
 @keyframes player-dice-3d-throw {
