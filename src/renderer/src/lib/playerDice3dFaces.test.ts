@@ -3,6 +3,7 @@ import * as THREE from 'three'
 import {
   createD10Geometry,
   d4CornerMarks,
+  d4LandingQuaternion,
   d4SitQuaternion,
   extractDieFaces,
   landingQuaternion,
@@ -95,6 +96,24 @@ describe('d4 sit and vertex numbers', () => {
     expect(down.dot(new THREE.Vector3(0, -1, 0))).toBeGreaterThan(0.999)
     const ys = faces.map((face) => face.center.clone().applyQuaternion(q).y)
     expect(Math.min(...ys)).toBeCloseTo(result.center.clone().applyQuaternion(q).y, 5)
+  })
+
+  it('shows two standing faces so a 4 is never a flat triangle on a point', () => {
+    const faces = extractDieFaces(new THREE.TetrahedronGeometry(1.12), labels)
+    const target = landingTarget()
+    for (const label of labels) {
+      const result = resultDieFace(faces, { sides: 4, value: Number(label), label })
+      const q = d4LandingQuaternion(result, faces)
+      expect(result.normal.clone().applyQuaternion(q).dot(new THREE.Vector3(0, -1, 0))).toBeGreaterThan(0.999)
+      const downYs = result.vertices.map((vertex) => vertex.clone().applyQuaternion(q).y)
+      expect(Math.max(...downYs) - Math.min(...downYs)).toBeLessThan(0.04)
+      const standing = faces
+        .filter((face) => face.label !== label)
+        .map((face) => face.normal.clone().applyQuaternion(q).dot(target))
+        .sort((left, right) => right - left)
+      expect(standing[0]).toBeLessThan(0.9)
+      expect(standing[1]).toBeGreaterThan(0.12)
+    }
   })
 
   it('puts the result number at the top point of the three standing faces', () => {
