@@ -1,5 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import type { PlayerMapView, PlayerState } from '../../../shared/types'
+import { DICE_3D_THROW_MS, playerDice3dShouldThrow } from '../../../shared/playerDice3d'
+import { playerInitiativeVisible } from '../../../shared/playerInitiative'
+import { clampPlayerImagePadPct } from '../../../shared/playerImagePad'
 import { decodeFog } from '../lib/mapFog'
 import MapStage from './MapStage'
 import MapTokenMark from './MapTokenMark'
@@ -11,10 +14,9 @@ import OpeningPhone from './OpeningPhone'
 import OpeningHyperspace from './OpeningHyperspace'
 import OpeningBoxOfDoom from './OpeningBoxOfDoom'
 import OpeningHourglass from './OpeningHourglass'
+import OpeningDice3d from './OpeningDice3d'
 import OpeningDiceShow from './OpeningDiceShow'
 import PlayerCalendarLight from './PlayerCalendarLight'
-import { playerInitiativeVisible } from '../../../shared/playerInitiative'
-import { clampPlayerImagePadPct } from '../../../shared/playerImagePad'
 
 const FADE_MS = 5000
 
@@ -125,6 +127,7 @@ export default function PlayerView({
   }, [handoutScene?.id, handoutScene?.fadingOut])
 
   const showInit = playerInitiativeVisible(state)
+  const trayDice3d = playerDice3dShouldThrow(state.diceShow, { compact })
   const imagePadPct = clampPlayerImagePadPct(state.imagePadPct)
 
   const splitForHandout = Boolean(handoutScene && !handoutScene.fadingOut)
@@ -164,7 +167,10 @@ export default function PlayerView({
       {state.hyperspace ? <OpeningHyperspace jump={state.hyperspace} /> : null}
       {state.boxOfDoom ? <OpeningBoxOfDoom roll={state.boxOfDoom} suppressSound={suppressSound} /> : null}
       {state.hourglass ? <OpeningHourglass glass={state.hourglass} /> : null}
-      {state.diceShow ? <OpeningDiceShow show={state.diceShow} /> : null}
+      {state.diceShow && trayDice3d ? <OpeningDice3d show={state.diceShow} /> : null}
+      {state.diceShow ? (
+        <OpeningDiceShow show={state.diceShow} revealAfterMs={trayDice3d ? DICE_3D_THROW_MS : 0} />
+      ) : null}
       {state.calendarMark ? <PlayerCalendarLight mark={state.calendarMark} /> : null}
       {handoutScene ? (
         <aside

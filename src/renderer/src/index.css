@@ -1952,6 +1952,106 @@ body,
   color: #f4e6c3;
 }
 
+.player-dice-3d {
+  position: absolute;
+  inset: 0;
+  z-index: 10;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.player-dice-3d.is-out,
+.player-dice-3d-css.is-out {
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+
+.player-dice-3d-canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.player-dice-3d-css {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8% 28% 10% 6%;
+  perspective: 1100px;
+  perspective-origin: 42% 40%;
+}
+
+.player-dice-3d-css-die {
+  --die-i: 0;
+  --die-n: 1;
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: min(14vmin, 7.5rem);
+  height: min(14vmin, 7.5rem);
+  margin: 0 1.2vmin;
+  transform-style: preserve-3d;
+  animation-name: player-dice-3d-throw;
+  animation-timing-function: cubic-bezier(0.18, 0.7, 0.22, 1);
+  animation-fill-mode: forwards;
+}
+
+.player-dice-3d-css-die.is-d4 {
+  clip-path: polygon(50% 0%, 100% 100%, 0% 100%);
+}
+
+.player-dice-3d-css-die.is-d6 {
+  border-radius: 0.7vmin;
+}
+
+.player-dice-3d-css-die.is-d8,
+.player-dice-3d-css-die.is-d10 {
+  clip-path: polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%);
+}
+
+.player-dice-3d-css-die.is-d12,
+.player-dice-3d-css-die.is-d20 {
+  clip-path: polygon(50% 0%, 93% 25%, 93% 75%, 50% 100%, 7% 75%, 7% 25%);
+}
+
+.player-dice-3d-css-die.is-d100 {
+  border-radius: 50%;
+}
+
+.player-dice-3d-css-die {
+  background: linear-gradient(160deg, #5a3d18 0%, #1a1208 70%);
+  box-shadow:
+    0 1.4vmin 3vmin rgba(0, 0, 0, 0.45),
+    0 0 0 0.18vmin #d4b06a;
+}
+
+.player-dice-3d-css-die.is-dropped {
+  opacity: 0.4;
+  filter: grayscale(0.55);
+}
+
+.player-dice-3d-css-face {
+  font-family: var(--font-display, Georgia, serif);
+  font-size: 4.4vmin;
+  line-height: 1;
+  color: #f4e6c3;
+  text-shadow: 0 0.3vmin 0.8vmin rgba(0, 0, 0, 0.55);
+}
+
+@keyframes player-dice-3d-throw {
+  0% {
+    opacity: 0;
+    transform: translate3d(calc((var(--die-i) - (var(--die-n) - 1) / 2) * -8vmin), -42vh, 80px)
+      rotateX(-420deg) rotateY(280deg) rotateZ(-80deg) scale(0.55);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) rotateX(-18deg) rotateY(12deg) rotateZ(0deg) scale(1);
+  }
+}
+
 .player-dice-show {
   position: absolute;
   top: 6%;
@@ -2002,6 +2102,27 @@ body,
 
 .player-dice-show-natural.is-fail {
   color: #c45c5c;
+}
+
+.player-dice-show-result {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.8vh;
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transform: translateY(0.5vh);
+  transition:
+    opacity 0.35s ease,
+    transform 0.35s ease,
+    max-height 0.35s ease;
+}
+
+.player-dice-show-result.is-in {
+  max-height: 48vh;
+  opacity: 1;
+  transform: none;
 }
 
 .player-dice-show-expr {

@@ -375,7 +375,7 @@ export default function HelpPanel({
                   <>
                     <strong>Dice tray</strong> — d4–d100 and custom expressions such as <Code>2d6+3</Code>.{' '}
                     <Action>Adv</Action> / <Action>Dis</Action> on a single d20 rolls two fair d20s and keeps the higher
-                    or lower.
+                    or lower. 3D dice on the player TV are cosmetic; they land on those already-rolled faces.
                   </>,
                   <>
                     <strong>Box of Doom</strong> — same fair d20(s). The tumbling faces before the reveal are cosmetic
@@ -1012,9 +1012,10 @@ export default function HelpPanel({
             to keep tray and statblock rolls off the player TV; uncheck <Action>Play roll sound</Action> to mute the
             clatter (one die, two dice, and a handful each have their own recording). The tray keeps the latest roll plus
             four lines; <Action>View log</Action> opens every roll this session with the faces and bonus.{' '}
-            <Action>Clear log</Action> empties both. A strip also fades in on the right side of the player screen for
-            about 15 seconds, then fades out. In 5e campaigns, damage chips on statblocks also offer{' '}
-            <Action>Crit</Action> (double the dice).
+            <Action>Clear log</Action> empties both. Tray rolls throw 3D dice across the player TV; the right-hand
+            card still holds the expression and total after they land. Combat, Lookup, and statblock rolls stay on
+            that card only. In 5e campaigns, damage chips on statblocks also offer <Action>Crit</Action> (double the
+            dice).
           </p>
           <Sub>Box of Doom</Sub>
           <p>
