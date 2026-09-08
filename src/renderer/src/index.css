@@ -2007,7 +2007,7 @@ body,
 .player-dice-3d-css-die.is-d6 {
   width: min(13vmin, 6.9rem);
   height: min(13vmin, 6.9rem);
-  border-radius: 0.7vmin;
+  border-radius: 1.1vmin;
 }
 
 .player-dice-3d-css-die.is-d6 .player-dice-3d-css-face {
