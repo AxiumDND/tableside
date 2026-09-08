@@ -424,7 +424,6 @@ export default function CombatTracker({
                     title={c.name}
                   >
                     {c.name}
-                    <span className="ml-2 text-[10px] uppercase text-muted">{c.kind}</span>
                     {onTurn ? <span className="ml-2 text-[10px] uppercase text-amber">Turn</span> : null}
                     {tag ? (
                       <span className="ml-2 text-[10px] uppercase text-blood">{tag}</span>

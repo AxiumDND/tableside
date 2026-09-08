@@ -38,6 +38,8 @@ describe('CombatTracker', () => {
     // name can appear more than once — assert each renders at least once.
     expect(screen.getAllByText('Goblin Scout').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Bandit Captain').length).toBeGreaterThan(0)
+    expect(screen.getByRole('button', { name: 'Goblin Scout' }).textContent).toBe('Goblin Scout')
+    expect(screen.queryByRole('button', { name: /goblin scout npc/i })).toBeNull()
   })
 
   it('starts combat on the highest-initiative combatant', async () => {
