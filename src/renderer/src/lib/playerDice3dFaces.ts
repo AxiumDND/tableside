@@ -292,20 +292,28 @@ export function d4LandingQuaternion(
   const camHoriz = new THREE.Vector3(target.x, 0, target.z)
   if (camHoriz.lengthSq() < 1e-8) return sit
   camHoriz.normalize()
+  const standing = faces.filter((face) => face.label !== result.label)
   let best = sit
-  let bestDot = -Infinity
-  for (const face of faces) {
-    if (face.label === result.label) continue
-    const n = face.normal.clone().applyQuaternion(sit)
-    const horiz = new THREE.Vector3(n.x, 0, n.z)
-    if (horiz.lengthSq() < 1e-8) continue
-    horiz.normalize()
-    const yaw = Math.atan2(camHoriz.x * horiz.z - camHoriz.z * horiz.x, camHoriz.dot(horiz))
-    const next = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw).multiply(sit)
-    const facing = face.normal.clone().applyQuaternion(next).dot(target)
-    if (facing > bestDot) {
-      bestDot = facing
-      best = next
+  let bestScore = -Infinity
+  for (let i = 0; i < standing.length; i += 1) {
+    for (let j = i + 1; j < standing.length; j += 1) {
+      const first = standing[i]!.normal.clone().applyQuaternion(sit)
+      const second = standing[j]!.normal.clone().applyQuaternion(sit)
+      const firstHoriz = new THREE.Vector3(first.x, 0, first.z)
+      const secondHoriz = new THREE.Vector3(second.x, 0, second.z)
+      if (firstHoriz.lengthSq() < 1e-8 || secondHoriz.lengthSq() < 1e-8) continue
+      const ridge = firstHoriz.normalize().add(secondHoriz.normalize())
+      if (ridge.lengthSq() < 1e-8) continue
+      ridge.normalize()
+      const yaw = Math.atan2(camHoriz.x * ridge.z - camHoriz.z * ridge.x, camHoriz.dot(ridge))
+      const next = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw).multiply(sit)
+      const towardA = standing[i]!.normal.clone().applyQuaternion(next).dot(target)
+      const towardB = standing[j]!.normal.clone().applyQuaternion(next).dot(target)
+      const score = Math.min(towardA, towardB)
+      if (score > bestScore) {
+        bestScore = score
+        best = next
+      }
     }
   }
   return best
