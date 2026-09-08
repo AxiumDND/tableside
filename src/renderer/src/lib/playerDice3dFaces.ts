@@ -6,6 +6,13 @@ export type DieFace = {
   normal: THREE.Vector3
   center: THREE.Vector3
   size: number
+  vertices: THREE.Vector3[]
+}
+
+export type D4CornerMark = {
+  face: DieFace
+  vertex: THREE.Vector3
+  label: string
 }
 
 type Cluster = {
@@ -13,9 +20,34 @@ type Cluster = {
   center: THREE.Vector3
   area: number
   starts: number[]
+  vertices: THREE.Vector3[]
 }
 
 const FACE_DOT = 0.88
+const SAME_POINT = 1e-6
+const TABLE_DOWN = new THREE.Vector3(0, -1, 0)
+
+function vertexAt(
+  position: THREE.BufferAttribute | THREE.InterleavedBufferAttribute,
+  index: number
+): THREE.Vector3 {
+  return new THREE.Vector3(position.getX(index), position.getY(index), position.getZ(index))
+}
+
+function rememberVertex(cluster: Cluster, vertex: THREE.Vector3): void {
+  if (cluster.vertices.some((point) => point.distanceToSquared(vertex) < SAME_POINT)) return
+  cluster.vertices.push(vertex.clone())
+}
+
+function emptyCluster(): Cluster {
+  return {
+    normal: new THREE.Vector3(),
+    center: new THREE.Vector3(),
+    area: 0,
+    starts: [],
+    vertices: []
+  }
+}
 
 function triangleAt(
   position: THREE.BufferAttribute | THREE.InterleavedBufferAttribute,
@@ -66,12 +98,7 @@ function facesFromGroups(geometry: THREE.BufferGeometry, labels: string[]): DieF
   const byMaterial = new Map<number, Cluster>()
   for (const group of geometry.groups) {
     const materialIndex = group.materialIndex ?? 0
-    const cluster = byMaterial.get(materialIndex) ?? {
-      normal: new THREE.Vector3(),
-      center: new THREE.Vector3(),
-      area: 0,
-      starts: []
-    }
+    const cluster = byMaterial.get(materialIndex) ?? emptyCluster()
     const last = group.start + group.count
     for (let start = group.start; start < last; start += 3) {
       const a = index ? index.getX(start) : start
@@ -79,6 +106,9 @@ function facesFromGroups(geometry: THREE.BufferGeometry, labels: string[]): DieF
       const c = index ? index.getX(start + 2) : start + 2
       const tri = triangleAt(position, a, b, c)
       if (!tri) continue
+      rememberVertex(cluster, vertexAt(position, a))
+      rememberVertex(cluster, vertexAt(position, b))
+      rememberVertex(cluster, vertexAt(position, c))
       const nextArea = cluster.area + tri.area
       if (cluster.area === 0) {
         cluster.normal.copy(tri.normal)
@@ -102,12 +132,7 @@ function facesFromGroups(geometry: THREE.BufferGeometry, labels: string[]): DieF
   return [...byMaterial.entries()]
     .sort((left, right) => left[0] - right[0])
     .slice(0, labels.length)
-    .map(([_, cluster], index) => ({
-      label: labels[index] ?? String(index + 1),
-      normal: cluster.normal.clone(),
-      center: cluster.center.clone(),
-      size: Math.max(0.28, Math.sqrt(cluster.area) * 0.92)
-    }))
+    .map(([_, cluster], index) => faceFromCluster(labels[index] ?? String(index + 1), cluster))
 }
 
 export function extractDieFaces(geometry: THREE.BufferGeometry, labels: string[]): DieFace[] {
@@ -124,14 +149,20 @@ export function extractDieFaces(geometry: THREE.BufferGeometry, labels: string[]
     if (!tri) return
     const match = clusters.find((cluster) => cluster.normal.dot(tri.normal) > FACE_DOT)
     if (!match) {
-      clusters.push({
-        normal: tri.normal,
-        center: tri.center,
-        area: tri.area,
-        starts: [start]
-      })
+      const cluster = emptyCluster()
+      cluster.normal.copy(tri.normal)
+      cluster.center.copy(tri.center)
+      cluster.area = tri.area
+      cluster.starts.push(start)
+      rememberVertex(cluster, vertexAt(position, a))
+      rememberVertex(cluster, vertexAt(position, b))
+      rememberVertex(cluster, vertexAt(position, c))
+      clusters.push(cluster)
       return
     }
+    rememberVertex(match, vertexAt(position, a))
+    rememberVertex(match, vertexAt(position, b))
+    rememberVertex(match, vertexAt(position, c))
     const nextArea = match.area + tri.area
     match.center
       .multiplyScalar(match.area)
@@ -168,12 +199,19 @@ export function extractDieFaces(geometry: THREE.BufferGeometry, labels: string[]
     geometry.addGroup(0, index ? index.count : position.count, 0)
   }
 
-  return ordered.map((cluster, index) => ({
-    label: labels[index] ?? String(index + 1),
-    normal: cluster.normal.clone(),
+  return ordered.map((cluster, index) => faceFromCluster(labels[index] ?? String(index + 1), cluster))
+}
+
+function faceFromCluster(label: string, cluster: Cluster): DieFace {
+  const normal = cluster.normal.clone()
+  if (normal.dot(cluster.center) < 0) normal.negate()
+  return {
+    label,
+    normal,
     center: cluster.center.clone(),
-    size: Math.max(0.28, Math.sqrt(cluster.area) * 0.92)
-  }))
+    size: Math.max(0.28, Math.sqrt(cluster.area) * 0.92),
+    vertices: cluster.vertices.map((vertex) => vertex.clone())
+  }
 }
 
 export function createD10Geometry(): THREE.BufferGeometry {
@@ -198,8 +236,8 @@ export function createD10Geometry(): THREE.BufferGeometry {
   for (let i = 0; i < n; i += 1) {
     const next = (i + 1) % n
     const north = positions.length / 3
-    push(top, upper[i]!, lower[i]!)
-    push(top, lower[i]!, upper[next]!)
+    push(top, lower[i]!, upper[i]!)
+    push(top, upper[next]!, lower[i]!)
     const south = positions.length / 3
     push(bottom, lower[i]!, upper[next]!)
     push(bottom, upper[next]!, lower[next]!)
@@ -221,19 +259,72 @@ export function resultDieFace(faces: DieFace[], die: PlayerDice3dDie): DieFace {
       label: die.label,
       normal: new THREE.Vector3(0, 1, 0),
       center: new THREE.Vector3(0, 0, 0),
-      size: 0.4
+      size: 0.4,
+      vertices: []
     }
   )
 }
 
-export const DICE_3D_LANDING_TILT = 0.34
+export const DICE_3D_CAMERA_POSITION = new THREE.Vector3(-1.2, 9.4, 12.6)
+export const DICE_3D_LOOK_AT = new THREE.Vector3(-1.4, 0.2, 0)
 
-export function landingTarget(tilt = DICE_3D_LANDING_TILT): THREE.Vector3 {
-  return new THREE.Vector3(0, 1, tilt).normalize()
+/** Direction from the table to the camera, so a landed face sits flat to the screen. */
+export function landingTarget(direction?: THREE.Vector3): THREE.Vector3 {
+  if (direction) return direction.clone().normalize()
+  return DICE_3D_CAMERA_POSITION.clone().sub(DICE_3D_LOOK_AT).normalize()
 }
 
-export function landingQuaternion(faceNormal: THREE.Vector3, tilt = DICE_3D_LANDING_TILT): THREE.Quaternion {
-  return new THREE.Quaternion().setFromUnitVectors(faceNormal.clone().normalize(), landingTarget(tilt))
+export function landingQuaternion(faceNormal: THREE.Vector3, target = landingTarget()): THREE.Quaternion {
+  return new THREE.Quaternion().setFromUnitVectors(faceNormal.clone().normalize(), target.clone().normalize())
+}
+
+/** A d4 sits on the result face (point up). Other dice turn that face to the camera. */
+export function d4SitQuaternion(resultNormal: THREE.Vector3): THREE.Quaternion {
+  return new THREE.Quaternion().setFromUnitVectors(resultNormal.clone().normalize(), TABLE_DOWN)
+}
+
+export function d4LandingQuaternion(
+  result: DieFace,
+  faces: DieFace[],
+  target = landingTarget()
+): THREE.Quaternion {
+  const sit = d4SitQuaternion(result.normal)
+  const camHoriz = new THREE.Vector3(target.x, 0, target.z)
+  if (camHoriz.lengthSq() < 1e-8) return sit
+  camHoriz.normalize()
+  let best = sit
+  let bestDot = -Infinity
+  for (const face of faces) {
+    if (face.label === result.label) continue
+    const n = face.normal.clone().applyQuaternion(sit)
+    const horiz = new THREE.Vector3(n.x, 0, n.z)
+    if (horiz.lengthSq() < 1e-8) continue
+    horiz.normalize()
+    const yaw = Math.atan2(camHoriz.x * horiz.z - camHoriz.z * horiz.x, camHoriz.dot(horiz))
+    const next = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw).multiply(sit)
+    const facing = face.normal.clone().applyQuaternion(next).dot(target)
+    if (facing > bestDot) {
+      bestDot = facing
+      best = next
+    }
+  }
+  return best
+}
+
+function samePoint(left: THREE.Vector3, right: THREE.Vector3): boolean {
+  return left.distanceToSquared(right) < SAME_POINT
+}
+
+/** Classic d4: each corner shows the number of the opposite face (the point-up result). */
+export function d4CornerMarks(faces: DieFace[]): D4CornerMark[] {
+  const marks: D4CornerMark[] = []
+  for (const face of faces) {
+    for (const vertex of face.vertices) {
+      const opposite = faces.find((other) => !other.vertices.some((point) => samePoint(point, vertex)))
+      marks.push({ face, vertex: vertex.clone(), label: opposite?.label ?? face.label })
+    }
+  }
+  return marks
 }
 
 export function faceLabels(die: PlayerDice3dDie): string[] {

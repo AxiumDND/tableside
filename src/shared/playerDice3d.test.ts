@@ -59,6 +59,13 @@ describe('planPlayerDice3dThrow', () => {
     ])
   })
 
+  it('shows 00 on the tens die for a single-digit d100', () => {
+    expect(planPlayerDice3dThrow(show({ expr: '1d100', groups: [{ sides: 100, rolls: [7] }], total: 7 }))).toEqual([
+      { sides: 10, value: 0, label: '00', faceSet: 'd10-tens' },
+      { sides: 10, value: 7, label: '7', faceSet: 'd10-ones' }
+    ])
+  })
+
   it('caps a handful at the player-strip limit', () => {
     const rolls = Array.from({ length: 20 }, (_, i) => (i % 6) + 1)
     const planned = planPlayerDice3dThrow(show({ expr: '20d6', groups: [{ sides: 6, rolls }], total: 70 }))

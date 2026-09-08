@@ -85,7 +85,9 @@ export default function OpeningDiceShow({
                 key={`${show.startedAt}-${index}`}
                 className={`player-dice-show-die ${dieClass(face.sides)}${dropped ? ' is-dropped' : ''}${natClass}`}
               >
-                <span className="player-dice-show-face">{face.value}</span>
+                <span className="player-dice-show-face">
+                  {face.sides >= 100 ? (face.value >= 100 ? '00' : String(face.value).padStart(2, '0')) : face.value}
+                </span>
                 <span className="player-dice-show-sides">d{face.sides}</span>
               </div>
             )

@@ -5,7 +5,11 @@ import {
   type PlayerDice3dDie
 } from '../../../shared/playerDice3d'
 import {
+  DICE_3D_CAMERA_POSITION,
+  DICE_3D_LOOK_AT,
   createD10Geometry,
+  d4CornerMarks,
+  d4LandingQuaternion,
   extractDieFaces,
   faceLabels,
   landingQuaternion,
@@ -93,6 +97,16 @@ function highlightFor(spec: PlayerDice3dDie, label: string): 'none' | 'nat20' | 
   return 'none'
 }
 
+function twistDecalOnFace(mesh: THREE.Mesh, face: THREE.Vector3, desired: THREE.Vector3): void {
+  if (desired.lengthSq() < 1e-8) return
+  desired.normalize()
+  const localZ = new THREE.Vector3(0, 0, 1)
+  const after = new THREE.Vector3(0, 1, 0).applyQuaternion(mesh.quaternion)
+  const cross = new THREE.Vector3().crossVectors(after, desired)
+  const angle = Math.atan2(face.dot(cross), after.dot(desired))
+  mesh.rotateOnAxis(localZ, angle)
+}
+
 function orientFaceDecal(mesh: THREE.Mesh, normal: THREE.Vector3): void {
   const face = normal.clone().normalize()
   const localZ = new THREE.Vector3(0, 0, 1)
@@ -100,11 +114,50 @@ function orientFaceDecal(mesh: THREE.Mesh, normal: THREE.Vector3): void {
   const target = landingTarget()
   const landing = new THREE.Quaternion().setFromUnitVectors(face, target)
   const after = new THREE.Vector3(0, 1, 0).applyQuaternion(mesh.quaternion).applyQuaternion(landing)
-  const desired = new THREE.Vector3(0, 0, -1)
-  desired.addScaledVector(target, -desired.dot(target)).normalize()
+  const worldUp = new THREE.Vector3(0, 1, 0)
+  const desired = worldUp.clone().addScaledVector(target, -worldUp.dot(target))
+  if (desired.lengthSq() < 1e-8) return
+  desired.normalize()
   const cross = new THREE.Vector3().crossVectors(after, desired)
   const angle = Math.atan2(target.dot(cross), after.dot(desired))
   mesh.rotateOnAxis(localZ, angle)
+}
+
+function orientD4CornerDecal(mesh: THREE.Mesh, normal: THREE.Vector3, towardVertex: THREE.Vector3): void {
+  const face = normal.clone().normalize()
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), face)
+  const desired = towardVertex.clone().addScaledVector(face, -towardVertex.dot(face))
+  twistDecalOnFace(mesh, face, desired)
+}
+
+function addFaceDecal(
+  spinner: THREE.Group,
+  position: THREE.Vector3,
+  normal: THREE.Vector3,
+  label: string,
+  size: number,
+  spec: PlayerDice3dDie,
+  orient: (mesh: THREE.Mesh) => void
+): void {
+  const decal = new THREE.Mesh(
+    new THREE.PlaneGeometry(1, 1),
+    new THREE.MeshBasicMaterial({
+      map: faceTexture(label, {
+        dropped: Boolean(spec.dropped),
+        highlight: highlightFor(spec, label),
+        fill: false
+      }),
+      transparent: true,
+      depthWrite: false,
+      polygonOffset: true,
+      polygonOffsetFactor: -1,
+      polygonOffsetUnits: -1
+    })
+  )
+  decal.position.copy(position).addScaledVector(normal, 0.035)
+  orient(decal)
+  decal.scale.setScalar(size)
+  spinner.add(decal)
 }
 
 function easeOutCubic(t: number): number {
@@ -128,7 +181,9 @@ function landingGrid(count: number, width: number, depth: number): THREE.Vector3
   return spots
 }
 
-function makeDie(spec: PlayerDice3dDie): { group: THREE.Group; spinner: THREE.Group; result: DieFace } {
+function makeDie(
+  spec: PlayerDice3dDie
+): { group: THREE.Group; spinner: THREE.Group; result: DieFace; faces: DieFace[] } {
   const group = new THREE.Group()
   const spinner = new THREE.Group()
   const geometry = dieGeometry(spec.sides)
@@ -156,35 +211,29 @@ function makeDie(spec: PlayerDice3dDie): { group: THREE.Group; spinner: THREE.Gr
     })
   )
   spinner.add(body, edges)
-  for (const face of faces) {
-    const decal = new THREE.Mesh(
-      new THREE.PlaneGeometry(1, 1),
-      new THREE.MeshBasicMaterial({
-        map: faceTexture(face.label, {
-          dropped: Boolean(spec.dropped),
-          highlight: highlightFor(spec, face.label),
-          fill: false
-        }),
-        transparent: true,
-        depthWrite: false,
-        polygonOffset: true,
-        polygonOffsetFactor: -1,
-        polygonOffsetUnits: -1
-      })
-    )
-    decal.position.copy(face.center).addScaledVector(face.normal, 0.035)
-    orientFaceDecal(decal, face.normal)
-    decal.scale.setScalar(face.size)
-    spinner.add(decal)
+  if (spec.sides <= 4) {
+    for (const mark of d4CornerMarks(faces)) {
+      const toward = mark.vertex.clone().sub(mark.face.center)
+      const pos = mark.face.center.clone().addScaledVector(toward, 0.58)
+      addFaceDecal(spinner, pos, mark.face.normal, mark.label, mark.face.size * 0.4, spec, (mesh) =>
+        orientD4CornerDecal(mesh, mark.face.normal, toward)
+      )
+    }
+  } else {
+    for (const face of faces) {
+      addFaceDecal(spinner, face.center, face.normal, face.label, face.size, spec, (mesh) =>
+        orientFaceDecal(mesh, face.normal)
+      )
+    }
   }
   const shadow = new THREE.Mesh(
-    new THREE.CircleGeometry(0.85, 24),
+    new THREE.CircleGeometry(spec.sides <= 4 ? 0.7 : 0.85, 24),
     new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.28 })
   )
   shadow.rotation.x = -Math.PI / 2
-  shadow.position.y = -0.72
+  shadow.position.y = spec.sides <= 4 ? -result.center.length() : -0.72
   group.add(spinner, shadow)
-  return { group, spinner, result }
+  return { group, spinner, result, faces }
 }
 
 export function mountPlayerDice3d(
@@ -210,8 +259,8 @@ export function mountPlayerDice3d(
 
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 80)
-  camera.position.set(-1.2, 9.4, 12.6)
-  camera.lookAt(-1.4, 0.2, 0)
+  camera.position.copy(DICE_3D_CAMERA_POSITION)
+  camera.lookAt(DICE_3D_LOOK_AT)
 
   scene.add(new THREE.AmbientLight(0xf0e2c4, 0.7))
   const key = new THREE.DirectionalLight(0xffe6b0, 1.15)
@@ -239,7 +288,13 @@ export function mountPlayerDice3d(
     const startQuat = new THREE.Quaternion().setFromEuler(
       new THREE.Euler(Math.random() * 6, Math.random() * 6, Math.random() * 6)
     )
-    const endQuat = landingQuaternion(made.result.normal)
+    if (spec.sides <= 4) {
+      end.y = made.result.center.length() + 0.02
+    }
+    const endQuat =
+      spec.sides <= 4
+        ? d4LandingQuaternion(made.result, made.faces)
+        : landingQuaternion(made.result.normal)
     made.group.position.copy(start)
     made.spinner.quaternion.copy(startQuat)
     scene.add(made.group)
