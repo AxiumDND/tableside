@@ -32,6 +32,12 @@ describe('OpeningDiceShow', () => {
     expect(screen.getByLabelText('1d20 = 17')).toBeTruthy()
   })
 
+  it('pads a d100 face so 7 reads as 07', () => {
+    render(<OpeningDiceShow show={show({ expr: '1d100', total: 7, groups: [{ sides: 100, rolls: [7] }] })} />)
+    expect(document.querySelector('.player-dice-show-face')?.textContent).toBe('07')
+    expect(document.querySelector('.player-dice-show-total')?.textContent).toBe('7')
+  })
+
   it('holds faces and total until a 3D throw lands', () => {
     render(<OpeningDiceShow show={show()} revealAfterMs={1400} />)
     expect(screen.getByText('Dice Tray')).toBeTruthy()

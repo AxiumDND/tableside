@@ -102,12 +102,7 @@ function facesFromGroups(geometry: THREE.BufferGeometry, labels: string[]): DieF
   return [...byMaterial.entries()]
     .sort((left, right) => left[0] - right[0])
     .slice(0, labels.length)
-    .map(([_, cluster], index) => ({
-      label: labels[index] ?? String(index + 1),
-      normal: cluster.normal.clone(),
-      center: cluster.center.clone(),
-      size: Math.max(0.28, Math.sqrt(cluster.area) * 0.92)
-    }))
+    .map(([_, cluster], index) => faceFromCluster(labels[index] ?? String(index + 1), cluster))
 }
 
 export function extractDieFaces(geometry: THREE.BufferGeometry, labels: string[]): DieFace[] {
@@ -168,12 +163,18 @@ export function extractDieFaces(geometry: THREE.BufferGeometry, labels: string[]
     geometry.addGroup(0, index ? index.count : position.count, 0)
   }
 
-  return ordered.map((cluster, index) => ({
-    label: labels[index] ?? String(index + 1),
-    normal: cluster.normal.clone(),
+  return ordered.map((cluster, index) => faceFromCluster(labels[index] ?? String(index + 1), cluster))
+}
+
+function faceFromCluster(label: string, cluster: Cluster): DieFace {
+  const normal = cluster.normal.clone()
+  if (normal.dot(cluster.center) < 0) normal.negate()
+  return {
+    label,
+    normal,
     center: cluster.center.clone(),
     size: Math.max(0.28, Math.sqrt(cluster.area) * 0.92)
-  }))
+  }
 }
 
 export function createD10Geometry(): THREE.BufferGeometry {
@@ -198,8 +199,8 @@ export function createD10Geometry(): THREE.BufferGeometry {
   for (let i = 0; i < n; i += 1) {
     const next = (i + 1) % n
     const north = positions.length / 3
-    push(top, upper[i]!, lower[i]!)
-    push(top, lower[i]!, upper[next]!)
+    push(top, lower[i]!, upper[i]!)
+    push(top, upper[next]!, lower[i]!)
     const south = positions.length / 3
     push(bottom, lower[i]!, upper[next]!)
     push(bottom, upper[next]!, lower[next]!)
@@ -226,14 +227,17 @@ export function resultDieFace(faces: DieFace[], die: PlayerDice3dDie): DieFace {
   )
 }
 
-export const DICE_3D_LANDING_TILT = 0.34
+export const DICE_3D_CAMERA_POSITION = new THREE.Vector3(-1.2, 9.4, 12.6)
+export const DICE_3D_LOOK_AT = new THREE.Vector3(-1.4, 0.2, 0)
 
-export function landingTarget(tilt = DICE_3D_LANDING_TILT): THREE.Vector3 {
-  return new THREE.Vector3(0, 1, tilt).normalize()
+/** Direction from the table to the camera, so a landed face sits flat to the screen. */
+export function landingTarget(direction?: THREE.Vector3): THREE.Vector3 {
+  if (direction) return direction.clone().normalize()
+  return DICE_3D_CAMERA_POSITION.clone().sub(DICE_3D_LOOK_AT).normalize()
 }
 
-export function landingQuaternion(faceNormal: THREE.Vector3, tilt = DICE_3D_LANDING_TILT): THREE.Quaternion {
-  return new THREE.Quaternion().setFromUnitVectors(faceNormal.clone().normalize(), landingTarget(tilt))
+export function landingQuaternion(faceNormal: THREE.Vector3, target = landingTarget()): THREE.Quaternion {
+  return new THREE.Quaternion().setFromUnitVectors(faceNormal.clone().normalize(), target.clone().normalize())
 }
 
 export function faceLabels(die: PlayerDice3dDie): string[] {

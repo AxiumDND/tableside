@@ -1012,7 +1012,8 @@ export default function HelpPanel({
             to keep tray and statblock rolls off the player TV; uncheck <Action>Play roll sound</Action> to mute the
             clatter (one die, two dice, and a handful each have their own recording). The tray keeps the latest roll plus
             four lines; <Action>View log</Action> opens every roll this session with the faces and bonus.{' '}
-            <Action>Clear log</Action> empties both. Tray rolls throw 3D dice across the player TV; the right-hand
+            <Action>Clear log</Action> empties both. Tray rolls throw 3D dice across the player TV and land the
+            result face flat to the screen. A d100 throws a tens die (00–90) and a ones die (0–9). The right-hand
             card still holds the expression and total after they land. Combat, Lookup, and statblock rolls stay on
             that card only. In 5e campaigns, damage chips on statblocks also offer <Action>Crit</Action> (double the
             dice).

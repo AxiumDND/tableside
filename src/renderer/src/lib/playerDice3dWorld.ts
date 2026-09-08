@@ -5,6 +5,8 @@ import {
   type PlayerDice3dDie
 } from '../../../shared/playerDice3d'
 import {
+  DICE_3D_CAMERA_POSITION,
+  DICE_3D_LOOK_AT,
   createD10Geometry,
   extractDieFaces,
   faceLabels,
@@ -100,8 +102,8 @@ function orientFaceDecal(mesh: THREE.Mesh, normal: THREE.Vector3): void {
   const target = landingTarget()
   const landing = new THREE.Quaternion().setFromUnitVectors(face, target)
   const after = new THREE.Vector3(0, 1, 0).applyQuaternion(mesh.quaternion).applyQuaternion(landing)
-  const desired = new THREE.Vector3(0, 0, -1)
-  desired.addScaledVector(target, -desired.dot(target)).normalize()
+  const worldUp = new THREE.Vector3(0, 1, 0)
+  const desired = worldUp.addScaledVector(target, -worldUp.dot(target)).normalize()
   const cross = new THREE.Vector3().crossVectors(after, desired)
   const angle = Math.atan2(target.dot(cross), after.dot(desired))
   mesh.rotateOnAxis(localZ, angle)
@@ -210,8 +212,8 @@ export function mountPlayerDice3d(
 
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 80)
-  camera.position.set(-1.2, 9.4, 12.6)
-  camera.lookAt(-1.4, 0.2, 0)
+  camera.position.copy(DICE_3D_CAMERA_POSITION)
+  camera.lookAt(DICE_3D_LOOK_AT)
 
   scene.add(new THREE.AmbientLight(0xf0e2c4, 0.7))
   const key = new THREE.DirectionalLight(0xffe6b0, 1.15)
