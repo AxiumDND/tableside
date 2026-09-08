@@ -127,7 +127,7 @@ export default function PlayerView({
   }, [handoutScene?.id, handoutScene?.fadingOut])
 
   const showInit = playerInitiativeVisible(state)
-  const trayDice3d = playerDice3dShouldThrow(state.diceShow, { compact })
+  const throwDice3d = playerDice3dShouldThrow(state.diceShow, { compact })
   const imagePadPct = clampPlayerImagePadPct(state.imagePadPct)
 
   const splitForHandout = Boolean(handoutScene && !handoutScene.fadingOut)
@@ -167,9 +167,9 @@ export default function PlayerView({
       {state.hyperspace ? <OpeningHyperspace jump={state.hyperspace} /> : null}
       {state.boxOfDoom ? <OpeningBoxOfDoom roll={state.boxOfDoom} suppressSound={suppressSound} /> : null}
       {state.hourglass ? <OpeningHourglass glass={state.hourglass} /> : null}
-      {state.diceShow && trayDice3d ? <OpeningDice3d show={state.diceShow} /> : null}
+      {state.diceShow && throwDice3d ? <OpeningDice3d show={state.diceShow} /> : null}
       {state.diceShow ? (
-        <OpeningDiceShow show={state.diceShow} revealAfterMs={trayDice3d ? DICE_3D_THROW_MS : 0} />
+        <OpeningDiceShow show={state.diceShow} revealAfterMs={throwDice3d ? DICE_3D_THROW_MS : 0} />
       ) : null}
       {state.calendarMark ? <PlayerCalendarLight mark={state.calendarMark} /> : null}
       {handoutScene ? (

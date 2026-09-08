@@ -1,6 +1,6 @@
-import { DICE_SHOW_MAX_FACES, type PlayerDiceShow } from './playerDiceShow'
+import { DICE_SHOW_MAX_FACES, SKIP_PLAYER_DICE_SOURCES, type PlayerDiceShow } from './playerDiceShow'
 
-/** Tray rolls are the only player-TV throws in this first demo. */
+/** Tray button rolls still use this source label on the result card. */
 export const PLAYER_DICE_3D_SOURCE = 'Dice Tray'
 
 /** How long the meshes tumble before they sit and the result card fills in. */
@@ -36,12 +36,13 @@ export function isPlayerDice3dSource(source: string | undefined): boolean {
   return (source?.trim() || '') === PLAYER_DICE_3D_SOURCE
 }
 
+/** Tray, sheet, Lookup, and other announced rolls throw; the compact DM preview does not. */
 export function playerDice3dShouldThrow(
   show: PlayerDiceShow | null | undefined,
   opts?: { compact?: boolean }
 ): boolean {
   if (!show || opts?.compact) return false
-  if (!isPlayerDice3dSource(show.source)) return false
+  if (SKIP_PLAYER_DICE_SOURCES.has(show.source ?? '')) return false
   return planPlayerDice3dThrow(show).length > 0
 }
 

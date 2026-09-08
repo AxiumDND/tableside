@@ -66,6 +66,20 @@ describe('planPlayerDice3dThrow', () => {
     ])
   })
 
+  it('throws the die from a sheet roll and leaves the modifier on the card', () => {
+    expect(
+      planPlayerDice3dThrow(
+        show({
+          source: 'Goblin',
+          expr: '1d20+3',
+          groups: [{ sides: 20, rolls: [14] }],
+          bonus: 3,
+          total: 17
+        })
+      )
+    ).toEqual([{ sides: 20, value: 14, label: '14', dropped: false }])
+  })
+
   it('caps a handful at the player-strip limit', () => {
     const rolls = Array.from({ length: 20 }, (_, i) => (i % 6) + 1)
     const planned = planPlayerDice3dThrow(show({ expr: '20d6', groups: [{ sides: 6, rolls }], total: 70 }))
@@ -97,11 +111,22 @@ describe('faceLabelsForDie', () => {
 })
 
 describe('playerDice3dShouldThrow', () => {
-  it('throws tray rolls on the real player view only', () => {
+  it('throws tray and sheet rolls on the real player view only', () => {
     expect(playerDice3dShouldThrow(show())).toBe(true)
     expect(playerDice3dShouldThrow(show(), { compact: true })).toBe(false)
-    expect(playerDice3dShouldThrow(show({ source: 'Goblin' }))).toBe(false)
+    expect(
+      playerDice3dShouldThrow(
+        show({
+          source: 'Goblin',
+          expr: '1d20+3',
+          groups: [{ sides: 20, rolls: [14] }],
+          bonus: 3,
+          total: 17
+        })
+      )
+    ).toBe(true)
     expect(playerDice3dShouldThrow(show({ groups: [] }))).toBe(false)
+    expect(playerDice3dShouldThrow(show({ source: 'Dice check' }))).toBe(false)
     expect(playerDice3dShouldThrow(null)).toBe(false)
   })
 })
