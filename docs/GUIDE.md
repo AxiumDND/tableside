@@ -193,7 +193,7 @@ Optional PHB / DMG text dumps go in the app `Additional Books/` folder — not i
 
 ### 8. Roll dice
 
-The **dice tray** sits at the bottom of the left column. Quick d4–d20 buttons, plus a custom expression (`2d6+3`). **View log** opens every roll this session with the full breakdown. Rolls also feed combat and statblock clicks.
+The **dice tray** sits at the bottom of the left column. Quick d4–d20 buttons, plus a custom expression (`2d6+3`). **View log** opens every roll this session with the full breakdown. Tray rolls throw 3D dice across the player TV; the total stays on the right-hand card. Rolls also feed combat and statblock clicks.
 
 ## After the session
 

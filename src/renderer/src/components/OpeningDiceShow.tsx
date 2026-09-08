@@ -24,8 +24,15 @@ function modeLabel(mode: PlayerDiceShow['mode']): string | null {
   return null
 }
 
-export default function OpeningDiceShow({ show }: { show: PlayerDiceShow }) {
+export default function OpeningDiceShow({
+  show,
+  revealAfterMs = 0
+}: {
+  show: PlayerDiceShow
+  revealAfterMs?: number
+}) {
   const [visible, setVisible] = useState(false)
+  const [revealed, setRevealed] = useState(revealAfterMs <= 0)
   const fadingOut = Boolean(show.stoppingAt)
   const faces = show.groups.flatMap((group) =>
     group.rolls.map((value) => ({ sides: group.sides, value }))
@@ -44,6 +51,13 @@ export default function OpeningDiceShow({ show }: { show: PlayerDiceShow }) {
     return () => window.clearTimeout(t)
   }, [show.startedAt])
 
+  useEffect(() => {
+    setRevealed(revealAfterMs <= 0)
+    if (revealAfterMs <= 0) return
+    const t = window.setTimeout(() => setRevealed(true), revealAfterMs)
+    return () => window.clearTimeout(t)
+  }, [revealAfterMs, show.startedAt])
+
   return (
     <aside
       className={`player-dice-show${visible && !fadingOut ? ' is-in' : ''}${fadingOut ? ' is-out' : ''}${
@@ -55,35 +69,37 @@ export default function OpeningDiceShow({ show }: { show: PlayerDiceShow }) {
       <p className="player-dice-show-source">{show.source?.trim() || 'Dice'}</p>
       <p className="player-dice-show-expr">{exprLine}</p>
       {modeLabel(show.mode) ? <p className="player-dice-show-mode">{modeLabel(show.mode)}</p> : null}
-      {naturalLabel ? (
-        <p className={`player-dice-show-natural${show.nat20 ? ' is-success' : ' is-fail'}`}>{naturalLabel}</p>
-      ) : null}
-      <div className="player-dice-show-dice">
-        {shown.map((face, index) => {
-          const dropped = pair && show.kept != null && face.sides === 20 && face.value !== show.kept
-          const isKeptNatural =
-            !dropped && face.sides === 20 && keptFace != null && face.value === keptFace
-          const natClass =
-            isKeptNatural && show.nat20 ? ' is-nat20' : isKeptNatural && show.nat1 ? ' is-nat1' : ''
-          return (
-            <div
-              key={`${show.startedAt}-${index}`}
-              className={`player-dice-show-die ${dieClass(face.sides)}${dropped ? ' is-dropped' : ''}${natClass}`}
-            >
-              <span className="player-dice-show-face">{face.value}</span>
-              <span className="player-dice-show-sides">d{face.sides}</span>
-            </div>
-          )
-        })}
-        {extra > 0 ? <p className="player-dice-show-more">+{extra}</p> : null}
+      <div className={`player-dice-show-result${revealed ? ' is-in' : ''}`}>
+        {naturalLabel ? (
+          <p className={`player-dice-show-natural${show.nat20 ? ' is-success' : ' is-fail'}`}>{naturalLabel}</p>
+        ) : null}
+        <div className="player-dice-show-dice">
+          {shown.map((face, index) => {
+            const dropped = pair && show.kept != null && face.sides === 20 && face.value !== show.kept
+            const isKeptNatural =
+              !dropped && face.sides === 20 && keptFace != null && face.value === keptFace
+            const natClass =
+              isKeptNatural && show.nat20 ? ' is-nat20' : isKeptNatural && show.nat1 ? ' is-nat1' : ''
+            return (
+              <div
+                key={`${show.startedAt}-${index}`}
+                className={`player-dice-show-die ${dieClass(face.sides)}${dropped ? ' is-dropped' : ''}${natClass}`}
+              >
+                <span className="player-dice-show-face">{face.value}</span>
+                <span className="player-dice-show-sides">d{face.sides}</span>
+              </div>
+            )
+          })}
+          {extra > 0 ? <p className="player-dice-show-more">+{extra}</p> : null}
+        </div>
+        {show.bonus ? (
+          <p className="player-dice-show-bonus">
+            {show.bonus > 0 ? '+' : ''}
+            {show.bonus}
+          </p>
+        ) : null}
+        <p className="player-dice-show-total">{show.total}</p>
       </div>
-      {show.bonus ? (
-        <p className="player-dice-show-bonus">
-          {show.bonus > 0 ? '+' : ''}
-          {show.bonus}
-        </p>
-      ) : null}
-      <p className="player-dice-show-total">{show.total}</p>
     </aside>
   )
 }
