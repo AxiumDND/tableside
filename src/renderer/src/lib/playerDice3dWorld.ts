@@ -17,6 +17,7 @@ import {
   resultDieFace,
   type DieFace
 } from './playerDice3dFaces'
+import { dieGlyphTone, diePlasticColor, paintDieGlyph } from './playerDice3dLook'
 
 export type PlayerDice3dHandle = {
   dispose: () => void
@@ -57,36 +58,34 @@ function dieGeometry(sides: number): THREE.BufferGeometry {
 
 function faceTexture(
   label: string,
-  opts: { dropped: boolean; highlight: 'none' | 'nat20' | 'nat1'; fill: boolean }
+  opts: { dropped: boolean; highlight: 'none' | 'nat20' | 'nat1' }
 ): THREE.CanvasTexture {
   const canvas = document.createElement('canvas')
   canvas.width = 256
   canvas.height = 256
   const ctx = canvas.getContext('2d')
+  if (ctx) paintDieGlyph(ctx, label, dieGlyphTone(opts))
+  const texture = new THREE.CanvasTexture(canvas)
+  texture.colorSpace = THREE.SRGBColorSpace
+  texture.anisotropy = 8
+  return texture
+}
+
+function contactShadowTexture(): THREE.CanvasTexture {
+  const canvas = document.createElement('canvas')
+  canvas.width = 128
+  canvas.height = 128
+  const ctx = canvas.getContext('2d')
   if (ctx) {
-    ctx.clearRect(0, 0, 256, 256)
-    if (opts.fill) {
-      ctx.fillStyle = opts.dropped ? '#2a2418' : '#2c1c0c'
-      ctx.fillRect(0, 0, 256, 256)
-    }
-    ctx.fillStyle = opts.dropped
-      ? 'rgba(196, 165, 116, 0.55)'
-      : opts.highlight === 'nat20'
-        ? '#9ed49b'
-        : opts.highlight === 'nat1'
-          ? '#e08989'
-          : '#f4e6c3'
-    const size = label.length > 1 ? 108 : 132
-    ctx.font = `700 ${size}px Georgia, "Times New Roman", serif`
-    ctx.textAlign = 'center'
-    ctx.textBaseline = 'middle'
-    ctx.shadowColor = 'rgba(0, 0, 0, 0.7)'
-    ctx.shadowBlur = 12
-    ctx.fillText(label, 128, 140)
+    const glow = ctx.createRadialGradient(64, 64, 8, 64, 64, 62)
+    glow.addColorStop(0, 'rgba(0, 0, 0, 0.42)')
+    glow.addColorStop(0.55, 'rgba(0, 0, 0, 0.16)')
+    glow.addColorStop(1, 'rgba(0, 0, 0, 0)')
+    ctx.fillStyle = glow
+    ctx.fillRect(0, 0, 128, 128)
   }
   const texture = new THREE.CanvasTexture(canvas)
   texture.colorSpace = THREE.SRGBColorSpace
-  texture.anisotropy = 4
   return texture
 }
 
@@ -144,8 +143,7 @@ function addFaceDecal(
     new THREE.MeshBasicMaterial({
       map: faceTexture(label, {
         dropped: Boolean(spec.dropped),
-        highlight: highlightFor(spec, label),
-        fill: false
+        highlight: highlightFor(spec, label)
       }),
       transparent: true,
       depthWrite: false,
@@ -192,22 +190,27 @@ function makeDie(
   const result = resultDieFace(faces, spec)
   const body = new THREE.Mesh(
     geometry,
-    new THREE.MeshStandardMaterial({
-      color: spec.dropped ? 0x2a2418 : 0x2c1c0c,
-      roughness: 0.42,
-      metalness: 0.28,
-      emissive: 0x140e08,
-      emissiveIntensity: 0.12,
+    new THREE.MeshPhysicalMaterial({
+      color: diePlasticColor(spec.dropped),
+      roughness: 0.28,
+      metalness: 0,
+      clearcoat: spec.dropped ? 0.2 : 0.82,
+      clearcoatRoughness: 0.2,
+      sheen: 0.22,
+      sheenColor: new THREE.Color(0xf6ead4),
+      sheenRoughness: 0.45,
+      ior: 1.5,
+      specularIntensity: 0.55,
       transparent: Boolean(spec.dropped),
-      opacity: spec.dropped ? 0.55 : 1
+      opacity: spec.dropped ? 0.5 : 1
     })
   )
   const edges = new THREE.LineSegments(
-    new THREE.EdgesGeometry(geometry, 18),
+    new THREE.EdgesGeometry(geometry, 22),
     new THREE.LineBasicMaterial({
-      color: spec.dropped ? 0x7a6848 : 0xe0c27a,
+      color: 0x4a3a28,
       transparent: true,
-      opacity: spec.dropped ? 0.4 : 0.92
+      opacity: spec.dropped ? 0.12 : 0.22
     })
   )
   spinner.add(body, edges)
@@ -227,8 +230,13 @@ function makeDie(
     }
   }
   const shadow = new THREE.Mesh(
-    new THREE.CircleGeometry(spec.sides <= 4 ? 0.7 : 0.85, 24),
-    new THREE.MeshBasicMaterial({ color: 0x000000, transparent: true, opacity: 0.28 })
+    new THREE.CircleGeometry(spec.sides <= 4 ? 0.82 : 1.05, 32),
+    new THREE.MeshBasicMaterial({
+      map: contactShadowTexture(),
+      transparent: true,
+      depthWrite: false,
+      opacity: spec.dropped ? 0.35 : 0.85
+    })
   )
   shadow.rotation.x = -Math.PI / 2
   shadow.position.y = spec.sides <= 4 ? -result.center.length() : -0.72
@@ -256,19 +264,24 @@ export function mountPlayerDice3d(
   }
   renderer.setClearColor(0x000000, 0)
   renderer.outputColorSpace = THREE.SRGBColorSpace
+  renderer.toneMapping = THREE.ACESFilmicToneMapping
+  renderer.toneMappingExposure = 1.12
 
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 80)
   camera.position.copy(DICE_3D_CAMERA_POSITION)
   camera.lookAt(DICE_3D_LOOK_AT)
 
-  scene.add(new THREE.AmbientLight(0xf0e2c4, 0.7))
-  const key = new THREE.DirectionalLight(0xffe6b0, 1.15)
-  key.position.set(-6, 12, 8)
+  scene.add(new THREE.HemisphereLight(0xfff3dc, 0x1c1610, 0.62))
+  const key = new THREE.DirectionalLight(0xfff1d8, 1.45)
+  key.position.set(-4, 14, 10)
   scene.add(key)
-  const fill = new THREE.DirectionalLight(0x8eb4ff, 0.28)
-  fill.position.set(8, 4, -6)
+  const fill = new THREE.DirectionalLight(0x9bb6d8, 0.38)
+  fill.position.set(8, 5, -5)
   scene.add(fill)
+  const rim = new THREE.DirectionalLight(0xffe4b8, 0.42)
+  rim.position.set(2, 3, -10)
+  scene.add(rim)
 
   const feltWidth = 14
   const feltDepth = 8
