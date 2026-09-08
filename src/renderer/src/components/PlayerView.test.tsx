@@ -115,7 +115,7 @@ describe('PlayerView calendar light', () => {
   })
 })
 
-describe('PlayerView tray 3D dice', () => {
+describe('PlayerView 3D dice', () => {
   const trayShow = {
     source: 'Dice Tray' as const,
     expr: '1d20',
@@ -133,22 +133,28 @@ describe('PlayerView tray 3D dice', () => {
     expect(container.querySelector('.player-dice-show-result.is-in')).toBeNull()
   })
 
-  it('keeps the DM preview on the 2D result card', () => {
-    const { container } = render(
-      <PlayerView state={{ ...emptyPlayerState(), diceShow: trayShow }} compact />
-    )
-    expect(container.querySelector('[data-dice-3d]')).toBeNull()
-    expect(container.querySelector('.player-dice-show-result.is-in')).toBeTruthy()
-  })
-
-  it('does not throw 3D for non-tray rolls', () => {
+  it('throws 3D dice for sheet rolls with a modifier', () => {
     const { container } = render(
       <PlayerView
         state={{
           ...emptyPlayerState(),
-          diceShow: { ...trayShow, source: 'Goblin' }
+          diceShow: {
+            ...trayShow,
+            source: 'Goblin',
+            expr: '1d20+3',
+            bonus: 3,
+            total: 17
+          }
         }}
       />
+    )
+    expect(container.querySelector('[data-dice-3d="mock"]')).toBeTruthy()
+    expect(container.querySelector('.player-dice-show-result.is-in')).toBeNull()
+  })
+
+  it('keeps the DM preview on the 2D result card', () => {
+    const { container } = render(
+      <PlayerView state={{ ...emptyPlayerState(), diceShow: trayShow }} compact />
     )
     expect(container.querySelector('[data-dice-3d]')).toBeNull()
     expect(container.querySelector('.player-dice-show-result.is-in')).toBeTruthy()
