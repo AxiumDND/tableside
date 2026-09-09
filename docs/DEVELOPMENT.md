@@ -48,8 +48,12 @@ src/
     src/
       components/ UI pieces (combat, notes, lookup, …)
       lib/        Parsing, combat helpers, SRD/book search
-      data/srd/   Bundled SRD 5.2.1 snapshot (do not edit by hand — use fetch-srd)
+      data/       Bundled game system data
+        srd/      D&D 5e SRD 5.2.1 snapshot (do not edit by hand — use fetch-srd)
+        pf2e/     Pathfinder 2e lookup data
+        v5/       Vampire 5th Edition lookup data
       windows/    DmApp / PlayerApp entry points
+      hooks/      React hooks (player playback, campaign state, etc.)
   shared/         Types, campaign layout, sheet templates (main + renderer)
 examples/
   greystead/      Only sample — first launch, Sample button, and installer extraResource
@@ -123,12 +127,16 @@ Installed copies on the default **stable** channel only see the GitHub release m
 | Sample campaign copy / refresh | `src/main/sampleCampaign.ts` |
 | Campaign folder load / tree / templates | `src/main/campaignFolder.ts` |
 | Note create / duplicate / art / delete | `src/main/campaignNotes.ts` |
+| Book text library and parsing | `src/main/bookLibrary.ts` |
 | Shared image extension set | `src/shared/imageExt.ts` |
 | Campaign audio mixer / library | `src/main/campaignMixer.ts` |
 | Player window / display / state | `src/main/playerOutput.ts` |
+| Web sheet window (external browser sheets) | `src/main/webSheetWindow.ts` |
 | App settings / folders / migrate | `src/main/appSettings.ts` |
 | GitHub update check | `src/main/appUpdater.ts` |
+| Spellcheck dictionary customization | `src/main/spellcheck.ts` |
 | `tabledm://` media protocol | `src/main/mediaAssets.ts` |
+| Guide path conversion utilities | `src/main/convertGuide.ts` |
 | Preload bridge (`window.tabledm`) | `src/preload/index.ts` |
 | DM UI shell | `src/renderer/src/windows/DmApp.tsx` |
 | DM player playback orchestration | `src/renderer/src/hooks/usePlayerPlayback.ts` |
