@@ -68,6 +68,20 @@ I'm one person — a DM first, and only a basic coder. Tableside would not exist
 
 Questions or thanks: [tableside.gm@gmail.com](mailto:tableside.gm@gmail.com). If it helped at your table, you can [buy me a coffee](https://ko-fi.com/tablesidegm).
 
+## For Contributors
+
+Want to help build Tableside? Start here:
+
+1. **Setup**: Use **Node.js 22+**, then run `npm ci` to install dependencies
+2. **Development**: Run `npm run dev` to launch the app with hot reload
+3. **Before submitting**: Run `npm run typecheck`, `npm run lint`, and `npm test`
+4. **Read the docs**:
+   - **[CONTRIBUTING.md](CONTRIBUTING.md)** — pull request expectations and project scope
+   - **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)** — architecture, scripts, and where code lives
+   - **[docs/ROADMAP.md](docs/ROADMAP.md)** — near-term direction and starter tasks
+
+Small doc fixes and the ideas under [docs/ROADMAP.md](docs/ROADMAP.md#good-first-contributions) are the best first PRs. Keep the product **table-first**: laptop DM console + player TV in the same room.
+
 ## Features
 
 - Dual-window layout: DM console + fullscreen player display (close the TV window when you do not need it)
