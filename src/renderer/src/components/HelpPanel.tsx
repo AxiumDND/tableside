@@ -313,7 +313,7 @@ export default function HelpPanel({
             <div className="space-y-2 border-t border-line/60 pt-4">
               <Sub>Artwork</Sub>
               <p className="text-[12px] leading-snug text-muted">
-                Bundled artwork includes AI-generated NPC portrait picks in <Action>Tools → NPC</Action> and SRD
+                Bundled artwork includes AI-generated NPC portrait picks in <Action>Prep → NPC</Action> and SRD
                 monster, gear, and spell-school illustrations in Lookup and on sheets. Your own uploaded campaign art
                 and stock place/shop art are not affected.
               </p>
@@ -329,7 +329,7 @@ export default function HelpPanel({
                     <span className="font-semibold text-parchment">Hide bundled artwork</span>
                     <span className="mt-0.5 block text-[12px] leading-snug text-muted">
                       Hides bundled AI portrait picks, SRD illustrations in Lookup, and default portraits on
-                      bestiary/gear/spell sheets that use bundled art. Turn off AI picks in Tools → NPC and skip bundled
+                      bestiary/gear/spell sheets that use bundled art. Turn off AI picks in Prep → NPC and skip bundled
                       art when creating new notes.
                     </span>
                   </span>
@@ -447,10 +447,12 @@ export default function HelpPanel({
                 player screen.
               </>,
               <>
-                Open <Action>Combat</Action> or <Action>Tools</Action> from the header when you need them. Under the
-                header, <Action>Quick</Action> links hold <Action>Party</Action> (name, AC, save DC, passive
-                perception), <Action>Conditions</Action>, and <Action>Calendar</Action> notes in{' '}
-                <Code>Reference/</Code>. Dice live at the bottom of the left column.
+                Open <Action>Combat</Action> or <Action>Music</Action> from the header when you need them. Under the
+                header, <Action>Quick</Action> holds left and right panel glyphs, <Action>Party</Action> (name, AC,
+                save DC, passive perception), <Action>Conditions</Action>, <Action>Lookup</Action>, <Action>Prep</Action>{' '}
+                (NPC, Links), <Action>Table</Action> (Dice, Timer, Improvise), and the in-world{' '}
+                <Action>Calendar</Action> (Hide when unused; Show to players is a sun or moon on the TV). Dice live at
+                the bottom of the left column.
               </>
             ]}
           />
@@ -543,18 +545,18 @@ export default function HelpPanel({
           <Ul
             items={[
               <>
-                Header: left and right panel icons, campaign name, New / Open, Tools, Combat, Music,{' '}
-                <strong>Help & settings</strong>. Campaign look lives under Settings (also on <Code>Start Here</Code>).
-                DM-only — the player TV stays black.
+                Header: campaign name, New / Open, Combat, Music, <strong>Help & settings</strong>. Campaign look lives
+                under Settings (also on <Code>Start Here</Code>). DM-only — the player TV stays black.
               </>,
               <>
-                Left: <strong>Players see</strong> preview, file tree, dice tray — open by default. The panel icon at
-                the left of the header hides it so notes get the full width; click it again to bring the sidebar back.
-                Hide the preview if you need height inside the sidebar.
+                Left: <strong>Players see</strong> preview, file tree, dice tray — open by default. The left panel icon
+                on the Quick bar hides it so notes get the full width; click it again to bring the sidebar back. Hide
+                the preview if you need height inside the sidebar.
               </>,
               <>Center: the open note, image, or PDF.</>,
-              <>Right: Combat, Music, Tools, or this panel — one at a time. The panel icon at the right of the
-                header hides it; click it again to bring back the last tool. Tools holds Lookup, NPC, Improvise, Dice, Timer, and Links.</>
+              <>Right: Combat, Music, a Quick-bar tool page, or this panel — one at a time. The right panel icon on
+                the Quick bar hides it; click it again to bring back the last rail. Lookup, Prep, and Table on that bar
+                open Lookup, NPC, Links, Dice, Timer, and Improvise.</>
             ]}
           />
           <Sub>Show maps and art</Sub>
@@ -780,6 +782,13 @@ export default function HelpPanel({
                 <Code>[!legend]…[!/legend]</Code> is an Opening legend card (Classic, Light, Vampire).
               </>,
               <>
+                <Code>Calendar/Calendar.md</Code> holds the in-world clock as <Code>[!calendar]…[!/calendar]</Code>. The
+                Quick bar shows the date and time in a darker block; hour, day, and Morning buttons write back to that
+                note. <Action>Hide</Action> collapses it to a Calendar chip.{' '}
+                <Action>Show to players</Action> puts sunrise, morning, afternoon, sunset, or night on the top-right of
+                the player TV — a symbol, not the clock.
+              </>,
+              <>
                 <Code>[!gallery]…[!/gallery]</Code> is an image sequence on the player screen;{' '}
                 <Code>[!video]…[!/video]</Code> plays a local clip; <Code>[!phone]…[!/phone]</Code> is an incoming-call
                 overlay; <Code>[!hyperspace]…[!/hyperspace]</Code> is enter (starfield → tunnel → ship still) then exit
@@ -928,7 +937,7 @@ export default function HelpPanel({
           </p>
           <Ol
             items={[
-              <>Open a campaign, then open <Action>Tools</Action> and pick <Action>Lookup</Action>.</>,
+              <>Open a campaign, then press <Action>Lookup</Action> on the Quick bar.</>,
               <>
                 Search, or pick a chip to list everything in that category (Spells, Monsters, Trade Goods, Temple
                 Goods, Apothecary, Forge, …). A
@@ -963,26 +972,26 @@ export default function HelpPanel({
           />
           <Sub>NPC</Sub>
           <p>
-            In <Action>Tools</Action>, pick <Action>NPC</Action>. Choose a race (5e) or ancestry (Pathfinder 2e), then a{' '}
+            On the Quick bar, <Action>Prep</Action> → <Action>NPC</Action>. Choose a race (5e) or ancestry (Pathfinder 2e), then a{' '}
             <strong>Name flavor</strong> (Classic fantasy, Norse, Greek mythology, Celtic, Roman, Arabic / desert-fantasy,
             Slavic, East Asian–inspired). Vampire nights use name tradition instead. Roll names, pick an AI-generated
             portrait, then <Action>New NPC…</Action> to write a sheet under <Code>NPCs/</Code> with name, species, art,
             and stats. Turn off bundled AI art in <strong>Help & settings → Settings → Artwork</strong>.
           </p>
-          <Sub>Improvise</Sub>
-          <p>
-            <Action>Tools</Action> → <Action>Improvise</Action> has 2024 healing potions (dice and average) and a d10
-            ladder for hazard damage, plus how hard that is by level.
-          </p>
           <Sub>Links</Sub>
           <p>
-            <Action>Tools</Action> → <Action>Links</Action> opens curated D&amp;D prep sites in your browser — rules
+            <Action>Prep</Action> → <Action>Links</Action> opens curated D&amp;D prep sites in your browser — rules
             lookups, map makers, free art/tokens, GM blogs, generators, ambience, and random tables — grouped by
             category. Tableside does not embed or track them.
           </p>
+          <Sub>Improvise</Sub>
+          <p>
+            <Action>Table</Action> → <Action>Improvise</Action> has 2024 healing potions (dice and average) and a d10
+            ladder for hazard damage, plus how hard that is by level.
+          </p>
           <Sub>Timer</Sub>
           <p>
-            <Action>Tools</Action> → <Action>Timer</Action>: pick minutes, then <Action>Show</Action> to fade a full
+            <Action>Table</Action> → <Action>Timer</Action>: pick minutes, then <Action>Show</Action> to fade a full
             hourglass over the player TV. Change the minutes while it waits to retune the glass.{' '}
             <Action>Start</Action> begins the countdown. Pause, resume, or reset;{' '}
             <Action>Fade out</Action> returns to the picture underneath. The empty glass holds at zero until you fade
@@ -1003,7 +1012,7 @@ export default function HelpPanel({
           </p>
           <Sub>Box of Doom</Sub>
           <p>
-            <Action>Tools</Action> → <Action>Dice</Action>: set DC and modifier, pick Normal, Advantage, or
+            <Action>Table</Action> → <Action>Dice</Action>: set DC and modifier, pick Normal, Advantage, or
             Disadvantage. <Action>Show</Action> fades the check over whatever is on the player TV;{' '}
             <Action>Roll</Action> tumbles (cosmetic), then holds Success or Failure until you click{' '}
             <Action>Fade out</Action> or the auto fade-out timer in <strong>Settings</strong> runs. A natural 20 always
@@ -1012,7 +1021,7 @@ export default function HelpPanel({
           </p>
           <Sub>Timer</Sub>
           <p>
-            <Action>Tools</Action> → <Action>Timer</Action>: <Action>Show</Action> puts a full glass on the TV; a
+            <Action>Table</Action> → <Action>Timer</Action>: <Action>Show</Action> puts a full glass on the TV; a
             separate <Action>Start</Action> begins the sand. Last 30 seconds warm toward blood-red. Zero holds until{' '}
             <Action>Fade out</Action>. Header <Action>Clear</Action> / <Code>Alt+X</Code> takes it with the rest of the
             player screen.

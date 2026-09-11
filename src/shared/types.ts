@@ -1,6 +1,7 @@
 import { APP_NAME } from './version'
 import { DEFAULT_PLAYER_IMAGE_PAD_PCT } from './playerImagePad'
 import type { CampaignCurrency } from './currencies'
+import type { PlayerCalendarMark } from './calendar'
 import type { PlayerDiceShow } from './playerDiceShow'
 
 export type CombatantKind = 'pc' | 'npc' | 'monster'
@@ -296,6 +297,8 @@ export interface PlayerState {
   boxOfDoom?: PlayerBoxOfDoom | null
   hourglass?: PlayerHourglass | null
   diceShow?: PlayerDiceShow | null
+  /** Sunrise / morning / afternoon / sunset / night mark. No date or clock. */
+  calendarMark?: PlayerCalendarMark | null
 }
 
 export interface RecentCampaign {
@@ -320,12 +323,16 @@ export interface AppSettings {
   rightPanel?: 'combat' | 'tools' | 'help' | 'music' | null
   /** Last tool in the right column, restored when the panel icon shows it again. */
   lastRightPanel?: 'combat' | 'tools' | 'help' | 'music'
-  /** Last page inside Tools (Lookup, NPC, Improvise, Dice, Timer, or Links). */
+  /** Last Quick-bar tool page (Lookup, NPC, Improvise, Dice, Timer, or Links). */
   toolsTab?: 'lookup' | 'npc' | 'names' | 'improvise' | 'dice' | 'timer' | 'links'
   /** Play roll sound on the mixer Sfx layer. Default on. */
   diceCheckSound?: boolean
   /** Send tray and sheet rolls to the player TV strip. Default on. */
   showDiceToPlayers?: boolean
+  /** Show the live calendar cluster on the Quick bar. Default on. */
+  showQuickBarCalendar?: boolean
+  /** Put a sun / moon mark on the player TV (no clock). Default off. */
+  showCalendarLightToPlayers?: boolean
   /** Seconds to hold a Box of Doom result before auto fade-out. Default 15. */
   boxOfDoomHoldSec?: number
   /** Hide bundled AI-generated NPC portrait picks app-wide. Default off (shown). */
@@ -374,7 +381,8 @@ export const emptyPlayerState = (): PlayerState => ({
   handout: null,
   boxOfDoom: null,
   hourglass: null,
-  diceShow: null
+  diceShow: null,
+  calendarMark: null
 })
 
 export const emptySettings = (): AppSettings => ({})

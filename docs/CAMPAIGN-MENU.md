@@ -41,7 +41,7 @@ Campaign ▾
 - **Open…** and **New…** stay the same IPC / folder pickers as today. Ellipsis because they open a system dialog or the new-campaign wizard.
 - **Sample** does **not** go in the header menu. Too easy to stomp a live night. It stays the amber CTA on the empty start screen only.
 
-The header then reads: title · name/path · **Campaign** · Tools · Combat · Music · Help. Two fewer buttons on a laptop bar; Switch no longer appears and vanishes.
+The header then reads: title · name/path · **Campaign** · Combat · Music · Help. Two fewer buttons on a laptop bar; Switch no longer appears and vanishes.
 
 ### Start screen
 

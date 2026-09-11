@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
+import { calendarPlayerMarkLabel } from '../../../shared/calendar'
 import type { DisplayInfo, PlayerState } from '../../../shared/types'
+import PlayerCalendarLight from './PlayerCalendarLight'
 import PlayerView from './PlayerView'
 
 /** Virtual stage size for the preview — scaled down so layout matches the TV. */
@@ -68,7 +70,7 @@ function ScaledPlayerPreview({ state }: { state: PlayerState }) {
           transform: `scale(${scale})`
         }}
       >
-        <PlayerView state={state} suppressSound />
+        <PlayerView state={state} compact suppressSound />
       </div>
     </div>
   )
@@ -149,6 +151,8 @@ export default function PlayerPreview({
                             ? state.boxOfDoom.label || 'Box of Doom'
                             : state.handout
                               ? state.handout.title
+                              : state.calendarMark
+                              ? calendarPlayerMarkLabel(state.calendarMark)
                               : state.imageTitle || 'Nothing showing'}
           </div>
         </button>
@@ -209,6 +213,7 @@ export default function PlayerPreview({
           >
             <ScaledPlayerPreview state={state} />
           </button>
+          {state.calendarMark ? <PlayerCalendarLight mark={state.calendarMark} compact /> : null}
           <p className="mt-1 text-center text-[10px] text-muted">
             {displays.length < 2
               ? 'Player screen waits for a second monitor'
