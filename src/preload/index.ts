@@ -152,6 +152,10 @@ const api = {
     show: boolean
     round?: number
   }): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerSetInitiative, payload),
+  setPlayerCalendarLight: (payload: {
+    show: boolean
+    mark?: PlayerState['calendarMark']
+  }): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerSetCalendarLight, payload),
   getPlayerState: (): Promise<PlayerState> => ipcRenderer.invoke(IPC.playerGetState),
   getMixer: (): Promise<MixerState> => ipcRenderer.invoke(IPC.mixerGet),
   mixerPlayMusic: (playlistId: string): Promise<MixerState> =>
