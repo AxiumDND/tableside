@@ -14,10 +14,21 @@ test.afterAll(async () => {
   await app?.close()
 })
 
+async function openQuickTool(group: 'Prep' | 'Table', tool: 'NPC' | 'Improvise' | 'Links' | 'Dice' | 'Timer'): Promise<void> {
+  const bar = dmWindow.getByRole('navigation', { name: 'Quick links' })
+  const groupName = group === 'Table' ? /^(Table|Dice|Timer)\b/ : /^(Prep|NPC|Improvise|Links)\b/
+  const groupBtn = bar.getByRole('button', { name: groupName })
+  const current = ((await groupBtn.textContent()) ?? '').replace(/\s*▾\s*$/u, '').trim()
+  if (current === tool) return
+  await groupBtn.click()
+  await dmWindow.getByRole('menuitem', { name: tool }).click()
+}
+
 test('DM console boots with the bundled sample campaign', async () => {
   // Toolbar renders → the renderer bundle loaded and mounted.
-  await expect(dmWindow.getByRole('button', { name: 'Tools' })).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Lookup' })).toBeVisible()
   await expect(dmWindow.getByRole('button', { name: 'Combat' })).toBeVisible()
+  await expect(dmWindow.getByRole('button', { name: 'Tools' })).toHaveCount(0)
 
   // First launch opens the Greystead one-shot (legacy table-dm migrate skipped in e2e).
   await expect(dmWindow.getByText(/Greystead/i).first()).toBeVisible({ timeout: 30_000 })
@@ -33,10 +44,25 @@ test('quick links bar lists party stats and conditions', async () => {
   await expect(dmWindow.getByRole('menuitem', { name: /Poisoned/ })).toBeVisible()
 })
 
+test('quick links bar shows the Greystead in-world calendar', async () => {
+  const bar = dmWindow.getByRole('navigation', { name: 'Quick links' })
+  await dmWindow.keyboard.press('Escape')
+  await expect(bar.getByRole('button', { name: /1 Seedmoon 412 AF/ })).toBeVisible()
+  await expect(bar.getByRole('button', { name: 'Forward one hour' })).toBeVisible()
+  await expect(bar.getByRole('button', { name: 'Advance one day' })).toBeVisible()
+  await expect(bar.getByRole('button', { name: 'Calendar settings' })).toBeVisible()
+  await bar.getByRole('button', { name: 'Forward one hour' }).click()
+  await expect(bar.getByRole('button', { name: /10am/ })).toBeVisible()
+  await bar.getByRole('button', { name: 'Calendar settings' }).click()
+  await expect(dmWindow.getByRole('dialog', { name: 'Calendar' })).toBeVisible()
+  await dmWindow.getByRole('radio', { name: /Greyhawk/ }).click()
+  await expect(dmWindow.getByText(/1 Fireseek 576 CY/)).toBeVisible()
+  await dmWindow.getByRole('button', { name: 'Cancel' }).click()
+  await expect(bar.getByRole('button', { name: /1 Seedmoon 412 AF/ })).toBeVisible()
+})
+
 test('Dice tool and built-in Sfx oneshots are on the console', async () => {
-  const tools = dmWindow.getByRole('button', { name: 'Tools' })
-  await tools.click()
-  await dmWindow.getByRole('navigation', { name: 'Tools' }).getByRole('button', { name: 'Dice' }).click()
+  await openQuickTool('Table', 'Dice')
   await expect(dmWindow.getByRole('button', { name: 'Show', exact: true })).toBeVisible()
   await expect(dmWindow.getByText('Play sound on Roll')).toBeVisible()
 
@@ -49,9 +75,7 @@ test('Dice tool and built-in Sfx oneshots are on the console', async () => {
 })
 
 test('Timer tool shows a waiting glass and a separate Start control', async () => {
-  const tools = dmWindow.getByRole('button', { name: 'Tools' })
-  await tools.click()
-  await dmWindow.getByRole('navigation', { name: 'Tools' }).getByRole('button', { name: 'Timer' }).click()
+  await openQuickTool('Table', 'Timer')
   await expect(dmWindow.getByRole('button', { name: 'Show', exact: true })).toBeVisible()
   await expect(dmWindow.getByRole('button', { name: 'Start', exact: true })).toBeVisible()
   await expect(dmWindow.getByRole('button', { name: 'Start', exact: true })).toBeDisabled()
@@ -59,11 +83,7 @@ test('Timer tool shows a waiting glass and a separate Start control', async () =
 })
 
 test('Timer minutes field updates a waiting glass', async () => {
-  const tools = dmWindow.getByRole('button', { name: 'Tools' })
-  if (!(await dmWindow.getByRole('navigation', { name: 'Tools' }).isVisible().catch(() => false))) {
-    await tools.click()
-  }
-  await dmWindow.getByRole('navigation', { name: 'Tools' }).getByRole('button', { name: 'Timer' }).click()
+  await openQuickTool('Table', 'Timer')
   await dmWindow.getByRole('button', { name: 'Show', exact: true }).click()
   await expect(dmWindow.getByText('wait', { exact: false })).toBeVisible()
   await dmWindow.getByLabel('Minutes').fill('7')
@@ -78,14 +98,23 @@ test('Dice tray exposes show-to-players and roll-sound toggles', async () => {
   await expect(dmWindow.getByRole('button', { name: 'Dis', exact: true })).toBeVisible()
 })
 
+test('Quick bar tools open, switch, and close the right rail', async () => {
+  const bar = dmWindow.getByRole('navigation', { name: 'Quick links' })
+  await bar.getByRole('button', { name: 'Lookup' }).click()
+  await expect(dmWindow.getByRole('heading', { name: 'Lookup' })).toBeVisible()
+  await openQuickTool('Prep', 'NPC')
+  await expect(dmWindow.getByRole('heading', { name: 'NPC' })).toBeVisible()
+  await expect(dmWindow.getByRole('heading', { name: 'Lookup' })).toHaveCount(0)
+  await bar.getByRole('button', { name: 'Lookup' }).click()
+  await expect(dmWindow.getByRole('heading', { name: 'Lookup' })).toBeVisible()
+  await bar.getByRole('button', { name: 'Lookup' }).click()
+  await expect(dmWindow.getByRole('heading', { name: 'Lookup' })).toHaveCount(0)
+})
+
 test('Lookup opens and searches the offline SRD', async () => {
   const search = dmWindow.getByPlaceholder(/poisoned/i)
-  const lookupTab = dmWindow.getByRole('navigation', { name: 'Tools' }).getByRole('button', { name: 'Lookup' })
   if (!(await search.isVisible().catch(() => false))) {
-    if (!(await lookupTab.isVisible().catch(() => false))) {
-      await dmWindow.getByRole('button', { name: 'Tools' }).click()
-    }
-    await lookupTab.click()
+    await dmWindow.getByRole('navigation', { name: 'Quick links' }).getByRole('button', { name: 'Lookup' }).click()
   }
   await expect(search).toBeVisible()
   await search.fill('goblin')

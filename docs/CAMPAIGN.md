@@ -10,6 +10,7 @@ Also read:
 - [MARKDOWN.md](MARKDOWN.md) — wikilinks, callouts, `statblock` field reference
 - [AI-CAMPAIGN.md](AI-CAMPAIGN.md) — spec for an AI converting a vault into this layout (1.8.19: Quick links bar under the header)
 - [QUICK-LINKS.md](QUICK-LINKS.md) — Party / Conditions / Calendar strip
+- [CALENDAR.md](CALENDAR.md) — in-world clock (`Calendar/Calendar.md`)
 - [Additional Books/README.md](../Additional%20Books/README.md) — optional book text for Lookup
 
 ## Folder layout
@@ -25,6 +26,7 @@ Start Here/       hub notes — opens first if present
   Overview.md     campaign hook and links
 Sessions/         run guides, game night sheets, and session recaps
   Art/            establishing shots
+Calendar/         in-world clock (`Calendar.md` with a `[!calendar]` fence)
 Party/            PC sheets (Add all players) and optional party roster
   Art/            PC portraits
 NPCs/             named people
@@ -56,7 +58,7 @@ Audio/
   Music/          mood playlists (Combat, Creepy, General — add more folders as needed)
   Ambience/       looping beds (Crowd, Rain, or loose files)
   Sfx/            soundboard one-shots (subfolders become headings)
-Reference/        tracker, calendars, cheat sheets
+Reference/        house rules, cheat sheets
 Archive/          recaps, transcripts, old drafts
 ```
 
@@ -75,6 +77,7 @@ Archive/          recaps, transcripts, old drafts
 | `Faction` | Factions |
 | `Start`, `Getting Started` | Start Here |
 | `Sounds`, `Sound` | Audio |
+| `Calendars`, `Almanac`, `Datebook` | Calendar |
 | `Z Archive` | Archive |
 
 Skipped directories (not shown / not scanned as notes): `.obsidian`, `.git`, `node_modules`, `Additional Books`, `out`, `dist`, and similar. A leftover `Templates/` folder is hidden from the file tree; right-click **New …** still uses those files if they exist, otherwise the system pack sheets.

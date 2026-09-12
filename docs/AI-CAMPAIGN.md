@@ -61,11 +61,12 @@ Gear/Weapons|Armor|Equipment|Trade Goods|Magic Items/   (+ Art/ each)
 Maps/                map notes; Art/ images; Print/ PDFs
 Handouts/            letters, props (+ Art/)
 Audio/Music|Ambience|Sfx/   user audio only; do not add copyrighted tracks
+Calendar/            in-world clock (`Calendar.md` with `[!calendar]`)
 Reference/           rules, trackers
 Archive/             transcripts, old drafts, YouTube text
 ```
 
-**Aliases** (treated as the canonical folder): `Player characters` / `PCs` / `The Party` → Party; `Locations` / `World` / `Setting` → Places; `Session Notes` → Sessions; `Assets` → Maps; `Getting Started` → Start Here.
+**Aliases** (treated as the canonical folder): `Player characters` / `PCs` / `The Party` → Party; `Locations` / `World` / `Setting` → Places; `Session Notes` → Sessions; `Assets` → Maps; `Getting Started` → Start Here; `Almanac` / `Calendars` → Calendar.
 
 **Skip** (not shown): `.obsidian`, `.git`, `Additional Books`, folders starting `zz_` or `Adventure book`.
 
@@ -131,6 +132,7 @@ Sheet header fences may also be `[!npc]`, `[!monster]`, `[!place]`, `[!shop]`, `
 | Tonight’s run (scenes + fight list) | `Sessions/` | nightsheet or plain note |
 | What actually happened (after the table) | `Sessions/` | recap |
 | Transcript, YouTube blurb, old drafts | `Archive/` | plain note |
+| In-world date and hours | `Calendar/` | `[!calendar]` note (`Calendar.md`) |
 | Haze rules, house rules | `Reference/` | plain note |
 | Hub, flowchart, live hooks | `Start Here/` | plain note + `Overview.md` |
 

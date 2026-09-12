@@ -38,7 +38,7 @@ With no campaign yet, Tableside copies **Greystead — The Pale Well** (a level-
 | --- | --- |
 | **Sample** | Open the bundled Greystead one-shot (empty start screen only) |
 | **Campaign** | Menu: recent folders, then **Open campaign…** (any folder) or **New campaign…** (system, look, empty folder) |
-| **Quick links** | Second header strip: **Party** (AC / save DC / PP), **Conditions**, **Calendar** |
+| **Quick links** | Strip under the header: sidebar glyphs, **Party**, **Conditions**, **Lookup**, **Prep**, **Table**, **Calendar** |
 
 **Open** reads any folder and fills in missing standard folders. Folders without `"system"` in `campaign.json` run as D&D 5e. You can change the **look** later (Classic, Light, Sci-fi, Vampire, Cyberpunk, Digital rain) from **Help & settings** or **Start Here**. You cannot change the system pack mid-campaign.
 
@@ -46,7 +46,7 @@ With no campaign yet, Tableside copies **Greystead — The Pale Well** (a level-
 
 | Window | What it is for |
 | --- | --- |
-| **DM console** | Notes, combat, music, Tools, dice. Only you see this. |
+| **DM console** | Notes, combat, music, Quick-bar tools, dice. Only you see this. |
 | **Player view** | Fullscreen on the TV. Picture, map (crop / fog / tokens), initiative overlay, or crawl. Black when idle. |
 
 Click the left **Players see** preview to place the player window on the table TV. **Close** on that preview shuts the player window so you can use the TV for something else. **Show to players** or picking a monitor opens it again.
@@ -57,7 +57,7 @@ Click the left **Players see** preview to place the player window on the table T
 
 ### 1. Open tonight’s notes
 
-The left **Files** list is your campaign folder. Click a note to open it in the center. The **Quick** strip under the header keeps Party AC / save DC / PP, condition text, and calendar notes one click away.
+The left **Files** list is your campaign folder. Click a note to open it in the center. The **Quick** strip under the header keeps Party AC / save DC / PP, condition text, Lookup / Prep / Table, and the in-world date one click away. **◀h** / **▶h** / **+Day** advance the clock; **⚙** picks Gregorian, Forgotten Realms, Greyhawk, or a custom week. The left and right panel buttons on that strip hide the file column and the right rail.
 
 - Folders start collapsed. Opening a file expands its folder.
 - Click the search icon next to Files, or press `Ctrl+F` / `/`, to find a note by name. `Esc` clears, then hides the box.
@@ -171,7 +171,7 @@ Other looks still show the card so the note stays readable. Play stays disabled 
 
 ### 7. Look something up
 
-**Tools → Lookup** searches the open campaign’s system pack offline.
+**Quick → Lookup** searches the open campaign’s system pack offline.
 
 | Pack | What you get |
 | --- | --- |
@@ -183,13 +183,13 @@ Filter chips narrow the category. From a result you can **Add to combat** (monst
 
 Optional PHB / DMG text dumps go in the app `Additional Books/` folder — not in the campaign. Details: [Additional Books/README.md](../Additional%20Books/README.md). Use the **Additional books** link in Lookup.
 
-**Tools → NPC** rolls a few names from race (5e) or ancestry (Pathfinder 2e), with a **Name flavor** picker (Classic fantasy, Norse, Greek mythology, Celtic, Roman, Arabic / desert-fantasy, Slavic, East Asian–inspired). Vampire uses name tradition instead. Copy one, or **New NPC…** to write a sheet under `NPCs/`.
+**Quick → Prep → NPC** rolls a few names from race (5e) or ancestry (Pathfinder 2e), with a **Name flavor** picker (Classic fantasy, Norse, Greek mythology, Celtic, Roman, Arabic / desert-fantasy, Slavic, East Asian–inspired). Vampire uses name tradition instead. Copy one, or **New NPC…** to write a sheet under `NPCs/`.
 
-**Tools → Improvise** is 2024 potions of healing and on-the-fly hazard damage.
+**Quick → Prep → Improvise** is 2024 potions of healing and on-the-fly hazard damage.
 
-**Tools → Links** is a short list of curated D&D reference sites (opens in your browser).
+**Quick → Prep → Links** is a short list of curated D&D reference sites (opens in your browser).
 
-**Tools → Timer** fades a full hourglass onto the player TV. **Show** first, then **Start** when the table should begin deciding. Change the minutes while it waits to retune the glass. Pause, reset, or fade out. Optional chime on the Music soundboard Sfx layer at zero.
+**Quick → Table → Timer** fades a full hourglass onto the player TV. **Show** first, then **Start** when the table should begin deciding. Change the minutes while it waits to retune the glass. Pause, reset, or fade out. Optional chime on the Music soundboard Sfx layer at zero.
 
 ### 8. Roll dice
 

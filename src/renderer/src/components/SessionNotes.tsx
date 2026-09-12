@@ -94,10 +94,12 @@ export default function SessionNotes({
   currencies,
   system,
   onEnsureGear,
-  onEnsureMonster
+  onEnsureMonster,
+  noteReloadToken
 }: {
   path: string
   kind: FileKind
+  noteReloadToken?: number
   imageUrl?: string
   images: CampaignImage[]
   notes?: CampaignNote[]
@@ -351,6 +353,24 @@ export default function SessionNotes({
     // note on every render and make editing impossible.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [path, kind])
+
+  useEffect(() => {
+    if (!noteReloadToken || !path || kind !== 'note') return
+    if (editing) return
+    let alive = true
+    void window.tabledm.readFile(path).then((text) => {
+      if (!alive) return
+      setMarkdown(text)
+      setOriginal(text)
+      markdownRef.current = text
+      originalRef.current = text
+    })
+    return () => {
+      alive = false
+    }
+    // Reload after an external write (calendar bar). Skip while the full editor is open.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [noteReloadToken])
 
   const sequenceCards = useOpeningSequenceCards({
     path,

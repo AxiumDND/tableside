@@ -60,7 +60,7 @@ The video above is the first night. **[docs/GUIDE.md](docs/GUIDE.md)** is the sa
 1. Install, then **Sample** (Greystead) or **Campaign** → Open… / New…. **New campaign…** asks which system pack to use: **D&D 5e** (bundled SRD 5.2.1), **Pathfinder 2e** (small original core), or **Vampire 5th Edition**.
 2. Click **Players see** to put the player window on the table TV.
 3. Open a note, click a picture, **Show to players** (`Alt+S`). **Clear** (`Alt+X`) blanks the TV.
-4. **Combat** loads a game night sheet’s combatants. **Music** plays your files from `Audio/`. **Tools** holds Lookup (offline system pack), NPC (name rolls + quick-create), Improvise, Dice, Timer, and Links.
+4. **Combat** loads a game night sheet’s combatants. **Music** plays your files from `Audio/`. The **Quick** bar holds Lookup (offline system pack), Prep (NPC, Improvise, Links), Table (Dice, Timer), Party, Conditions, and the in-world calendar.
 
 ## Who made this
 
@@ -140,6 +140,7 @@ The bundled sample is **[examples/greystead](examples/greystead)**. Tableside co
 | [docs/ROADMAP.md](docs/ROADMAP.md) | Near-term direction and starter tasks |
 | [docs/CAMPAIGN-MENU.md](docs/CAMPAIGN-MENU.md) | Campaign ▾ header menu (built in 1.8.17) |
 | [docs/QUICK-LINKS.md](docs/QUICK-LINKS.md) | Quick links bar under the header (Party / Conditions / Calendar) |
+| [docs/CALENDAR.md](docs/CALENDAR.md) | In-world clock on the Quick bar (`Calendar/Calendar.md`) |
 | [CONTRIBUTING.md](CONTRIBUTING.md) | Pull request expectations |
 | [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md) | Community standards |
 | [SECURITY.md](SECURITY.md) | Vulnerability reports |
