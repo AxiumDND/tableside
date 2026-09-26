@@ -5,6 +5,11 @@ import {
   type PlayerDice3dDie
 } from '../../../shared/playerDice3d'
 import {
+  planDieThrowMotions,
+  sampleDieThrow,
+  type DieThrowMotion
+} from '../../../shared/playerDice3dMotion'
+import {
   DICE_3D_CAMERA_POSITION,
   DICE_3D_LOOK_AT,
   d4CornerMarks,
@@ -48,6 +53,7 @@ type FlyingDie = {
   startQuat: THREE.Quaternion
   endQuat: THREE.Quaternion
   spin: THREE.Euler
+  motion: DieThrowMotion
 }
 
 function webglAvailable(): boolean {
@@ -277,10 +283,6 @@ function addFaceDecal(
   spinner.add(decal)
 }
 
-function easeOutCubic(t: number): number {
-  return 1 - (1 - t) ** 3
-}
-
 function landingGrid(count: number, width: number, depth: number): THREE.Vector3[] {
   const cols = Math.min(count, count <= 4 ? count : 6)
   const rows = Math.ceil(count / cols)
@@ -415,6 +417,7 @@ export function mountPlayerDice3d(
   const ends = landingGrid(dice.length, feltWidth * 0.62, feltDepth * 0.7).map(
     (spot) => spot.add(new THREE.Vector3(-stageShift, 0, 0))
   )
+  const motions = planDieThrowMotions(dice.length)
   const flyers: FlyingDie[] = dice.map((spec, index) => {
     const made = makeDie(spec, grain, look)
     const end = ends[index] ?? new THREE.Vector3()
@@ -447,12 +450,15 @@ export function mountPlayerDice3d(
         Math.PI * (2.2 + Math.random() * 1.6),
         Math.PI * (1.6 + Math.random() * 1.8),
         Math.PI * (0.8 + Math.random() * 1.2)
-      )
+      ),
+      motion: motions[index]!
     }
   })
 
   const extraSpin = new THREE.Quaternion()
+  const wobbleQ = new THREE.Quaternion()
   const spinEuler = new THREE.Euler()
+  const wobbleEuler = new THREE.Euler()
   const scratch = new THREE.Quaternion()
 
   const resize = (): void => {
@@ -474,14 +480,17 @@ export function mountPlayerDice3d(
   let frame = 0
   const tick = (now: number): void => {
     const t = Math.min(1, (now - started) / throwMs)
-    const ease = easeOutCubic(t)
     for (const flyer of flyers) {
-      flyer.group.position.lerpVectors(flyer.start, flyer.end, ease)
-      flyer.group.position.y = flyer.start.y + (flyer.end.y - flyer.start.y) * ease + Math.sin((1 - t) * Math.PI) * 1.4
-      flyer.spinner.quaternion.copy(flyer.startQuat).slerp(flyer.endQuat, ease)
-      spinEuler.set(flyer.spin.x * (1 - ease), flyer.spin.y * (1 - ease), flyer.spin.z * (1 - ease))
+      const sample = sampleDieThrow(t, flyer.motion)
+      flyer.group.position.lerpVectors(flyer.start, flyer.end, sample.planar)
+      flyer.group.position.y =
+        flyer.start.y + (flyer.end.y - flyer.start.y) * sample.planar + sample.height
+      flyer.spinner.quaternion.copy(flyer.startQuat).slerp(flyer.endQuat, sample.orient)
+      spinEuler.set(flyer.spin.x * sample.spin, flyer.spin.y * sample.spin, flyer.spin.z * sample.spin)
       extraSpin.setFromEuler(spinEuler)
-      scratch.copy(flyer.spinner.quaternion).multiply(extraSpin)
+      wobbleEuler.set(sample.wobbleX, sample.wobbleY, sample.wobbleZ)
+      wobbleQ.setFromEuler(wobbleEuler)
+      scratch.copy(flyer.spinner.quaternion).multiply(extraSpin).multiply(wobbleQ)
       flyer.spinner.quaternion.copy(scratch)
     }
     renderer.render(scene, camera)
