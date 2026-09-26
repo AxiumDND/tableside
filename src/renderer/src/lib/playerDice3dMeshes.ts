@@ -79,10 +79,14 @@ function minEdgeLength(faces: DieFace[]): number {
   return min
 }
 
+/**
+ * Narrow tumbled rim — enough for a catch-light, not a dual-tone frame
+ * as wide as the reading face (see dice-wide-bevel-feedback).
+ */
 export function chamferAmountForFaces(faces: DieFace[]): number {
   const edge = minEdgeLength(faces)
-  if (!Number.isFinite(edge) || edge <= 0) return 0.08
-  return Math.min(0.16, Math.max(0.06, edge * 0.12))
+  if (!Number.isFinite(edge) || edge <= 0) return 0.02
+  return Math.min(0.034, Math.max(0.012, edge * 0.024))
 }
 
 type BuiltFace = {
@@ -91,9 +95,20 @@ type BuiltFace = {
   inset: THREE.Vector3[]
 }
 
+/** Planar UV from a triangle's dominant axis so a shared atlas tiles on every face. */
+export function dieBodyUv(vertex: THREE.Vector3, normal: THREE.Vector3, scale = 0.9): [number, number] {
+  const ax = Math.abs(normal.x)
+  const ay = Math.abs(normal.y)
+  const az = Math.abs(normal.z)
+  if (ax >= ay && ax >= az) return [vertex.z * scale, vertex.y * scale]
+  if (ay >= ax && ay >= az) return [vertex.x * scale, vertex.z * scale]
+  return [vertex.x * scale, vertex.y * scale]
+}
+
 function pushTriangle(
   positions: number[],
   colors: number[],
+  uvs: number[],
   a: THREE.Vector3,
   b: THREE.Vector3,
   c: THREE.Vector3,
@@ -110,15 +125,19 @@ function pushTriangle(
     second = c
     third = b
   }
+  const faceNormal = n.lengthSq() > 1e-12 ? n.normalize() : mid.clone().normalize()
   for (const vertex of [first, second, third]) {
     positions.push(vertex.x, vertex.y, vertex.z)
     colors.push(color.r, color.g, color.b)
+    const [u, v] = dieBodyUv(vertex, faceNormal)
+    uvs.push(u, v)
   }
 }
 
-const FACE_TINT = new THREE.Color(1, 1, 1)
-const EDGE_TINT = new THREE.Color(0.82, 0.76, 0.68)
-const CORNER_TINT = new THREE.Color(0.74, 0.68, 0.6)
+/** Soft face / rim tints — rim slightly warmer so edges catch light without a chunky band. */
+const FACE_TINT = new THREE.Color(0.98, 0.97, 0.95)
+const EDGE_TINT = new THREE.Color(1, 0.99, 0.96)
+const CORNER_TINT = new THREE.Color(0.94, 0.92, 0.88)
 
 /**
  * Shrink each reading face and fill the gaps with flat bevels.
@@ -132,6 +151,7 @@ export function createChamferedDieGeometry(faces: DieFace[], amount: number): TH
 
   const positions: number[] = []
   const colors: number[] = []
+  const uvs: number[] = []
   const groups: { start: number; count: number; materialIndex: number }[] = []
 
   built.forEach((face, materialIndex) => {
@@ -143,13 +163,14 @@ export function createChamferedDieGeometry(faces: DieFace[], amount: number): TH
       pushTriangle(
         positions,
         colors,
+        uvs,
         center,
         face.inset[i]!,
         face.inset[(i + 1) % face.inset.length]!,
         FACE_TINT
       )
     }
-    groups.push({ start, count: (positions.length / 3 - start), materialIndex })
+    groups.push({ start, count: positions.length / 3 - start, materialIndex })
   })
 
   const seenEdges = new Set<string>()
@@ -185,8 +206,8 @@ export function createChamferedDieGeometry(faces: DieFace[], amount: number): TH
       const otherB = other.inset[(otherEdge + 1) % other.inset.length]!
       const bNearA = a0.distanceToSquared(otherA) < a0.distanceToSquared(otherB) ? otherA : otherB
       const bNearB = a1.distanceToSquared(otherA) < a1.distanceToSquared(otherB) ? otherA : otherB
-      pushTriangle(positions, colors, a0, a1, bNearB, EDGE_TINT)
-      pushTriangle(positions, colors, a0, bNearB, bNearA, EDGE_TINT)
+      pushTriangle(positions, colors, uvs, a0, a1, bNearB, EDGE_TINT)
+      pushTriangle(positions, colors, uvs, a0, bNearB, bNearA, EDGE_TINT)
     }
   }
 
@@ -218,13 +239,22 @@ export function createChamferedDieGeometry(faces: DieFace[], amount: number): TH
       .reduce((sum, point) => sum.add(point), new THREE.Vector3())
       .divideScalar(insets.length)
     for (let i = 0; i < insets.length; i += 1) {
-      pushTriangle(positions, colors, center, insets[i]!, insets[(i + 1) % insets.length]!, CORNER_TINT)
+      pushTriangle(
+        positions,
+        colors,
+        uvs,
+        center,
+        insets[i]!,
+        insets[(i + 1) % insets.length]!,
+        CORNER_TINT
+      )
     }
   }
 
   const geometry = new THREE.BufferGeometry()
   geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3))
   geometry.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3))
+  geometry.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2))
   geometry.computeVertexNormals()
   for (const group of groups) {
     geometry.addGroup(group.start, group.count, group.materialIndex)

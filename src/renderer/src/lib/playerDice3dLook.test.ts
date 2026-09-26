@@ -2,6 +2,9 @@ import { describe, expect, it } from 'vitest'
 import {
   dieBodyMaterialInputs,
   dieBodyScale,
+  dieFaceMicrotexturePixels,
+  dieFaceTextureContrast,
+  dieFaceTextureTint,
   dieGlyphFill,
   dieGlyphFontPx,
   dieGlyphScale,
@@ -9,6 +12,7 @@ import {
   dieGlyphTone,
   diePlasticColor,
   heightToNormalMap,
+  DIE_FACE_TEXTURE_SIZE,
   DIE_PLASTIC_COLOR,
   diceLookPreset
 } from './playerDice3dLook'
@@ -109,5 +113,42 @@ describe('heightToNormalMap', () => {
     expect(normals[0]).toBeGreaterThan(120)
     expect(normals[0]).toBeLessThan(136)
     expect(normals[2]).toBeGreaterThan(240)
+  })
+})
+
+describe('dieFaceMicrotexturePixels', () => {
+  it('builds a seamless tileable atlas', () => {
+    const size = DIE_FACE_TEXTURE_SIZE
+    const data = dieFaceMicrotexturePixels(size, { seed: 1.5, contrast: 0.12 })
+    expect(data).toHaveLength(size * size * 4)
+    // Left/right edges match (wrap).
+    for (let y = 0; y < size; y += 1) {
+      const left = y * size * 4
+      const right = (y * size + (size - 1)) * 4
+      expect(Math.abs(data[left]! - data[right]!)).toBeLessThan(18)
+    }
+    // Top/bottom edges match.
+    for (let x = 0; x < size; x += 1) {
+      const top = x * 4
+      const bottom = ((size - 1) * size + x) * 4
+      expect(Math.abs(data[top]! - data[bottom]!)).toBeLessThan(18)
+    }
+    let min = 255
+    let max = 0
+    for (let i = 0; i < data.length; i += 4) {
+      min = Math.min(min, data[i]!)
+      max = Math.max(max, data[i]!)
+    }
+    expect(max - min).toBeGreaterThan(8)
+  })
+
+  it('scales contrast across bag presets without dropping gems to zero', () => {
+    expect(dieFaceTextureContrast(diceLookPreset('ivory'))).toBeGreaterThan(
+      dieFaceTextureContrast(diceLookPreset('emerald'))
+    )
+    expect(dieFaceTextureContrast(diceLookPreset('sapphire'))).toBeGreaterThan(0.02)
+    const tint = dieFaceTextureTint(diceLookPreset('ivory'))
+    expect(tint[0]).toBeGreaterThan(0.5)
+    expect(tint[1]).toBeGreaterThan(0.5)
   })
 })

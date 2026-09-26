@@ -19,6 +19,8 @@ export const DIE_PLASTIC_COLOR = 0xe6d2b0
 /** @deprecated Prefer diceLookPreset('ivory').droppedBody */
 export const DIE_PLASTIC_DROPPED = 0x8a8074
 export const DIE_GLYPH_CANVAS = 256
+/** Shared tileable resin/plastic microtexture atlas size (generated, not shipped). */
+export const DIE_FACE_TEXTURE_SIZE = 128
 
 export type DieGlyphTone = 'ink' | 'gold' | 'blood' | 'faded'
 
@@ -211,6 +213,105 @@ export function heightToNormalMap(
     }
   }
   return out
+}
+
+/** Wrap-friendly hash in [0, 1). Lattice coords must already be period-wrapped. */
+function hash2(ix: number, iy: number, seed: number): number {
+  const n = Math.sin(ix * 127.1 + iy * 311.7 + seed * 74.7) * 43758.5453123
+  return n - Math.floor(n)
+}
+
+function valueNoiseWrap(x: number, y: number, period: number, seed: number): number {
+  const x0 = Math.floor(x)
+  const y0 = Math.floor(y)
+  const tx = x - x0
+  const ty = y - y0
+  const x1 = x0 + 1
+  const y1 = y0 + 1
+  const sx = tx * tx * (3 - 2 * tx)
+  const sy = ty * ty * (3 - 2 * ty)
+  const wrap = (i: number): number => ((i % period) + period) % period
+  const n00 = hash2(wrap(x0), wrap(y0), seed)
+  const n10 = hash2(wrap(x1), wrap(y0), seed)
+  const n01 = hash2(wrap(x0), wrap(y1), seed)
+  const n11 = hash2(wrap(x1), wrap(y1), seed)
+  const nx0 = n00 * (1 - sx) + n10 * sx
+  const nx1 = n01 * (1 - sx) + n11 * sx
+  return nx0 * (1 - sy) + nx1 * sy
+}
+
+/**
+ * Seamless resin / plastic microtexture pixels (RGBA).
+ * Periods are integers so left/right and top/bottom edges match when tiled.
+ */
+export function dieFaceMicrotexturePixels(
+  size: number,
+  opts?: { seed?: number; contrast?: number; tintRgb?: [number, number, number] }
+): Uint8ClampedArray {
+  const seed = opts?.seed ?? 2.4
+  const contrast = opts?.contrast ?? 0.11
+  const tint = opts?.tintRgb ?? [1, 1, 1]
+  const out = new Uint8ClampedArray(size * size * 4)
+  const octaves: { period: number; amp: number }[] = [
+    { period: 4, amp: 0.45 },
+    { period: 8, amp: 0.28 },
+    { period: 16, amp: 0.18 },
+    { period: 32, amp: 0.09 }
+  ]
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      let v = 0
+      let w = 0
+      for (let o = 0; o < octaves.length; o += 1) {
+        const { period, amp } = octaves[o]!
+        const fx = (x / size) * period
+        const fy = (y / size) * period
+        v += amp * valueNoiseWrap(fx, fy, period, seed + o * 17.3)
+        w += amp
+      }
+      const n = w > 0 ? v / w : 0.5
+      const centered = (n - 0.5) * contrast
+      // Stay near white so albedo multiply does not muddy bag colors; roughness still varies.
+      const base = 0.92 + centered
+      const i = (y * size + x) * 4
+      out[i] = Math.max(0, Math.min(255, Math.round(base * tint[0] * 255)))
+      out[i + 1] = Math.max(0, Math.min(255, Math.round(base * tint[1] * 255)))
+      out[i + 2] = Math.max(0, Math.min(255, Math.round(base * tint[2] * 255)))
+      out[i + 3] = 255
+    }
+  }
+  return out
+}
+
+/**
+ * Seamless resin / plastic microtexture for die faces.
+ * Grayscale mid-gray atlas — multiply with body color / drive roughness.
+ */
+export function paintDieFaceMicrotexture(
+  ctx: CanvasRenderingContext2D,
+  opts?: { seed?: number; contrast?: number; tintRgb?: [number, number, number] }
+): void {
+  const size = ctx.canvas.width || DIE_FACE_TEXTURE_SIZE
+  if (ctx.canvas.height !== size) ctx.canvas.height = size
+  const pixels = dieFaceMicrotexturePixels(size, opts)
+  const img = ctx.createImageData(size, size)
+  img.data.set(pixels)
+  ctx.putImageData(img, 0, 0)
+}
+
+/** How strongly the shared atlas affects albedo / roughness for a bag look. */
+export function dieFaceTextureContrast(look: DiceLookPreset): number {
+  if (!look.useGrain) return 0.045
+  return Math.min(0.16, 0.07 + look.grainDots / 900)
+}
+
+/** Parse preset grainTint (#rrggbb) into 0..1 RGB for the atlas. */
+export function dieFaceTextureTint(look: DiceLookPreset): [number, number, number] {
+  const hex = look.grainTint.trim()
+  const match = /^#?([0-9a-f]{6})$/i.exec(hex)
+  if (!match) return [1, 1, 1]
+  const n = Number.parseInt(match[1]!, 16)
+  return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255]
 }
 
 /** Body material fields for MeshPhysicalMaterial (no Three dependency here). */
