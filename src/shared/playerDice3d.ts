@@ -5,9 +5,9 @@ export const PLAYER_DICE_3D_SOURCE = 'Dice Tray'
 
 /**
  * How long the meshes tumble before they sit and the result card fills in.
- * Slightly longer than the original 1.4s so bounce + settle read clearly without feeling sluggish.
+ * Room for bounce + TV-distance crit/fail hold without feeling sluggish.
  */
-export const DICE_3D_THROW_MS = 1500
+export const DICE_3D_THROW_MS = 1600
 
 /** Leave the existing right-hand result card clear of landing dice. */
 export const DICE_3D_RESERVED_RIGHT = 0.26

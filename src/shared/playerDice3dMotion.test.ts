@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import {
   bouncePulse,
   clamp01,
+  dieThrowFlair,
   easeOutCubic,
   easeOutQuint,
   planDieThrowMotions,
@@ -24,6 +25,7 @@ const baseMotion = (overrides: Partial<DieThrowMotion> = {}): DieThrowMotion => 
   bounce2: 0.6,
   wobble: 0.05,
   wobblePhase: 1.2,
+  flair: 'none',
   ...overrides
 })
 
@@ -45,9 +47,22 @@ describe('bouncePulse', () => {
   })
 })
 
+describe('dieThrowFlair', () => {
+  it('flags kept d20 crits and fails only', () => {
+    expect(dieThrowFlair({ sides: 20, value: 20 })).toBe('nat20')
+    expect(dieThrowFlair({ sides: 20, value: 1 })).toBe('nat1')
+    expect(dieThrowFlair({ sides: 20, value: 12 })).toBe('none')
+    expect(dieThrowFlair({ sides: 6, value: 1 })).toBe('none')
+    expect(dieThrowFlair({ sides: 20, value: 20, dropped: true })).toBe('none')
+  })
+})
+
 describe('planDieThrowMotions', () => {
   it('staggers land times and stays within the cinematic window', () => {
-    const motions = planDieThrowMotions(4, fixedRng([0.2, 0.5, 0.8, 0.1, 0.9, 0.3, 0.4, 0.6, 0.7, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75]))
+    const motions = planDieThrowMotions(
+      4,
+      fixedRng([0.2, 0.5, 0.8, 0.1, 0.9, 0.3, 0.4, 0.6, 0.7, 0.15, 0.25, 0.35, 0.45, 0.55, 0.65, 0.75])
+    )
     expect(motions).toHaveLength(4)
     for (let i = 1; i < motions.length; i += 1) {
       expect(motions[i]!.landT).toBeGreaterThanOrEqual(motions[i - 1]!.landT)
@@ -57,7 +72,23 @@ describe('planDieThrowMotions', () => {
       expect(m.landT).toBeLessThanOrEqual(0.68)
       expect(m.flightPeak).toBeGreaterThan(1)
       expect(m.wobble).toBeGreaterThan(0)
+      expect(m.flair).toBe('none')
     }
+  })
+
+  it('attaches nat20 / nat1 flair from the planned die faces', () => {
+    const motions = planDieThrowMotions(
+      [
+        { sides: 20, value: 20 },
+        { sides: 20, value: 1 },
+        { sides: 6, value: 6 }
+      ],
+      fixedRng([0.2, 0.4, 0.6, 0.1, 0.3, 0.5, 0.7, 0.8, 0.9])
+    )
+    expect(motions.map((m) => m.flair)).toEqual(['nat20', 'nat1', 'none'])
+    expect(motions[0]!.flightPeak).toBeGreaterThan(motions[1]!.flightPeak)
+    expect(motions[0]!.bounce2).toBeGreaterThan(0)
+    expect(motions[1]!.bounce2).toBe(0)
   })
 
   it('returns an empty plan for zero dice', () => {
@@ -73,6 +104,8 @@ describe('sampleDieThrow', () => {
     expect(start.orient).toBe(0)
     expect(start.spin).toBe(1)
     expect(start.height).toBeCloseTo(0, 5)
+    expect(start.scale).toBe(1)
+    expect(start.cameraPunch).toBe(0)
 
     const mid = sampleDieThrow(motion.landT * 0.5, motion)
     expect(mid.height).toBeGreaterThan(0.5)
@@ -86,6 +119,8 @@ describe('sampleDieThrow', () => {
     expect(end.spin).toBe(0)
     expect(end.height).toBeLessThan(0.05)
     expect(Math.abs(end.wobbleX)).toBeLessThan(0.002)
+    expect(end.glow).toBe(0)
+    expect(end.shade).toBe(0)
   })
 
   it('produces a first bounce after land and an optional second hop', () => {
@@ -112,5 +147,32 @@ describe('sampleDieThrow', () => {
 
     const after = sampleDieThrow(0.62, motion)
     expect(Math.abs(after.wobbleX) + Math.abs(after.wobbleY) + Math.abs(after.wobbleZ)).toBeGreaterThan(0.01)
+  })
+
+  it('pops big with gold glow and camera punch on a nat20 land (TV-readable)', () => {
+    const motion = baseMotion({ flair: 'nat20', landT: 0.55, bounce2: 1, wobble: 0.1 })
+    const land = sampleDieThrow(0.55 + 0.08, motion)
+    expect(land.scale).toBeGreaterThan(1.2)
+    expect(land.glow).toBeGreaterThan(0.7)
+    expect(land.shade).toBe(0)
+    expect(land.cameraPunch).toBeGreaterThan(0.5)
+    expect(land.spin).toBeGreaterThan(0)
+    // Linger still readable mid-settle
+    const linger = sampleDieThrow(0.55 + 0.22, motion)
+    expect(linger.glow).toBeGreaterThan(0.35)
+    expect(linger.scale).toBeGreaterThan(1.05)
+  })
+
+  it('thuds with dark shade, squash, and camera punch on a nat1 land (TV-readable)', () => {
+    const motion = baseMotion({ flair: 'nat1', landT: 0.55, bounce2: 0, flightPeak: 0.7, wobble: 0.12 })
+    const land = sampleDieThrow(0.55 + 0.07, motion)
+    expect(land.scale).toBeLessThan(0.85)
+    expect(land.shade).toBeGreaterThan(0.7)
+    expect(land.glow).toBe(0)
+    expect(land.cameraPunch).toBeGreaterThan(0.5)
+    expect(land.spin).toBe(0)
+    expect(land.height).toBeLessThan(0.3)
+    const linger = sampleDieThrow(0.55 + 0.2, motion)
+    expect(linger.shade).toBeGreaterThan(0.3)
   })
 })
