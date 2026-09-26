@@ -190,11 +190,11 @@ function createStudioEnvironment(): THREE.Scene {
     mesh.scale.copy(scale)
     studio.add(mesh)
   }
-  panel(0xfff6e8, 110, new THREE.Vector3(0, 8.5, 0), new THREE.Vector3(10, 0.12, 10))
-  panel(0xffe2b0, 55, new THREE.Vector3(-7, 5.5, 5), new THREE.Vector3(3.6, 2.8, 0.1))
-  panel(0xb8cce8, 28, new THREE.Vector3(7, 4.2, -4), new THREE.Vector3(2.8, 2.4, 0.1))
-  panel(0xffd8a0, 22, new THREE.Vector3(0, 3.5, -8), new THREE.Vector3(6, 1.6, 0.1))
-  panel(0x6a5848, 8, new THREE.Vector3(0, -5.5, 0), new THREE.Vector3(12, 0.2, 12))
+  panel(0xfff6e8, 160, new THREE.Vector3(0, 8.5, 0), new THREE.Vector3(10, 0.12, 10))
+  panel(0xffe2b0, 78, new THREE.Vector3(-7, 5.5, 5), new THREE.Vector3(3.6, 2.8, 0.1))
+  panel(0xb8cce8, 42, new THREE.Vector3(7, 4.2, -4), new THREE.Vector3(2.8, 2.4, 0.1))
+  panel(0xffd8a0, 36, new THREE.Vector3(0, 3.5, -8), new THREE.Vector3(6, 1.6, 0.1))
+  panel(0x6a5848, 12, new THREE.Vector3(0, -5.5, 0), new THREE.Vector3(12, 0.2, 12))
   return studio
 }
 
@@ -202,9 +202,9 @@ function attachStudioIbl(renderer: THREE.WebGLRenderer, scene: THREE.Scene): () 
   try {
     const pmrem = new THREE.PMREMGenerator(renderer)
     const studio = createStudioEnvironment()
-    const env = pmrem.fromScene(studio, 0.055)
+    const env = pmrem.fromScene(studio, 0.04)
     scene.environment = env.texture
-    scene.environmentIntensity = 1.15
+    scene.environmentIntensity = 1.28
     studio.traverse((obj) => {
       if (obj instanceof THREE.Mesh) {
         obj.geometry.dispose()
