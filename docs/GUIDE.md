@@ -1,6 +1,6 @@
 # How to use Tableside
 
-Step-by-step for a night at the table. Current release: **1.8.27**.
+Step-by-step for a night at the table. Current release: **1.8.31**.
 
 Tableside is a **local Windows DM console for the laptop at your table**. People sit together in the room; a second monitor (TV) shows players a clean picture — maps, art, initiative, or a sci-fi opening crawl. It is **not** a full virtual tabletop for online play. There is no account and no internet required once the app is installed.
 
