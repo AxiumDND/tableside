@@ -1,8 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import {
+  dieAttenuationColor,
+  dieAttenuationDistance,
   dieBodyMaterialInputs,
+  dieBodyNormalScale,
   dieBodyScale,
   dieFaceMicrotexturePixels,
+  dieFaceNormalMapPixels,
   dieFaceTextureContrast,
   dieFaceTextureTint,
   dieGlyphFill,
@@ -48,6 +52,7 @@ describe('dieBodyMaterialInputs', () => {
     expect(ivory.color).toBe(0xe6d2b0)
     expect(ivory.metalness).toBe(0)
     expect(ivory.transmission).toBe(0)
+    expect(ivory.attenuationDistance).toBe(0)
 
     const steel = dieBodyMaterialInputs(diceLookPreset('steel'))
     expect(steel.metalness).toBeGreaterThan(0.5)
@@ -56,10 +61,29 @@ describe('dieBodyMaterialInputs', () => {
     const ruby = dieBodyMaterialInputs(diceLookPreset('ruby'))
     expect(ruby.transmission).toBeGreaterThan(0.3)
     expect(ruby.transparent).toBe(true)
+    expect(ruby.attenuationDistance).toBeGreaterThan(0.5)
+    expect(ruby.attenuationColor).toBe(dieAttenuationColor(diceLookPreset('ruby')))
 
     const dropped = dieBodyMaterialInputs(diceLookPreset('ruby'), true)
     expect(dropped.opacity).toBe(0.5)
     expect(dropped.transmission).toBe(0)
+    expect(dropped.attenuationDistance).toBe(0)
+  })
+})
+
+describe('die attenuation (DSN-inspired resin volume tint)', () => {
+  it('tints translucent bags from body color and skips opaque bags', () => {
+    expect(dieAttenuationDistance(diceLookPreset('ivory'))).toBe(0)
+    expect(dieAttenuationDistance(diceLookPreset('amber'))).toBeGreaterThan(0.5)
+    expect(dieAttenuationColor(diceLookPreset('obsidian'))).toBe(0xf2f2ff)
+    expect(dieAttenuationColor(diceLookPreset('ruby'))).toBe(diceLookPreset('ruby').body)
+  })
+
+  it('scales body normals softer on gems than on ivory grain', () => {
+    expect(dieBodyNormalScale(diceLookPreset('ivory'))).toBeGreaterThan(
+      dieBodyNormalScale(diceLookPreset('ruby'))
+    )
+    expect(dieBodyNormalScale(diceLookPreset('emerald'))).toBeGreaterThan(0.1)
   })
 })
 
@@ -150,5 +174,27 @@ describe('dieFaceMicrotexturePixels', () => {
     const tint = dieFaceTextureTint(diceLookPreset('ivory'))
     expect(tint[0]).toBeGreaterThan(0.5)
     expect(tint[1]).toBeGreaterThan(0.5)
+  })
+})
+
+describe('dieFaceNormalMapPixels', () => {
+  it('builds a tileable normal atlas that is not flat blue', () => {
+    const size = 32
+    const data = dieFaceNormalMapPixels(size, { seed: 1.5, contrast: 0.14, strength: 3.5 })
+    expect(data).toHaveLength(size * size * 4)
+    let minX = 255
+    let maxX = 0
+    for (let i = 0; i < data.length; i += 4) {
+      minX = Math.min(minX, data[i]!)
+      maxX = Math.max(maxX, data[i]!)
+      expect(data[i + 3]).toBe(255)
+    }
+    expect(maxX - minX).toBeGreaterThan(8)
+    // Left/right wrap: normals should agree at the seam.
+    for (let y = 0; y < size; y += 8) {
+      const left = (y * size + 0) * 4
+      const right = (y * size + (size - 1)) * 4
+      expect(Math.abs(data[left]! - data[right]!)).toBeLessThan(40)
+    }
   })
 })

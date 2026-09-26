@@ -27,12 +27,14 @@ import {
   DIE_FACE_TEXTURE_SIZE,
   DIE_GLYPH_CANVAS,
   dieBodyMaterialInputs,
+  dieBodyNormalScale,
   dieBodyScale,
   dieFaceTextureContrast,
   dieFaceTextureTint,
   dieGlyphTone,
   heightToNormalMap,
   paintDieFaceMicrotexture,
+  paintDieFaceNormalMap,
   paintDieGlyph,
   paintDieGlyphHeight,
   resolveDiceLook
@@ -108,16 +110,30 @@ function faceMaps(
 function resinGrainTextures(look: DiceLookPreset): {
   albedo: THREE.CanvasTexture
   data: THREE.CanvasTexture
+  normal: THREE.CanvasTexture
 } {
-  const canvas = document.createElement('canvas')
-  canvas.width = DIE_FACE_TEXTURE_SIZE
-  canvas.height = DIE_FACE_TEXTURE_SIZE
-  const ctx = canvas.getContext('2d')
-  if (ctx) {
-    paintDieFaceMicrotexture(ctx, {
-      seed: 2.4 + look.id.length * 0.37,
-      contrast: dieFaceTextureContrast(look),
+  const contrast = dieFaceTextureContrast(look)
+  const seed = 2.4 + look.id.length * 0.37
+  const albedoCanvas = document.createElement('canvas')
+  albedoCanvas.width = DIE_FACE_TEXTURE_SIZE
+  albedoCanvas.height = DIE_FACE_TEXTURE_SIZE
+  const albedoCtx = albedoCanvas.getContext('2d')
+  if (albedoCtx) {
+    paintDieFaceMicrotexture(albedoCtx, {
+      seed,
+      contrast,
       tintRgb: dieFaceTextureTint(look)
+    })
+  }
+  const normalCanvas = document.createElement('canvas')
+  normalCanvas.width = DIE_FACE_TEXTURE_SIZE
+  normalCanvas.height = DIE_FACE_TEXTURE_SIZE
+  const normalCtx = normalCanvas.getContext('2d')
+  if (normalCtx) {
+    paintDieFaceNormalMap(normalCtx, {
+      seed,
+      contrast: Math.max(contrast, 0.08),
+      strength: look.metalness >= 0.5 ? 4.2 : 3.2
     })
   }
   const wrap = (texture: THREE.CanvasTexture, colorSpace: THREE.ColorSpace): THREE.CanvasTexture => {
@@ -129,19 +145,40 @@ function resinGrainTextures(look: DiceLookPreset): {
     return texture
   }
   return {
-    albedo: wrap(new THREE.CanvasTexture(canvas), THREE.SRGBColorSpace),
-    data: wrap(new THREE.CanvasTexture(canvas), THREE.NoColorSpace)
+    albedo: wrap(new THREE.CanvasTexture(albedoCanvas), THREE.SRGBColorSpace),
+    data: wrap(new THREE.CanvasTexture(albedoCanvas), THREE.NoColorSpace),
+    normal: wrap(new THREE.CanvasTexture(normalCanvas), THREE.NoColorSpace)
   }
 }
 
+/**
+ * Photography-studio / warm-table IBL without shipping HDR files.
+ * Mood inspired by DSN foyer / warm-restaurant equirects — procedural panels only.
+ */
 function createStudioEnvironment(): THREE.Scene {
   const studio = new THREE.Scene()
+  const skyCanvas = document.createElement('canvas')
+  skyCanvas.width = 4
+  skyCanvas.height = 64
+  const skyCtx = skyCanvas.getContext('2d')
+  if (skyCtx) {
+    const grad = skyCtx.createLinearGradient(0, 0, 0, 64)
+    grad.addColorStop(0, '#9eb4d0')
+    grad.addColorStop(0.35, '#e8dcc8')
+    grad.addColorStop(0.62, '#c4a888')
+    grad.addColorStop(1, '#2a2218')
+    skyCtx.fillStyle = grad
+    skyCtx.fillRect(0, 0, 4, 64)
+  }
+  const skyMap = new THREE.CanvasTexture(skyCanvas)
+  skyMap.colorSpace = THREE.SRGBColorSpace
   const room = new THREE.Mesh(
-    new THREE.BoxGeometry(1, 1, 1),
-    new THREE.MeshBasicMaterial({ color: 0xe8dcc8, side: THREE.BackSide })
+    new THREE.SphereGeometry(1, 32, 16),
+    new THREE.MeshBasicMaterial({ map: skyMap, side: THREE.BackSide })
   )
-  room.scale.set(18, 12, 18)
+  room.scale.set(14, 10, 14)
   studio.add(room)
+
   const panel = (color: number, intensity: number, position: THREE.Vector3, scale: THREE.Vector3): void => {
     const mat = new THREE.MeshLambertMaterial({
       color: 0x000000,
@@ -153,9 +190,11 @@ function createStudioEnvironment(): THREE.Scene {
     mesh.scale.copy(scale)
     studio.add(mesh)
   }
-  panel(0xfff4e0, 90, new THREE.Vector3(0, 9, 0), new THREE.Vector3(8, 0.15, 8))
-  panel(0xffe4b8, 42, new THREE.Vector3(-6, 6, 4), new THREE.Vector3(3.2, 2.2, 0.12))
-  panel(0xc8d8f0, 20, new THREE.Vector3(6, 4, -3), new THREE.Vector3(2.4, 2, 0.12))
+  panel(0xfff6e8, 110, new THREE.Vector3(0, 8.5, 0), new THREE.Vector3(10, 0.12, 10))
+  panel(0xffe2b0, 55, new THREE.Vector3(-7, 5.5, 5), new THREE.Vector3(3.6, 2.8, 0.1))
+  panel(0xb8cce8, 28, new THREE.Vector3(7, 4.2, -4), new THREE.Vector3(2.8, 2.4, 0.1))
+  panel(0xffd8a0, 22, new THREE.Vector3(0, 3.5, -8), new THREE.Vector3(6, 1.6, 0.1))
+  panel(0x6a5848, 8, new THREE.Vector3(0, -5.5, 0), new THREE.Vector3(12, 0.2, 12))
   return studio
 }
 
@@ -163,14 +202,18 @@ function attachStudioIbl(renderer: THREE.WebGLRenderer, scene: THREE.Scene): () 
   try {
     const pmrem = new THREE.PMREMGenerator(renderer)
     const studio = createStudioEnvironment()
-    const env = pmrem.fromScene(studio, 0.04)
+    const env = pmrem.fromScene(studio, 0.055)
     scene.environment = env.texture
-    scene.environmentIntensity = 0.88
+    scene.environmentIntensity = 1.15
     studio.traverse((obj) => {
       if (obj instanceof THREE.Mesh) {
         obj.geometry.dispose()
         const materials = Array.isArray(obj.material) ? obj.material : [obj.material]
-        for (const material of materials) material.dispose()
+        for (const material of materials) {
+          const mapped = material as THREE.MeshBasicMaterial
+          if (mapped.map) mapped.map.dispose()
+          material.dispose()
+        }
       }
     })
     pmrem.dispose()
@@ -186,7 +229,14 @@ function attachStudioIbl(renderer: THREE.WebGLRenderer, scene: THREE.Scene): () 
 function disposeMaterialMaps(material: THREE.Material, shared?: Set<THREE.Texture>): void {
   const physical = material as THREE.MeshPhysicalMaterial
   const seen = new Set<THREE.Texture>()
-  for (const key of ['map', 'normalMap', 'roughnessMap', 'bumpMap'] as const) {
+  for (const key of [
+    'map',
+    'normalMap',
+    'roughnessMap',
+    'bumpMap',
+    'clearcoatNormalMap',
+    'transmissionMap'
+  ] as const) {
     const texture = physical[key]
     if (!(texture instanceof THREE.Texture) || seen.has(texture) || shared?.has(texture)) continue
     seen.add(texture)
@@ -277,11 +327,12 @@ function addFaceDecal(
     new THREE.MeshPhysicalMaterial({
       map: maps.map,
       normalMap: maps.normalMap,
-      normalScale: new THREE.Vector2(0.72, 0.72),
-      roughness: Math.min(0.5, look.roughness + 0.06),
-      metalness: Math.min(look.metalness, 0.2),
-      clearcoat: spec.dropped ? 0.15 : Math.min(look.clearcoat, 0.55),
-      clearcoatRoughness: 0.28,
+      normalScale: new THREE.Vector2(0.95, 0.95),
+      roughness: Math.min(0.48, look.roughness + 0.04),
+      metalness: Math.min(look.metalness, 0.15),
+      clearcoat: spec.dropped ? 0.12 : Math.min(look.clearcoat * 0.92, 0.88),
+      clearcoatRoughness: Math.max(0.12, look.clearcoatRoughness * 0.85),
+      envMapIntensity: look.envMapIntensity * 0.85,
       transparent: true,
       depthWrite: false,
       polygonOffset: true,
@@ -314,7 +365,7 @@ function landingGrid(count: number, width: number, depth: number): THREE.Vector3
 
 function makeDie(
   spec: PlayerDice3dDie,
-  grain: { albedo: THREE.CanvasTexture; data: THREE.CanvasTexture },
+  grain: { albedo: THREE.CanvasTexture; data: THREE.CanvasTexture; normal: THREE.CanvasTexture },
   look: DiceLookPreset
 ): { group: THREE.Group; spinner: THREE.Group; result: DieFace; faces: DieFace[]; scale: number } {
   const group = new THREE.Group()
@@ -325,7 +376,7 @@ function makeDie(
   const result = resultDieFace(faces, spec)
   const scale = dieBodyScale(spec.sides)
   const mat = dieBodyMaterialInputs(look, spec.dropped)
-  const bump = look.useGrain ? 0.035 : 0.018
+  const nScale = dieBodyNormalScale(look)
   const body = new THREE.Mesh(
     geometry,
     new THREE.MeshPhysicalMaterial({
@@ -333,8 +384,10 @@ function makeDie(
       map: grain.albedo,
       roughness: mat.roughness,
       roughnessMap: grain.data,
-      bumpMap: grain.data,
-      bumpScale: bump,
+      normalMap: grain.normal,
+      normalScale: new THREE.Vector2(nScale, nScale),
+      clearcoatNormalMap: grain.normal,
+      clearcoatNormalScale: new THREE.Vector2(nScale * 0.55, nScale * 0.55),
       metalness: mat.metalness,
       clearcoat: mat.clearcoat,
       clearcoatRoughness: mat.clearcoatRoughness,
@@ -344,6 +397,8 @@ function makeDie(
       ior: mat.ior,
       transmission: mat.transmission,
       thickness: mat.thickness,
+      attenuationColor: new THREE.Color(mat.attenuationColor),
+      attenuationDistance: mat.attenuationDistance > 0 ? mat.attenuationDistance : Infinity,
       specularIntensity: mat.specularIntensity,
       envMapIntensity: mat.envMapIntensity,
       vertexColors: Boolean(geometry.getAttribute('color')),
@@ -405,7 +460,8 @@ export function mountPlayerDice3d(
   renderer.setClearColor(0x000000, 0)
   renderer.outputColorSpace = THREE.SRGBColorSpace
   renderer.toneMapping = THREE.ACESFilmicToneMapping
-  renderer.toneMappingExposure = 1.12
+  // Slightly lower exposure — richer IBL carries more energy (DSN ~1.0 with HDR).
+  renderer.toneMappingExposure = 1.02
 
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 80)
@@ -413,14 +469,15 @@ export function mountPlayerDice3d(
   camera.lookAt(DICE_3D_LOOK_AT)
 
   const disposeIbl = attachStudioIbl(renderer, scene)
-  scene.add(new THREE.HemisphereLight(0xfff3dc, 0x1c1610, 0.48))
-  const key = new THREE.DirectionalLight(0xfff1d8, 1.05)
+  // IBL-first balance (DSN: strong hemi + weak key when realistic lighting is on).
+  scene.add(new THREE.HemisphereLight(0xfff3dc, 0x1c1610, 0.72))
+  const key = new THREE.DirectionalLight(0xfff1d8, 0.42)
   key.position.set(-4, 14, 10)
   scene.add(key)
-  const fill = new THREE.DirectionalLight(0x9bb6d8, 0.28)
+  const fill = new THREE.DirectionalLight(0x9bb6d8, 0.16)
   fill.position.set(8, 5, -5)
   scene.add(fill)
-  const rim = new THREE.DirectionalLight(0xffe4b8, 0.32)
+  const rim = new THREE.DirectionalLight(0xffe4b8, 0.22)
   rim.position.set(2, 3, -10)
   scene.add(rim)
 
@@ -430,7 +487,7 @@ export function mountPlayerDice3d(
   const usable = 1 - reservedRight
   const stageShift = feltWidth * (0.5 - usable / 2)
   const grain = resinGrainTextures(look)
-  const sharedMaps = new Set<THREE.Texture>([grain.albedo, grain.data])
+  const sharedMaps = new Set<THREE.Texture>([grain.albedo, grain.data, grain.normal])
   const ends = landingGrid(dice.length, feltWidth * 0.62, feltDepth * 0.7).map(
     (spot) => spot.add(new THREE.Vector3(-stageShift, 0, 0))
   )
@@ -480,7 +537,7 @@ export function mountPlayerDice3d(
   const spinEuler = new THREE.Euler()
   const wobbleEuler = new THREE.Euler()
   const scratch = new THREE.Quaternion()
-  const baseExposure = 1.12
+  const baseExposure = 1.02
   const baseFov = camera.fov
   const baseCamPos = camera.position.clone()
   const punchLook = DICE_3D_LOOK_AT.clone()
@@ -596,6 +653,7 @@ export function mountPlayerDice3d(
       disposeIbl()
       grain.albedo.dispose()
       grain.data.dispose()
+      grain.normal.dispose()
       renderer.dispose()
       scene.traverse((obj) => {
         if (obj instanceof THREE.Mesh || obj instanceof THREE.LineSegments) {

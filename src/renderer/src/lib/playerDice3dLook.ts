@@ -139,7 +139,10 @@ export function paintDieGlyph(
   if (dieGlyphShouldDot(label)) paintUnderDot(ctx, cx, cy, fontPx, fill)
 }
 
-/** Grayscale height: white high, dark engraved. Soft on purpose. */
+/**
+ * Grayscale height: white high, dark engraved.
+ * Slightly deeper than the first pass so decal normals read as carved (DSN-style).
+ */
 export function paintDieGlyphHeight(
   ctx: CanvasRenderingContext2D,
   label: string,
@@ -150,15 +153,15 @@ export function paintDieGlyphHeight(
   ctx.fillRect(0, 0, size, size)
   const { cx, cy, fontPx } = setupGlyphType(ctx, sides, label)
   ctx.shadowColor = '#000000'
-  ctx.shadowBlur = 4
+  ctx.shadowBlur = 5
   ctx.shadowOffsetX = 1
-  ctx.shadowOffsetY = 1
-  ctx.strokeStyle = '#777777'
-  ctx.lineWidth = Math.max(4, Math.round(fontPx / 22))
+  ctx.shadowOffsetY = 2
+  ctx.strokeStyle = '#5a5a5a'
+  ctx.lineWidth = Math.max(5, Math.round(fontPx / 20))
   ctx.strokeText(label, cx, cy)
-  ctx.fillStyle = '#555555'
+  ctx.fillStyle = '#3a3a3a'
   ctx.fillText(label, cx, cy)
-  if (dieGlyphShouldDot(label)) paintUnderDot(ctx, cx, cy, fontPx, '#555555')
+  if (dieGlyphShouldDot(label)) paintUnderDot(ctx, cx, cy, fontPx, '#3a3a3a')
 }
 
 /**
@@ -299,6 +302,77 @@ export function paintDieFaceMicrotexture(
   ctx.putImageData(img, 0, 0)
 }
 
+/**
+ * Tileable body normal map from the same microtexture height field (wrap-aware Sobel).
+ * Inspired by DSN packing material normals separate from face-engrave normals — procedural, not their assets.
+ */
+export function dieFaceNormalMapPixels(
+  size: number,
+  opts?: { seed?: number; contrast?: number; strength?: number }
+): Uint8ClampedArray {
+  const seed = opts?.seed ?? 2.4
+  const contrast = opts?.contrast ?? 0.11
+  const strength = opts?.strength ?? 3.4
+  const albedo = dieFaceMicrotexturePixels(size, { seed, contrast })
+  const height = new Float32Array(size * size)
+  for (let i = 0; i < size * size; i += 1) {
+    height[i] = albedo[i * 4]! / 255
+  }
+  const sample = (x: number, y: number): number => {
+    const xx = ((x % size) + size) % size
+    const yy = ((y % size) + size) % size
+    return height[yy * size + xx]!
+  }
+  const out = new Uint8ClampedArray(size * size * 4)
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const tl = sample(x - 1, y - 1)
+      const t = sample(x, y - 1)
+      const tr = sample(x + 1, y - 1)
+      const l = sample(x - 1, y)
+      const r = sample(x + 1, y)
+      const bl = sample(x - 1, y + 1)
+      const b = sample(x, y + 1)
+      const br = sample(x + 1, y + 1)
+      const gx = tr + 2 * r + br - (tl + 2 * l + bl)
+      const gy = bl + 2 * b + br - (tl + 2 * t + tr)
+      let nx = -gx * strength
+      let ny = -gy * strength
+      let nz = 1
+      const inv = 1 / Math.hypot(nx, ny, nz)
+      nx *= inv
+      ny *= inv
+      nz *= inv
+      const i = (y * size + x) * 4
+      out[i] = Math.round(nx * 127.5 + 127.5)
+      out[i + 1] = Math.round(ny * 127.5 + 127.5)
+      out[i + 2] = Math.round(nz * 127.5 + 127.5)
+      out[i + 3] = 255
+    }
+  }
+  return out
+}
+
+export function paintDieFaceNormalMap(
+  ctx: CanvasRenderingContext2D,
+  opts?: { seed?: number; contrast?: number; strength?: number }
+): void {
+  const size = ctx.canvas.width || DIE_FACE_TEXTURE_SIZE
+  if (ctx.canvas.height !== size) ctx.canvas.height = size
+  const pixels = dieFaceNormalMapPixels(size, opts)
+  const img = ctx.createImageData(size, size)
+  img.data.set(pixels)
+  ctx.putImageData(img, 0, 0)
+}
+
+/** Body normalScale magnitude — stronger on gritty bags, soft on polished gems. */
+export function dieBodyNormalScale(look: DiceLookPreset): number {
+  if (!look.useGrain) return 0.12
+  if (look.metalness >= 0.5) return 0.28
+  if (look.transmission > 0.2) return 0.18
+  return Math.min(0.42, 0.22 + look.grainDots / 500)
+}
+
 /** How strongly the shared atlas affects albedo / roughness for a bag look. */
 export function dieFaceTextureContrast(look: DiceLookPreset): number {
   if (!look.useGrain) return 0.045
@@ -312,6 +386,25 @@ export function dieFaceTextureTint(look: DiceLookPreset): [number, number, numbe
   if (!match) return [1, 1, 1]
   const n = Number.parseInt(match[1]!, 16)
   return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255]
+}
+
+/** Volume tint for translucent resin (DSN-style attenuationColor from body). */
+export function dieAttenuationColor(look: DiceLookPreset): number {
+  const body = look.body
+  const r = ((body >> 16) & 255) / 255
+  const g = ((body >> 8) & 255) / 255
+  const b = (body & 255) / 255
+  // Near-black bodies need a pale attenuation or the die reads as a silhouette (DSN resin).
+  const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b
+  if (luma < 0.12) return 0xf2f2ff
+  return body
+}
+
+/** World-ish distance for MeshPhysicalMaterial attenuation (die radius ~1). */
+export function dieAttenuationDistance(look: DiceLookPreset): number {
+  if (look.transmission <= 0) return 0
+  const base = look.thickness > 0 ? look.thickness : 1
+  return Math.max(0.55, Math.min(2.4, base * 0.95))
 }
 
 /** Body material fields for MeshPhysicalMaterial (no Three dependency here). */
@@ -330,11 +423,14 @@ export function dieBodyMaterialInputs(
   ior: number
   transmission: number
   thickness: number
+  attenuationColor: number
+  attenuationDistance: number
   envMapIntensity: number
   specularIntensity: number
   transparent: boolean
   opacity: number
 } {
+  const transmission = dropped ? 0 : look.transmission
   return {
     color: diePlasticColor(dropped, look),
     roughness: look.roughness,
@@ -345,8 +441,10 @@ export function dieBodyMaterialInputs(
     sheenColor: look.sheenColor,
     sheenRoughness: look.sheenRoughness,
     ior: look.ior,
-    transmission: dropped ? 0 : look.transmission,
+    transmission,
     thickness: dropped ? 0 : look.thickness,
+    attenuationColor: dieAttenuationColor(look),
+    attenuationDistance: dropped || transmission <= 0 ? 0 : dieAttenuationDistance(look),
     envMapIntensity: look.envMapIntensity,
     specularIntensity: look.specularIntensity,
     transparent: Boolean(dropped) || look.transmission > 0,
