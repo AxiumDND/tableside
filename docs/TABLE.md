@@ -6,11 +6,11 @@ How the DM console and player window work during a session. **New to Tableside?*
 
 | Area | Role |
 | --- | --- |
-| Header | Campaign name, **Campaign** menu (recents + Open / New), Combat / Music / Tools / Help & settings, player display picker, Clear |
-| Quick links | One-button strip under the header (campaign open): **Party** (name / AC / spell save DC / PP → open sheet), **Conditions** (lookup text), **Calendar** (notes in `Reference/` or named calendar). Never on the player TV. |
+| Header | Campaign name, **Campaign** menu (recents + Open / New), Combat / Music / Help & settings |
+| Quick links | Strip under the header: left/right panel glyphs, **Party**, **Conditions**, **Lookup**, **Prep** (NPC / Links), **Table** (Dice / Timer / Improvise), **Calendar**. The calendar can hide; **Show to players** is a sun / moon mark on the TV, not the clock. |
 | Left column | Mini **Players see** preview, campaign file tree, dice tray |
 | Center | Open note, image, PDF, or audio preview |
-| Right (optional) | Combat tracker, Music mixer, Tools (Lookup, NPC, Improvise, Dice, Timer, Links), or Help & settings |
+| Right (optional) | Combat tracker, Music mixer, a Quick-bar tool page (Lookup, NPC, Improvise, Dice, Timer, Links), or Help & settings |
 
 Two Electron windows open: the DM console, and a fullscreen **player** window on a second monitor. **Close** on the Players see preview shuts the player window so you can use the TV for something else. Pick a monitor or **Show to players** to open it again. **Theme** is a campaign setting (Classic fantasy, Light, Sci-fi, Vampire, Cyberpunk, Digital rain): New campaign asks for it, Open applies `campaign.json`, and you can change it from **Help & settings** or **Start Here**. Sci-fi can turn on **Hologram portraits** for party, NPC, beast, and gear art. Digital rain can turn on **Falling code** in the file list and notes. The player TV stays black.
 
@@ -85,12 +85,14 @@ Open with **Combat** in the header.
 | **Add all players** | Loads every `Party/` sheet (skips names already in the list) |
 | Bestiary filter + click | Adds that creature from `Bestiary/` |
 | Manual row | Name / Init / HP, plus AC (5e/PF2e) or Willpower and Hunger (Vampire 5th) |
-| d20 on a row | Rolls initiative for that combatant (PCs: type their table roll into Init) |
-| **Start combat** / next-round controls | Begins round 1 and advances whose turn it is. With **Combat music** ticked, starts the `Audio/Music/Combat` playlist |
+| Init box | The number only. Click it to type a PC’s table roll, step with + / −, set the bonus, or roll 1d20 |
+| **Start combat** / next-round controls | Begins round 1. **Previous turn** / **Next turn** step back or forward on the list (Previous undoes a too-fast Next, including wrapping the round). With **Combat music** ticked, Start combat plays the `Audio/Music/Combat` playlist |
+| Current name | After Start combat, the header shows the current combatant’s full name. Hover a truncated row name for the full name. Rows do not label PC / NPC / monster. |
 | Eye / view | Opens that combatant’s rollable statblock without changing the turn |
 | **Cnd** | Toggle conditions (Poisoned, Prone, …) on that PC, NPC, or monster. Same picker on a map token that is in this fight |
 | **Show to players** | Superimposes initiative order on the current player image |
 | **Combat music** | Tick to switch music on Start / End combat. Untick to leave the mixer alone |
+| **×** on a row | Removes that combatant (asks first). If it was their turn, the next name in initiative takes the turn |
 | **End combat** | Empties the tracker (confirm dialog). With **Combat music** ticked, returns to the `Audio/Music/General` playlist |
 
 State saves to `combat.json` in the campaign folder.
@@ -104,9 +106,9 @@ State saves to `combat.json` in the campaign folder.
 - Conditions you set on a row (Poisoned, Prone, …) also appear
 - No extra secrets (full HP pools stay on the DM tracker)
 
-## Tools panel
+## Tools (Quick bar)
 
-**Tools** in the header opens the right rail. Pick **Lookup**, **NPC**, **Improvise**, **Dice**, **Timer**, or **Links**.
+**Lookup**, **Prep ▾**, and **Table ▾** on the Quick bar open the right rail. There is no Tools header button. Pick **Lookup**, or **NPC** / **Links** under Prep, or **Dice** / **Timer** / **Improvise** under Table. Click the same page again to close the rail. Left and right panel glyphs on that bar hide the file column and the right rail.
 
 ### Lookup
 
@@ -145,7 +147,7 @@ Curated D&D prep sites open in your browser (not embedded). Categories: rules & 
 
 ## Dice tray
 
-Bottom of the left column: quick d4–d100 buttons plus a custom expression field (for example `2d6+3`). **Adv** and **Dis** apply to d20 rolls from the tray and statblocks. Uncheck **Show rolls to players** to keep tray and statblock rolls off the player TV; uncheck **Play roll sound** to mute the clatter. One die, two dice, and a handful each have their own recording (same clips on Music → Soundboard as **Dice (one)** / **Dice (two)** / **Dice (handful)**). Box of Doom uses the matching clip. Rolls feed the shared dice log used by combat and statblock clicks — a strip fades in on the right side of the player screen for about 15 seconds, then fades out. In 5e campaigns, damage chips on statblocks also offer **Crit** (double the dice).
+Bottom of the left column: quick d4–d100 buttons plus a custom expression field (for example `2d6+3`). **Adv** and **Dis** apply to d20 rolls from the tray and statblocks. Uncheck **Show rolls to players** to keep tray and statblock rolls off the player TV; uncheck **Play roll sound** to mute the clatter. One die, two dice, and a handful each have their own recording (same clips on Music → Soundboard as **Dice (one)** / **Dice (two)** / **Dice (handful)**). Box of Doom uses the matching clip. The tray keeps the latest roll plus four lines; **View log** opens every roll this session with the full face breakdown. **Clear log** empties both. Tray rolls and sheet chips (Init, scores, saves, to-hit, damage) throw 3D dice across the player TV. Most dice land the result face flat to the screen. A d4 sits on a face as a pyramid (two sides toward the table), with the result at the top point. A d100 throws a tens die (00–90) and a ones die (0–9). The existing right-hand card still shows the expression, modifier, and total after they land. The compact Players-see preview and Box of Doom stay on the card. In 5e campaigns, damage chips on statblocks also offer **Crit** (double the dice).
 
 ## Keyboard and mouse
 
@@ -157,6 +159,7 @@ Bottom of the left column: quick d4–d100 buttons plus a custom expression fiel
 | Alt+I | Show item/place/spell details to players (Shift includes GM-only) |
 | Alt+X | Clear player screen |
 | Alt+T | Next combat turn (opens Combat) |
+| Alt+Shift+T | Previous combat turn (opens Combat) |
 | Ctrl+S (while editing) | Save note |
 | Esc (while editing) | Cancel edit (prompts if dirty) |
 | Esc (dialogs) | Dismiss confirm dialogs |

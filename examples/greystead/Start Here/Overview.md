@@ -4,6 +4,8 @@ Level 1 one-shot. The mayor’s daughter is missing. The town swears bandits too
 
 Open **[[Session 1 — Game Night Sheet]]** to run the night. **[[Session 1]]** has prose, show order, and reference. The fight map is **[[Pale Well Caves]]**. Papers are in **[[Handouts]]**.
 
+The Millfire year is on the Quick bar: **[[Calendar|1 Seedmoon 412 AF]]**. Eight weekdays; Year-turn sits outside the months.
+
 ## Tonight
 
 - **[[Alden Crowe]]** hires the party: find **[[Lira Crowe]]**.

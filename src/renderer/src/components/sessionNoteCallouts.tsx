@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 import type { CalloutBlock } from '../../../shared/callouts'
+import { calendarBarLabel } from '../../../shared/calendar'
+import { parseCalendarBlock } from '../../../shared/calendarNote'
 import { encounterSectionId } from '../lib/notes'
 import {
   renderGmOnlyBlock,
@@ -24,6 +26,7 @@ import {
   type MarkdownComponents,
   type WrapSheetBlock
 } from './sessionNoteShell'
+import CalloutCard from './CalloutCard'
 import type { SessionNoteMarkdownDeps } from './sessionNoteTypes'
 
 export type SessionNoteRendererDeps = SessionNoteMarkdownDeps & {
@@ -409,6 +412,23 @@ export function renderCalloutPart(
       gearNotes,
       onEnsureGear
     })
+  }
+  if (part.kind === 'calendar') {
+    const parsed = parseCalendarBlock(part.markdown)
+    const label = calendarBarLabel(parsed.definition, parsed.now)
+    const read = (
+      <CalloutCard type="calendar" title={part.title || 'Campaign calendar'}>
+        <p className="!mt-0 text-[1.05rem] text-parchment">{label}</p>
+        <p className="text-[13px] text-muted">
+          Advance hours and days from the Quick bar. This block is the in-world clock.
+        </p>
+      </CalloutCard>
+    )
+    return (
+      <div key={key}>
+        {wrapSheetBlock(blockKey, part, 'note', read)}
+      </div>
+    )
   }
   if (part.kind === 'links') {
     return renderLinksBlock({

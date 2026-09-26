@@ -6,6 +6,9 @@ import PlayerView from './PlayerView'
 
 vi.mock('./LegendParticles', () => ({ default: () => null }))
 vi.mock('./MapStage', () => ({ default: () => null }))
+vi.mock('./OpeningDice3d', () => ({
+  default: () => <div className="player-dice-3d" data-dice-3d="mock" />
+}))
 
 describe('PlayerView still fades', () => {
   beforeEach(() => {
@@ -85,6 +88,76 @@ describe('PlayerView still fades', () => {
     expect(container.querySelector('.player-layer.player-fade-in img')?.getAttribute('src')).toBe(
       'tabledm://caves.png'
     )
+  })
+})
+
+describe('PlayerView calendar light', () => {
+  it('shows the morning mark without a clock', () => {
+    const { container } = render(
+      <PlayerView state={{ ...emptyPlayerState(), calendarMark: 'morning' }} />
+    )
+    const mark = container.querySelector('.player-calendar-light')
+    expect(mark?.getAttribute('aria-label')).toBe('Morning')
+    expect(mark?.textContent).toBe('Morning')
+    expect(container.textContent).not.toMatch(/\d+\s?(am|pm)/i)
+  })
+
+  it('hides the mark when the player state has none', () => {
+    const { container } = render(<PlayerView state={emptyPlayerState()} />)
+    expect(container.querySelector('.player-calendar-light')).toBeNull()
+  })
+
+  it('keeps the in-stage mark in compact preview so scale matches the TV', () => {
+    const { container } = render(
+      <PlayerView state={{ ...emptyPlayerState(), calendarMark: 'sunset' }} compact />
+    )
+    expect(container.querySelector('.player-calendar-light')?.getAttribute('aria-label')).toBe('Sunset')
+  })
+})
+
+describe('PlayerView 3D dice', () => {
+  const trayShow = {
+    source: 'Dice Tray' as const,
+    expr: '1d20',
+    total: 14,
+    groups: [{ sides: 20, rolls: [14] }],
+    bonus: 0,
+    startedAt: 1
+  }
+
+  it('throws 3D dice on the real player view for tray rolls', () => {
+    const { container } = render(
+      <PlayerView state={{ ...emptyPlayerState(), diceShow: trayShow }} />
+    )
+    expect(container.querySelector('[data-dice-3d="mock"]')).toBeTruthy()
+    expect(container.querySelector('.player-dice-show-result.is-in')).toBeNull()
+  })
+
+  it('throws 3D dice for sheet rolls with a modifier', () => {
+    const { container } = render(
+      <PlayerView
+        state={{
+          ...emptyPlayerState(),
+          diceShow: {
+            ...trayShow,
+            source: 'Goblin',
+            expr: '1d20+3',
+            bonus: 3,
+            total: 17
+          }
+        }}
+      />
+    )
+    expect(container.querySelector('[data-dice-3d="mock"]')).toBeTruthy()
+    expect(container.querySelector('.player-dice-show-result.is-in')).toBeNull()
+  })
+
+  it('keeps the DM preview on the 2D result card', () => {
+    const { container } = render(
+      <PlayerView state={{ ...emptyPlayerState(), diceShow: trayShow }} compact />
+    )
+    expect(container.querySelector('[data-dice-3d]')).toBeNull()
+    expect(container.querySelector('.player-dice-show-result.is-in')).toBeTruthy()
   })
 })
 

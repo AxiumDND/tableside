@@ -1,4 +1,4 @@
-import type { ToolsTabId } from '../../../shared/rightPanel'
+import { TOOL_TABS, toolTabLabel, type ToolsTabId } from '../../../shared/rightPanel'
 import type { PlayerBoxOfDoom, PlayerHourglass } from '../../../shared/types'
 import type { SrdRecord } from '../lib/srd'
 import BoxOfDoomPanel from './BoxOfDoomPanel'
@@ -7,15 +7,6 @@ import ImprovisePanel from './ImprovisePanel'
 import LinksPanel from './LinksPanel'
 import NpcPanel, { type NpcQuickCreateInput } from './NpcPanel'
 import RulesSearch from './RulesSearch'
-
-const TOOLS: { id: ToolsTabId; label: string }[] = [
-  { id: 'lookup', label: 'Lookup' },
-  { id: 'npc', label: 'NPC' },
-  { id: 'improvise', label: 'Improvise' },
-  { id: 'dice', label: 'Dice' },
-  { id: 'timer', label: 'Timer' },
-  { id: 'links', label: 'Links' }
-]
 
 export default function ToolsPanel({
   tab,
@@ -51,9 +42,9 @@ export default function ToolsPanel({
   return (
     <section className="flex min-h-0 flex-1 flex-col border-l border-line bg-panel">
       <header className="flex items-center gap-2 border-b border-line px-3 py-1.5">
-        <h2 className="shrink-0 font-display text-base text-amber">Tools</h2>
-        <nav className="flex min-w-0 flex-1 flex-nowrap gap-1 overflow-x-auto" aria-label="Tools">
-          {TOOLS.map((tool) => (
+        <h2 className="shrink-0 font-display text-base text-amber">{toolTabLabel(tab)}</h2>
+        <nav className="flex min-w-0 flex-1 flex-nowrap gap-1 overflow-x-auto" aria-label="Tool pages">
+          {TOOL_TABS.map((tool) => (
             <button
               key={tool.id}
               type="button"

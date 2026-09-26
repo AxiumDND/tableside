@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { useState } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
@@ -37,6 +38,8 @@ describe('CombatTracker', () => {
     // name can appear more than once — assert each renders at least once.
     expect(screen.getAllByText('Goblin Scout').length).toBeGreaterThan(0)
     expect(screen.getAllByText('Bandit Captain').length).toBeGreaterThan(0)
+    expect(screen.getByRole('button', { name: 'Goblin Scout' }).textContent).toBe('Goblin Scout')
+    expect(screen.queryByRole('button', { name: /goblin scout npc/i })).toBeNull()
   })
 
   it('starts combat on the highest-initiative combatant', async () => {
@@ -54,6 +57,26 @@ describe('CombatTracker', () => {
     const next = onChange.mock.calls[0][0] as CombatState
     expect(next.round).toBe(1)
     expect(next.activeId).toBe('high')
+  })
+
+  it('shows the current combatant full name in the header and a name tooltip', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    const combat = makeCombat([
+      combatant({ id: 'low', name: 'Swarm of Bats 1', initiative: 12 }),
+      combatant({ id: 'high', name: 'Swarm of Bats 2', initiative: 18 })
+    ])
+    const { rerender } = render(<CombatTracker combat={combat} onChange={onChange} />)
+
+    expect(document.querySelector('header .font-display.text-base')).toBeNull()
+    await user.click(screen.getByRole('button', { name: /start combat/i }))
+    const started = onChange.mock.calls[0][0] as CombatState
+    rerender(<CombatTracker combat={started} onChange={onChange} />)
+
+    const heading = document.querySelector('header p.font-display')
+    expect(heading?.textContent).toBe('Swarm of Bats 2')
+    expect(document.querySelector('button[title="Swarm of Bats 1"]')).toBeTruthy()
+    expect(document.querySelector('button[title="Swarm of Bats 2"]')).toBeTruthy()
   })
 
   it('adds a manual combatant from the form', async () => {
@@ -89,6 +112,55 @@ describe('CombatTracker', () => {
     await user.click(screen.getByRole('button', { name: /goblin/i }))
 
     expect(onAddBestiary).toHaveBeenCalledWith('Bestiary/Goblin.md')
+  })
+
+  it('opens an initiative editor from the number box', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    function Harness() {
+      const [combat, setCombat] = useState(
+        makeCombat([
+          combatant({
+            id: 'a',
+            name: 'Goblin Scout',
+            initiative: 12,
+            statBlock: { name: 'Goblin Scout', initiativeBonus: 2 }
+          })
+        ])
+      )
+      return (
+        <CombatTracker
+          combat={combat}
+          onChange={(next) => {
+            onChange(next)
+            setCombat(next)
+          }}
+        />
+      )
+    }
+    render(<Harness />)
+
+    expect(screen.queryByRole('button', { name: 'Roll' })).toBeNull()
+    expect(screen.queryByRole('dialog', { name: 'Goblin Scout' })).toBeNull()
+
+    await user.click(screen.getByRole('button', { name: 'Goblin Scout initiative 12' }))
+    const dialog = screen.getByRole('dialog', { name: 'Goblin Scout' })
+    expect(within(dialog).getByLabelText('Goblin Scout initiative bonus')).toHaveProperty('value', '2')
+
+    await user.click(screen.getByRole('button', { name: 'Increase Goblin Scout initiative' }))
+    expect(screen.getByRole('button', { name: 'Goblin Scout initiative 13' })).toBeTruthy()
+
+    await user.clear(within(dialog).getByLabelText('Goblin Scout initiative'))
+    await user.type(within(dialog).getByLabelText('Goblin Scout initiative'), '18')
+    expect(screen.getByRole('button', { name: 'Goblin Scout initiative 18' })).toBeTruthy()
+
+    await user.click(screen.getByRole('button', { name: 'Roll 1d20+2' }))
+    const rolled = onChange.mock.calls.at(-1)![0] as CombatState
+    expect(rolled.combatants[0].initiative).toBeGreaterThanOrEqual(3)
+    expect(rolled.combatants[0].initiative).toBeLessThanOrEqual(22)
+
+    await user.click(screen.getByRole('button', { name: 'Done' }))
+    expect(screen.queryByRole('dialog', { name: 'Goblin Scout' })).toBeNull()
   })
 
   it('opens a damage/heal window from the HP total', async () => {
@@ -144,6 +216,60 @@ describe('CombatTracker', () => {
     const next = onChange.mock.calls[0][0] as CombatState
     expect(next.combatants).toEqual([])
     expect(next.round).toBe(0)
+  })
+
+  it('steps back up the turn list after Next turn', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    const combat = makeCombat([
+      combatant({ id: 'low', name: 'Goblin Scout', initiative: 12 }),
+      combatant({ id: 'high', name: 'Bandit Captain', initiative: 18 })
+    ])
+    const { rerender } = render(<CombatTracker combat={combat} onChange={onChange} />)
+
+    expect(screen.getByRole('button', { name: 'Previous turn' })).toHaveProperty('disabled', true)
+    await user.click(screen.getByRole('button', { name: /start combat/i }))
+    const started = onChange.mock.calls[0][0] as CombatState
+    expect(started.activeId).toBe('high')
+
+    rerender(<CombatTracker combat={started} onChange={onChange} />)
+    expect(screen.getByRole('button', { name: 'Previous turn' })).toHaveProperty('disabled', true)
+    await user.click(screen.getByRole('button', { name: 'Next turn' }))
+    const advanced = onChange.mock.calls[1][0] as CombatState
+    expect(advanced.activeId).toBe('low')
+    expect(advanced.round).toBe(1)
+
+    rerender(<CombatTracker combat={advanced} onChange={onChange} />)
+    expect(screen.getByRole('button', { name: 'Previous turn' })).toHaveProperty('disabled', false)
+    await user.click(screen.getByRole('button', { name: 'Previous turn' }))
+    const rewound = onChange.mock.calls[2][0] as CombatState
+    expect(rewound.activeId).toBe('high')
+    expect(rewound.round).toBe(1)
+  })
+
+  it('moves the turn to the next combatant when the current one is removed', async () => {
+    const user = userEvent.setup()
+    const onChange = vi.fn()
+    const combat = {
+      ...makeCombat([
+        combatant({ id: 'low', name: 'Goblin Scout', initiative: 12 }),
+        combatant({ id: 'high', name: 'Bandit Captain', initiative: 18 })
+      ]),
+      activeId: 'high',
+      round: 1
+    }
+    const { rerender } = render(<CombatTracker combat={combat} onChange={onChange} />)
+
+    await user.click(screen.getByRole('button', { name: 'Remove Bandit Captain' }))
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Remove' }))
+
+    const next = onChange.mock.calls.at(-1)![0] as CombatState
+    expect(next.combatants.map((row) => row.id)).toEqual(['low'])
+    expect(next.activeId).toBe('low')
+    expect(next.round).toBe(1)
+
+    rerender(<CombatTracker combat={next} onChange={onChange} />)
+    expect(document.querySelector('header p.font-display')?.textContent).toBe('Goblin Scout')
   })
 
   it('plays Combat music on start and General on end when the cue is on', async () => {

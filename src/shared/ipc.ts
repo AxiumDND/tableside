@@ -59,6 +59,7 @@ export const IPC = {
   playerClear: 'player:clear',
   playerClearOverlays: 'player:clear-overlays',
   playerSetInitiative: 'player:set-initiative',
+  playerSetCalendarLight: 'player:set-calendar-light',
   playerGetState: 'player:get-state',
   playerState: 'player:state',
 
