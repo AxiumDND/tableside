@@ -6,28 +6,11 @@ If a feature mainly helps remote / online play, it does not belong here.
 
 ## Near term (highest table impact)
 
-1. **Session pacing aids** — tonight strip / session clock; optional scene timer.
+1. **Session pacing aids** — tonight strip / session clock still open. **Scene timer:** done (Quick → Table → Timer hourglass on the player TV).
 2. **Handout / art queue** — preload a few images and advance with a hotkey.
-3. **Combat ↔ map glue** — focus or highlight the active combatant’s token; DM-only HP / condition cues on tokens.
-4. **NPC name flavor dropdown** — in **Tools → NPC**, add a style/flavor picker beyond race/ancestry lists, so you can roll names that sound like:
-   - Classic fantasy
-   - Norse
-   - Greek mythology
-   - Celtic / Gaelic
-   - Roman / Latinate
-   - Arabic / desert-fantasy
-   - Slavic
-   - East Asian–inspired  
-   Keep lists original Tableside table material (not scraped book name tables). Pair with the existing feminine / masculine / any control.
-5. **Richer Tools → Links for DM prep** — grow the curated link list so it covers more of a prep night, not just a handful of starters. Aim for useful categories such as:
-   - Rules / SRD quick reference
-   - Maps & battlemap makers
-   - Tokens / portraits / free art
-   - Generators (NPCs, loot, dungeons, encounters, names)
-   - GM advice & lazy-prep workflows
-   - Music / ambience finders (links only — still no bundled copyrighted audio)
-   - Puzzles, traps, and random tables  
-   Keep entries 5e-friendly, open in the system browser, short blurbs, no junk or paywall-bait. Easy incremental PRs via `src/shared/tableLinks.ts`.
+3. **Combat ↔ map glue** — focus or highlight the active combatant’s token; DM-only HP / condition cues on tokens. (Token link + Add all already shipped.)
+4. **NPC name flavor dropdown** — done: **Prep → NPC** style/flavor picker (classic fantasy, Norse, Greek, Celtic, Roman, Arabic, Slavic, East Asian–inspired) beside feminine / masculine / any. Lists stay original Tableside material.
+5. **Richer Tools → Links for DM prep** — first pass done under **Prep → Links** (`src/shared/tableLinks.ts`: rules, maps, art, generators, advice, music, puzzles). More curated entries welcome as small PRs.
 6. **More NPC portrait picks** — expand the optional portrait gallery in **Tools → NPC** (and quick-create) so each race / gender bucket has a larger set to choose from. Keep art original or clearly licensed for bundling; respect **Hide portrait picks** / hide-bundled-artwork settings. No copyrighted publisher character art.
 7. **One Campaign button** — done in 1.8.17: header **Campaign ▾** menu (recents + Open… / New…). Sample stays on the empty start screen. Notes: [CAMPAIGN-MENU.md](CAMPAIGN-MENU.md).
 8. **Start session coach / DM reminders** — a **Start session** control that puts the night in “live” mode and surfaces short, dismissible prompts so you do not forget table habits. Not a rules engine — gentle nudges only. Build out possibilities such as:
