@@ -60,7 +60,13 @@ function CssDiceThrow({
 
 export default function OpeningDice3d({ show }: { show: PlayerDiceShow }) {
   const hostRef = useRef<HTMLDivElement>(null)
-  const dice = useMemo(() => planPlayerDice3dThrow(show), [show])
+  // Depend on roll identity + plan inputs only — not `stoppingAt`. Spreading a fade
+  // onto the show must not rebuild `dice` or remount WebGL (that replays the throw
+  // while opacity fades, which reads as a second toss from the start pose).
+  const dice = useMemo(
+    () => planPlayerDice3dThrow(show),
+    [show.groups, show.mode, show.kept, show.startedAt]
+  )
   const [mode, setMode] = useState<'webgl' | 'css' | null>(null)
   const [lookPreset, setLookPreset] = useState<DiceLookPresetId | null>(null)
   const fadingOut = Boolean(show.stoppingAt)
@@ -102,6 +108,7 @@ export default function OpeningDice3d({ show }: { show: PlayerDiceShow }) {
       cancelled = true
       handle?.dispose()
     }
+    // `dice` is stable across fade-out (see useMemo above); remount only on new roll / look.
   }, [dice, lookPreset, show.startedAt])
 
   if (dice.length === 0) return null

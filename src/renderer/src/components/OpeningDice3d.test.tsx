@@ -39,6 +39,43 @@ describe('OpeningDice3d', () => {
     })
   })
 
+  it('keeps the settled WebGL world mounted while the show fades out', async () => {
+    const dispose = vi.fn()
+    vi.mocked(mountPlayerDice3d).mockReturnValue({ dispose })
+    const initial = show()
+    const { container, rerender } = render(<OpeningDice3d show={initial} />)
+    await waitFor(() => {
+      expect(container.querySelector('[data-dice-3d="webgl"]')).toBeTruthy()
+    })
+    expect(mountPlayerDice3d).toHaveBeenCalledTimes(1)
+
+    rerender(<OpeningDice3d show={{ ...initial, stoppingAt: 99 }} />)
+    await waitFor(() => {
+      expect(container.querySelector('.player-dice-3d.is-out')).toBeTruthy()
+    })
+    // Fade must be opacity-only from the landed pose — remounting would replay the throw.
+    expect(mountPlayerDice3d).toHaveBeenCalledTimes(1)
+    expect(dispose).not.toHaveBeenCalled()
+  })
+
+  it('does not remount CSS dice when fade-out begins', async () => {
+    vi.mocked(mountPlayerDice3d).mockReturnValue(null)
+    const initial = show()
+    const { container, rerender } = render(<OpeningDice3d show={initial} />)
+    await waitFor(() => {
+      expect(container.querySelector('[data-dice-3d="css"]')).toBeTruthy()
+    })
+    const firstDie = container.querySelector('.player-dice-3d-css-die')
+    expect(firstDie).toBeTruthy()
+
+    rerender(<OpeningDice3d show={{ ...initial, stoppingAt: 99 }} />)
+    await waitFor(() => {
+      expect(container.querySelector('.player-dice-3d.is-out')).toBeTruthy()
+    })
+    // Same DOM nodes ⇒ CSS throw keyframes keep fill-mode:forwards at the land pose.
+    expect(container.querySelector('.player-dice-3d-css-die')).toBe(firstDie)
+  })
+
   it('passes a saved bag preset into the WebGL mount', async () => {
     Object.defineProperty(window, 'tabledm', {
       configurable: true,
