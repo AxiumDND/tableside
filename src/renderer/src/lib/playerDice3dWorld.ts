@@ -29,12 +29,14 @@ import {
   dieBodyMaterialInputs,
   dieBodyNormalScale,
   dieBodyScale,
+  dieFaceRoughnessContrast,
   dieFaceTextureContrast,
   dieFaceTextureTint,
   dieGlyphTone,
   heightToNormalMap,
   paintDieFaceMicrotexture,
   paintDieFaceNormalMap,
+  paintDieFaceRoughness,
   paintDieGlyph,
   paintDieGlyphHeight,
   resolveDiceLook
@@ -125,6 +127,16 @@ function resinGrainTextures(look: DiceLookPreset): {
       tintRgb: dieFaceTextureTint(look)
     })
   }
+  const roughCanvas = document.createElement('canvas')
+  roughCanvas.width = DIE_FACE_TEXTURE_SIZE
+  roughCanvas.height = DIE_FACE_TEXTURE_SIZE
+  const roughCtx = roughCanvas.getContext('2d')
+  if (roughCtx) {
+    paintDieFaceRoughness(roughCtx, {
+      seed,
+      contrast: dieFaceRoughnessContrast(look)
+    })
+  }
   const normalCanvas = document.createElement('canvas')
   normalCanvas.width = DIE_FACE_TEXTURE_SIZE
   normalCanvas.height = DIE_FACE_TEXTURE_SIZE
@@ -132,28 +144,28 @@ function resinGrainTextures(look: DiceLookPreset): {
   if (normalCtx) {
     paintDieFaceNormalMap(normalCtx, {
       seed,
-      contrast: Math.max(contrast, 0.08),
-      strength: look.metalness >= 0.5 ? 4.2 : 3.2
+      contrast: Math.max(contrast, 0.16),
+      strength: look.metalness >= 0.5 ? 5.2 : 4.4
     })
   }
   const wrap = (texture: THREE.CanvasTexture, colorSpace: THREE.ColorSpace): THREE.CanvasTexture => {
     texture.wrapS = THREE.RepeatWrapping
     texture.wrapT = THREE.RepeatWrapping
-    texture.repeat.set(2.4, 2.4)
+    texture.repeat.set(2.6, 2.6)
     texture.anisotropy = 8
     texture.colorSpace = colorSpace
     return texture
   }
   return {
     albedo: wrap(new THREE.CanvasTexture(albedoCanvas), THREE.SRGBColorSpace),
-    data: wrap(new THREE.CanvasTexture(albedoCanvas), THREE.NoColorSpace),
+    data: wrap(new THREE.CanvasTexture(roughCanvas), THREE.NoColorSpace),
     normal: wrap(new THREE.CanvasTexture(normalCanvas), THREE.NoColorSpace)
   }
 }
 
 /**
- * Photography-studio / warm-table IBL without shipping HDR files.
- * Mood inspired by DSN foyer / warm-restaurant equirects — procedural panels only.
+ * Neutral / slightly cool daylight studio IBL (no amber wash).
+ * Softboxes stay soft for clearcoat glints without jaundice on ivory/metal.
  */
 function createStudioEnvironment(): THREE.Scene {
   const studio = new THREE.Scene()
@@ -163,10 +175,10 @@ function createStudioEnvironment(): THREE.Scene {
   const skyCtx = skyCanvas.getContext('2d')
   if (skyCtx) {
     const grad = skyCtx.createLinearGradient(0, 0, 0, 64)
-    grad.addColorStop(0, '#9eb4d0')
-    grad.addColorStop(0.35, '#e8dcc8')
-    grad.addColorStop(0.62, '#c4a888')
-    grad.addColorStop(1, '#2a2218')
+    grad.addColorStop(0, '#a8b8c8')
+    grad.addColorStop(0.32, '#d8dde4')
+    grad.addColorStop(0.58, '#c4c8d0')
+    grad.addColorStop(1, '#1a1c22')
     skyCtx.fillStyle = grad
     skyCtx.fillRect(0, 0, 4, 64)
   }
@@ -190,11 +202,12 @@ function createStudioEnvironment(): THREE.Scene {
     mesh.scale.copy(scale)
     studio.add(mesh)
   }
-  panel(0xfff6e8, 160, new THREE.Vector3(0, 8.5, 0), new THREE.Vector3(10, 0.12, 10))
-  panel(0xffe2b0, 78, new THREE.Vector3(-7, 5.5, 5), new THREE.Vector3(3.6, 2.8, 0.1))
-  panel(0xb8cce8, 42, new THREE.Vector3(7, 4.2, -4), new THREE.Vector3(2.8, 2.4, 0.1))
-  panel(0xffd8a0, 36, new THREE.Vector3(0, 3.5, -8), new THREE.Vector3(6, 1.6, 0.1))
-  panel(0x6a5848, 12, new THREE.Vector3(0, -5.5, 0), new THREE.Vector3(12, 0.2, 12))
+  // Ceiling wash + key / fill / rim — cool daylight neutrals (no amber / jaundice).
+  panel(0xeef2f8, 42, new THREE.Vector3(0, 8.5, 0), new THREE.Vector3(9, 0.12, 9))
+  panel(0xe8eef8, 34, new THREE.Vector3(-6.5, 6, 5), new THREE.Vector3(3.2, 2.6, 0.1))
+  panel(0xb8cae0, 28, new THREE.Vector3(7, 4.5, -3.5), new THREE.Vector3(2.6, 2.2, 0.1))
+  panel(0xdce4f0, 24, new THREE.Vector3(1, 3.2, -8), new THREE.Vector3(5.5, 1.5, 0.1))
+  panel(0x1e2028, 5, new THREE.Vector3(0, -5.5, 0), new THREE.Vector3(12, 0.2, 12))
   return studio
 }
 
@@ -202,9 +215,9 @@ function attachStudioIbl(renderer: THREE.WebGLRenderer, scene: THREE.Scene): () 
   try {
     const pmrem = new THREE.PMREMGenerator(renderer)
     const studio = createStudioEnvironment()
-    const env = pmrem.fromScene(studio, 0.04)
+    const env = pmrem.fromScene(studio, 0.03)
     scene.environment = env.texture
-    scene.environmentIntensity = 1.28
+    scene.environmentIntensity = 0.68
     studio.traverse((obj) => {
       if (obj instanceof THREE.Mesh) {
         obj.geometry.dispose()
@@ -251,9 +264,9 @@ function contactShadowTexture(): THREE.CanvasTexture {
   canvas.height = 128
   const ctx = canvas.getContext('2d')
   if (ctx) {
-    const glow = ctx.createRadialGradient(64, 64, 8, 64, 64, 62)
-    glow.addColorStop(0, 'rgba(0, 0, 0, 0.42)')
-    glow.addColorStop(0.55, 'rgba(0, 0, 0, 0.16)')
+    const glow = ctx.createRadialGradient(64, 64, 6, 64, 64, 62)
+    glow.addColorStop(0, 'rgba(0, 0, 0, 0.55)')
+    glow.addColorStop(0.45, 'rgba(0, 0, 0, 0.22)')
     glow.addColorStop(1, 'rgba(0, 0, 0, 0)')
     ctx.fillStyle = glow
     ctx.fillRect(0, 0, 128, 128)
@@ -327,12 +340,12 @@ function addFaceDecal(
     new THREE.MeshPhysicalMaterial({
       map: maps.map,
       normalMap: maps.normalMap,
-      normalScale: new THREE.Vector2(0.95, 0.95),
-      roughness: Math.min(0.48, look.roughness + 0.04),
+      normalScale: new THREE.Vector2(1.05, 1.05),
+      roughness: Math.min(0.5, look.roughness + 0.05),
       metalness: Math.min(look.metalness, 0.15),
-      clearcoat: spec.dropped ? 0.12 : Math.min(look.clearcoat * 0.92, 0.88),
-      clearcoatRoughness: Math.max(0.12, look.clearcoatRoughness * 0.85),
-      envMapIntensity: look.envMapIntensity * 0.85,
+      clearcoat: spec.dropped ? 0.12 : Math.min(look.clearcoat * 0.95, 0.92),
+      clearcoatRoughness: Math.max(0.08, look.clearcoatRoughness * 0.75),
+      envMapIntensity: look.envMapIntensity * 0.7,
       transparent: true,
       depthWrite: false,
       polygonOffset: true,
@@ -387,7 +400,7 @@ function makeDie(
       normalMap: grain.normal,
       normalScale: new THREE.Vector2(nScale, nScale),
       clearcoatNormalMap: grain.normal,
-      clearcoatNormalScale: new THREE.Vector2(nScale * 0.55, nScale * 0.55),
+      clearcoatNormalScale: new THREE.Vector2(nScale * 0.7, nScale * 0.7),
       metalness: mat.metalness,
       clearcoat: mat.clearcoat,
       clearcoatRoughness: mat.clearcoatRoughness,
@@ -459,9 +472,9 @@ export function mountPlayerDice3d(
   }
   renderer.setClearColor(0x000000, 0)
   renderer.outputColorSpace = THREE.SRGBColorSpace
-  renderer.toneMapping = THREE.ACESFilmicToneMapping
-  // Slightly lower exposure — richer IBL carries more energy (DSN ~1.0 with HDR).
-  renderer.toneMappingExposure = 1.02
+  renderer.toneMapping = THREE.NeutralToneMapping
+  // Cool daylight exposure — Neutral TM avoids ACES midtone jaundice.
+  renderer.toneMappingExposure = 1.08
 
   const scene = new THREE.Scene()
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 80)
@@ -469,16 +482,16 @@ export function mountPlayerDice3d(
   camera.lookAt(DICE_3D_LOOK_AT)
 
   const disposeIbl = attachStudioIbl(renderer, scene)
-  // IBL-first balance (DSN: strong hemi + weak key when realistic lighting is on).
-  scene.add(new THREE.HemisphereLight(0xfff3dc, 0x1c1610, 0.72))
-  const key = new THREE.DirectionalLight(0xfff1d8, 0.42)
-  key.position.set(-4, 14, 10)
+  // Cool daylight key / fill / rim — ivory reads cream, metals stay steel-grey.
+  scene.add(new THREE.HemisphereLight(0xe4ecf6, 0x161820, 0.36))
+  const key = new THREE.DirectionalLight(0xeef2f8, 0.92)
+  key.position.set(-5, 13, 9)
   scene.add(key)
-  const fill = new THREE.DirectionalLight(0x9bb6d8, 0.16)
-  fill.position.set(8, 5, -5)
+  const fill = new THREE.DirectionalLight(0xa8bce0, 0.52)
+  fill.position.set(8, 5, -4)
   scene.add(fill)
-  const rim = new THREE.DirectionalLight(0xffe4b8, 0.22)
-  rim.position.set(2, 3, -10)
+  const rim = new THREE.DirectionalLight(0xd0dcec, 0.55)
+  rim.position.set(2, 4, -10)
   scene.add(rim)
 
   const look = resolveDiceLook(opts.lookPreset)
@@ -537,7 +550,7 @@ export function mountPlayerDice3d(
   const spinEuler = new THREE.Euler()
   const wobbleEuler = new THREE.Euler()
   const scratch = new THREE.Quaternion()
-  const baseExposure = 1.02
+  const baseExposure = 1.08
   const baseFov = camera.fov
   const baseCamPos = camera.position.clone()
   const punchLook = DICE_3D_LOOK_AT.clone()

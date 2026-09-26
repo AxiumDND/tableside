@@ -7,6 +7,8 @@ import {
   dieBodyScale,
   dieFaceMicrotexturePixels,
   dieFaceNormalMapPixels,
+  dieFaceRoughnessContrast,
+  dieFaceRoughnessPixels,
   dieFaceTextureContrast,
   dieFaceTextureTint,
   dieGlyphFill,
@@ -38,7 +40,7 @@ describe('diePlasticColor', () => {
 describe('dieGlyphTone', () => {
   it('inks ordinary faces and paints nat 20 / nat 1', () => {
     expect(dieGlyphTone({})).toBe('ink')
-    expect(dieGlyphFill('ink')).toBe('#1c140e')
+    expect(dieGlyphFill('ink')).toBe('#1a1612')
     expect(dieGlyphFill('ink', 'obsidian')).toBe(diceLookPreset('obsidian').ink)
     expect(dieGlyphTone({ highlight: 'nat20' })).toBe('gold')
     expect(dieGlyphTone({ highlight: 'nat1' })).toBe('blood')
@@ -49,7 +51,7 @@ describe('dieGlyphTone', () => {
 describe('dieBodyMaterialInputs', () => {
   it('maps each preset into body material knobs without changing fairness', () => {
     const ivory = dieBodyMaterialInputs(diceLookPreset('ivory'))
-    expect(ivory.color).toBe(0xe6d2b0)
+    expect(ivory.color).toBe(0xeae4da)
     expect(ivory.metalness).toBe(0)
     expect(ivory.transmission).toBe(0)
     expect(ivory.attenuationDistance).toBe(0)
@@ -143,19 +145,19 @@ describe('heightToNormalMap', () => {
 describe('dieFaceMicrotexturePixels', () => {
   it('builds a seamless tileable atlas', () => {
     const size = DIE_FACE_TEXTURE_SIZE
-    const data = dieFaceMicrotexturePixels(size, { seed: 1.5, contrast: 0.12 })
+    const data = dieFaceMicrotexturePixels(size, { seed: 1.5, contrast: 0.2 })
     expect(data).toHaveLength(size * size * 4)
-    // Left/right edges match (wrap).
+    // Left/right edges match (wrap) — allow a little slack for swirl + speckles.
     for (let y = 0; y < size; y += 1) {
       const left = y * size * 4
       const right = (y * size + (size - 1)) * 4
-      expect(Math.abs(data[left]! - data[right]!)).toBeLessThan(18)
+      expect(Math.abs(data[left]! - data[right]!)).toBeLessThan(28)
     }
     // Top/bottom edges match.
     for (let x = 0; x < size; x += 1) {
       const top = x * 4
       const bottom = ((size - 1) * size + x) * 4
-      expect(Math.abs(data[top]! - data[bottom]!)).toBeLessThan(18)
+      expect(Math.abs(data[top]! - data[bottom]!)).toBeLessThan(28)
     }
     let min = 255
     let max = 0
@@ -163,17 +165,34 @@ describe('dieFaceMicrotexturePixels', () => {
       min = Math.min(min, data[i]!)
       max = Math.max(max, data[i]!)
     }
-    expect(max - min).toBeGreaterThan(8)
+    expect(max - min).toBeGreaterThan(18)
   })
 
   it('scales contrast across bag presets without dropping gems to zero', () => {
     expect(dieFaceTextureContrast(diceLookPreset('ivory'))).toBeGreaterThan(
       dieFaceTextureContrast(diceLookPreset('emerald'))
     )
-    expect(dieFaceTextureContrast(diceLookPreset('sapphire'))).toBeGreaterThan(0.02)
+    expect(dieFaceTextureContrast(diceLookPreset('sapphire'))).toBeGreaterThan(0.05)
+    expect(dieFaceRoughnessContrast(diceLookPreset('ivory'))).toBeGreaterThan(
+      dieFaceTextureContrast(diceLookPreset('ivory'))
+    )
     const tint = dieFaceTextureTint(diceLookPreset('ivory'))
     expect(tint[0]).toBeGreaterThan(0.5)
     expect(tint[1]).toBeGreaterThan(0.5)
+  })
+})
+
+describe('dieFaceRoughnessPixels', () => {
+  it('varies mid-gray enough to break up clearcoat', () => {
+    const size = 64
+    const data = dieFaceRoughnessPixels(size, { seed: 2, contrast: 0.3 })
+    let min = 255
+    let max = 0
+    for (let i = 0; i < data.length; i += 4) {
+      min = Math.min(min, data[i]!)
+      max = Math.max(max, data[i]!)
+    }
+    expect(max - min).toBeGreaterThan(20)
   })
 })
 

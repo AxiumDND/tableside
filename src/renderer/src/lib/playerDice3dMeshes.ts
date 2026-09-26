@@ -134,10 +134,10 @@ function pushTriangle(
   }
 }
 
-/** Soft face / rim tints — rim slightly warmer so edges catch light without a chunky band. */
-const FACE_TINT = new THREE.Color(0.98, 0.97, 0.95)
-const EDGE_TINT = new THREE.Color(1, 0.99, 0.96)
-const CORNER_TINT = new THREE.Color(0.94, 0.92, 0.88)
+/** Soft face / rim tints — near-neutral so cool daylight IBL is not amber-shifted. */
+const FACE_TINT = new THREE.Color(0.985, 0.985, 0.982)
+const EDGE_TINT = new THREE.Color(1, 1, 0.995)
+const CORNER_TINT = new THREE.Color(0.95, 0.948, 0.942)
 
 /**
  * Shrink each reading face and fill the gaps with flat bevels.
