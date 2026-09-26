@@ -17,14 +17,16 @@ import {
   type DieFace
 } from './playerDice3dFaces'
 import { createDieGeometry } from './playerDice3dMeshes'
+import type { DiceLookPreset } from '../../../shared/diceLookPreset'
 import {
   DIE_GLYPH_CANVAS,
+  dieBodyMaterialInputs,
   dieBodyScale,
   dieGlyphTone,
-  diePlasticColor,
   heightToNormalMap,
   paintDieGlyph,
-  paintDieGlyphHeight
+  paintDieGlyphHeight,
+  resolveDiceLook
 } from './playerDice3dLook'
 
 export type PlayerDice3dHandle = {
@@ -34,6 +36,8 @@ export type PlayerDice3dHandle = {
 type MountOpts = {
   throwMs?: number
   reservedRight?: number
+  /** Named bag look; defaults to ivory resin. */
+  lookPreset?: string | DiceLookPreset | null
 }
 
 type FlyingDie = {
@@ -62,13 +66,14 @@ function dieGeometry(spec: PlayerDice3dDie): THREE.BufferGeometry {
 function faceMaps(
   label: string,
   sides: number,
-  opts: { dropped: boolean; highlight: 'none' | 'nat20' | 'nat1' }
+  opts: { dropped: boolean; highlight: 'none' | 'nat20' | 'nat1' },
+  look: DiceLookPreset
 ): { map: THREE.CanvasTexture; normalMap: THREE.CanvasTexture } {
   const color = document.createElement('canvas')
   color.width = DIE_GLYPH_CANVAS
   color.height = DIE_GLYPH_CANVAS
   const colorCtx = color.getContext('2d')
-  if (colorCtx) paintDieGlyph(colorCtx, label, dieGlyphTone(opts), sides)
+  if (colorCtx) paintDieGlyph(colorCtx, label, dieGlyphTone(opts), sides, look)
   const map = new THREE.CanvasTexture(color)
   map.colorSpace = THREE.SRGBColorSpace
   map.anisotropy = 8
@@ -89,15 +94,16 @@ function faceMaps(
   return { map, normalMap }
 }
 
-function resinGrainTexture(): THREE.CanvasTexture {
+function resinGrainTexture(look: DiceLookPreset): THREE.CanvasTexture | null {
+  if (!look.useGrain) return null
   const canvas = document.createElement('canvas')
   canvas.width = 64
   canvas.height = 64
   const ctx = canvas.getContext('2d')
   if (ctx) {
-    ctx.fillStyle = '#b8b0a4'
+    ctx.fillStyle = look.grainTint
     ctx.fillRect(0, 0, 64, 64)
-    for (let i = 0; i < 70; i += 1) {
+    for (let i = 0; i < look.grainDots; i += 1) {
       const n = 150 + Math.round(Math.random() * 70)
       ctx.fillStyle = `rgb(${n},${n},${n})`
       ctx.beginPath()
@@ -236,21 +242,27 @@ function addFaceDecal(
   label: string,
   size: number,
   spec: PlayerDice3dDie,
+  look: DiceLookPreset,
   orient: (mesh: THREE.Mesh) => void
 ): void {
-  const maps = faceMaps(label, spec.sides, {
-    dropped: Boolean(spec.dropped),
-    highlight: highlightFor(spec, label)
-  })
+  const maps = faceMaps(
+    label,
+    spec.sides,
+    {
+      dropped: Boolean(spec.dropped),
+      highlight: highlightFor(spec, label)
+    },
+    look
+  )
   const decal = new THREE.Mesh(
     new THREE.PlaneGeometry(1, 1),
     new THREE.MeshPhysicalMaterial({
       map: maps.map,
       normalMap: maps.normalMap,
       normalScale: new THREE.Vector2(0.72, 0.72),
-      roughness: 0.38,
-      metalness: 0,
-      clearcoat: spec.dropped ? 0.15 : 0.45,
+      roughness: Math.min(0.5, look.roughness + 0.06),
+      metalness: Math.min(look.metalness, 0.2),
+      clearcoat: spec.dropped ? 0.15 : Math.min(look.clearcoat, 0.55),
       clearcoatRoughness: 0.28,
       transparent: true,
       depthWrite: false,
@@ -288,7 +300,8 @@ function landingGrid(count: number, width: number, depth: number): THREE.Vector3
 
 function makeDie(
   spec: PlayerDice3dDie,
-  grain: THREE.CanvasTexture
+  grain: THREE.CanvasTexture | null,
+  look: DiceLookPreset
 ): { group: THREE.Group; spinner: THREE.Group; result: DieFace; faces: DieFace[]; scale: number } {
   const group = new THREE.Group()
   const spinner = new THREE.Group()
@@ -297,24 +310,27 @@ function makeDie(
   const faces = extractDieFaces(geometry, labels)
   const result = resultDieFace(faces, spec)
   const scale = dieBodyScale(spec.sides)
+  const mat = dieBodyMaterialInputs(look, spec.dropped)
   const body = new THREE.Mesh(
     geometry,
     new THREE.MeshPhysicalMaterial({
-      color: diePlasticColor(spec.dropped),
-      roughness: 0.32,
-      roughnessMap: grain,
-      metalness: 0,
-      clearcoat: spec.dropped ? 0.2 : 0.78,
-      clearcoatRoughness: 0.22,
-      sheen: 0.2,
-      sheenColor: new THREE.Color(0xf6ead4),
-      sheenRoughness: 0.48,
-      ior: 1.5,
-      specularIntensity: 0.5,
-      envMapIntensity: 0.85,
+      color: mat.color,
+      roughness: mat.roughness,
+      roughnessMap: grain ?? undefined,
+      metalness: mat.metalness,
+      clearcoat: mat.clearcoat,
+      clearcoatRoughness: mat.clearcoatRoughness,
+      sheen: mat.sheen,
+      sheenColor: new THREE.Color(mat.sheenColor),
+      sheenRoughness: mat.sheenRoughness,
+      ior: mat.ior,
+      transmission: mat.transmission,
+      thickness: mat.thickness,
+      specularIntensity: mat.specularIntensity,
+      envMapIntensity: mat.envMapIntensity,
       vertexColors: Boolean(geometry.getAttribute('color')),
-      transparent: Boolean(spec.dropped),
-      opacity: spec.dropped ? 0.5 : 1
+      transparent: mat.transparent,
+      opacity: mat.opacity
     })
   )
   spinner.scale.setScalar(scale)
@@ -323,13 +339,13 @@ function makeDie(
     for (const mark of d4CornerMarks(faces)) {
       const toward = mark.vertex.clone().sub(mark.face.center)
       const pos = mark.face.center.clone().addScaledVector(toward, 0.58)
-      addFaceDecal(spinner, pos, mark.face.normal, mark.label, mark.face.size * 0.4, spec, (mesh) =>
+      addFaceDecal(spinner, pos, mark.face.normal, mark.label, mark.face.size * 0.4, spec, look, (mesh) =>
         orientD4CornerDecal(mesh, mark.face.normal, toward)
       )
     }
   } else {
     for (const face of faces) {
-      addFaceDecal(spinner, face.center, face.normal, face.label, face.size, spec, (mesh) =>
+      addFaceDecal(spinner, face.center, face.normal, face.label, face.size, spec, look, (mesh) =>
         orientFaceDecal(mesh, face.normal)
       )
     }
@@ -390,16 +406,17 @@ export function mountPlayerDice3d(
   rim.position.set(2, 3, -10)
   scene.add(rim)
 
+  const look = resolveDiceLook(opts.lookPreset)
   const feltWidth = 14
   const feltDepth = 8
   const usable = 1 - reservedRight
   const stageShift = feltWidth * (0.5 - usable / 2)
-  const grain = resinGrainTexture()
+  const grain = resinGrainTexture(look)
   const ends = landingGrid(dice.length, feltWidth * 0.62, feltDepth * 0.7).map(
     (spot) => spot.add(new THREE.Vector3(-stageShift, 0, 0))
   )
   const flyers: FlyingDie[] = dice.map((spec, index) => {
-    const made = makeDie(spec, grain)
+    const made = makeDie(spec, grain, look)
     const end = ends[index] ?? new THREE.Vector3()
     const start = new THREE.Vector3(
       end.x + (Math.random() - 0.5) * 7,
@@ -479,7 +496,7 @@ export function mountPlayerDice3d(
       observer.disconnect()
       canvas.remove()
       disposeIbl()
-      grain.dispose()
+      grain?.dispose()
       renderer.dispose()
       scene.traverse((obj) => {
         if (obj instanceof THREE.Mesh || obj instanceof THREE.LineSegments) {

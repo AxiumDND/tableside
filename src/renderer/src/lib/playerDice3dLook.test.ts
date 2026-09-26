@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  dieBodyMaterialInputs,
   dieBodyScale,
   dieGlyphFill,
   dieGlyphFontPx,
@@ -8,14 +9,21 @@ import {
   dieGlyphTone,
   diePlasticColor,
   heightToNormalMap,
-  DIE_PLASTIC_COLOR
+  DIE_PLASTIC_COLOR,
+  diceLookPreset
 } from './playerDice3dLook'
 
 describe('diePlasticColor', () => {
-  it('uses ivory resin, not a dark metal', () => {
+  it('uses ivory resin by default, not a dark metal', () => {
     expect(diePlasticColor()).toBe(DIE_PLASTIC_COLOR)
+    expect(diePlasticColor()).toBe(diceLookPreset('ivory').body)
     expect(diePlasticColor()).toBeGreaterThan(0xc00000)
     expect(diePlasticColor(true)).not.toBe(diePlasticColor())
+  })
+
+  it('follows the active bag preset', () => {
+    expect(diePlasticColor(false, 'obsidian')).toBe(diceLookPreset('obsidian').body)
+    expect(diePlasticColor(true, 'obsidian')).toBe(diceLookPreset('obsidian').droppedBody)
   })
 })
 
@@ -23,9 +31,31 @@ describe('dieGlyphTone', () => {
   it('inks ordinary faces and paints nat 20 / nat 1', () => {
     expect(dieGlyphTone({})).toBe('ink')
     expect(dieGlyphFill('ink')).toBe('#1c140e')
+    expect(dieGlyphFill('ink', 'obsidian')).toBe(diceLookPreset('obsidian').ink)
     expect(dieGlyphTone({ highlight: 'nat20' })).toBe('gold')
     expect(dieGlyphTone({ highlight: 'nat1' })).toBe('blood')
     expect(dieGlyphTone({ dropped: true })).toBe('faded')
+  })
+})
+
+describe('dieBodyMaterialInputs', () => {
+  it('maps each preset into body material knobs without changing fairness', () => {
+    const ivory = dieBodyMaterialInputs(diceLookPreset('ivory'))
+    expect(ivory.color).toBe(0xe6d2b0)
+    expect(ivory.metalness).toBe(0)
+    expect(ivory.transmission).toBe(0)
+
+    const steel = dieBodyMaterialInputs(diceLookPreset('steel'))
+    expect(steel.metalness).toBeGreaterThan(0.5)
+    expect(steel.color).toBe(diceLookPreset('steel').body)
+
+    const ruby = dieBodyMaterialInputs(diceLookPreset('ruby'))
+    expect(ruby.transmission).toBeGreaterThan(0.3)
+    expect(ruby.transparent).toBe(true)
+
+    const dropped = dieBodyMaterialInputs(diceLookPreset('ruby'), true)
+    expect(dropped.opacity).toBe(0.5)
+    expect(dropped.transmission).toBe(0)
   })
 })
 
@@ -67,7 +97,7 @@ describe('heightToNormalMap', () => {
       }
     }
     const normals = heightToNormalMap(rgba, width, height, 3)
-    const mid = ((3 * width + 3) * 4)
+    const mid = (3 * width + 3) * 4
     expect(Math.abs(normals[mid] - 128)).toBeGreaterThan(20)
     expect(normals[mid + 2]).toBeGreaterThan(160)
     expect(normals[mid + 3]).toBe(255)

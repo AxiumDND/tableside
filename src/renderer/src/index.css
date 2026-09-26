@@ -1996,6 +1996,16 @@ body,
   animation-name: player-dice-3d-throw;
   animation-timing-function: cubic-bezier(0.18, 0.7, 0.22, 1);
   animation-fill-mode: forwards;
+  background: linear-gradient(
+    160deg,
+    color-mix(in srgb, var(--die-css-body, #e6d2b0) 88%, white) 0%,
+    var(--die-css-body, #e6d2b0) 58%,
+    color-mix(in srgb, var(--die-css-body, #e6d2b0) 72%, black) 100%
+  );
+  color: var(--die-css-ink, #1c140e);
+  box-shadow:
+    0 1.4vmin 3vmin rgba(0, 0, 0, 0.4),
+    inset 0 0.3vmin 0.6vmin color-mix(in srgb, var(--die-css-body, #e6d2b0) 40%, white);
 }
 
 .player-dice-3d-css-die.is-d4 {
@@ -2028,13 +2038,6 @@ body,
   border-radius: 50%;
 }
 
-.player-dice-3d-css-die {
-  background: linear-gradient(160deg, #f4e6c8 0%, #c8a878 58%, #9a7a48 100%);
-  box-shadow:
-    0 1.4vmin 3vmin rgba(0, 0, 0, 0.4),
-    inset 0 0.3vmin 0.6vmin rgba(255, 248, 230, 0.45);
-}
-
 .player-dice-3d-css-die.is-dropped {
   opacity: 0.4;
   filter: grayscale(0.55);
@@ -2044,8 +2047,8 @@ body,
   font-family: var(--font-display, Georgia, serif);
   font-size: 4.4vmin;
   line-height: 1;
-  color: #1c140e;
-  text-shadow: 0 0.15vmin 0 rgba(255, 248, 230, 0.45);
+  color: inherit;
+  text-shadow: 0 0.15vmin 0 color-mix(in srgb, var(--die-css-body, #e6d2b0) 45%, white);
 }
 
 .player-dice-3d-css-face.is-wide {

@@ -17,6 +17,13 @@ import {
   MIN_PLAYER_IMAGE_PAD_PCT,
   clampPlayerImagePadPct
 } from '../../../shared/playerImagePad'
+import {
+  DEFAULT_DICE_LOOK_PRESET,
+  DICE_LOOK_PRESET_IDS,
+  DICE_LOOK_PRESETS,
+  parseDiceLookPresetId,
+  type DiceLookPresetId
+} from '../../../shared/diceLookPreset'
 import CurrenciesSettings from './CurrenciesSettings'
 
 type HelpSection = 'settings' | 'start' | 'screens' | 'files' | 'music' | 'combat' | 'lookup' | 'keys' | 'updates'
@@ -188,6 +195,7 @@ export default function HelpPanel({
   const [boxOfDoomHoldSec, setBoxOfDoomHoldSec] = useState(String(DEFAULT_BOX_OF_DOOM_HOLD_MS / 1000))
   const [playerImagePadPct, setPlayerImagePadPct] = useState(DEFAULT_PLAYER_IMAGE_PAD_PCT)
   const [updateChannel, setUpdateChannel] = useState<UpdateChannel>('stable')
+  const [diceLookPreset, setDiceLookPreset] = useState<DiceLookPresetId>(DEFAULT_DICE_LOOK_PRESET)
 
   function toggle(id: HelpSection): void {
     setOpen((prev) => (prev === id ? null : id))
@@ -203,6 +211,7 @@ export default function HelpPanel({
       setBoxOfDoomHoldSec(String(sec))
       setPlayerImagePadPct(clampPlayerImagePadPct(prefs.playerImagePadPct))
       setUpdateChannel(parseUpdateChannel(prefs.updateChannel))
+      setDiceLookPreset(parseDiceLookPresetId(prefs.diceLookPreset))
     })
   }, [])
 
@@ -221,6 +230,11 @@ export default function HelpPanel({
     const pct = clampPlayerImagePadPct(raw)
     setPlayerImagePadPct(pct)
     void window.tabledm.saveSettings({ playerImagePadPct: pct })
+  }
+
+  function saveDiceLookPreset(next: DiceLookPresetId): void {
+    setDiceLookPreset(next)
+    void window.tabledm.saveSettings({ diceLookPreset: next })
   }
 
   return (
@@ -391,6 +405,28 @@ export default function HelpPanel({
                 Automated tests check that faces stay in range and that large samples match a fair distribution. There
                 are no hidden rerolls or built-in bias toward players or the DM.
               </p>
+              <label className="mt-2 block text-[13px] text-parchment/90">
+                <span className="font-semibold text-parchment">Player TV dice bag</span>
+                <span className="mt-0.5 block text-[12px] leading-snug text-muted">
+                  Look of the 3D throw on the player TV (and the CSS fallback). Does not change fairness or throw timing.
+                  Default {DICE_LOOK_PRESETS[DEFAULT_DICE_LOOK_PRESET].label}.
+                </span>
+                <select
+                  value={diceLookPreset}
+                  aria-label="Player TV dice bag"
+                  onChange={(event) => saveDiceLookPreset(parseDiceLookPresetId(event.target.value))}
+                  className="mt-2 w-full rounded border border-line bg-ink px-2 py-1.5 text-sm text-parchment outline-none focus:border-amber"
+                >
+                  {DICE_LOOK_PRESET_IDS.map((id) => (
+                    <option key={id} value={id}>
+                      {DICE_LOOK_PRESETS[id].label}
+                    </option>
+                  ))}
+                </select>
+                <span className="mt-1 block text-[12px] leading-snug text-muted">
+                  {DICE_LOOK_PRESETS[diceLookPreset].blurb}
+                </span>
+              </label>
               <label className="mt-2 block text-[13px] text-parchment/90">
                 <span className="font-semibold text-parchment">Box of Doom — auto fade-out (seconds)</span>
                 <span className="mt-0.5 block text-[12px] leading-snug text-muted">
@@ -1010,14 +1046,16 @@ export default function HelpPanel({
             Bottom of the left column: d4–d100 plus a custom expression such as <Code>2d6+3</Code>. Use{' '}
             <Action>Adv</Action> or <Action>Dis</Action> for d20 rolls. Uncheck <Action>Show rolls to players</Action>{' '}
             to keep tray and statblock rolls off the player TV; uncheck <Action>Play roll sound</Action> to mute the
-            clatter (one die, two dice, and a handful each have their own recording). The tray keeps the latest roll plus
-            four lines; <Action>View log</Action> opens every roll this session with the faces and bonus.{' '}
-            <Action>Clear log</Action> empties both. Tray rolls and sheet chips (Init, scores, saves, to-hit, damage)
-            throw 3D dice across the player TV, including the modifier on the right-hand card. Most dice land the
-            result face flat to the screen; a d4 sits on a face as a pyramid, with the result at the top point. A
-            d100 throws a tens die (00–90) and a ones die (0–9). The compact Players-see preview and Box of Doom stay
-            on the card. In 5e campaigns, damage chips on statblocks also offer <Action>Crit</Action> (double the
-            dice).
+            clatter (one die, two dice, and a handful each have their own recording). Pick a <Action>Bag</Action> look
+            on the tray (or under <strong>Help & settings → Settings → Dice</strong>) for the player TV 3D throw —
+            Ivory resin by default, plus Obsidian, Ruby translucent, Frosted, Steel, Jade, Aged bone, and more. The tray
+            keeps the latest roll plus four lines; <Action>View log</Action> opens every roll this session with the
+            faces and bonus. <Action>Clear log</Action> empties both. Tray rolls and sheet chips (Init, scores, saves,
+            to-hit, damage) throw 3D dice across the player TV, including the modifier on the right-hand card. Most
+            dice land the result face flat to the screen; a d4 sits on a face as a pyramid, with the result at the top
+            point. A d100 throws a tens die (00–90) and a ones die (0–9). The compact Players-see preview and Box of
+            Doom stay on the card. In 5e campaigns, damage chips on statblocks also offer <Action>Crit</Action>{' '}
+            (double the dice).
           </p>
           <Sub>Box of Doom</Sub>
           <p>
