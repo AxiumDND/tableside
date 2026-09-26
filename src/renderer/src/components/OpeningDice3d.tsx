@@ -60,12 +60,12 @@ function CssDiceThrow({
 
 export default function OpeningDice3d({ show }: { show: PlayerDiceShow }) {
   const hostRef = useRef<HTMLDivElement>(null)
-  // Depend on roll identity + plan inputs only — not `stoppingAt`. Spreading a fade
-  // onto the show must not rebuild `dice` or remount WebGL (that replays the throw
-  // while opacity fades, which reads as a second toss from the start pose).
+  // Plan inputs only — not `stoppingAt`. Spreading a fade onto the show must not
+  // rebuild `dice` or remount WebGL (that replays the throw while opacity fades).
+  const { groups, mode: rollMode, kept, startedAt } = show
   const dice = useMemo(
-    () => planPlayerDice3dThrow(show),
-    [show.groups, show.mode, show.kept, show.startedAt]
+    () => planPlayerDice3dThrow({ groups, mode: rollMode, kept }),
+    [groups, rollMode, kept]
   )
   const [mode, setMode] = useState<'webgl' | 'css' | null>(null)
   const [lookPreset, setLookPreset] = useState<DiceLookPresetId | null>(null)
@@ -85,7 +85,7 @@ export default function OpeningDice3d({ show }: { show: PlayerDiceShow }) {
     return () => {
       cancelled = true
     }
-  }, [show.startedAt])
+  }, [startedAt])
 
   useEffect(() => {
     const host = hostRef.current
@@ -109,7 +109,7 @@ export default function OpeningDice3d({ show }: { show: PlayerDiceShow }) {
       handle?.dispose()
     }
     // `dice` is stable across fade-out (see useMemo above); remount only on new roll / look.
-  }, [dice, lookPreset, show.startedAt])
+  }, [dice, lookPreset, startedAt])
 
   if (dice.length === 0) return null
 
