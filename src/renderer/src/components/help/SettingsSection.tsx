@@ -9,6 +9,13 @@ import {
   MAX_PLAYER_IMAGE_PAD_PCT,
   MIN_PLAYER_IMAGE_PAD_PCT
 } from '../../../../shared/playerImagePad'
+import {
+  DEFAULT_DICE_LOOK_PRESET,
+  DICE_LOOK_PRESET_IDS,
+  DICE_LOOK_PRESETS,
+  parseDiceLookPresetId,
+  type DiceLookPresetId
+} from '../../../../shared/diceLookPreset'
 import CurrenciesSettings from '../CurrenciesSettings'
 import { Action, Code, Sub, Ul } from './HelpComponents'
 
@@ -27,7 +34,9 @@ export function SettingsSection({
   setBoxOfDoomHoldSec,
   saveBoxOfDoomHoldSec,
   playerImagePadPct,
-  savePlayerImagePadPct
+  savePlayerImagePadPct,
+  diceLookPreset,
+  saveDiceLookPreset
 }: {
   theme?: ThemeId
   onThemeChange?: (theme: ThemeId) => void
@@ -44,6 +53,8 @@ export function SettingsSection({
   saveBoxOfDoomHoldSec: (raw: string) => void
   playerImagePadPct: number
   savePlayerImagePadPct: (raw: number | string) => void
+  diceLookPreset: DiceLookPresetId
+  saveDiceLookPreset: (next: DiceLookPresetId) => void
 }) {
   return (
     <div className="space-y-4">
@@ -203,6 +214,28 @@ export function SettingsSection({
           Automated tests check that faces stay in range and that large samples match a fair distribution. There
           are no hidden rerolls or built-in bias toward players or the DM.
         </p>
+        <label className="mt-2 block text-[13px] text-parchment/90">
+          <span className="font-semibold text-parchment">Player TV dice bag</span>
+          <span className="mt-0.5 block text-[12px] leading-snug text-muted">
+            Look of the 3D throw on the player TV (and the CSS fallback). Does not change fairness or throw timing.
+            Default {DICE_LOOK_PRESETS[DEFAULT_DICE_LOOK_PRESET].label}.
+          </span>
+          <select
+            value={diceLookPreset}
+            aria-label="Player TV dice bag"
+            onChange={(event) => saveDiceLookPreset(parseDiceLookPresetId(event.target.value))}
+            className="mt-2 w-full rounded border border-line bg-ink px-2 py-1.5 text-sm text-parchment outline-none focus:border-amber"
+          >
+            {DICE_LOOK_PRESET_IDS.map((id) => (
+              <option key={id} value={id}>
+                {DICE_LOOK_PRESETS[id].label}
+              </option>
+            ))}
+          </select>
+          <span className="mt-1 block text-[12px] leading-snug text-muted">
+            {DICE_LOOK_PRESETS[diceLookPreset].blurb}
+          </span>
+        </label>
         <label className="mt-2 block text-[13px] text-parchment/90">
           <span className="font-semibold text-parchment">Box of Doom — auto fade-out (seconds)</span>
           <span className="mt-0.5 block text-[12px] leading-snug text-muted">

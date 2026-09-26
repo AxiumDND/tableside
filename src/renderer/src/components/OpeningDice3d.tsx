@@ -6,12 +6,35 @@ import {
   type PlayerDice3dDie
 } from '../../../shared/playerDice3d'
 import type { PlayerDiceShow } from '../../../shared/playerDiceShow'
+import {
+  DEFAULT_DICE_LOOK_PRESET,
+  diceLookPreset,
+  parseDiceLookPresetId,
+  type DiceLookPresetId
+} from '../../../shared/diceLookPreset'
 import { dieGlyphShouldDot } from '../lib/playerDice3dLook'
 import type { PlayerDice3dHandle } from '../lib/playerDice3dWorld'
 
-function CssDiceThrow({ dice, fadingOut }: { dice: PlayerDice3dDie[]; fadingOut: boolean }) {
+function CssDiceThrow({
+  dice,
+  fadingOut,
+  presetId
+}: {
+  dice: PlayerDice3dDie[]
+  fadingOut: boolean
+  presetId: DiceLookPresetId
+}) {
+  const look = diceLookPreset(presetId)
   return (
-    <div className={`player-dice-3d-css${fadingOut ? ' is-out' : ''}`} data-dice-3d="css">
+    <div
+      className={`player-dice-3d-css${fadingOut ? ' is-out' : ''}`}
+      data-dice-3d="css"
+      data-dice-look={look.id}
+      style={{
+        ['--die-css-body' as string]: look.cssBody,
+        ['--die-css-ink' as string]: look.cssInk
+      }}
+    >
       {dice.map((die, index) => (
         <div
           key={`${die.sides}-${die.label}-${index}`}
@@ -39,17 +62,37 @@ export default function OpeningDice3d({ show }: { show: PlayerDiceShow }) {
   const hostRef = useRef<HTMLDivElement>(null)
   const dice = useMemo(() => planPlayerDice3dThrow(show), [show])
   const [mode, setMode] = useState<'webgl' | 'css' | null>(null)
+  const [lookPreset, setLookPreset] = useState<DiceLookPresetId | null>(null)
   const fadingOut = Boolean(show.stoppingAt)
 
   useEffect(() => {
+    let cancelled = false
+    void window.tabledm?.getSettings?.()
+      .then((prefs) => {
+        if (!cancelled) setLookPreset(parseDiceLookPresetId(prefs.diceLookPreset))
+      })
+      .catch(() => {
+        if (!cancelled) setLookPreset(DEFAULT_DICE_LOOK_PRESET)
+      })
+    // No tabledm (unit tests): use the default bag immediately.
+    if (!window.tabledm?.getSettings) setLookPreset(DEFAULT_DICE_LOOK_PRESET)
+    return () => {
+      cancelled = true
+    }
+  }, [show.startedAt])
+
+  useEffect(() => {
     const host = hostRef.current
-    if (!host || dice.length === 0) return
+    if (!host || dice.length === 0 || lookPreset == null) return
     let cancelled = false
     let handle: PlayerDice3dHandle | null = null
     void import('../lib/playerDice3dWorld')
       .then((mod) => {
         if (cancelled) return
-        handle = mod.mountPlayerDice3d(host, dice, { throwMs: DICE_3D_THROW_MS })
+        handle = mod.mountPlayerDice3d(host, dice, {
+          throwMs: DICE_3D_THROW_MS,
+          lookPreset
+        })
         setMode(handle ? 'webgl' : 'css')
       })
       .catch(() => {
@@ -59,7 +102,7 @@ export default function OpeningDice3d({ show }: { show: PlayerDiceShow }) {
       cancelled = true
       handle?.dispose()
     }
-  }, [dice, show.startedAt])
+  }, [dice, lookPreset, show.startedAt])
 
   if (dice.length === 0) return null
 
@@ -68,9 +111,12 @@ export default function OpeningDice3d({ show }: { show: PlayerDiceShow }) {
       ref={hostRef}
       className={`player-dice-3d${fadingOut ? ' is-out' : ''}`}
       data-dice-3d={mode ?? 'pending'}
+      data-dice-look={lookPreset ?? undefined}
       aria-hidden="true"
     >
-      {mode === 'css' ? <CssDiceThrow dice={dice} fadingOut={fadingOut} /> : null}
+      {mode === 'css' && lookPreset ? (
+        <CssDiceThrow dice={dice} fadingOut={fadingOut} presetId={lookPreset} />
+      ) : null}
     </div>
   )
 }

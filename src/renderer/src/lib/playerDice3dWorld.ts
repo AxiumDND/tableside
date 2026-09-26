@@ -5,6 +5,11 @@ import {
   type PlayerDice3dDie
 } from '../../../shared/playerDice3d'
 import {
+  planDieThrowMotions,
+  sampleDieThrow,
+  type DieThrowMotion
+} from '../../../shared/playerDice3dMotion'
+import {
   DICE_3D_CAMERA_POSITION,
   DICE_3D_LOOK_AT,
   d4CornerMarks,
@@ -17,14 +22,16 @@ import {
   type DieFace
 } from './playerDice3dFaces'
 import { createDieGeometry } from './playerDice3dMeshes'
+import type { DiceLookPreset } from '../../../shared/diceLookPreset'
 import {
   DIE_GLYPH_CANVAS,
+  dieBodyMaterialInputs,
   dieBodyScale,
   dieGlyphTone,
-  diePlasticColor,
   heightToNormalMap,
   paintDieGlyph,
-  paintDieGlyphHeight
+  paintDieGlyphHeight,
+  resolveDiceLook
 } from './playerDice3dLook'
 
 export type PlayerDice3dHandle = {
@@ -34,16 +41,20 @@ export type PlayerDice3dHandle = {
 type MountOpts = {
   throwMs?: number
   reservedRight?: number
+  /** Named bag look; defaults to ivory resin. */
+  lookPreset?: string | DiceLookPreset | null
 }
 
 type FlyingDie = {
   group: THREE.Group
   spinner: THREE.Group
+  bodyScale: number
   start: THREE.Vector3
   end: THREE.Vector3
   startQuat: THREE.Quaternion
   endQuat: THREE.Quaternion
   spin: THREE.Euler
+  motion: DieThrowMotion
 }
 
 function webglAvailable(): boolean {
@@ -62,13 +73,14 @@ function dieGeometry(spec: PlayerDice3dDie): THREE.BufferGeometry {
 function faceMaps(
   label: string,
   sides: number,
-  opts: { dropped: boolean; highlight: 'none' | 'nat20' | 'nat1' }
+  opts: { dropped: boolean; highlight: 'none' | 'nat20' | 'nat1' },
+  look: DiceLookPreset
 ): { map: THREE.CanvasTexture; normalMap: THREE.CanvasTexture } {
   const color = document.createElement('canvas')
   color.width = DIE_GLYPH_CANVAS
   color.height = DIE_GLYPH_CANVAS
   const colorCtx = color.getContext('2d')
-  if (colorCtx) paintDieGlyph(colorCtx, label, dieGlyphTone(opts), sides)
+  if (colorCtx) paintDieGlyph(colorCtx, label, dieGlyphTone(opts), sides, look)
   const map = new THREE.CanvasTexture(color)
   map.colorSpace = THREE.SRGBColorSpace
   map.anisotropy = 8
@@ -89,15 +101,16 @@ function faceMaps(
   return { map, normalMap }
 }
 
-function resinGrainTexture(): THREE.CanvasTexture {
+function resinGrainTexture(look: DiceLookPreset): THREE.CanvasTexture | null {
+  if (!look.useGrain) return null
   const canvas = document.createElement('canvas')
   canvas.width = 64
   canvas.height = 64
   const ctx = canvas.getContext('2d')
   if (ctx) {
-    ctx.fillStyle = '#b8b0a4'
+    ctx.fillStyle = look.grainTint
     ctx.fillRect(0, 0, 64, 64)
-    for (let i = 0; i < 70; i += 1) {
+    for (let i = 0; i < look.grainDots; i += 1) {
       const n = 150 + Math.round(Math.random() * 70)
       ctx.fillStyle = `rgb(${n},${n},${n})`
       ctx.beginPath()
@@ -236,21 +249,27 @@ function addFaceDecal(
   label: string,
   size: number,
   spec: PlayerDice3dDie,
+  look: DiceLookPreset,
   orient: (mesh: THREE.Mesh) => void
 ): void {
-  const maps = faceMaps(label, spec.sides, {
-    dropped: Boolean(spec.dropped),
-    highlight: highlightFor(spec, label)
-  })
+  const maps = faceMaps(
+    label,
+    spec.sides,
+    {
+      dropped: Boolean(spec.dropped),
+      highlight: highlightFor(spec, label)
+    },
+    look
+  )
   const decal = new THREE.Mesh(
     new THREE.PlaneGeometry(1, 1),
     new THREE.MeshPhysicalMaterial({
       map: maps.map,
       normalMap: maps.normalMap,
       normalScale: new THREE.Vector2(0.72, 0.72),
-      roughness: 0.38,
-      metalness: 0,
-      clearcoat: spec.dropped ? 0.15 : 0.45,
+      roughness: Math.min(0.5, look.roughness + 0.06),
+      metalness: Math.min(look.metalness, 0.2),
+      clearcoat: spec.dropped ? 0.15 : Math.min(look.clearcoat, 0.55),
       clearcoatRoughness: 0.28,
       transparent: true,
       depthWrite: false,
@@ -263,10 +282,6 @@ function addFaceDecal(
   orient(decal)
   decal.scale.setScalar(size)
   spinner.add(decal)
-}
-
-function easeOutCubic(t: number): number {
-  return 1 - (1 - t) ** 3
 }
 
 function landingGrid(count: number, width: number, depth: number): THREE.Vector3[] {
@@ -288,7 +303,8 @@ function landingGrid(count: number, width: number, depth: number): THREE.Vector3
 
 function makeDie(
   spec: PlayerDice3dDie,
-  grain: THREE.CanvasTexture
+  grain: THREE.CanvasTexture | null,
+  look: DiceLookPreset
 ): { group: THREE.Group; spinner: THREE.Group; result: DieFace; faces: DieFace[]; scale: number } {
   const group = new THREE.Group()
   const spinner = new THREE.Group()
@@ -297,24 +313,27 @@ function makeDie(
   const faces = extractDieFaces(geometry, labels)
   const result = resultDieFace(faces, spec)
   const scale = dieBodyScale(spec.sides)
+  const mat = dieBodyMaterialInputs(look, spec.dropped)
   const body = new THREE.Mesh(
     geometry,
     new THREE.MeshPhysicalMaterial({
-      color: diePlasticColor(spec.dropped),
-      roughness: 0.32,
-      roughnessMap: grain,
-      metalness: 0,
-      clearcoat: spec.dropped ? 0.2 : 0.78,
-      clearcoatRoughness: 0.22,
-      sheen: 0.2,
-      sheenColor: new THREE.Color(0xf6ead4),
-      sheenRoughness: 0.48,
-      ior: 1.5,
-      specularIntensity: 0.5,
-      envMapIntensity: 0.85,
+      color: mat.color,
+      roughness: mat.roughness,
+      roughnessMap: grain ?? undefined,
+      metalness: mat.metalness,
+      clearcoat: mat.clearcoat,
+      clearcoatRoughness: mat.clearcoatRoughness,
+      sheen: mat.sheen,
+      sheenColor: new THREE.Color(mat.sheenColor),
+      sheenRoughness: mat.sheenRoughness,
+      ior: mat.ior,
+      transmission: mat.transmission,
+      thickness: mat.thickness,
+      specularIntensity: mat.specularIntensity,
+      envMapIntensity: mat.envMapIntensity,
       vertexColors: Boolean(geometry.getAttribute('color')),
-      transparent: Boolean(spec.dropped),
-      opacity: spec.dropped ? 0.5 : 1
+      transparent: mat.transparent,
+      opacity: mat.opacity
     })
   )
   spinner.scale.setScalar(scale)
@@ -323,13 +342,13 @@ function makeDie(
     for (const mark of d4CornerMarks(faces)) {
       const toward = mark.vertex.clone().sub(mark.face.center)
       const pos = mark.face.center.clone().addScaledVector(toward, 0.58)
-      addFaceDecal(spinner, pos, mark.face.normal, mark.label, mark.face.size * 0.4, spec, (mesh) =>
+      addFaceDecal(spinner, pos, mark.face.normal, mark.label, mark.face.size * 0.4, spec, look, (mesh) =>
         orientD4CornerDecal(mesh, mark.face.normal, toward)
       )
     }
   } else {
     for (const face of faces) {
-      addFaceDecal(spinner, face.center, face.normal, face.label, face.size, spec, (mesh) =>
+      addFaceDecal(spinner, face.center, face.normal, face.label, face.size, spec, look, (mesh) =>
         orientFaceDecal(mesh, face.normal)
       )
     }
@@ -390,17 +409,20 @@ export function mountPlayerDice3d(
   rim.position.set(2, 3, -10)
   scene.add(rim)
 
+  const look = resolveDiceLook(opts.lookPreset)
   const feltWidth = 14
   const feltDepth = 8
   const usable = 1 - reservedRight
   const stageShift = feltWidth * (0.5 - usable / 2)
-  const grain = resinGrainTexture()
+  const grain = resinGrainTexture(look)
   const ends = landingGrid(dice.length, feltWidth * 0.62, feltDepth * 0.7).map(
     (spot) => spot.add(new THREE.Vector3(-stageShift, 0, 0))
   )
+  const motions = planDieThrowMotions(dice)
   const flyers: FlyingDie[] = dice.map((spec, index) => {
-    const made = makeDie(spec, grain)
+    const made = makeDie(spec, grain, look)
     const end = ends[index] ?? new THREE.Vector3()
+    const motion = motions[index]!
     const start = new THREE.Vector3(
       end.x + (Math.random() - 0.5) * 7,
       6 + Math.random() * 3,
@@ -419,24 +441,47 @@ export function mountPlayerDice3d(
     made.group.position.copy(start)
     made.spinner.quaternion.copy(startQuat)
     scene.add(made.group)
+    const spinBoost = motion.flair === 'nat20' ? 1.55 : motion.flair === 'nat1' ? 0.55 : 1
     return {
       group: made.group,
       spinner: made.spinner,
+      bodyScale: made.scale,
       start,
       end,
       startQuat,
       endQuat,
       spin: new THREE.Euler(
-        Math.PI * (2.2 + Math.random() * 1.6),
-        Math.PI * (1.6 + Math.random() * 1.8),
-        Math.PI * (0.8 + Math.random() * 1.2)
-      )
+        Math.PI * (2.2 + Math.random() * 1.6) * spinBoost,
+        Math.PI * (1.6 + Math.random() * 1.8) * spinBoost,
+        Math.PI * (0.8 + Math.random() * 1.2) * spinBoost
+      ),
+      motion
     }
   })
 
   const extraSpin = new THREE.Quaternion()
+  const wobbleQ = new THREE.Quaternion()
   const spinEuler = new THREE.Euler()
+  const wobbleEuler = new THREE.Euler()
   const scratch = new THREE.Quaternion()
+  const baseExposure = 1.12
+  const baseFov = camera.fov
+  const baseCamPos = camera.position.clone()
+  const punchLook = DICE_3D_LOOK_AT.clone()
+  const punchCam = new THREE.Vector3()
+  const punchTarget = new THREE.Vector3()
+  renderer.toneMappingExposure = baseExposure
+
+  // Gold / blood flash light — intensity driven by flair envelopes (TV-readable, not neon spam).
+  const flairLight = new THREE.PointLight(0xffe2a0, 0, 22, 1.6)
+  flairLight.position.set(0, 4, 2)
+  scene.add(flairLight)
+  const flairFill = new THREE.DirectionalLight(0xffe2a0, 0)
+  flairFill.position.set(-2, 10, 6)
+  scene.add(flairFill)
+
+  const flairFlyer =
+    flyers.find((flyer) => flyer.motion.flair === 'nat20' || flyer.motion.flair === 'nat1') ?? null
 
   const resize = (): void => {
     const width = host.clientWidth
@@ -457,16 +502,70 @@ export function mountPlayerDice3d(
   let frame = 0
   const tick = (now: number): void => {
     const t = Math.min(1, (now - started) / throwMs)
-    const ease = easeOutCubic(t)
+    let glow = 0
+    let shade = 0
+    let punch = 0
     for (const flyer of flyers) {
-      flyer.group.position.lerpVectors(flyer.start, flyer.end, ease)
-      flyer.group.position.y = flyer.start.y + (flyer.end.y - flyer.start.y) * ease + Math.sin((1 - t) * Math.PI) * 1.4
-      flyer.spinner.quaternion.copy(flyer.startQuat).slerp(flyer.endQuat, ease)
-      spinEuler.set(flyer.spin.x * (1 - ease), flyer.spin.y * (1 - ease), flyer.spin.z * (1 - ease))
+      const sample = sampleDieThrow(t, flyer.motion)
+      glow = Math.max(glow, sample.glow)
+      shade = Math.max(shade, sample.shade)
+      punch = Math.max(punch, sample.cameraPunch)
+      flyer.group.position.lerpVectors(flyer.start, flyer.end, sample.planar)
+      flyer.group.position.y =
+        flyer.start.y + (flyer.end.y - flyer.start.y) * sample.planar + sample.height
+      flyer.spinner.scale.setScalar(flyer.bodyScale * sample.scale)
+      flyer.spinner.quaternion.copy(flyer.startQuat).slerp(flyer.endQuat, sample.orient)
+      spinEuler.set(flyer.spin.x * sample.spin, flyer.spin.y * sample.spin, flyer.spin.z * sample.spin)
       extraSpin.setFromEuler(spinEuler)
-      scratch.copy(flyer.spinner.quaternion).multiply(extraSpin)
+      wobbleEuler.set(sample.wobbleX, sample.wobbleY, sample.wobbleZ)
+      wobbleQ.setFromEuler(wobbleEuler)
+      scratch.copy(flyer.spinner.quaternion).multiply(extraSpin).multiply(wobbleQ)
       flyer.spinner.quaternion.copy(scratch)
     }
+
+    if (glow >= shade && glow > 0.01) {
+      flairLight.color.setHex(0xffe4a8)
+      flairFill.color.setHex(0xffd78a)
+      flairLight.intensity = glow * 14
+      flairFill.intensity = glow * 1.35
+    } else if (shade > 0.01) {
+      flairLight.color.setHex(0x9a1820)
+      flairFill.color.setHex(0x6a1018)
+      flairLight.intensity = shade * 11
+      flairFill.intensity = shade * 1.05
+    } else {
+      flairLight.intensity = 0
+      flairFill.intensity = 0
+    }
+    if (flairFlyer) {
+      flairLight.position.set(flairFlyer.end.x, flairFlyer.end.y + 2.8, flairFlyer.end.z + 1.2)
+    }
+
+    // Warm gold lift / blood darken + camera punch toward the crit/fail die.
+    renderer.toneMappingExposure = baseExposure + glow * 0.55 - shade * 0.42
+    if (flairFlyer && punch > 0.01) {
+      punchLook.set(
+        DICE_3D_LOOK_AT.x * (1 - punch * 0.55) + flairFlyer.end.x * punch * 0.55,
+        DICE_3D_LOOK_AT.y + punch * 0.35,
+        DICE_3D_LOOK_AT.z * (1 - punch * 0.55) + flairFlyer.end.z * punch * 0.55
+      )
+      punchTarget.set(
+        flairFlyer.end.x * 0.35 + baseCamPos.x * 0.65,
+        baseCamPos.y - punch * 1.4,
+        baseCamPos.z - punch * 2.8
+      )
+      punchCam.copy(baseCamPos).lerp(punchTarget, punch * 0.85)
+      camera.position.copy(punchCam)
+      camera.fov = baseFov - punch * 5.5
+      camera.lookAt(punchLook)
+      camera.updateProjectionMatrix()
+    } else {
+      camera.position.copy(baseCamPos)
+      camera.fov = baseFov
+      camera.lookAt(DICE_3D_LOOK_AT)
+      camera.updateProjectionMatrix()
+    }
+
     renderer.render(scene, camera)
     if (t < 1) frame = window.requestAnimationFrame(tick)
     else renderer.render(scene, camera)
@@ -479,7 +578,7 @@ export function mountPlayerDice3d(
       observer.disconnect()
       canvas.remove()
       disposeIbl()
-      grain.dispose()
+      grain?.dispose()
       renderer.dispose()
       scene.traverse((obj) => {
         if (obj instanceof THREE.Mesh || obj instanceof THREE.LineSegments) {

@@ -12,6 +12,11 @@ import {
   DEFAULT_PLAYER_IMAGE_PAD_PCT,
   clampPlayerImagePadPct
 } from '../../../shared/playerImagePad'
+import {
+  DEFAULT_DICE_LOOK_PRESET,
+  parseDiceLookPresetId,
+  type DiceLookPresetId
+} from '../../../shared/diceLookPreset'
 import { Section, type HelpSection } from './help/HelpComponents'
 import { SettingsSection } from './help/SettingsSection'
 import { StartSection } from './help/StartSection'
@@ -57,6 +62,7 @@ export default function HelpPanel({
   const [boxOfDoomHoldSec, setBoxOfDoomHoldSec] = useState(String(DEFAULT_BOX_OF_DOOM_HOLD_MS / 1000))
   const [playerImagePadPct, setPlayerImagePadPct] = useState(DEFAULT_PLAYER_IMAGE_PAD_PCT)
   const [updateChannel, setUpdateChannel] = useState<UpdateChannel>('stable')
+  const [diceLookPreset, setDiceLookPreset] = useState<DiceLookPresetId>(DEFAULT_DICE_LOOK_PRESET)
 
   function toggle(id: HelpSection): void {
     setOpen((prev) => (prev === id ? null : id))
@@ -72,6 +78,7 @@ export default function HelpPanel({
       setBoxOfDoomHoldSec(String(sec))
       setPlayerImagePadPct(clampPlayerImagePadPct(prefs.playerImagePadPct))
       setUpdateChannel(parseUpdateChannel(prefs.updateChannel))
+      setDiceLookPreset(parseDiceLookPresetId(prefs.diceLookPreset))
     })
   }, [])
 
@@ -90,6 +97,11 @@ export default function HelpPanel({
     const pct = clampPlayerImagePadPct(raw)
     setPlayerImagePadPct(pct)
     void window.tabledm.saveSettings({ playerImagePadPct: pct })
+  }
+
+  function saveDiceLookPreset(next: DiceLookPresetId): void {
+    setDiceLookPreset(next)
+    void window.tabledm.saveSettings({ diceLookPreset: next })
   }
 
   return (
@@ -119,6 +131,8 @@ export default function HelpPanel({
             saveBoxOfDoomHoldSec={saveBoxOfDoomHoldSec}
             playerImagePadPct={playerImagePadPct}
             savePlayerImagePadPct={savePlayerImagePadPct}
+            diceLookPreset={diceLookPreset}
+            saveDiceLookPreset={saveDiceLookPreset}
           />
         </Section>
         <Section id="start" title="Quick start" open={open} onToggle={toggle}>

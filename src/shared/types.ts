@@ -329,6 +329,8 @@ export interface AppSettings {
   diceCheckSound?: boolean
   /** Send tray and sheet rolls to the player TV strip. Default on. */
   showDiceToPlayers?: boolean
+  /** Named 3D dice bag look on the player TV. Default ivory resin. */
+  diceLookPreset?: string
   /** Show the live calendar cluster on the Quick bar. Default on. */
   showQuickBarCalendar?: boolean
   /** Put a sun / moon mark on the player TV (no clock). Default off. */

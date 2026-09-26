@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { render, waitFor } from '@testing-library/react'
 import type { PlayerDiceShow } from '../../../shared/playerDiceShow'
 import { mountPlayerDice3d } from '../lib/playerDice3dWorld'
@@ -22,6 +22,11 @@ function show(overrides: Partial<PlayerDiceShow> = {}): PlayerDiceShow {
 }
 
 describe('OpeningDice3d', () => {
+  afterEach(() => {
+    Reflect.deleteProperty(window, 'tabledm')
+    vi.mocked(mountPlayerDice3d).mockClear()
+  })
+
   it('mounts a WebGL throw when the world is available', async () => {
     vi.mocked(mountPlayerDice3d).mockReturnValue({ dispose: vi.fn() })
     const { container } = render(<OpeningDice3d show={show()} />)
@@ -29,6 +34,27 @@ describe('OpeningDice3d', () => {
       expect(container.querySelector('[data-dice-3d="webgl"]')).toBeTruthy()
     })
     expect(mountPlayerDice3d).toHaveBeenCalled()
+    expect(vi.mocked(mountPlayerDice3d).mock.calls[0]?.[2]).toMatchObject({
+      lookPreset: 'ivory'
+    })
+  })
+
+  it('passes a saved bag preset into the WebGL mount', async () => {
+    Object.defineProperty(window, 'tabledm', {
+      configurable: true,
+      value: {
+        getSettings: vi.fn(async () => ({ diceLookPreset: 'obsidian' }))
+      }
+    })
+    vi.mocked(mountPlayerDice3d).mockReturnValue({ dispose: vi.fn() })
+    render(<OpeningDice3d show={show()} />)
+    await waitFor(() => {
+      expect(mountPlayerDice3d).toHaveBeenCalledWith(
+        expect.anything(),
+        expect.anything(),
+        expect.objectContaining({ lookPreset: 'obsidian' })
+      )
+    })
   })
 
   it('falls back to CSS dice when WebGL cannot start', async () => {

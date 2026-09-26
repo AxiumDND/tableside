@@ -5,6 +5,7 @@ import { dirname, join, normalize } from 'node:path'
 import type { AppSettings } from '../shared/types'
 import { emptySettings } from '../shared/types'
 import { parseUpdateChannel, type UpdateChannel } from '../shared/updateChannel'
+import { parseDiceLookPresetId } from '../shared/diceLookPreset'
 import { clampPlayerImagePadPct } from '../shared/playerImagePad'
 import { ensureBooksHome } from './bookLibrary'
 import { ensureConvertGuide, revealConvertGuide } from './convertGuide'
@@ -86,7 +87,9 @@ function normalizeSettings(raw: AppSettings): AppSettings {
     ...raw,
     updateChannel: parseUpdateChannel(raw.updateChannel),
     playerImagePadPct:
-      raw.playerImagePadPct == null ? undefined : clampPlayerImagePadPct(raw.playerImagePadPct)
+      raw.playerImagePadPct == null ? undefined : clampPlayerImagePadPct(raw.playerImagePadPct),
+    diceLookPreset:
+      raw.diceLookPreset == null ? undefined : parseDiceLookPresetId(raw.diceLookPreset)
   }
 }
 
@@ -114,6 +117,9 @@ export async function patchSettings(partial: AppSettings): Promise<AppSettings> 
   }
   if (partial.playerImagePadPct !== undefined) {
     next.playerImagePadPct = clampPlayerImagePadPct(partial.playerImagePadPct)
+  }
+  if (partial.diceLookPreset !== undefined) {
+    next.diceLookPreset = parseDiceLookPresetId(partial.diceLookPreset)
   }
   await writeSettings(next)
   if (partial.theme !== undefined) deps.onThemeChanged?.(settings.theme)

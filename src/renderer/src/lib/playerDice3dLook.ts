@@ -1,12 +1,35 @@
-/** Ivory resin body — a matching bag of table dice, not gold wireframes. */
+import {
+  type DiceLookPreset,
+  type DiceLookPresetId,
+  diceLookPreset
+} from '../../../shared/diceLookPreset'
+
+export type { DiceLookPreset, DiceLookPresetId }
+export {
+  DEFAULT_DICE_LOOK_PRESET,
+  DICE_LOOK_PRESET_IDS,
+  DICE_LOOK_PRESETS,
+  diceLookPreset,
+  diceLookPresetFromSettings,
+  parseDiceLookPresetId
+} from '../../../shared/diceLookPreset'
+
+/** @deprecated Prefer diceLookPreset('ivory').body — kept for older tests/call sites. */
 export const DIE_PLASTIC_COLOR = 0xe6d2b0
+/** @deprecated Prefer diceLookPreset('ivory').droppedBody */
 export const DIE_PLASTIC_DROPPED = 0x8a8074
 export const DIE_GLYPH_CANVAS = 256
 
 export type DieGlyphTone = 'ink' | 'gold' | 'blood' | 'faded'
 
-export function diePlasticColor(dropped?: boolean): number {
-  return dropped ? DIE_PLASTIC_DROPPED : DIE_PLASTIC_COLOR
+export function resolveDiceLook(preset?: string | DiceLookPreset | null): DiceLookPreset {
+  if (preset && typeof preset === 'object') return preset
+  return diceLookPreset(typeof preset === 'string' ? preset : undefined)
+}
+
+export function diePlasticColor(dropped?: boolean, preset?: string | DiceLookPreset | null): number {
+  const look = resolveDiceLook(preset)
+  return dropped ? look.droppedBody : look.body
 }
 
 export function dieGlyphTone(opts: {
@@ -19,11 +42,12 @@ export function dieGlyphTone(opts: {
   return 'ink'
 }
 
-export function dieGlyphFill(tone: DieGlyphTone): string {
-  if (tone === 'gold') return '#c9a227'
-  if (tone === 'blood') return '#7a1f1f'
-  if (tone === 'faded') return 'rgba(70, 58, 42, 0.45)'
-  return '#1c140e'
+export function dieGlyphFill(tone: DieGlyphTone, preset?: string | DiceLookPreset | null): string {
+  const look = resolveDiceLook(preset)
+  if (tone === 'gold') return look.gold
+  if (tone === 'blood') return look.blood
+  if (tone === 'faded') return look.faded
+  return look.ink
 }
 
 /** Bag scale: d4 a bit large, d6/d10 a bit small, d20 at 1. */
@@ -95,13 +119,15 @@ export function paintDieGlyph(
   ctx: CanvasRenderingContext2D,
   label: string,
   tone: DieGlyphTone,
-  sides = 20
+  sides = 20,
+  preset?: string | DiceLookPreset | null
 ): void {
+  const look = resolveDiceLook(preset)
   const size = canvasSize(ctx)
   ctx.clearRect(0, 0, size, size)
   const { cx, cy, fontPx } = setupGlyphType(ctx, sides, label)
-  const fill = dieGlyphFill(tone)
-  ctx.strokeStyle = 'rgba(255, 248, 230, 0.55)'
+  const fill = dieGlyphFill(tone, look)
+  ctx.strokeStyle = look.glyphHighlight
   ctx.lineWidth = Math.max(4, Math.round(fontPx / 22))
   ctx.strokeText(label, cx - 1, cy - 3)
   ctx.fillStyle = 'rgba(0, 0, 0, 0.38)'
@@ -185,4 +211,44 @@ export function heightToNormalMap(
     }
   }
   return out
+}
+
+/** Body material fields for MeshPhysicalMaterial (no Three dependency here). */
+export function dieBodyMaterialInputs(
+  look: DiceLookPreset,
+  dropped?: boolean
+): {
+  color: number
+  roughness: number
+  metalness: number
+  clearcoat: number
+  clearcoatRoughness: number
+  sheen: number
+  sheenColor: number
+  sheenRoughness: number
+  ior: number
+  transmission: number
+  thickness: number
+  envMapIntensity: number
+  specularIntensity: number
+  transparent: boolean
+  opacity: number
+} {
+  return {
+    color: diePlasticColor(dropped, look),
+    roughness: look.roughness,
+    metalness: look.metalness,
+    clearcoat: dropped ? Math.min(look.clearcoat, 0.25) : look.clearcoat,
+    clearcoatRoughness: look.clearcoatRoughness,
+    sheen: look.sheen,
+    sheenColor: look.sheenColor,
+    sheenRoughness: look.sheenRoughness,
+    ior: look.ior,
+    transmission: dropped ? 0 : look.transmission,
+    thickness: dropped ? 0 : look.thickness,
+    envMapIntensity: look.envMapIntensity,
+    specularIntensity: look.specularIntensity,
+    transparent: Boolean(dropped) || look.transmission > 0,
+    opacity: dropped ? 0.5 : 1
+  }
 }

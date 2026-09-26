@@ -1,6 +1,13 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
 import { builtinDiceRollPath } from '../../../shared/diceRollSound'
+import {
+  DEFAULT_DICE_LOOK_PRESET,
+  DICE_LOOK_PRESET_IDS,
+  DICE_LOOK_PRESETS,
+  parseDiceLookPresetId,
+  type DiceLookPresetId
+} from '../../../shared/diceLookPreset'
 import { SKIP_PLAYER_DICE_SOURCES } from '../../../shared/playerDiceShow'
 import { dicePhysicalCount, rollExpr, type DiceMode, type DiceResult, formatDiceRollSummary } from '../lib/dice'
 
@@ -73,11 +80,13 @@ export function DiceLogProvider({
   const [d20Mode, setD20Mode] = useState<D20Mode>('normal')
   const [showToPlayers, setShowToPlayers] = useState(true)
   const [playSound, setPlaySound] = useState(true)
+  const [lookPreset, setLookPreset] = useState<DiceLookPresetId>(DEFAULT_DICE_LOOK_PRESET)
 
   useEffect(() => {
     void window.tabledm?.getSettings?.().then((prefs) => {
       setShowToPlayers(prefs.showDiceToPlayers !== false)
       setPlaySound(prefs.diceCheckSound !== false)
+      setLookPreset(parseDiceLookPresetId(prefs.diceLookPreset))
     })
   }, [])
 
@@ -112,8 +121,10 @@ export function DiceLogProvider({
       <DicePrefsBridge
         showToPlayers={showToPlayers}
         playSound={playSound}
+        lookPreset={lookPreset}
         onShowToPlayers={setShowToPlayers}
         onPlaySound={setPlaySound}
+        onLookPreset={setLookPreset}
       >
         {children}
       </DicePrefsBridge>
@@ -124,36 +135,46 @@ export function DiceLogProvider({
 const DicePrefsContext = createContext<{
   showToPlayers: boolean
   playSound: boolean
+  lookPreset: DiceLookPresetId
   setShowToPlayers: (on: boolean) => void
   setPlaySound: (on: boolean) => void
+  setLookPreset: (id: DiceLookPresetId) => void
 }>({
   showToPlayers: true,
   playSound: true,
+  lookPreset: DEFAULT_DICE_LOOK_PRESET,
   setShowToPlayers: () => undefined,
-  setPlaySound: () => undefined
+  setPlaySound: () => undefined,
+  setLookPreset: () => undefined
 })
 
 function DicePrefsBridge({
   children,
   showToPlayers,
   playSound,
+  lookPreset,
   onShowToPlayers,
-  onPlaySound
+  onPlaySound,
+  onLookPreset
 }: {
   children: ReactNode
   showToPlayers: boolean
   playSound: boolean
+  lookPreset: DiceLookPresetId
   onShowToPlayers: (on: boolean) => void
   onPlaySound: (on: boolean) => void
+  onLookPreset: (id: DiceLookPresetId) => void
 }) {
   const value = useMemo(
     () => ({
       showToPlayers,
       playSound,
+      lookPreset,
       setShowToPlayers: onShowToPlayers,
-      setPlaySound: onPlaySound
+      setPlaySound: onPlaySound,
+      setLookPreset: onLookPreset
     }),
-    [onPlaySound, onShowToPlayers, playSound, showToPlayers]
+    [lookPreset, onLookPreset, onPlaySound, onShowToPlayers, playSound, showToPlayers]
   )
   return <DicePrefsContext.Provider value={value}>{children}</DicePrefsContext.Provider>
 }
@@ -174,7 +195,11 @@ function entryLabel(entry: DiceLogEntry): string {
   return formatDiceRollSummary(entry.result, entry.source)
 }
 
-function persistPref(partial: { showDiceToPlayers?: boolean; diceCheckSound?: boolean }): void {
+function persistPref(partial: {
+  showDiceToPlayers?: boolean
+  diceCheckSound?: boolean
+  diceLookPreset?: string
+}): void {
   void window.tabledm?.saveSettings?.(partial)
 }
 
@@ -259,6 +284,25 @@ export default function DiceTray() {
               }}
             />
             Play roll sound
+          </label>
+          <label className="flex min-w-0 items-center gap-1 text-[10px] text-muted">
+            <span className="shrink-0">Bag</span>
+            <select
+              value={prefs.lookPreset}
+              aria-label="Dice bag look"
+              onChange={(event) => {
+                const next = parseDiceLookPresetId(event.target.value)
+                prefs.setLookPreset(next)
+                persistPref({ diceLookPreset: next })
+              }}
+              className="max-w-[9rem] truncate rounded border border-line bg-ink px-1 py-0.5 text-[10px] text-parchment outline-none focus:border-amber"
+            >
+              {DICE_LOOK_PRESET_IDS.map((id) => (
+                <option key={id} value={id}>
+                  {DICE_LOOK_PRESETS[id].label}
+                </option>
+              ))}
+            </select>
           </label>
         </div>
       </header>
