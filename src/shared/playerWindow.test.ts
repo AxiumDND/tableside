@@ -1,5 +1,18 @@
 import { describe, expect, it } from 'vitest'
-import { playerOutputScaleMismatch, playerWindowNeedsRebuild, shouldShowPlayerWindow } from './playerWindow'
+import {
+  playerOutputScaleMismatch,
+  playerWindowForced,
+  playerWindowNeedsRebuild,
+  shouldShowPlayerWindow
+} from './playerWindow'
+
+describe('playerWindowForced', () => {
+  it('is on only when the env is 1', () => {
+    expect(playerWindowForced(undefined)).toBe(false)
+    expect(playerWindowForced('0')).toBe(false)
+    expect(playerWindowForced('1')).toBe(true)
+  })
+})
 
 describe('shouldShowPlayerWindow', () => {
   it('stays hidden on a single monitor', () => {

@@ -1,3 +1,10 @@
+/** Hidden contrib hook: open a windowed player view without a second monitor. */
+export const FORCE_PLAYER_WINDOW_ENV = 'TABLESIDE_FORCE_PLAYER'
+
+export function playerWindowForced(value: string | undefined): boolean {
+  return value === '1'
+}
+
 /** Player view only uses a second monitor, and only while the DM wants that window open. */
 export function shouldShowPlayerWindow(hasSecondDisplay: boolean, wanted: boolean): boolean {
   return hasSecondDisplay && wanted

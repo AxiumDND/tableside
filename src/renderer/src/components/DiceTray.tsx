@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { createPortal } from 'react-dom'
 import { builtinDiceRollPath } from '../../../shared/diceRollSound'
 import { SKIP_PLAYER_DICE_SOURCES } from '../../../shared/playerDiceShow'
 import { dicePhysicalCount, rollExpr, type DiceMode, type DiceResult, formatDiceRollSummary } from '../lib/dice'
@@ -37,7 +38,8 @@ export function useDiceLog(): DiceLogApi {
 
 /** Latest roll plus this many previous lines in the tray. */
 export const DICE_HISTORY_SLOTS = 4
-const LOG_CAP = 1 + DICE_HISTORY_SLOTS
+/** Session history kept for View log (the tray still shows only the latest plus four). */
+export const DICE_LOG_CAP = 200
 
 function announceRoll(result: DiceResult, source: string | undefined, opts: { show: boolean; sound: boolean }): void {
   if (SKIP_PLAYER_DICE_SOURCES.has(source ?? '')) return
@@ -86,7 +88,7 @@ export function DiceLogProvider({
       setD20Mode,
       allowCrit,
       record(result, source) {
-        setEntries((prev) => [{ id: crypto.randomUUID(), source, result }, ...prev].slice(0, LOG_CAP))
+        setEntries((prev) => [{ id: crypto.randomUUID(), source, result }, ...prev].slice(0, DICE_LOG_CAP))
         announceRoll(result, source, { show: showToPlayers, sound: playSound })
       },
       recordMany(items) {
@@ -96,7 +98,7 @@ export function DiceLogProvider({
           source: item.source,
           result: item.result
         }))
-        setEntries((prev) => [...next, ...prev].slice(0, LOG_CAP))
+        setEntries((prev) => [...next, ...prev].slice(0, DICE_LOG_CAP))
       },
       clear() {
         setEntries([])
@@ -176,11 +178,28 @@ function persistPref(partial: { showDiceToPlayers?: boolean; diceCheckSound?: bo
   void window.tabledm?.saveSettings?.(partial)
 }
 
+function entryFaces(entry: DiceLogEntry): { value: number; sides: number }[] {
+  if (entry.result.groups?.length) {
+    return entry.result.groups.flatMap((group) => group.rolls.map((value) => ({ value, sides: group.sides })))
+  }
+  return entry.result.rolls.map((value) => ({ value, sides: entry.result.sides }))
+}
+
 export default function DiceTray() {
   const { entries, record, clear, d20Mode, setD20Mode } = useDiceLog()
   const prefs = useDicePrefs()
   const [expr, setExpr] = useState('')
+  const [logOpen, setLogOpen] = useState(false)
   const latest = entries[0] ?? null
+
+  useEffect(() => {
+    if (!logOpen) return
+    const onKey = (e: KeyboardEvent): void => {
+      if (e.key === 'Escape') setLogOpen(false)
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [logOpen])
 
   function rollWithMode(raw: string, force?: DiceMode): void {
     const cleaned = raw.replace(/\s/g, '')
@@ -195,21 +214,28 @@ export default function DiceTray() {
     setExpr('')
   }
 
-  const latestFaces =
-    latest?.result.groups?.flatMap((group) => group.rolls.map((value) => ({ value, sides: group.sides }))) ??
-    latest?.result.rolls.map((value) => ({ value, sides: latest.result.sides })) ??
-    []
+  const latestFaces = latest ? entryFaces(latest) : []
 
   return (
+    <>
     <section className="flex h-60 shrink-0 flex-col overflow-hidden border-t border-line bg-panel px-2 py-2">
       <header className="mb-1.5 shrink-0 space-y-1">
         <div className="flex items-center justify-between gap-2">
           <h2 className="shrink-0 text-[10px] uppercase tracking-wider text-muted">Dice tray</h2>
-          {entries.length > 0 ? (
-            <button type="button" onClick={clear} className="shrink-0 text-[10px] text-muted hover:text-amber">
-              Clear log
+          <div className="flex shrink-0 items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setLogOpen(true)}
+              className="text-[10px] text-muted hover:text-amber"
+            >
+              View log
             </button>
-          ) : null}
+            {entries.length > 0 ? (
+              <button type="button" onClick={clear} className="text-[10px] text-muted hover:text-amber">
+                Clear log
+              </button>
+            ) : null}
+          </div>
         </div>
         <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
           <label className="flex shrink-0 items-center gap-1 whitespace-nowrap text-[10px] text-muted">
@@ -337,5 +363,76 @@ export default function DiceTray() {
         })}
       </ul>
     </section>
+
+    {logOpen
+      ? createPortal(
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-ink/70 p-4"
+        onClick={() => setLogOpen(false)}
+      >
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="dice-log-title"
+          className="flex max-h-[min(32rem,80vh)] w-full max-w-md flex-col rounded border border-line bg-panel p-4"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <h3 id="dice-log-title" className="font-display text-lg text-amber">
+            Dice log
+          </h3>
+          <p className="mt-1 text-sm text-muted">
+            {entries.length === 0
+              ? 'No rolls yet.'
+              : `${entries.length} roll${entries.length === 1 ? '' : 's'} this session`}
+          </p>
+          <ul className="mt-3 min-h-0 flex-1 overflow-auto">
+            {entries.map((entry) => {
+              const faces = entryFaces(entry)
+              return (
+                <li key={entry.id} className="border-b border-line/60 py-2 last:border-b-0">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="font-medium text-parchment">{entryLabel(entry)}</p>
+                      <p className="mt-0.5 break-words font-mono text-[12px] text-muted">{entry.result.detail}</p>
+                    </div>
+                    <p className="shrink-0 font-display text-xl leading-none text-amber">{entry.result.total}</p>
+                  </div>
+                  {faces.length > 0 ? (
+                    <div className="mt-1.5 flex flex-wrap items-center gap-0.5">
+                      {faces.map((face, i) => (
+                        <span
+                          key={`${entry.id}-${i}`}
+                          className={`inline-flex h-5 min-w-5 items-center justify-center rounded border px-0.5 text-[10px] font-semibold ${dieTone(face.value, face.sides)}`}
+                        >
+                          {face.value}
+                        </span>
+                      ))}
+                      {entry.result.bonus ? (
+                        <span className="text-[11px] text-muted">
+                          {entry.result.bonus > 0 ? '+' : ''}
+                          {entry.result.bonus}
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : null}
+                </li>
+              )
+            })}
+          </ul>
+          <div className="mt-4 flex justify-end">
+            <button
+              type="button"
+              onClick={() => setLogOpen(false)}
+              className="rounded bg-amber px-3 py-1.5 text-sm font-semibold text-on-amber"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      </div>,
+          document.body
+        )
+      : null}
+    </>
   )
 }

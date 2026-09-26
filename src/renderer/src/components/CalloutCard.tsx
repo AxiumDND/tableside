@@ -70,6 +70,13 @@ const VARIANTS: Record<string, { label: string; bar: string; box: string; labelC
     box: 'border-amber-dim/40 bg-panel-2',
     labelClass: 'text-amber-dim',
     titleClass: 'text-amber'
+  },
+  calendar: {
+    label: 'Calendar',
+    bar: 'bg-amber',
+    box: 'border-amber/35 bg-panel-2',
+    labelClass: 'text-amber',
+    titleClass: 'text-amber'
   }
 }
 

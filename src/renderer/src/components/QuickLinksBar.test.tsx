@@ -2,17 +2,40 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { calendarNoteTemplate } from '../../../shared/calendarNote'
+import { calendarPreset } from '../../../shared/calendarPresets'
 import QuickLinksBar from './QuickLinksBar'
 
+const greyhawk = calendarPreset('greyhawk')
+const calendarMd = calendarNoteTemplate(greyhawk.definition, greyhawk.now)
+
 describe('QuickLinksBar', () => {
+  const saveFile = vi.fn()
+  const getSettings = vi.fn()
+  const saveSettings = vi.fn()
+  const setPlayerCalendarLight = vi.fn()
+
   beforeEach(() => {
+    saveFile.mockReset()
+    saveFile.mockResolvedValue({ campaign: { name: 'C' }, path: 'Calendar/Calendar.md', renamed: false })
+    getSettings.mockReset()
+    getSettings.mockResolvedValue({})
+    saveSettings.mockReset()
+    saveSettings.mockResolvedValue({})
+    setPlayerCalendarLight.mockReset()
+    setPlayerCalendarLight.mockResolvedValue({})
     window.tabledm = {
       readFile: vi.fn(async (path: string) => {
         if (path.includes('Ilya')) {
           return '| **AC** | 13 |\n| **Spell Save DC** | 14 |\n| **Passive Perception** | 15 |\n'
         }
+        if (path.startsWith('Calendar/')) return calendarMd
         return '| **AC** | 16 |\n| **Passive Perception** | 13 |\n'
-      })
+      }),
+      saveFile,
+      getSettings,
+      saveSettings,
+      setPlayerCalendarLight
     } as unknown as Window['tabledm']
   })
 
@@ -22,14 +45,90 @@ describe('QuickLinksBar', () => {
 
   const notes = [
     { relativePath: 'Party/PC — Ilya Song.md', name: 'PC — Ilya Song.md', stem: 'PC — Ilya Song' },
-    { relativePath: 'Reference/Calendar.md', name: 'Calendar.md', stem: 'Calendar' }
+    { relativePath: 'Calendar/Calendar.md', name: 'Calendar.md', stem: 'Calendar' }
   ]
 
-  it('shows the three quick menus', () => {
-    render(<QuickLinksBar notes={[]} onOpenNote={() => {}} />)
-    for (const label of ['Party', 'Conditions', 'Calendar']) {
-      expect(screen.getByRole('button', { name: new RegExp(label, 'i') })).toBeTruthy()
-    }
+  it('shows Party, Conditions, tools, panel toggles, and the live calendar clock', async () => {
+    render(
+      <QuickLinksBar
+        notes={notes}
+        onOpenNote={() => {}}
+        onToggleSidebar={() => {}}
+        onToggleRightPanel={() => {}}
+      />
+    )
+    expect(screen.getByRole('button', { name: /Party/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Conditions/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Lookup' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Prep/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Table/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Hide sidebar' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Show right panel' })).toBeTruthy()
+    expect(await screen.findByRole('button', { name: /1 Fireseek 576 CY/ })).toBeTruthy()
+    expect(screen.getByText('Day')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Back one day' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Back one hour' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Forward one hour' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Advance one day' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Advance to next morning' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Calendar settings' })).toBeTruthy()
+    expect(screen.getByRole('checkbox', { name: 'Show to players' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Hide calendar on Quick bar' })).toBeTruthy()
+  })
+
+  it('hides the clock cluster and shows a Calendar chip', async () => {
+    const user = userEvent.setup()
+    render(<QuickLinksBar notes={notes} onOpenNote={() => {}} />)
+    await screen.findByRole('button', { name: /1 Fireseek 576 CY/ })
+    await user.click(screen.getByRole('button', { name: 'Hide calendar on Quick bar' }))
+    expect(saveSettings).toHaveBeenCalledWith({ showQuickBarCalendar: false })
+    expect(screen.getByRole('button', { name: 'Show calendar on Quick bar' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /1 Fireseek 576 CY/ })).toBeNull()
+    await user.click(screen.getByRole('button', { name: 'Show calendar on Quick bar' }))
+    expect(saveSettings).toHaveBeenCalledWith({ showQuickBarCalendar: true })
+    expect(await screen.findByRole('button', { name: /1 Fireseek 576 CY/ })).toBeTruthy()
+  })
+
+  it('sends a morning mark to the player TV when Show to players is ticked', async () => {
+    const user = userEvent.setup()
+    render(<QuickLinksBar notes={notes} onOpenNote={() => {}} />)
+    await screen.findByRole('button', { name: /1 Fireseek 576 CY/ })
+    await user.click(screen.getByRole('checkbox', { name: 'Show to players' }))
+    expect(saveSettings).toHaveBeenCalledWith({ showCalendarLightToPlayers: true })
+    expect(setPlayerCalendarLight).toHaveBeenCalledWith({ show: true, mark: 'morning' })
+  })
+
+  it('opens a grouped tool from Prep and Table', async () => {
+    const user = userEvent.setup()
+    const onOpenTool = vi.fn()
+    render(<QuickLinksBar notes={notes} onOpenNote={() => {}} onOpenTool={onOpenTool} />)
+    await user.click(screen.getByRole('button', { name: /Prep/ }))
+    await user.click(screen.getByRole('menuitem', { name: 'NPC' }))
+    expect(onOpenTool).toHaveBeenCalledWith('npc')
+    await user.click(screen.getByRole('button', { name: /Table/ }))
+    await user.click(screen.getByRole('menuitem', { name: 'Dice' }))
+    expect(onOpenTool).toHaveBeenCalledWith('dice')
+  })
+
+  it('lists Improvise under Table, not Prep', async () => {
+    const user = userEvent.setup()
+    render(<QuickLinksBar notes={notes} onOpenNote={() => {}} onOpenTool={() => {}} />)
+    await user.click(screen.getByRole('button', { name: /Prep/ }))
+    expect(screen.getByRole('menuitem', { name: 'NPC' })).toBeTruthy()
+    expect(screen.queryByRole('menuitem', { name: 'Improvise' })).toBeNull()
+    await user.click(screen.getByRole('button', { name: /Table/ }))
+    expect(screen.getByRole('menuitem', { name: 'Improvise' })).toBeTruthy()
+    expect(screen.getByRole('menuitem', { name: 'Dice' })).toBeTruthy()
+  })
+
+  it('keeps Prep and Table labels when a grouped page is open', async () => {
+    render(
+      <QuickLinksBar notes={notes} onOpenNote={() => {}} toolsTab="dice" toolsOpen />
+    )
+    await screen.findByRole('button', { name: /1 Fireseek 576 CY/ })
+    expect(screen.getByRole('button', { name: /^Table/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /^Prep/ })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /^Dice/ })).toBeNull()
   })
 
   it('lists party AC, save DC, and PP, then opens the sheet', async () => {
@@ -52,12 +151,45 @@ describe('QuickLinksBar', () => {
     expect(screen.getByText(/disadvantage/i)).toBeTruthy()
   })
 
-  it('opens a calendar note from Reference', async () => {
+  it('jumps to the next morning and writes dawn', async () => {
     const user = userEvent.setup()
-    const onOpenNote = vi.fn()
-    render(<QuickLinksBar notes={notes} onOpenNote={onOpenNote} />)
-    await user.click(screen.getByRole('button', { name: /Calendar/ }))
-    await user.click(screen.getByRole('menuitem', { name: 'Calendar' }))
-    expect(onOpenNote).toHaveBeenCalledWith('Reference/Calendar.md')
+    render(<QuickLinksBar notes={notes} onOpenNote={() => {}} />)
+    await screen.findByRole('button', { name: /1 Fireseek 576 CY/ })
+    await user.click(screen.getByRole('button', { name: 'Advance to next morning' }))
+    expect(saveFile).toHaveBeenCalled()
+    const written = String(saveFile.mock.calls[0]?.[1] ?? '')
+    expect(written).toMatch(/hour:\s*6/)
+    expect(written).toMatch(/day:\s*2/)
+    expect(written).toMatch(/month:\s*Fireseek/)
+  })
+
+  it('advances one hour and writes the calendar note', async () => {
+    const user = userEvent.setup()
+    render(<QuickLinksBar notes={notes} onOpenNote={() => {}} />)
+    await screen.findByRole('button', { name: /1 Fireseek 576 CY/ })
+    await user.click(screen.getByRole('button', { name: 'Forward one hour' }))
+    expect(saveFile).toHaveBeenCalled()
+    const written = String(saveFile.mock.calls[0]?.[1] ?? '')
+    expect(written).toMatch(/hour:\s*10/)
+    expect(written).toMatch(/month:\s*Fireseek/)
+  })
+
+  it('opens settings from the gear and can switch type', async () => {
+    const user = userEvent.setup()
+    render(<QuickLinksBar notes={notes} onOpenNote={() => {}} />)
+    await user.click(await screen.findByRole('button', { name: 'Calendar settings' }))
+    expect(screen.getByRole('dialog', { name: 'Calendar' })).toBeTruthy()
+    expect(screen.getByRole('checkbox', { name: /Show on Quick bar/ })).toBeTruthy()
+    expect(screen.getAllByRole('checkbox', { name: /Show to players/ }).length).toBeGreaterThan(0)
+    await user.click(screen.getByRole('radio', { name: /Forgotten Realms/ }))
+    expect(screen.getByText(/1 Hammer 1492 DR/)).toBeTruthy()
+  })
+
+  it('offers Set calendar when no note exists', async () => {
+    window.tabledm.readFile = vi.fn(async () => {
+      throw new Error('missing')
+    }) as unknown as Window['tabledm']['readFile']
+    render(<QuickLinksBar notes={[]} onOpenNote={() => {}} />)
+    expect(await screen.findByRole('button', { name: /Set calendar/ })).toBeTruthy()
   })
 })

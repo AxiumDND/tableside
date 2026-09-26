@@ -120,6 +120,48 @@ export function advanceCombatTurn(combat: CombatState): CombatState {
   }
 }
 
+/** Remove a combatant. If it was their turn, pass the turn to the next in order. */
+export function removeCombatantFromCombat(combat: CombatState, id: string): CombatState {
+  if (!combat.combatants.some((c) => c.id === id)) return combat
+  const remaining = combat.combatants.filter((c) => c.id !== id)
+  if (combat.activeId !== id) {
+    return { ...combat, combatants: remaining }
+  }
+  if (remaining.length === 0) {
+    return { ...combat, combatants: remaining, activeId: null }
+  }
+  const round = combat.round ?? 0
+  if (round <= 0) {
+    return { ...combat, combatants: remaining, activeId: null }
+  }
+  const ordered = sortCombatants(combat.combatants)
+  const idx = ordered.findIndex((c) => c.id === id)
+  const nextIdx = (idx + 1) % ordered.length
+  return {
+    ...combat,
+    combatants: remaining,
+    activeId: ordered[nextIdx].id,
+    round: nextIdx === 0 ? round + 1 : round
+  }
+}
+
+/** Step back one combatant (and drop the round when wrapping to the last). */
+export function rewindCombatTurn(combat: CombatState): CombatState {
+  const ordered = sortCombatants(combat.combatants)
+  if (ordered.length === 0) return combat
+  const round = combat.round ?? 0
+  const started = round > 0
+  const turnId =
+    started && combat.activeId && ordered.some((c) => c.id === combat.activeId) ? combat.activeId : null
+  if (!started || !turnId) return combat
+  const idx = ordered.findIndex((c) => c.id === turnId)
+  if (idx === 0) {
+    if (round <= 1) return combat
+    return { ...combat, activeId: ordered[ordered.length - 1].id, round: round - 1 }
+  }
+  return { ...combat, activeId: ordered[idx - 1].id, round }
+}
+
 /**
  * Roll initiative for matching combatants.
  * `unrolled-npcs` = non-PCs still at initiative 0 (typical after Add to initiative).
