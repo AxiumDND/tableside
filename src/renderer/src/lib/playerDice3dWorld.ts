@@ -24,11 +24,15 @@ import {
 import { createDieGeometry } from './playerDice3dMeshes'
 import type { DiceLookPreset } from '../../../shared/diceLookPreset'
 import {
+  DIE_FACE_TEXTURE_SIZE,
   DIE_GLYPH_CANVAS,
   dieBodyMaterialInputs,
   dieBodyScale,
+  dieFaceTextureContrast,
+  dieFaceTextureTint,
   dieGlyphTone,
   heightToNormalMap,
+  paintDieFaceMicrotexture,
   paintDieGlyph,
   paintDieGlyphHeight,
   resolveDiceLook
@@ -101,29 +105,33 @@ function faceMaps(
   return { map, normalMap }
 }
 
-function resinGrainTexture(look: DiceLookPreset): THREE.CanvasTexture | null {
-  if (!look.useGrain) return null
+function resinGrainTextures(look: DiceLookPreset): {
+  albedo: THREE.CanvasTexture
+  data: THREE.CanvasTexture
+} {
   const canvas = document.createElement('canvas')
-  canvas.width = 64
-  canvas.height = 64
+  canvas.width = DIE_FACE_TEXTURE_SIZE
+  canvas.height = DIE_FACE_TEXTURE_SIZE
   const ctx = canvas.getContext('2d')
   if (ctx) {
-    ctx.fillStyle = look.grainTint
-    ctx.fillRect(0, 0, 64, 64)
-    for (let i = 0; i < look.grainDots; i += 1) {
-      const n = 150 + Math.round(Math.random() * 70)
-      ctx.fillStyle = `rgb(${n},${n},${n})`
-      ctx.beginPath()
-      ctx.arc(Math.random() * 64, Math.random() * 64, 3 + Math.random() * 9, 0, Math.PI * 2)
-      ctx.fill()
-    }
+    paintDieFaceMicrotexture(ctx, {
+      seed: 2.4 + look.id.length * 0.37,
+      contrast: dieFaceTextureContrast(look),
+      tintRgb: dieFaceTextureTint(look)
+    })
   }
-  const texture = new THREE.CanvasTexture(canvas)
-  texture.wrapS = THREE.RepeatWrapping
-  texture.wrapT = THREE.RepeatWrapping
-  texture.repeat.set(2.2, 2.2)
-  texture.colorSpace = THREE.NoColorSpace
-  return texture
+  const wrap = (texture: THREE.CanvasTexture, colorSpace: THREE.ColorSpace): THREE.CanvasTexture => {
+    texture.wrapS = THREE.RepeatWrapping
+    texture.wrapT = THREE.RepeatWrapping
+    texture.repeat.set(2.4, 2.4)
+    texture.anisotropy = 8
+    texture.colorSpace = colorSpace
+    return texture
+  }
+  return {
+    albedo: wrap(new THREE.CanvasTexture(canvas), THREE.SRGBColorSpace),
+    data: wrap(new THREE.CanvasTexture(canvas), THREE.NoColorSpace)
+  }
 }
 
 function createStudioEnvironment(): THREE.Scene {
@@ -175,11 +183,14 @@ function attachStudioIbl(renderer: THREE.WebGLRenderer, scene: THREE.Scene): () 
   }
 }
 
-function disposeMaterialMaps(material: THREE.Material): void {
+function disposeMaterialMaps(material: THREE.Material, shared?: Set<THREE.Texture>): void {
   const physical = material as THREE.MeshPhysicalMaterial
-  for (const key of ['map', 'normalMap'] as const) {
+  const seen = new Set<THREE.Texture>()
+  for (const key of ['map', 'normalMap', 'roughnessMap', 'bumpMap'] as const) {
     const texture = physical[key]
-    if (texture instanceof THREE.Texture) texture.dispose()
+    if (!(texture instanceof THREE.Texture) || seen.has(texture) || shared?.has(texture)) continue
+    seen.add(texture)
+    texture.dispose()
   }
   material.dispose()
 }
@@ -303,7 +314,7 @@ function landingGrid(count: number, width: number, depth: number): THREE.Vector3
 
 function makeDie(
   spec: PlayerDice3dDie,
-  grain: THREE.CanvasTexture | null,
+  grain: { albedo: THREE.CanvasTexture; data: THREE.CanvasTexture },
   look: DiceLookPreset
 ): { group: THREE.Group; spinner: THREE.Group; result: DieFace; faces: DieFace[]; scale: number } {
   const group = new THREE.Group()
@@ -314,12 +325,16 @@ function makeDie(
   const result = resultDieFace(faces, spec)
   const scale = dieBodyScale(spec.sides)
   const mat = dieBodyMaterialInputs(look, spec.dropped)
+  const bump = look.useGrain ? 0.035 : 0.018
   const body = new THREE.Mesh(
     geometry,
     new THREE.MeshPhysicalMaterial({
       color: mat.color,
+      map: grain.albedo,
       roughness: mat.roughness,
-      roughnessMap: grain ?? undefined,
+      roughnessMap: grain.data,
+      bumpMap: grain.data,
+      bumpScale: bump,
       metalness: mat.metalness,
       clearcoat: mat.clearcoat,
       clearcoatRoughness: mat.clearcoatRoughness,
@@ -414,7 +429,8 @@ export function mountPlayerDice3d(
   const feltDepth = 8
   const usable = 1 - reservedRight
   const stageShift = feltWidth * (0.5 - usable / 2)
-  const grain = resinGrainTexture(look)
+  const grain = resinGrainTextures(look)
+  const sharedMaps = new Set<THREE.Texture>([grain.albedo, grain.data])
   const ends = landingGrid(dice.length, feltWidth * 0.62, feltDepth * 0.7).map(
     (spot) => spot.add(new THREE.Vector3(-stageShift, 0, 0))
   )
@@ -578,7 +594,8 @@ export function mountPlayerDice3d(
       observer.disconnect()
       canvas.remove()
       disposeIbl()
-      grain?.dispose()
+      grain.albedo.dispose()
+      grain.data.dispose()
       renderer.dispose()
       scene.traverse((obj) => {
         if (obj instanceof THREE.Mesh || obj instanceof THREE.LineSegments) {
@@ -586,7 +603,7 @@ export function mountPlayerDice3d(
         }
         if (obj instanceof THREE.Mesh || obj instanceof THREE.LineSegments || obj instanceof THREE.Sprite) {
           const materials = Array.isArray(obj.material) ? obj.material : [obj.material]
-          for (const material of materials) disposeMaterialMaps(material)
+          for (const material of materials) disposeMaterialMaps(material, sharedMaps)
         }
       })
     }

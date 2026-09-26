@@ -94,13 +94,45 @@ describe('createDieGeometry', () => {
     ).toHaveLength(20)
   })
 
-  it('picks a chamfer smaller than the reading face', () => {
+  it('picks a narrow chamfer so faces stay readable', () => {
     const faces = extractDieFaces(createD10Geometry(), ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'])
     const amount = chamferAmountForFaces(faces)
     const chamfered = createChamferedDieGeometry(faces, amount)
     expect(chamfered.getAttribute('color')).toBeTruthy()
-    expect(amount).toBeGreaterThan(0.05)
-    expect(amount).toBeLessThan(0.2)
+    expect(chamfered.getAttribute('uv')).toBeTruthy()
+    expect(amount).toBeGreaterThan(0.01)
+    expect(amount).toBeLessThan(0.04)
+    expect(amount).toBeLessThan(minFaceInsetBudget(faces) * 0.35)
     chamfered.dispose()
   })
+
+  it('projects tileable UVs onto chamfered faces', () => {
+    const faces = extractDieFaces(
+      createDieGeometry({ sides: 20 }),
+      Array.from({ length: 20 }, (_, i) => String(i + 1))
+    )
+    const amount = chamferAmountForFaces(faces)
+    const geo = createChamferedDieGeometry(faces, amount)
+    const uv = geo.getAttribute('uv')
+    const pos = geo.getAttribute('position')
+    expect(uv.count).toBe(pos.count)
+    expect(uv.count).toBeGreaterThan(60)
+    let span = 0
+    for (let i = 0; i < uv.count; i += 1) {
+      span = Math.max(span, Math.abs(uv.getX(i)), Math.abs(uv.getY(i)))
+    }
+    expect(span).toBeGreaterThan(0.2)
+    geo.dispose()
+  })
 })
+
+function minFaceInsetBudget(faces: ReturnType<typeof extractDieFaces>): number {
+  let min = Infinity
+  for (const face of faces) {
+    const ring = orderFaceRing(face.vertices, face.normal)
+    for (let i = 0; i < ring.length; i += 1) {
+      min = Math.min(min, ring[i]!.distanceTo(ring[(i + 1) % ring.length]!))
+    }
+  }
+  return min
+}
