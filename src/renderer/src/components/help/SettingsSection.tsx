@@ -217,7 +217,7 @@ export function SettingsSection({
           <span className="font-semibold text-parchment">Player TV dice bag</span>
           <span className="mt-0.5 block text-[12px] leading-snug text-muted">
             Look of the 3D throw on the player TV (and the CSS fallback). Does not change fairness or throw timing.
-            Default {DICE_LOOK_PRESETS[DEFAULT_DICE_LOOK_PRESET].label}. Each option shows a d20 preview of that bag.
+            Default {DICE_LOOK_PRESETS[DEFAULT_DICE_LOOK_PRESET].label}.
           </span>
           <DiceLookPresetPicker value={diceLookPreset} onChange={saveDiceLookPreset} />
         </div>

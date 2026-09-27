@@ -17,19 +17,26 @@ describe('DiceLookPresetSwatch', () => {
 })
 
 describe('DiceLookPresetPicker', () => {
-  it('lists every bag with a name and swatch in settings', async () => {
+  it('uses a settings dropdown with swatch + name (not a full radio list)', async () => {
     const onChange = vi.fn()
     const user = userEvent.setup()
     render(<DiceLookPresetPicker value="ivory" onChange={onChange} />)
 
-    const group = screen.getByRole('radiogroup', { name: 'Player TV dice bag' })
-    expect(group).toBeTruthy()
-    for (const id of DICE_LOOK_PRESET_IDS) {
-      expect(screen.getByRole('radio', { name: DICE_LOOK_PRESETS[id].label })).toBeTruthy()
-    }
-    expect(group.querySelectorAll('svg')).toHaveLength(DICE_LOOK_PRESET_IDS.length)
+    expect(screen.queryByRole('radiogroup')).toBeNull()
+    const trigger = screen.getByRole('button', { name: 'Player TV dice bag' })
+    expect(trigger.textContent).toMatch(/Ivory resin/)
+    expect(trigger.querySelector('svg')).toBeTruthy()
+    expect(screen.getByText(DICE_LOOK_PRESETS.ivory.blurb)).toBeTruthy()
+    // Options stay inside the closed menu
+    expect(screen.queryByRole('option', { name: 'Obsidian' })).toBeNull()
 
-    await user.click(screen.getByRole('radio', { name: 'Obsidian' }))
+    await user.click(trigger)
+    for (const id of DICE_LOOK_PRESET_IDS) {
+      expect(screen.getByRole('option', { name: DICE_LOOK_PRESETS[id].label })).toBeTruthy()
+    }
+    expect(screen.getByRole('listbox').querySelectorAll('svg')).toHaveLength(DICE_LOOK_PRESET_IDS.length)
+
+    await user.click(screen.getByRole('option', { name: 'Obsidian' }))
     expect(onChange).toHaveBeenCalledWith('obsidian')
   })
 
