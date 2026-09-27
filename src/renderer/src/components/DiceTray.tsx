@@ -3,13 +3,12 @@ import { createPortal } from 'react-dom'
 import { builtinDiceRollPath } from '../../../shared/diceRollSound'
 import {
   DEFAULT_DICE_LOOK_PRESET,
-  DICE_LOOK_PRESET_IDS,
-  DICE_LOOK_PRESETS,
   parseDiceLookPresetId,
   type DiceLookPresetId
 } from '../../../shared/diceLookPreset'
 import { SKIP_PLAYER_DICE_SOURCES } from '../../../shared/playerDiceShow'
 import { dicePhysicalCount, rollExpr, type DiceMode, type DiceResult, formatDiceRollSummary } from '../lib/dice'
+import { DiceLookPresetPicker } from './dice/DiceLookPresetPicker'
 
 export interface DiceLogEntry {
   id: string
@@ -285,25 +284,15 @@ export default function DiceTray() {
             />
             Play roll sound
           </label>
-          <label className="flex min-w-0 items-center gap-1 text-[10px] text-muted">
-            <span className="shrink-0">Bag</span>
-            <select
-              value={prefs.lookPreset}
-              aria-label="Dice bag look"
-              onChange={(event) => {
-                const next = parseDiceLookPresetId(event.target.value)
-                prefs.setLookPreset(next)
-                persistPref({ diceLookPreset: next })
-              }}
-              className="max-w-[9rem] truncate rounded border border-line bg-ink px-1 py-0.5 text-[10px] text-parchment outline-none focus:border-amber"
-            >
-              {DICE_LOOK_PRESET_IDS.map((id) => (
-                <option key={id} value={id}>
-                  {DICE_LOOK_PRESETS[id].label}
-                </option>
-              ))}
-            </select>
-          </label>
+          <DiceLookPresetPicker
+            variant="compact"
+            value={prefs.lookPreset}
+            aria-label="Dice bag look"
+            onChange={(next) => {
+              prefs.setLookPreset(next)
+              persistPref({ diceLookPreset: next })
+            }}
+          />
         </div>
       </header>
 
