@@ -12,7 +12,7 @@ Non-obvious notes for running in the cloud VM:
 - **Expected noise:** on startup Electron logs `Failed to connect to the bus` (dbus) and `Exiting GPU process due to errors during initialization` in this headless container. These are non-fatal — the app renders via software rendering.
 - **E2E tests:** `npm run test:e2e` builds first (`pretest:e2e`) then drives the packaged app via Playwright's Electron support. Run it under the VNC display (`DISPLAY=:1`) or via `xvfb-run`.
 - **First launch** copies the `examples/greystead` sample campaign into user data (`~/.config/Tableside`), so the DM console opens on "Greystead — The Pale Well" with no extra setup.
-- **Do not run `npm run dist`** in the cloud VM — it produces a Windows NSIS installer via `electron-builder` and is Windows-only. `dev`/`build`/`start`/`test`/`lint`/`typecheck`/`test:e2e` all work on Linux.
+- **Do not run `npm run dist`** in the cloud VM — it targets Windows NSIS via `electron-builder` and is for the Windows release job. Use **`npm run dist:linux`** here for AppImage / `.deb`. `dev` / `build` / `start` / `test` / `lint` / `typecheck` / `test:e2e` all work on Linux.
 - **`npm run fetch-srd`** requires network access to the Open5e API; it is only for refreshing the bundled SRD snapshot.
 - **Optional book text** for the Lookup panel lives in the `Additional Books/` folder (only its `README.md` is tracked; book dumps are gitignored).
 

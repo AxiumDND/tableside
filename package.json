@@ -3,8 +3,9 @@
   "version": "1.8.36",
   "description": "Tableside — in-person dual-monitor DM tool (D&D 5e, Pathfinder 2e, Vampire 5th)",
   "main": "./out/main/index.js",
-  "author": "James",
+  "author": "James <tableside.gm@gmail.com>",
   "license": "MIT",
+  "desktopName": "tableside.desktop",
   "engines": {
     "node": ">=22"
   },
@@ -30,6 +31,8 @@
     "pretest:e2e": "npm run build",
     "test:e2e": "node ./node_modules/@playwright/test/cli.js test",
     "dist": "node ./node_modules/electron-vite/bin/electron-vite.js build && node ./node_modules/electron-builder/cli.js --win --publish never",
+    "dist:win": "npm run dist",
+    "dist:linux": "node ./node_modules/electron-vite/bin/electron-vite.js build && node ./node_modules/electron-builder/cli.js --linux AppImage deb --publish never",
     "fetch-srd": "node scripts/fetch-srd.mjs"
   },
   "dependencies": {
@@ -69,7 +72,6 @@
     "appId": "com.tabledm.app",
     "productName": "Tableside",
     "copyright": "Copyright © 2026 James",
-    "artifactName": "Tableside-Setup-${version}.${ext}",
     "directories": {
       "output": "dist"
     },
@@ -127,6 +129,7 @@
     "win": {
       "icon": "resources/icon.ico",
       "executableName": "Tableside",
+      "artifactName": "Tableside-Setup-${version}.${ext}",
       "target": [
         "nsis"
       ]
@@ -143,6 +146,27 @@
       "uninstallerIcon": "resources/icon.ico",
       "installerHeaderIcon": "resources/icon.ico",
       "deleteAppDataOnUninstall": false
+    },
+    "linux": {
+      "icon": "resources/icon.png",
+      "category": "Game",
+      "executableName": "Tableside",
+      "syncDesktopName": true,
+      "maintainer": "James <tableside.gm@gmail.com>",
+      "artifactName": "Tableside-${version}.${ext}",
+      "synopsis": "In-person dual-monitor DM console",
+      "description": "Tableside is a laptop DM console for in-person games with a second-monitor player view for maps and art.",
+      "desktop": {
+        "entry": {
+          "Name": "Tableside",
+          "Comment": "In-person dual-monitor DM tool",
+          "Categories": "Game;"
+        }
+      },
+      "target": [
+        "AppImage",
+        "deb"
+      ]
     }
   }
 }

@@ -29,24 +29,28 @@ function runCommands(job: string): string[] {
 }
 
 describe('CI workflows', () => {
-  it('runs the same Ubuntu PR checks before a tagged Windows release', () => {
+  it('runs the same Ubuntu PR checks before tagged platform packages', () => {
     const prChecks = jobBody(workflow('build.yml'), 'checks')
     const releaseChecks = jobBody(workflow('release.yml'), 'checks')
     expect(runCommands(releaseChecks)).toEqual(runCommands(prChecks))
     expect(releaseChecks).toMatch(/node-version: 22/)
     expect(jobBody(workflow('release.yml'), 'windows')).toMatch(/needs: checks/)
+    expect(jobBody(workflow('release.yml'), 'linux')).toMatch(/needs: checks/)
+    expect(runCommands(jobBody(workflow('release.yml'), 'linux'))).toContain('npm run dist:linux')
   })
 
   it('finds jobs when workflow YAML uses CRLF line endings', () => {
     const crlf = workflow('release.yml').replace(/\n/g, '\r\n')
     expect(runCommands(jobBody(crlf, 'checks'))).toContain('npm run lint')
     expect(jobBody(crlf, 'windows')).toMatch(/needs: checks/)
+    expect(jobBody(crlf, 'linux')).toMatch(/needs: checks/)
   })
 
   it('publishes every v* tag as a pre-release until it is promoted', () => {
-    const windows = jobBody(workflow('release.yml'), 'windows')
-    expect(windows).toMatch(/prerelease:\s*true/)
-    expect(windows).toMatch(/make_latest:\s*false/)
+    const publish = jobBody(workflow('release.yml'), 'publish')
+    expect(publish).toMatch(/needs:\s*\[windows,\s*linux\]/)
+    expect(publish).toMatch(/prerelease:\s*true/)
+    expect(publish).toMatch(/make_latest:\s*false/)
   })
 
   it('promotes a chosen tag to GitHub Latest', () => {
