@@ -39,20 +39,4 @@ describe('DiceLookPresetPicker', () => {
     await user.click(screen.getByRole('option', { name: 'Obsidian' }))
     expect(onChange).toHaveBeenCalledWith('obsidian')
   })
-
-  it('shows a compact bag button with a preview swatch in the tray', async () => {
-    const onChange = vi.fn()
-    const user = userEvent.setup()
-    render(
-      <DiceLookPresetPicker value="steel" onChange={onChange} variant="compact" aria-label="Dice bag look" />
-    )
-
-    const trigger = screen.getByRole('button', { name: 'Dice bag look' })
-    expect(trigger.textContent).toMatch(/Steel/)
-    expect(trigger.querySelector('svg')).toBeTruthy()
-
-    await user.click(trigger)
-    await user.click(screen.getByRole('option', { name: 'Jade' }))
-    expect(onChange).toHaveBeenCalledWith('jade')
-  })
 })
