@@ -4,7 +4,7 @@ import type { DiceLookPreset, DiceLookPresetId } from '../../../../shared/diceLo
 /** Hexagon silhouette matching the CSS d20 clip-path (player-dice-3d-css-die.is-d20). */
 const D20_PATH = 'M50 4 L92 28 L92 72 L50 96 L8 72 L8 28 Z'
 
-const SIZE_PX = { sm: 22, md: 40, lg: 56 } as const
+const SIZE_PX = { md: 40, lg: 56 } as const
 
 export type DiceLookPresetSwatchSize = keyof typeof SIZE_PX
 
