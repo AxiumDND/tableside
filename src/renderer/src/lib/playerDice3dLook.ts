@@ -15,12 +15,12 @@ export {
 } from '../../../shared/diceLookPreset'
 
 /** @deprecated Prefer diceLookPreset('ivory').body — kept for older tests/call sites. */
-export const DIE_PLASTIC_COLOR = 0xe6d2b0
+export const DIE_PLASTIC_COLOR = 0xeae4da
 /** @deprecated Prefer diceLookPreset('ivory').droppedBody */
 export const DIE_PLASTIC_DROPPED = 0x8a8074
 export const DIE_GLYPH_CANVAS = 256
 /** Shared tileable resin/plastic microtexture atlas size (generated, not shipped). */
-export const DIE_FACE_TEXTURE_SIZE = 128
+export const DIE_FACE_TEXTURE_SIZE = 256
 
 export type DieGlyphTone = 'ink' | 'gold' | 'blood' | 'faded'
 
@@ -139,7 +139,10 @@ export function paintDieGlyph(
   if (dieGlyphShouldDot(label)) paintUnderDot(ctx, cx, cy, fontPx, fill)
 }
 
-/** Grayscale height: white high, dark engraved. Soft on purpose. */
+/**
+ * Grayscale height: white high, dark engraved.
+ * Slightly deeper than the first pass so decal normals read as carved (DSN-style).
+ */
 export function paintDieGlyphHeight(
   ctx: CanvasRenderingContext2D,
   label: string,
@@ -150,15 +153,15 @@ export function paintDieGlyphHeight(
   ctx.fillRect(0, 0, size, size)
   const { cx, cy, fontPx } = setupGlyphType(ctx, sides, label)
   ctx.shadowColor = '#000000'
-  ctx.shadowBlur = 4
+  ctx.shadowBlur = 5
   ctx.shadowOffsetX = 1
-  ctx.shadowOffsetY = 1
-  ctx.strokeStyle = '#777777'
-  ctx.lineWidth = Math.max(4, Math.round(fontPx / 22))
+  ctx.shadowOffsetY = 2
+  ctx.strokeStyle = '#5a5a5a'
+  ctx.lineWidth = Math.max(5, Math.round(fontPx / 20))
   ctx.strokeText(label, cx, cy)
-  ctx.fillStyle = '#555555'
+  ctx.fillStyle = '#3a3a3a'
   ctx.fillText(label, cx, cy)
-  if (dieGlyphShouldDot(label)) paintUnderDot(ctx, cx, cy, fontPx, '#555555')
+  if (dieGlyphShouldDot(label)) paintUnderDot(ctx, cx, cy, fontPx, '#3a3a3a')
 }
 
 /**
@@ -243,20 +246,22 @@ function valueNoiseWrap(x: number, y: number, period: number, seed: number): num
 /**
  * Seamless resin / plastic microtexture pixels (RGBA).
  * Periods are integers so left/right and top/bottom edges match when tiled.
+ * Includes low-frequency swirl + fine speckles so grain reads at TV distance.
  */
 export function dieFaceMicrotexturePixels(
   size: number,
   opts?: { seed?: number; contrast?: number; tintRgb?: [number, number, number] }
 ): Uint8ClampedArray {
   const seed = opts?.seed ?? 2.4
-  const contrast = opts?.contrast ?? 0.11
+  const contrast = opts?.contrast ?? 0.18
   const tint = opts?.tintRgb ?? [1, 1, 1]
   const out = new Uint8ClampedArray(size * size * 4)
   const octaves: { period: number; amp: number }[] = [
-    { period: 4, amp: 0.45 },
-    { period: 8, amp: 0.28 },
-    { period: 16, amp: 0.18 },
-    { period: 32, amp: 0.09 }
+    { period: 3, amp: 0.22 },
+    { period: 5, amp: 0.32 },
+    { period: 9, amp: 0.24 },
+    { period: 17, amp: 0.14 },
+    { period: 33, amp: 0.08 }
   ]
   for (let y = 0; y < size; y += 1) {
     for (let x = 0; x < size; x += 1) {
@@ -269,10 +274,19 @@ export function dieFaceMicrotexturePixels(
         v += amp * valueNoiseWrap(fx, fy, period, seed + o * 17.3)
         w += amp
       }
-      const n = w > 0 ? v / w : 0.5
+      // Soft swirl / vein so resin bags are not chalk-flat (seamless periods).
+      const swirl =
+        Math.sin(((x / size) * 6 + seed) * Math.PI * 2) * 0.5 +
+        0.5 * Math.sin(((y / size) * 4 + seed * 1.3) * Math.PI * 2)
+      const swirl2 =
+        Math.sin(((x / size) * -4 + (y / size) * 6 + seed * 1.7) * Math.PI * 2) * 0.5 + 0.5
+      // High-freq wrap noise instead of per-pixel hash (hash breaks tile seams).
+      const speck = valueNoiseWrap((x / size) * 64, (y / size) * 64, 64, seed * 3.1)
+      const vein = (swirl * 0.5 + swirl2 * 0.5 - 0.5) * 0.5
+      const n = (w > 0 ? v / w : 0.5) + vein * 0.22 + (speck - 0.5) * 0.14
       const centered = (n - 0.5) * contrast
-      // Stay near white so albedo multiply does not muddy bag colors; roughness still varies.
-      const base = 0.92 + centered
+      // Stay near white so albedo multiply does not muddy bag colors; grain still reads.
+      const base = 0.88 + centered
       const i = (y * size + x) * 4
       out[i] = Math.max(0, Math.min(255, Math.round(base * tint[0] * 255)))
       out[i + 1] = Math.max(0, Math.min(255, Math.round(base * tint[1] * 255)))
@@ -281,6 +295,55 @@ export function dieFaceMicrotexturePixels(
     }
   }
   return out
+}
+
+/**
+ * Dedicated roughness atlas — stronger contrast than albedo so clearcoat/gloss break up.
+ * Values stay mid-gray-ish; MeshPhysicalMaterial multiplies by look.roughness.
+ */
+export function dieFaceRoughnessPixels(
+  size: number,
+  opts?: { seed?: number; contrast?: number }
+): Uint8ClampedArray {
+  const seed = (opts?.seed ?? 2.4) + 9.1
+  const contrast = opts?.contrast ?? 0.28
+  const out = new Uint8ClampedArray(size * size * 4)
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      let v = 0
+      let w = 0
+      for (const { period, amp } of [
+        { period: 4, amp: 0.4 },
+        { period: 11, amp: 0.35 },
+        { period: 29, amp: 0.25 }
+      ]) {
+        v += amp * valueNoiseWrap((x / size) * period, (y / size) * period, period, seed + period)
+        w += amp
+      }
+      const speck = valueNoiseWrap((x / size) * 48, (y / size) * 48, 48, seed + 2.2)
+      const n = (w > 0 ? v / w : 0.5) * 0.82 + speck * 0.18
+      const gray = 0.42 + (n - 0.5) * contrast
+      const g = Math.max(0, Math.min(255, Math.round(gray * 255)))
+      const i = (y * size + x) * 4
+      out[i] = g
+      out[i + 1] = g
+      out[i + 2] = g
+      out[i + 3] = 255
+    }
+  }
+  return out
+}
+
+export function paintDieFaceRoughness(
+  ctx: CanvasRenderingContext2D,
+  opts?: { seed?: number; contrast?: number }
+): void {
+  const size = ctx.canvas.width || DIE_FACE_TEXTURE_SIZE
+  if (ctx.canvas.height !== size) ctx.canvas.height = size
+  const pixels = dieFaceRoughnessPixels(size, opts)
+  const img = ctx.createImageData(size, size)
+  img.data.set(pixels)
+  ctx.putImageData(img, 0, 0)
 }
 
 /**
@@ -299,10 +362,95 @@ export function paintDieFaceMicrotexture(
   ctx.putImageData(img, 0, 0)
 }
 
+/**
+ * Tileable body normal map from the same microtexture height field (wrap-aware Sobel).
+ * Inspired by DSN packing material normals separate from face-engrave normals — procedural, not their assets.
+ */
+export function dieFaceNormalMapPixels(
+  size: number,
+  opts?: { seed?: number; contrast?: number; strength?: number }
+): Uint8ClampedArray {
+  const seed = opts?.seed ?? 2.4
+  const contrast = opts?.contrast ?? 0.11
+  const strength = opts?.strength ?? 3.4
+  const albedo = dieFaceMicrotexturePixels(size, { seed, contrast })
+  const height = new Float32Array(size * size)
+  for (let i = 0; i < size * size; i += 1) {
+    height[i] = albedo[i * 4]! / 255
+  }
+  const sample = (x: number, y: number): number => {
+    const xx = ((x % size) + size) % size
+    const yy = ((y % size) + size) % size
+    return height[yy * size + xx]!
+  }
+  const out = new Uint8ClampedArray(size * size * 4)
+  for (let y = 0; y < size; y += 1) {
+    for (let x = 0; x < size; x += 1) {
+      const tl = sample(x - 1, y - 1)
+      const t = sample(x, y - 1)
+      const tr = sample(x + 1, y - 1)
+      const l = sample(x - 1, y)
+      const r = sample(x + 1, y)
+      const bl = sample(x - 1, y + 1)
+      const b = sample(x, y + 1)
+      const br = sample(x + 1, y + 1)
+      const gx = tr + 2 * r + br - (tl + 2 * l + bl)
+      const gy = bl + 2 * b + br - (tl + 2 * t + tr)
+      let nx = -gx * strength
+      let ny = -gy * strength
+      let nz = 1
+      const inv = 1 / Math.hypot(nx, ny, nz)
+      nx *= inv
+      ny *= inv
+      nz *= inv
+      const i = (y * size + x) * 4
+      out[i] = Math.round(nx * 127.5 + 127.5)
+      out[i + 1] = Math.round(ny * 127.5 + 127.5)
+      out[i + 2] = Math.round(nz * 127.5 + 127.5)
+      out[i + 3] = 255
+    }
+  }
+  return out
+}
+
+export function paintDieFaceNormalMap(
+  ctx: CanvasRenderingContext2D,
+  opts?: { seed?: number; contrast?: number; strength?: number }
+): void {
+  const size = ctx.canvas.width || DIE_FACE_TEXTURE_SIZE
+  if (ctx.canvas.height !== size) ctx.canvas.height = size
+  const pixels = dieFaceNormalMapPixels(size, opts)
+  const img = ctx.createImageData(size, size)
+  img.data.set(pixels)
+  ctx.putImageData(img, 0, 0)
+}
+
+/** Body normalScale magnitude — stronger on gritty bags, soft on polished gems. */
+export function dieBodyNormalScale(look: DiceLookPreset): number {
+  if (!look.useGrain) return 0.22
+  if (look.metalness >= 0.5) return 0.48
+  if (look.transmission > 0.2) return 0.32
+  return Math.min(0.72, 0.4 + look.grainDots / 380)
+}
+
 /** How strongly the shared atlas affects albedo / roughness for a bag look. */
 export function dieFaceTextureContrast(look: DiceLookPreset): number {
-  if (!look.useGrain) return 0.045
-  return Math.min(0.16, 0.07 + look.grainDots / 900)
+  if (!look.useGrain) return 0.06
+  const r = ((look.body >> 16) & 255) / 255
+  const g = ((look.body >> 8) & 255) / 255
+  const b = (look.body & 255) / 255
+  const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b
+  // Dark bags: keep albedo nearly flat; variation lives in roughness/normal (avoids salt flecks).
+  if (luma < 0.22) return Math.min(0.1, 0.05 + look.grainDots / 1400)
+  return Math.min(0.26, 0.13 + look.grainDots / 600)
+}
+
+/** Roughness-map contrast — intentionally punchier than albedo grain. */
+export function dieFaceRoughnessContrast(look: DiceLookPreset): number {
+  if (!look.useGrain) return 0.12
+  if (look.metalness >= 0.5) return 0.38
+  if (look.transmission > 0.2) return 0.22
+  return Math.min(0.42, 0.24 + look.grainDots / 480)
 }
 
 /** Parse preset grainTint (#rrggbb) into 0..1 RGB for the atlas. */
@@ -312,6 +460,25 @@ export function dieFaceTextureTint(look: DiceLookPreset): [number, number, numbe
   if (!match) return [1, 1, 1]
   const n = Number.parseInt(match[1]!, 16)
   return [((n >> 16) & 255) / 255, ((n >> 8) & 255) / 255, (n & 255) / 255]
+}
+
+/** Volume tint for translucent resin (DSN-style attenuationColor from body). */
+export function dieAttenuationColor(look: DiceLookPreset): number {
+  const body = look.body
+  const r = ((body >> 16) & 255) / 255
+  const g = ((body >> 8) & 255) / 255
+  const b = (body & 255) / 255
+  // Near-black bodies need a pale attenuation or the die reads as a silhouette (DSN resin).
+  const luma = 0.2126 * r + 0.7152 * g + 0.0722 * b
+  if (luma < 0.12) return 0xf2f2ff
+  return body
+}
+
+/** World-ish distance for MeshPhysicalMaterial attenuation (die radius ~1). */
+export function dieAttenuationDistance(look: DiceLookPreset): number {
+  if (look.transmission <= 0) return 0
+  const base = look.thickness > 0 ? look.thickness : 1
+  return Math.max(0.55, Math.min(2.4, base * 0.95))
 }
 
 /** Body material fields for MeshPhysicalMaterial (no Three dependency here). */
@@ -330,11 +497,14 @@ export function dieBodyMaterialInputs(
   ior: number
   transmission: number
   thickness: number
+  attenuationColor: number
+  attenuationDistance: number
   envMapIntensity: number
   specularIntensity: number
   transparent: boolean
   opacity: number
 } {
+  const transmission = dropped ? 0 : look.transmission
   return {
     color: diePlasticColor(dropped, look),
     roughness: look.roughness,
@@ -345,8 +515,10 @@ export function dieBodyMaterialInputs(
     sheenColor: look.sheenColor,
     sheenRoughness: look.sheenRoughness,
     ior: look.ior,
-    transmission: dropped ? 0 : look.transmission,
+    transmission,
     thickness: dropped ? 0 : look.thickness,
+    attenuationColor: dieAttenuationColor(look),
+    attenuationDistance: dropped || transmission <= 0 ? 0 : dieAttenuationDistance(look),
     envMapIntensity: look.envMapIntensity,
     specularIntensity: look.specularIntensity,
     transparent: Boolean(dropped) || look.transmission > 0,

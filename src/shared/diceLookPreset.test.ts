@@ -28,9 +28,9 @@ describe('parseDiceLookPresetId', () => {
 describe('diceLookPreset material mapping', () => {
   it('keeps ivory matching the classic resin bag', () => {
     const ivory = diceLookPreset('ivory')
-    expect(ivory.body).toBe(0xe6d2b0)
-    expect(ivory.droppedBody).toBe(0x8a8074)
-    expect(ivory.ink).toBe('#1c140e')
+    expect(ivory.body).toBe(0xeae4da)
+    expect(ivory.droppedBody).toBe(0x8a847c)
+    expect(ivory.ink).toBe('#1a1612')
     expect(ivory.metalness).toBe(0)
     expect(ivory.transmission).toBe(0)
   })
