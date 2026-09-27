@@ -10,7 +10,7 @@ permissions:
 
 jobs:
   # Same Ubuntu gate as pull requests (build.yml `checks`). xvfb e2e is Linux-only,
-  # so the installer job waits on this instead of trying to run it on windows-latest.
+  # so installer jobs wait on this instead of trying to run e2e on windows-latest.
   checks:
     runs-on: ubuntu-latest
     steps:
@@ -41,10 +41,10 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm test
-      # electron-builder --publish never: this job builds the installer and latest.yml,
-      # then action-gh-release uploads the .exe, .yml, and .blockmap (needed for in-app updates).
+      # electron-builder --publish never: this job builds the installer and latest.yml.
+      # The publish job uploads .exe / .yml / .blockmap so installed copies can update.
       - run: npm run dist
-      - name: Upload installer artifacts
+      - name: Upload Windows installer artifacts
         uses: actions/upload-artifact@v6
         with:
           name: tableside-windows
@@ -52,14 +52,53 @@ jobs:
             dist/*.exe
             dist/*.yml
             dist/*.yaml
+            dist/*.blockmap
           if-no-files-found: error
+
+  linux:
+    needs: checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      # AppImage + .deb. Unsigned; contributors run the same via npm run dist:linux.
+      - run: npm run dist:linux
+      - name: Upload Linux package artifacts
+        uses: actions/upload-artifact@v6
+        with:
+          name: tableside-linux
+          path: |
+            dist/*.AppImage
+            dist/*.deb
+            dist/*.yml
+            dist/*.yaml
+            dist/*.blockmap
+          if-no-files-found: error
+
+  # Single release create after both platform packages exist (avoids tag-release races).
+  publish:
+    needs: [windows, linux]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download Windows artifacts
+        uses: actions/download-artifact@v6
+        with:
+          name: tableside-windows
+          path: release-assets
+      - name: Download Linux artifacts
+        uses: actions/download-artifact@v6
+        with:
+          name: tableside-linux
+          path: release-assets
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v3
         with:
-          files: |
-            dist/*.exe
-            dist/*.yml
-            dist/*.blockmap
+          files: release-assets/*
           generate_release_notes: true
           draft: false
           prerelease: true

@@ -25,7 +25,7 @@ npm test
 ## Pull requests
 
 - Prefer small, focused PRs.
-- Run `npm run typecheck`, `npm run lint`, and `npm test` locally (CI also runs them). Use `npm run build` when you change packaging or want a smoke build; Windows CI builds the installer on `main`.
+- Run `npm run typecheck`, `npm run lint`, and `npm test` locally (CI also runs them). Use `npm run build` when you change packaging or want a smoke build; release tags build the Windows installer and Linux AppImage / `.deb`.
 - Do not commit generated installer output under `dist/` or machine-specific paths.
 - If you refresh SRD JSON with `npm run fetch-srd`, say so in the PR and keep [ATTRIBUTION.md](ATTRIBUTION.md) accurate.
 - If behavior authors depend on changes, update the matching doc (and Templates HTML comments when sheet shape changes) in the same PR.

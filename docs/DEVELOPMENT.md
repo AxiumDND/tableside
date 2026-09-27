@@ -8,7 +8,7 @@ Tableside is an Electron + React + TypeScript app built with [electron-vite](htt
 
 - Node.js 22+ (CI uses 22)
 - npm
-- Windows for the packaged installer (`npm run dist`); `dev` / `build` / `start` work on other platforms for development
+- Packaged installers: Windows (`npm run dist` / `npm run dist:win`) or Linux (`npm run dist:linux`). `dev` / `build` / `start` work on any platform for development
 
 ## Scripts
 
@@ -21,7 +21,8 @@ Tableside is an Electron + React + TypeScript app built with [electron-vite](htt
 | `npm run test:e2e` | Build then Playwright smoke against Electron (`e2e/`). Sets `TABLESIDE_E2E=1` so profiles stay hermetic |
 | `npm start` | Run the built app (`electron .`) |
 | `npm run preview` | electron-vite preview |
-| `npm run dist` | Build + Windows NSIS installer in `dist/` |
+| `npm run dist` / `npm run dist:win` | Build + Windows NSIS installer in `dist/` (run on Windows or in the Windows release job) |
+| `npm run dist:linux` | Build + Linux AppImage and `.deb` in `dist/` (run on Linux) |
 | `npm run fetch-srd` | Refresh bundled SRD JSON from the [Open5e](https://api.open5e.com/) `srd-2024` document |
 
 Typical loop:
@@ -38,6 +39,23 @@ npm run build
 npm start
 ```
 
+### Linux / cloud display notes
+
+Electron needs a display. In Cursor Cloud / headless VMs a VNC X server is often on `DISPLAY=:1`:
+
+```bash
+export DISPLAY=:1
+npm run dev
+# or: npm start
+```
+
+For CI-style headless runs without VNC: `xvfb-run -a npm run test:e2e` (or wrap `npm start`). Expected noise on software rendering: dbus “Failed to connect to the bus” and GPU process exit — non-fatal.
+
+On a single monitor (including VNC), you normally see only the DM console. The player window goes fullscreen on a second display when one exists. Use `TABLESIDE_FORCE_PLAYER=1` for a windowed player view on the primary display while developing overlays.
+
+User data on Linux lives under `~/.config/Tableside` (first launch copies the Greystead sample there).
+
+Do **not** casually run `npm run dist` (Windows NSIS) on a Linux cloud VM — use `npm run dist:linux` for AppImage / `.deb` instead.
 ## Layout
 
 ```
@@ -107,14 +125,16 @@ Scripts that shell out to `tsc` / `vitest` / `playwright` use `node ./node_modul
 
 Hermetic Electron smoke: `npm run test:e2e` (builds first). The suite sets `TABLESIDE_E2E=1` so `migrateLegacyUserData` does not copy a real `%APPDATA%\table-dm` profile into the temp userData dir.
 
-[`.github/workflows/release.yml`](../.github/workflows/release.yml) publishes a GitHub **Pre-release** when you push a `v*` tag (for example `git tag v1.2.0 && git push origin v1.2.0`). It is not marked Latest. The Ubuntu `checks` job is the same lint / typecheck / test / e2e sequence as pull requests; the Windows installer job (`npm run dist`) waits for it, so a tag cannot ship what PR CI would have blocked. The release must include `latest.yml` (and the `.exe`) so installed copies can check for updates.
+[`.github/workflows/release.yml`](../.github/workflows/release.yml) publishes a GitHub **Pre-release** when you push a `v*` tag (for example `git tag v1.2.0 && git push origin v1.2.0`). It is not marked Latest. The Ubuntu `checks` job is the same lint / typecheck / test / e2e sequence as pull requests; the Windows and Linux package jobs wait for it, then a `publish` job attaches both platforms’ artifacts so a tag cannot ship what PR CI would have blocked. The release must include Windows `latest.yml` (and the `.exe`) so installed Windows copies can check for updates; Linux ships `latest-linux.yml` alongside the AppImage / `.deb` for the same reason.
 
 Installed copies on the default **stable** channel only see the GitHub release marked Latest. Help → Updates → **Include test (beta) updates** also offers Pre-releases. When a tagged build is ready for tables, run [Promote release](../.github/workflows/promote-release.yml) (`workflow_dispatch`, input `tag` such as `v1.8.18`) or `gh release edit v1.8.18 --prerelease=false --latest`. That flips the same tag — no rebuild. Leave the previous Latest in place until you promote.
 
 ## Packaging notes
 
-`electron-builder` ships `examples/greystead` as the only campaign extra resource, plus `srd-portraits`, `srd-items`, `srd-schools`, `stock-art`, `npc-portraits`, and `dice-sfx`. Product name is **Tableside** (`com.tabledm.app`). `npm run dist` writes `dist/Tableside-Setup-<version>.exe` (per-user NSIS: Start Menu + desktop shortcuts, custom icon). Window and installer icons live in `resources/icon.ico` (regenerate with `node scripts/make-app-icon.mjs`). First launch copies `%APPDATA%\table-dm` settings/books/samples into `%APPDATA%\Tableside` if needed.
+`electron-builder` ships `examples/greystead` as the only campaign extra resource, plus `srd-portraits`, `srd-items`, `srd-schools`, `stock-art`, `npc-portraits`, and `dice-sfx`. Product name is **Tableside** (`com.tabledm.app`).
 
+- **Windows:** `npm run dist` writes `dist/Tableside-Setup-<version>.exe` (per-user NSIS: Start Menu + desktop shortcuts, custom icon). Window and installer icons live in `resources/icon.ico` (regenerate with `node scripts/make-app-icon.mjs`). First launch copies `%APPDATA%\table-dm` settings/books/samples into `%APPDATA%\Tableside` if needed. The installer is **not code-signed**.
+- **Linux:** `npm run dist:linux` writes `dist/Tableside-<version>.AppImage` and `dist/Tableside-<version>.deb` (icon from `resources/icon.png`). Same dual-window table flow as Windows. Packages are **unsigned**. Running an AppImage may need FUSE / `libfuse2` on some distros (`chmod +x` then execute, or install the `.deb`). User data: `~/.config/Tableside`. macOS packaging is not wired yet.
 ## Where behavior lives
 
 | Concern | Start here |

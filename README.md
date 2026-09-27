@@ -53,6 +53,10 @@ Uninstall from Windows Settings. Campaign folders on disk and `%APPDATA%\Tablesi
 
 Older builds used `%APPDATA%\table-dm`. First launch copies settings and optional book files from there if they exist.
 
+### Linux (experimental)
+
+Tagged releases can also attach **`Tableside-<version>.AppImage`** and **`Tableside-<version>.deb`** (same dual-monitor flow; not code-signed). Prefer AppImage for a quick try (`chmod +x` then run; some distros need FUSE / `libfuse2`). Contributors: `npm run dist:linux` — see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
+
 ## How to use
 
 The video above is the first night. **[docs/GUIDE.md](docs/GUIDE.md)** is the same night written out: first launch, show a picture, run a map, start a fight, play music, play a sci-fi crawl, and look up rules.
@@ -119,7 +123,7 @@ npm start
 npm run dist
 ```
 
-Writes `dist/Tableside-Setup-<version>.exe`. Pushing a `v*` tag builds that file and attaches it as a GitHub Pre-release. Promote the tag to Latest when it should reach every table. Help → Updates → **Include test (beta) updates** is how later tags stay optional. Stable download stays [releases/latest](https://github.com/AxiumDND/tableside/releases/latest) (`Tableside-Setup-1.8.31.exe` until the next promote).
+Writes `dist/Tableside-Setup-<version>.exe` on Windows. On Linux, use `npm run dist:linux` for `Tableside-<version>.AppImage` and `.deb`. Pushing a `v*` tag builds Windows + Linux packages and attaches them as a GitHub Pre-release. Promote the tag to Latest when it should reach every table. Help → Updates → **Include test (beta) updates** is how later tags stay optional. Stable download stays [releases/latest](https://github.com/AxiumDND/tableside/releases/latest) (`Tableside-Setup-1.8.31.exe` until the next promote).
 
 `npm run fetch-srd` is only needed if you want to refresh the bundled SRD snapshot from the [Open5e API](https://api.open5e.com/) (`srd-2024`).
 
