@@ -62,6 +62,8 @@ export interface MixerPrefs {
   sfxVolume: number
   sfxMuted: boolean
   shuffle: boolean
+  /** Repeat the mood playlist (wrap to first / keep shuffling). Default on. */
+  loopPlaylist: boolean
   lastMusicId: string | null
   lastAmbienceId: string | null
   /** Start combat plays Combat; End combat returns to General. */
@@ -315,6 +317,7 @@ export function emptyMixerPrefs(): MixerPrefs {
     sfxVolume: 0.85,
     sfxMuted: false,
     shuffle: true,
+    loopPlaylist: true,
     lastMusicId: null,
     lastAmbienceId: null,
     combatMusicCues: true
@@ -375,6 +378,7 @@ export function parseMixerPrefs(raw: unknown): MixerPrefs {
     sfxVolume: num('sfxVolume', base.sfxVolume),
     sfxMuted: flag('sfxMuted', base.sfxMuted),
     shuffle: flag('shuffle', base.shuffle),
+    loopPlaylist: flag('loopPlaylist', base.loopPlaylist),
     lastMusicId: id('lastMusicId'),
     lastAmbienceId: id('lastAmbienceId'),
     combatMusicCues: flag('combatMusicCues', base.combatMusicCues)
@@ -493,18 +497,31 @@ export function pickNextTrack(
   tracks: AudioTrack[],
   current: string | null,
   shuffle: boolean,
-  random = Math.random
+  random = Math.random,
+  wrap = true
 ): string | null {
   if (tracks.length === 0) return null
-  if (tracks.length === 1) return tracks[0].relativePath
+  if (tracks.length === 1) {
+    const only = tracks[0]?.relativePath ?? null
+    if (!current) return only
+    return wrap ? only : null
+  }
   if (shuffle) {
     const others = current ? tracks.filter((track) => track.relativePath !== current) : tracks
-    const pool = others.length > 0 ? others : tracks
+    const pool = others.length > 0 ? others : wrap ? tracks : []
+    if (pool.length === 0) return null
     return pool[Math.floor(random() * pool.length)]?.relativePath ?? null
   }
   const index = tracks.findIndex((track) => track.relativePath === current)
-  const next = index === -1 ? 0 : (index + 1) % tracks.length
-  return tracks[next]?.relativePath ?? null
+  if (index === -1) return tracks[0]?.relativePath ?? null
+  if (index + 1 >= tracks.length) return wrap ? (tracks[0]?.relativePath ?? null) : null
+  return tracks[index + 1]?.relativePath ?? null
+}
+
+/** One-track moods loop in the audio element so the same file is not restarted via a second element. */
+export function musicHtmlLoops(state: MixerState): boolean {
+  if (!state.prefs.loopPlaylist) return false
+  return musicTracksFor(state.library, state.playback.musicPlaylistId).length === 1
 }
 
 function startMusic(state: MixerState, playlistId: string): MixerState {
@@ -781,8 +798,22 @@ export function applyMixerCommand(state: MixerState, command: MixerCommand): Mix
       if (tracks.length === 0 || !state.playback.musicPlaying) {
         return { ...state, playback: { ...state.playback, musicPlaying: false } }
       }
-      const track = pickNextTrack(tracks, state.playback.musicTrack, state.prefs.shuffle)
-      if (!track) return { ...state, playback: { ...state.playback, musicPlaying: false } }
+      const track = pickNextTrack(
+        tracks,
+        state.playback.musicTrack,
+        state.prefs.shuffle,
+        Math.random,
+        state.prefs.loopPlaylist
+      )
+      if (!track) {
+        return {
+          ...state,
+          playback: { ...state.playback, musicPlaying: false, musicTrack: null }
+        }
+      }
+      if (track === state.playback.musicTrack && musicHtmlLoops(state)) {
+        return state
+      }
       return {
         ...state,
         playback: {

@@ -46,7 +46,7 @@ A `> [!legend]` (or `tale` / `chronicle`) block plays a parchment rise on the pl
 
 | Strip | Source | Playback |
 | --- | --- | --- |
-| Music | `Audio/Music/<mood>/` (Combat, Creepy, General, or any extra folder) | Pick a mood, then Play / Pause / Skip / Stop. In order or Shuffle stays in that mood. Crossfades when the track or mood changes. |
+| Music | `Audio/Music/<mood>/` (Combat, Creepy, General, or any extra folder) | Pick a mood, then Play / Pause / Skip / Stop. In order or Shuffle stays in that mood. **Loop** (on by default) repeats the playlist: the next track plays when one ends, then wraps to the first. A mood with one file loops that file. Crossfades when the track or mood changes. |
 | Ambience | `Audio/Ambience/` (folders or loose files) | Pick a bed, then Start / Stop. One looping bed |
 | Soundboard | `Audio/Sfx/` (subfolders are headings) | Click a one-shot; several can overlap |
 | Master | — | Whole mix + mute |

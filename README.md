@@ -96,7 +96,7 @@ Small doc fixes and the ideas under [docs/ROADMAP.md](docs/ROADMAP.md#good-first
 - Optional initiative overlay: order, whose turn, and pack tags (5e Bloodied / 0 HP; PF2e Dying / Wounded; V5 Health, Willpower, Hunger)
 - Game night sheets: structured **combat** and **treasure** blocks (party auto-roster, Add combatant / Add item lookups that copy into Bestiary / Gear), per-block Edit, nested scenes
 - Game night sheets pull Party / NPC / Bestiary sheets into initiative
-- Music mixer: one mood playlist (Play / Pause / Skip / Stop, in order or shuffle), one ambience bed, soundboard — your files, your output device
+- Music mixer: one mood playlist (Play / Pause / Skip / Stop, in order or shuffle, loops by default), one ambience bed, soundboard — your files, your output device
 - Sci-fi opening crawl (`> [!crawl]`) and campfire chronicle (`[!legend]`) — write your own words; Play sends them to the TV
 - Offline Lookup for the open campaign’s system pack (5e SRD; PF2e original core; V5 original procedures)
 - Optional extra 5e lookup from your own book text files in `Additional Books/`

@@ -16,7 +16,8 @@ export function MusicSection() {
             <Code>Audio/Music/Combat</Code>, <Code>Creepy</Code>, <Code>General</Code> — mood playlists. Extra
             folders become extra moods. Pick a mood, then <Action>Play</Action>,{' '}
             <Action>Pause</Action>, or <Action>Stop</Action>. <Action>In order</Action> or{' '}
-            <Action>Shuffle</Action> stays in that mood.
+            <Action>Shuffle</Action> stays in that mood. <Action>Loop</Action> (on by default) repeats the
+            playlist — it wraps to the first track, or keeps the single track playing.
           </>,
           <>
             <Code>Audio/Ambience</Code> — looping beds (crowd, rain). One at a time.

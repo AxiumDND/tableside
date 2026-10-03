@@ -139,7 +139,7 @@ Accepted: `.mp3` `.ogg` `.wav` `.m4a` `.flac` `.webm` `.aac`. Files sitting in `
 
 1. Click **Music** in the header.
 2. Pick **Output** (laptop, HDMI TV, headset). The mix uses that device whether the player view is open or closed.
-3. Pick a **mood**. Choose **In order** or **Shuffle** (that mood only).
+3. Pick a **mood**. Choose **In order** or **Shuffle** (that mood only). **Loop** (on by default) keeps the playlist going — last track wraps to the first; a single file repeats.
 4. **Play** starts. **Pause** holds the track and the timer. **Skip** stays in that mood. **Stop** ends the track; Play starts the mood again from the beginning.
 5. Pick an ambience bed, then **Start** / **Stop**. One bed at a time.
 6. Click a soundboard button for a one-shot. Several can overlap.
