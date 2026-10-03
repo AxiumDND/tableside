@@ -312,6 +312,18 @@ export default function MusicPanel({
             >
               Shuffle
             </button>
+            <button
+              type="button"
+              disabled={disabled}
+              onClick={() => setPrefs({ loopPlaylist: !prefs.loopPlaylist })}
+              className={`rounded px-2 py-0.5 text-[11px] ${
+                prefs.loopPlaylist
+                  ? 'bg-amber font-semibold text-on-amber'
+                  : 'border border-line text-muted hover:border-amber'
+              }`}
+            >
+              Loop
+            </button>
           </div>
           <div className="mt-2 flex items-center gap-2">
             <button

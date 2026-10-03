@@ -4,6 +4,7 @@ import {
   audioFileUrl,
   emptyMixerClock,
   mixerLayerGain,
+  musicHtmlLoops,
   type MixerClock,
   type MixerLayerId,
   type MixerState
@@ -68,6 +69,13 @@ class LayerPlayer {
       el.addEventListener('loadedmetadata', () => this.reportClock(el))
       el.addEventListener('ended', () => this.handleEnded(el))
     }
+  }
+
+  setLoop(loop: boolean): void {
+    this.loop = loop
+    this.a.loop = loop
+    this.b.loop = loop
+    if (loop) this.advanced = false
   }
 
   private reportClock(el: HTMLAudioElement): void {
@@ -264,6 +272,7 @@ export default function AudioEngine({
       ambience.setGain(mixerLayerGain(state.prefs, 'ambience'))
       crawl.setGain(mixerLayerGain(state.prefs, 'music'))
       hyperLoop.setGain(mixerLayerGain(state.prefs, 'sfx'))
+      music.setLoop(musicHtmlLoops(state))
       const musicUrl = state.playback.musicTrack ? audioFileUrl(state.playback.musicTrack) : null
       const ambienceUrl = state.playback.ambienceTrack ? audioFileUrl(state.playback.ambienceTrack) : null
       const crawlUrl = state.playback.crawlMusic ? audioFileUrl(state.playback.crawlMusic) : null

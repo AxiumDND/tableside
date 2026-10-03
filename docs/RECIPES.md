@@ -105,7 +105,7 @@ Play your own audio at the table. Tableside does not include tracks.
 
 1. Open **Music**.
 2. Pick **Output** (laptop, HDMI TV, headset).
-3. Click a mood. Choose **In order** or **Shuffle**.
+3. Click a mood. Choose **In order** or **Shuffle**. Leave **Loop** on so the playlist repeats (wraps to the first track).
 4. **Play**. **Pause** holds the song. **Skip** stays in that mood. **Stop** ends it; Play starts the mood again.
 5. Pick an ambience bed → **Start** / **Stop**.
 6. Click soundboard buttons as needed.

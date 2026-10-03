@@ -7,7 +7,8 @@ import {
   formatMixerTime,
   musicTracksFor,
   pickNextTrack,
-  parseMixerPrefs
+  parseMixerPrefs,
+  musicHtmlLoops
 } from './audio'
 
 const files = [
@@ -153,6 +154,54 @@ describe('mixer commands', () => {
     const tracks = library.music[0]?.tracks ?? []
     expect(pickNextTrack(tracks, tracks[0]?.relativePath ?? null, false)).toBe(tracks[1]?.relativePath)
     expect(pickNextTrack(tracks, tracks[1]?.relativePath ?? null, false)).toBe(tracks[0]?.relativePath)
+    expect(pickNextTrack(tracks, tracks[1]?.relativePath ?? null, false, Math.random, false)).toBe(null)
+  })
+
+  it('plays the next track when a mood song ends, then wraps to the first', () => {
+    let state = ready()
+    state = applyMixerCommand(state, { type: 'set-prefs', prefs: { shuffle: false } })
+    state = applyMixerCommand(state, { type: 'play-music', playlistId: 'Audio/Music/Combat' })
+    const combat = musicTracksFor(state.library, 'Audio/Music/Combat')
+    expect(state.playback.musicTrack).toBe(combat[0]?.relativePath)
+    state = applyMixerCommand(state, { type: 'ended', layer: 'music' })
+    expect(state.playback.musicPlaying).toBe(true)
+    expect(state.playback.musicTrack).toBe(combat[1]?.relativePath)
+    const generation = state.playback.musicGeneration
+    state = applyMixerCommand(state, { type: 'ended', layer: 'music' })
+    expect(state.playback.musicPlaying).toBe(true)
+    expect(state.playback.musicTrack).toBe(combat[0]?.relativePath)
+    expect(state.playback.musicGeneration).toBeGreaterThan(generation)
+  })
+
+  it('stops at the last track when Loop is off', () => {
+    let state = ready()
+    state = applyMixerCommand(state, { type: 'set-prefs', prefs: { shuffle: false, loopPlaylist: false } })
+    state = applyMixerCommand(state, { type: 'play-music', playlistId: 'Audio/Music/Combat' })
+    const combat = musicTracksFor(state.library, 'Audio/Music/Combat')
+    state = applyMixerCommand(state, { type: 'ended', layer: 'music' })
+    expect(state.playback.musicTrack).toBe(combat[1]?.relativePath)
+    state = applyMixerCommand(state, { type: 'ended', layer: 'music' })
+    expect(state.playback.musicPlaying).toBe(false)
+    expect(state.playback.musicTrack).toBe(null)
+    expect(state.playback.musicPlaylistId).toBe('Audio/Music/Combat')
+  })
+
+  it('keeps a one-track mood looping in the audio element', () => {
+    let state = ready()
+    state = applyMixerCommand(state, { type: 'set-prefs', prefs: { shuffle: false } })
+    state = applyMixerCommand(state, { type: 'play-music', playlistId: 'Audio/Music/General' })
+    expect(musicHtmlLoops(state)).toBe(true)
+    const track = state.playback.musicTrack
+    const generation = state.playback.musicGeneration
+    state = applyMixerCommand(state, { type: 'ended', layer: 'music' })
+    expect(state.playback.musicPlaying).toBe(true)
+    expect(state.playback.musicTrack).toBe(track)
+    expect(state.playback.musicGeneration).toBe(generation)
+  })
+
+  it('defaults Loop on and keeps an explicit off', () => {
+    expect(parseMixerPrefs({}).loopPlaylist).toBe(true)
+    expect(parseMixerPrefs({ loopPlaylist: false }).loopPlaylist).toBe(false)
   })
 
   it('formats elapsed and duration clocks', () => {
@@ -175,6 +224,18 @@ describe('mixer commands', () => {
     state = applyMixerCommand(state, { type: 'skip-music' })
     expect(combat).toContain(state.playback.musicTrack)
     expect(state.playback.musicPlaylistId).toBe('Audio/Music/Combat')
+  })
+
+  it('skip still wraps when Loop is off', () => {
+    let state = ready()
+    state = applyMixerCommand(state, { type: 'set-prefs', prefs: { shuffle: false, loopPlaylist: false } })
+    state = applyMixerCommand(state, { type: 'play-music', playlistId: 'Audio/Music/Combat' })
+    const combat = musicTracksFor(state.library, 'Audio/Music/Combat')
+    state = applyMixerCommand(state, { type: 'skip-music' })
+    expect(state.playback.musicTrack).toBe(combat[1]?.relativePath)
+    state = applyMixerCommand(state, { type: 'skip-music' })
+    expect(state.playback.musicPlaying).toBe(true)
+    expect(state.playback.musicTrack).toBe(combat[0]?.relativePath)
   })
 
   it('stop all clears playback but keeps the library', () => {
