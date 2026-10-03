@@ -518,7 +518,7 @@ export function pickNextTrack(
   return tracks[index + 1]?.relativePath ?? null
 }
 
-/** One-track moods loop in the audio element so the same file is not restarted via a second element. */
+/** One-track moods rewind the same element (native loop plus Windows MP3 EOS fallbacks). */
 export function musicHtmlLoops(state: MixerState): boolean {
   if (!state.prefs.loopPlaylist) return false
   return musicTracksFor(state.library, state.playback.musicPlaylistId).length === 1
