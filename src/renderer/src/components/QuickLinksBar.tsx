@@ -20,7 +20,9 @@ import { calendarPreset } from '../../../shared/calendarPresets'
 import { allPartyNotes, type CampaignNote } from '../lib/notes'
 import {
   filterQuickConditions,
+  filterQuickSkills,
   lookupConditions,
+  lookupSkills,
   quickPartyRows
 } from '../lib/quickLinks'
 import CalendarSettings from './CalendarSettings'
@@ -71,6 +73,8 @@ export default function QuickLinksBar({
   const [sheets, setSheets] = useState<Record<string, string>>({})
   const [conditionQuery, setConditionQuery] = useState('')
   const [pickedCondition, setPickedCondition] = useState<string | null>(null)
+  const [skillQuery, setSkillQuery] = useState('')
+  const [pickedSkill, setPickedSkill] = useState<string | null>(null)
   const [calendarMarkdown, setCalendarMarkdown] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -84,6 +88,8 @@ export default function QuickLinksBar({
     () => filterQuickConditions(conditions, conditionQuery),
     [conditions, conditionQuery]
   )
+  const skills = useMemo(() => lookupSkills(system), [system])
+  const shownSkills = useMemo(() => filterQuickSkills(skills, skillQuery), [skills, skillQuery])
   const partyPaths = useMemo(() => allPartyNotes(notes).map((note) => note.relativePath), [notes])
   const loadKey = partyPaths.join('|')
   const calendarPath = useMemo(
@@ -146,6 +152,10 @@ export default function QuickLinksBar({
     if (openId !== 'conditions') {
       setConditionQuery('')
       setPickedCondition(null)
+    }
+    if (openId !== 'skills') {
+      setSkillQuery('')
+      setPickedSkill(null)
     }
   }, [openId])
 
@@ -320,6 +330,56 @@ export default function QuickLinksBar({
             })
           )}
         </ul>
+      </QuickMenu>
+      <QuickMenu id="skills" label="Skills" openId={openId} onOpenId={setOpenId} menuClassName="w-[22rem]">
+        {skills.length === 0 ? (
+          <p className="px-3 py-2 text-[13px] text-muted">Skills quick-reference is for D&D 5e.</p>
+        ) : (
+          <>
+            <div className="px-2 pb-1">
+              <input
+                type="search"
+                value={skillQuery}
+                onChange={(event) => setSkillQuery(event.target.value)}
+                placeholder="Filter…"
+                aria-label="Filter skills"
+                className="w-full rounded border border-line bg-ink px-2 py-1 text-[13px] outline-none focus:border-amber"
+              />
+            </div>
+            <ul className="max-h-72 overflow-auto">
+              {shownSkills.length === 0 ? (
+                <li className="px-3 py-2 text-[13px] text-muted">No matching skills</li>
+              ) : (
+                shownSkills.map((item) => {
+                  const selected = pickedSkill === item.id
+                  return (
+                    <li key={item.id}>
+                      <button
+                        type="button"
+                        role="menuitem"
+                        aria-expanded={selected}
+                        onClick={() => setPickedSkill(selected ? null : item.id)}
+                        className="w-full px-3 py-1.5 text-left text-[13px] text-parchment/90 hover:bg-panel-2 hover:text-amber"
+                      >
+                        <span className="flex items-baseline justify-between gap-2">
+                          <span className="font-semibold">{item.name}</span>
+                          <span className="shrink-0 text-[11px] font-semibold uppercase tracking-wider text-muted">
+                            {item.ability}
+                          </span>
+                        </span>
+                        {selected ? (
+                          <span className="mt-1 block text-[12px] font-normal leading-snug text-muted">
+                            {item.usedFor}
+                          </span>
+                        ) : null}
+                      </button>
+                    </li>
+                  )
+                })
+              )}
+            </ul>
+          </>
+        )}
       </QuickMenu>
       <span className="mx-0.5 h-4 w-px shrink-0 bg-line" aria-hidden="true" />
       <button

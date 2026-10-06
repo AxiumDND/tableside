@@ -48,7 +48,7 @@ describe('QuickLinksBar', () => {
     { relativePath: 'Calendar/Calendar.md', name: 'Calendar.md', stem: 'Calendar' }
   ]
 
-  it('shows Party, Conditions, tools, panel toggles, and the live calendar clock', async () => {
+  it('shows Party, Conditions, Skills, tools, panel toggles, and the live calendar clock', async () => {
     render(
       <QuickLinksBar
         notes={notes}
@@ -59,6 +59,7 @@ describe('QuickLinksBar', () => {
     )
     expect(screen.getByRole('button', { name: /Party/ })).toBeTruthy()
     expect(screen.getByRole('button', { name: /Conditions/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Skills/ })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Lookup' })).toBeTruthy()
     expect(screen.getByRole('button', { name: /Prep/ })).toBeTruthy()
     expect(screen.getByRole('button', { name: /Table/ })).toBeTruthy()
@@ -149,6 +150,24 @@ describe('QuickLinksBar', () => {
     await user.click(screen.getByRole('button', { name: /Conditions/ }))
     await user.click(screen.getByRole('menuitem', { name: /Poisoned/ }))
     expect(screen.getByText(/disadvantage/i)).toBeTruthy()
+  })
+
+  it('shows a 5e skill used-for blurb without leaving the bar', async () => {
+    const user = userEvent.setup()
+    render(<QuickLinksBar notes={[]} system="dnd5e" onOpenNote={() => {}} />)
+    await user.click(screen.getByRole('button', { name: /Skills/ }))
+    expect(screen.getByRole('menuitem', { name: /Acrobatics/ })).toBeTruthy()
+    expect(screen.getByRole('menuitem', { name: /Survival/ })).toBeTruthy()
+    await user.click(screen.getByRole('menuitem', { name: /Stealth/ }))
+    expect(screen.getByText(/slip past notice/i)).toBeTruthy()
+  })
+
+  it('stubs Skills for non-5e systems', async () => {
+    const user = userEvent.setup()
+    render(<QuickLinksBar notes={[]} system="pf2e" onOpenNote={() => {}} />)
+    await user.click(screen.getByRole('button', { name: /Skills/ }))
+    expect(screen.getByText(/for D&D 5e/i)).toBeTruthy()
+    expect(screen.queryByRole('menuitem', { name: /Acrobatics/ })).toBeNull()
   })
 
   it('jumps to the next morning and writes dawn', async () => {
