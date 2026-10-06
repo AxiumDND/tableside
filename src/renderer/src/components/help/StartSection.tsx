@@ -41,10 +41,10 @@ export function StartSection({ folders }: { folders: AppFolders | null }) {
           <>
             Open <Action>Combat</Action> or <Action>Music</Action> from the header when you need them. Under the
             header, <Action>Quick</Action> holds left and right panel glyphs, <Action>Party</Action> (name, AC,
-            save DC, passive perception), <Action>Conditions</Action>, <Action>Lookup</Action>, <Action>Prep</Action>{' '}
-            (NPC, Links), <Action>Table</Action> (Dice, Timer, Improvise), and the in-world{' '}
-            <Action>Calendar</Action> (Hide when unused; Show to players is a sun or moon on the TV). Dice live at
-            the bottom of the left column.
+            save DC, passive perception), <Action>Conditions</Action>, <Action>Skills</Action> (5e ability + used
+            for), <Action>Lookup</Action>, <Action>Prep</Action> (NPC, Links), <Action>Table</Action> (Dice, Timer,
+            Improvise), and the in-world <Action>Calendar</Action> (Hide when unused; Show to players is a sun or
+            moon on the TV). Dice live at the bottom of the left column.
           </>
         ]}
       />

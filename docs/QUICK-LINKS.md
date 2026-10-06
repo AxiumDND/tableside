@@ -13,6 +13,7 @@ The header keeps Campaign / Combat / Music / Help. Mid-session facts and the old
 | **Left / right panel** | Same sidebar and right-rail glyphs that used to sit on the header. |
 | **Party** | Every `Party/` sheet (not the roster). Name, AC, spell save DC, passive perception. Click opens the sheet. Put **Save DC** on the PC infobox when they have one. |
 | **Conditions** | Lookup conditions for the campaign’s system pack. Filter, then click a name for the short rules text. Does not toggle combat Cnd chips. |
+| **Skills** | D&D 5e skill glance: ability tag plus a short “used for” blurb. Filter, then click a name. Stub message on non-5e packs. |
 | **Lookup** | Opens the right rail on Lookup. Click again to close. |
 | **Prep ▾** | NPC and Links — opens that page on the right rail. The button stays **Prep**. |
 | **Table ▾** | Dice (Box of Doom), Timer, and Improvise. The button stays **Table**. |
@@ -21,7 +22,7 @@ The header keeps Campaign / Combat / Music / Help. Mid-session facts and the old
 ## Shape
 
 - One control row (`h-9`), same button chrome as **Campaign ▾**.
-- Glance menus (Party, Conditions) stay dropdowns. Full tools still use the right rail.
+- Glance menus (Party, Conditions, Skills) stay dropdowns. Full tools still use the right rail.
 - Empty states stay short. Do not invent a date or a party that is not on disk.
 
 ## Out of scope (this pass)

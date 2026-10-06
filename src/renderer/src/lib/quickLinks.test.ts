@@ -1,7 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import {
+  DND5E_QUICK_SKILLS,
   filterQuickConditions,
+  filterQuickSkills,
   lookupConditions,
+  lookupSkills,
   quickCalendarNotes,
   quickPartyRows
 } from './quickLinks'
@@ -52,5 +55,33 @@ describe('lookupConditions', () => {
     ]
     expect(filterQuickConditions(list, 'poi').map((item) => item.name)).toEqual(['Poisoned'])
     expect(filterQuickConditions(list, 'crawl').map((item) => item.name)).toEqual(['Prone'])
+  })
+})
+
+describe('lookupSkills', () => {
+  it('lists all 18 standard 5e skills with ability and used-for blurbs', () => {
+    const list = lookupSkills('dnd5e')
+    expect(list).toHaveLength(18)
+    expect(list.map((item) => item.name)).toEqual(DND5E_QUICK_SKILLS.map((item) => item.name))
+    expect(list[0]).toMatchObject({ name: 'Acrobatics', ability: 'Dex' })
+    expect(list[0]?.usedFor.length).toBeGreaterThan(10)
+    expect(list.at(-1)).toMatchObject({ name: 'Survival', ability: 'Wis' })
+    for (const item of list) {
+      expect(item.usedFor.trim().length).toBeGreaterThan(0)
+      expect(['Str', 'Dex', 'Con', 'Int', 'Wis', 'Cha']).toContain(item.ability)
+    }
+  })
+
+  it('defaults unknown systems to 5e and stubs other packs', () => {
+    expect(lookupSkills(undefined)).toHaveLength(18)
+    expect(lookupSkills('pf2e')).toEqual([])
+    expect(lookupSkills('v5')).toEqual([])
+  })
+
+  it('filters by name, ability, or used-for text', () => {
+    const list = lookupSkills('dnd5e')
+    expect(filterQuickSkills(list, 'stea').map((item) => item.name)).toEqual(['Stealth'])
+    expect(filterQuickSkills(list, 'dex').every((item) => item.ability === 'Dex')).toBe(true)
+    expect(filterQuickSkills(list, 'forage').map((item) => item.name)).toEqual(['Survival'])
   })
 })
