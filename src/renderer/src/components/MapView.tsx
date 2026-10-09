@@ -25,17 +25,22 @@ import {
 import {
   TOKEN_SCALE_DEFAULT,
   extractMapNote,
+  isBattleMap,
   mapHeadings,
   mapOverviewMarkdown,
   mapRoomMarkdown,
+  mapShowsPinsToPlayers,
+  parseMapKind,
+  pinDisplayTitle,
   replaceMapFence,
   tokenDiameter,
   toPlayerMapToken,
   type CreatureSpace,
+  type MapKind,
   type MapNoteData,
   type MapToken
 } from '../lib/mapNote'
-import { type CampaignNote } from '../lib/notes'
+import { placeNotes, sheetDisplayName, type CampaignNote } from '../lib/notes'
 import MapGridOverlay from './MapGridOverlay'
 import MapMeasureOverlay from './MapMeasureOverlay'
 import MapStage, { imagePointFromElement } from './MapStage'
@@ -63,6 +68,7 @@ export default function MapView({
   renderRoom,
   onChange,
   onLiveView,
+  onOpenNote,
   combat,
   system,
   onAddTokensToCombat,
@@ -75,6 +81,7 @@ export default function MapView({
   renderRoom: (markdown: string) => ReactNode
   onChange: (next: string) => void
   onLiveView?: (imagePath: string, view: PlayerMapView) => void
+  onOpenNote?: (path: string) => void
   combat?: CombatState | null
   system?: string | null
   onAddTokensToCombat?: (tokens: MapToken[]) => Promise<{ tokenId: string; combatantId: string }[]>
@@ -204,9 +211,31 @@ export default function MapView({
   })
   pinsApiRef.current = pins
   const selected = pins.selected
+  const mapKind = parseMapKind(data?.kind)
+  const battleMap = isBattleMap(mapKind)
+  const showPinsToPlayers = data ? mapShowsPinsToPlayers(data) : false
+  const placeOptions = useMemo(
+    () => placeNotes(notes).map((note) => sheetDisplayName(note.stem)),
+    [notes]
+  )
+  const linkedPlace = useMemo(() => {
+    if (!selected?.note) return null
+    const want = selected.note.trim().toLowerCase()
+    return (
+      notes.find((note) => sheetDisplayName(note.stem).toLowerCase() === want) ??
+      notes.find((note) => note.stem.toLowerCase() === want) ??
+      null
+    )
+  }, [notes, selected?.note])
   const roomText = selected
-    ? mapRoomMarkdown(markdown, selected.heading) ??
-      `No heading yet for **${selected.heading || selected.label}**. Edit the note to add \`## ${selected.heading || selected.label}\`.`
+    ? battleMap
+      ? mapRoomMarkdown(markdown, selected.heading) ??
+        `No heading yet for **${selected.heading || selected.label}**. Edit the note to add \`## ${selected.heading || selected.label}\`.`
+      : selected.note
+        ? linkedPlace
+          ? `**${selected.note}** — open the Place note for full prep.`
+          : `Linked place **${selected.note}** is not in Places/ yet. Create it or fix the pin link.`
+        : mapOverviewMarkdown(markdown) || '_Add a place link on this pin, or write prep notes under the map._'
     : mapOverviewMarkdown(markdown)
 
   useMapLiveView({
@@ -276,12 +305,14 @@ export default function MapView({
     const current = dataRef.current
     return {
       image: current?.image ?? '',
+      kind: current?.kind ?? 'battle',
       pins: current?.pins ?? [],
       tokens: current?.tokens ?? [],
       tokenScale: current?.tokenScale ?? TOKEN_SCALE_DEFAULT,
       gridX: current?.gridX ?? 0,
       gridY: current?.gridY ?? 0,
       pinsLocked: current?.pinsLocked ?? true,
+      ...(typeof current?.showPins === 'boolean' ? { showPins: current.showPins } : {}),
       ...partial,
       ...(fogApiRef.current?.fields() ?? { fog: '', fogSize: 0 })
     }
@@ -347,7 +378,28 @@ export default function MapView({
     cancelScale()
   }
 
+  function setMapKind(next: MapKind): void {
+    if (!data) return
+    const kind = parseMapKind(next)
+    commit(withCurrentFog({ kind }))
+    if (!isBattleMap(kind) && (tool === 'token' || tool === 'fog' || tool === 'reveal')) {
+      setTool('pan')
+      tokens.setPendingToken(null)
+      cancelScale()
+      cancelMeasure()
+    }
+  }
+
+  function toggleShowPins(): void {
+    if (!data) return
+    commit(withCurrentFog({ showPins: !mapShowsPinsToPlayers(data) }))
+  }
+
   function selectPrimary(next: 'pan' | 'pin' | 'token' | 'fog'): void {
+    if (!battleMap && (next === 'token' || next === 'fog')) {
+      setTool('pan')
+      return
+    }
     if (next !== 'pan') {
       cancelScale()
       cancelMeasure()
@@ -518,9 +570,17 @@ export default function MapView({
 
   return (
     <div className="flex min-h-0 flex-1 flex-col">
-      <MapPrimaryToolbar primary={primary} onSelectPrimary={selectPrimary} />
+      <MapPrimaryToolbar
+        primary={battleMap ? primary : primary === 'token' || primary === 'fog' ? 'pan' : primary}
+        onSelectPrimary={selectPrimary}
+        battleTools={battleMap}
+        kind={mapKind}
+        onKindChange={setMapKind}
+        showPinsToPlayers={showPinsToPlayers}
+        onToggleShowPins={toggleShowPins}
+      />
 
-      {primary === 'pan' ? (
+      {primary === 'pan' || (!battleMap && primary !== 'pin') ? (
         <MapPanToolbar
           zoom={camera.zoom}
           scaleArmed={scaleArmed}
@@ -528,6 +588,7 @@ export default function MapView({
           scaleHint={scaleHint}
           measureKind={measureKind}
           measureFeet={measureFeet}
+          battleTools={battleMap}
           onZoomChange={setZoom}
           onFit={fit}
           onToggleScale={() => {
@@ -559,7 +620,7 @@ export default function MapView({
         />
       ) : null}
 
-      {primary === 'token' ? (
+      {battleMap && primary === 'token' ? (
         <div className="flex flex-col gap-1.5 border-b border-line bg-panel px-3 py-1.5">
           <MapTokenToolbar
             pendingToken={tokens.pendingToken}
@@ -605,7 +666,7 @@ export default function MapView({
         </div>
       ) : null}
 
-      {primary === 'fog' ? (
+      {battleMap && primary === 'fog' ? (
         <MapFogToolbar
           tool={tool}
           brushSize={fog.brushSize}
@@ -677,7 +738,7 @@ export default function MapView({
                   ) : null}
                 </svg>
               ) : null}
-              {(data?.tokens ?? []).map((token) => {
+              {(battleMap ? data?.tokens ?? [] : []).map((token) => {
                 const live = dragPos?.id === token.id ? { ...token, x: dragPos.x, y: dragPos.y } : token
                 return (
                   <MapTokenMark
@@ -752,78 +813,125 @@ export default function MapView({
                   ghost
                 />
               ) : null}
-              {(data?.pins ?? []).map((pin) => (
-                <button
-                  key={pin.id}
-                  type="button"
-                  title={data?.pinsLocked ? `${pin.heading || pin.label} (locked)` : pin.heading || pin.label}
-                  onPointerDown={(event) => {
-                    if (tool === 'fog' || tool === 'reveal' || tool === 'token') return
-                    event.preventDefault()
-                    event.stopPropagation()
-                    tokens.setSelectedTokenId(null)
-                    if (tool === 'pin' && pins.pinAction === 'delete') {
-                      if (!pinsLocked) pins.deletePin(pin.id)
-                      return
+              {(data?.pins ?? []).map((pin) => {
+                const title = pinDisplayTitle(pin)
+                const selectedPin = pin.id === pins.selectedId
+                const x = dragPos?.id === pin.id ? dragPos.x : pin.x
+                const y = dragPos?.id === pin.id ? dragPos.y : pin.y
+                return (
+                  <button
+                    key={pin.id}
+                    type="button"
+                    title={data?.pinsLocked ? `${title} (locked)` : title}
+                    onPointerDown={(event) => {
+                      if (tool === 'fog' || tool === 'reveal' || tool === 'token') return
+                      event.preventDefault()
+                      event.stopPropagation()
+                      tokens.setSelectedTokenId(null)
+                      if (tool === 'pin' && pins.pinAction === 'delete') {
+                        if (!pinsLocked) pins.deletePin(pin.id)
+                        return
+                      }
+                      if (tool === 'pin' && pins.pinAction === 'edit') {
+                        pins.fillForm(pin)
+                      } else {
+                        pins.setSelectedId(pin.id)
+                      }
+                      if (data?.pinsLocked || (tool === 'pin' && pins.pinAction !== 'edit')) return
+                      pinDrag.current = { id: pin.id, moved: false }
+                      ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
+                    }}
+                    onPointerMove={(event) => {
+                      if (data?.pinsLocked) return
+                      if (!pinDrag.current || pinDrag.current.id !== pin.id) return
+                      const point = pointFromEvent(event)
+                      if (!point) return
+                      pinDrag.current.moved = true
+                      dragPosRef.current = { id: pin.id, x: point.x, y: point.y }
+                      setDragPos({ id: pin.id, x: point.x, y: point.y })
+                    }}
+                    onPointerUp={() => {
+                      const active = pinDrag.current
+                      const pos = dragPosRef.current
+                      pinDrag.current = null
+                      dragPosRef.current = null
+                      if (active?.moved && pos && pos.id === pin.id) {
+                        pins.movePin(pin.id, pos.x, pos.y)
+                      }
+                      setDragPos(null)
+                    }}
+                    className={
+                      battleMap
+                        ? `absolute z-10 flex h-6 min-w-7 items-center justify-center whitespace-nowrap rounded-full border px-1.5 text-[11px] font-semibold tabular-nums leading-none shadow ${
+                            selectedPin ? 'border-ink bg-amber text-on-amber' : 'border-amber bg-ink/90 text-amber'
+                          }`
+                        : `absolute z-10 flex flex-col items-center gap-0.5 ${
+                            selectedPin ? 'text-on-amber' : 'text-amber'
+                          }`
                     }
-                    if (tool === 'pin' && pins.pinAction === 'edit') {
-                      pins.fillForm(pin)
-                    } else {
-                      pins.setSelectedId(pin.id)
-                    }
-                    if (data?.pinsLocked || (tool === 'pin' && pins.pinAction !== 'edit')) return
-                    pinDrag.current = { id: pin.id, moved: false }
-                    ;(event.currentTarget as HTMLElement).setPointerCapture(event.pointerId)
-                  }}
-                  onPointerMove={(event) => {
-                    if (data?.pinsLocked) return
-                    if (!pinDrag.current || pinDrag.current.id !== pin.id) return
-                    const point = pointFromEvent(event)
-                    if (!point) return
-                    pinDrag.current.moved = true
-                    dragPosRef.current = { id: pin.id, x: point.x, y: point.y }
-                    setDragPos({ id: pin.id, x: point.x, y: point.y })
-                  }}
-                  onPointerUp={() => {
-                    const active = pinDrag.current
-                    const pos = dragPosRef.current
-                    pinDrag.current = null
-                    dragPosRef.current = null
-                    if (active?.moved && pos && pos.id === pin.id) {
-                      pins.movePin(pin.id, pos.x, pos.y)
-                    }
-                    setDragPos(null)
-                  }}
-                  className={`absolute z-10 flex h-6 min-w-7 items-center justify-center whitespace-nowrap rounded-full border px-1.5 text-[11px] font-semibold tabular-nums leading-none shadow ${
-                    pin.id === pins.selectedId ? 'border-ink bg-amber text-on-amber' : 'border-amber bg-ink/90 text-amber'
-                  }`}
-                  style={{
-                    left: `${(dragPos?.id === pin.id ? dragPos.x : pin.x) * 100}%`,
-                    top: `${(dragPos?.id === pin.id ? dragPos.y : pin.y) * 100}%`,
-                    transform: 'translate(-50%, -50%) scale(calc(1 / var(--map-scale, 1)))',
-                    cursor:
-                      tool === 'pin' && pins.pinAction === 'delete'
-                        ? 'pointer'
-                        : data?.pinsLocked
+                    style={{
+                      left: `${x * 100}%`,
+                      top: `${y * 100}%`,
+                      transform: battleMap
+                        ? 'translate(-50%, -50%) scale(calc(1 / var(--map-scale, 1)))'
+                        : 'translate(-50%, -100%) scale(calc(1 / var(--map-scale, 1)))',
+                      cursor:
+                        tool === 'pin' && pins.pinAction === 'delete'
                           ? 'pointer'
-                          : 'grab',
-                    pointerEvents:
-                      tool === 'fog' || tool === 'reveal' || tool === 'token' || placingOnBoard ? 'none' : 'auto'
-                  }}
-                >
-                  {pin.label}
-                </button>
-              ))}
+                          : data?.pinsLocked
+                            ? 'pointer'
+                            : 'grab',
+                      pointerEvents:
+                        tool === 'fog' || tool === 'reveal' || tool === 'token' || placingOnBoard ? 'none' : 'auto'
+                    }}
+                  >
+                    {battleMap ? (
+                      pin.label
+                    ) : (
+                      <>
+                        <span
+                          className={`block h-3 w-3 rotate-45 rounded-[2px] border shadow ${
+                            selectedPin ? 'border-ink bg-amber' : 'border-amber bg-ink/95'
+                          }`}
+                          style={{ borderRadius: '2px 2px 2px 50%' }}
+                        />
+                        <span
+                          className={`max-w-[7rem] truncate rounded px-1 py-0.5 text-[10px] font-semibold leading-none shadow ${
+                            selectedPin ? 'bg-amber text-on-amber' : 'bg-ink/90 text-amber'
+                          }`}
+                        >
+                          {pin.label}
+                        </span>
+                      </>
+                    )}
+                  </button>
+                )
+              })}
               {pins.placing && pins.draft ? (
                 <span
-                  className="absolute z-10 flex h-6 min-w-7 items-center justify-center whitespace-nowrap rounded-full border border-dashed border-amber px-1.5 text-[11px] font-semibold tabular-nums leading-none text-amber"
+                  className={
+                    battleMap
+                      ? 'absolute z-10 flex h-6 min-w-7 items-center justify-center whitespace-nowrap rounded-full border border-dashed border-amber px-1.5 text-[11px] font-semibold tabular-nums leading-none text-amber'
+                      : 'absolute z-10 flex flex-col items-center gap-0.5 text-amber'
+                  }
                   style={{
                     left: `${pins.draft.x * 100}%`,
                     top: `${pins.draft.y * 100}%`,
-                    transform: 'translate(-50%, -50%) scale(calc(1 / var(--map-scale, 1)))'
+                    transform: battleMap
+                      ? 'translate(-50%, -50%) scale(calc(1 / var(--map-scale, 1)))'
+                      : 'translate(-50%, -100%) scale(calc(1 / var(--map-scale, 1)))'
                   }}
                 >
-                  {pins.label || '+'}
+                  {battleMap ? (
+                    pins.label || '+'
+                  ) : (
+                    <>
+                      <span className="block h-3 w-3 rotate-45 border border-dashed border-amber bg-ink/40" style={{ borderRadius: '2px 2px 2px 50%' }} />
+                      <span className="max-w-[7rem] truncate rounded border border-dashed border-amber px-1 py-0.5 text-[10px] font-semibold leading-none">
+                        {pins.label || pins.note || '+'}
+                      </span>
+                    </>
+                  )}
                 </span>
               ) : null}
               {(tool === 'fog' || tool === 'reveal') && fog.brushPos ? (
@@ -857,9 +965,13 @@ export default function MapView({
           heading={pins.heading}
           newHeading={pins.newHeading}
           headings={headings}
+          note={pins.note}
+          placeOptions={placeOptions}
+          linkPlaces={!battleMap}
           onLabelChange={pins.setLabel}
           onHeadingChange={pins.setHeading}
           onNewHeadingChange={pins.setNewHeading}
+          onNoteChange={pins.setNote}
           onSubmit={() => {
             if (pins.placing && pins.draft) pins.addPin()
             else pins.savePin()
@@ -880,12 +992,25 @@ export default function MapView({
               {` · ${tokens.selectedToken.space}`}
             </p>
           ) : selected ? (
-            <p className="mb-2 text-[11px] uppercase tracking-wider text-muted">
-              Pin {selected.label}
-              {selected.heading ? ` · ${selected.heading}` : ''}
-            </p>
+            <div className="mb-2 flex flex-wrap items-center gap-2 text-[11px] uppercase tracking-wider text-muted">
+              <span>
+                Pin {selected.label}
+                {selected.note ? ` · ${selected.note}` : selected.heading ? ` · ${selected.heading}` : ''}
+              </span>
+              {linkedPlace && onOpenNote ? (
+                <button
+                  type="button"
+                  onClick={() => onOpenNote(linkedPlace.relativePath)}
+                  className="rounded border border-line px-1.5 py-0.5 normal-case tracking-normal text-parchment hover:border-amber hover:text-amber"
+                >
+                  Open place
+                </button>
+              ) : null}
+            </div>
           ) : (
-            <p className="mb-2 text-[11px] uppercase tracking-wider text-muted">Map notes</p>
+            <p className="mb-2 text-[11px] uppercase tracking-wider text-muted">
+              {battleMap ? 'Map notes' : mapKind === 'world' ? 'World map' : 'Region map'}
+            </p>
           )}
           {renderRoom(roomText || '_No room text yet. Edit the note to add headings._')}
         </div>

@@ -72,8 +72,9 @@ export function FilesSection({ folders }: { folders: AppFolders | null }) {
             folder's <Code>Art/</Code>), add files beside it, or <Action>Delete…</Action> (asks first).
           </>,
           <>
-            <Action>New map…</Action> picks existing art or <Action>Load image…</Action>. Loaded files copy into
-            that folder's <Code>Art/</Code> (usually <Code>Maps/Art/</Code>) named like the note.{' '}
+            <Action>New map…</Action> picks Battle, Region, or World, then existing art or <Action>Load image…</Action>.
+            Battle maps keep tokens and fog. Region and world maps use place pins on the player TV. Loaded files copy
+            into that folder's <Code>Art/</Code> (usually <Code>Maps/Art/</Code>) named like the note.{' '}
             <Action>New place…</Action> / <Action>New shop…</Action> on <Code>Places/</Code>. Shops pick a type
             as art (tavern, armorer, stables, weapons, general store, apothecary). That type fills the shop's
             stock table from bundled random tables — <Action>Reroll stock</Action>, <Action>Add item…</Action>, or

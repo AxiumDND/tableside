@@ -18,7 +18,7 @@ import {
   isSessionsFolderName,
   isSpellsFolderName
 } from '../../../shared/campaignLayout'
-import { mapArtRelativeFolder } from '../../../shared/mapCreate'
+import { mapArtRelativeFolder, setMapFenceKind, type MapCreateKind } from '../../../shared/mapCreate'
 import { sanitizeFileName, type SheetTemplateKind } from '../../../shared/sheetTemplates'
 import { sheetAcceptsPortrait } from '../../../shared/sheetPortrait'
 import { stockArtForTemplate, stockArtUrl } from '../../../shared/stockArt'
@@ -250,6 +250,7 @@ export default function CampaignFiles({
   const [prompt, setPrompt] = useState<PromptState | null>(null)
   const [name, setName] = useState('')
   const [mapImage, setMapImage] = useState<CreateNoteMapImage | null>(null)
+  const [mapKind, setMapKind] = useState<MapCreateKind>('battle')
   const [busy, setBusy] = useState(false)
   const [query, setQuery] = useState('')
   const [searchOpen, setSearchOpen] = useState(false)
@@ -354,6 +355,7 @@ export default function CampaignFiles({
     setPrompt({ kind: 'create', folder, template, title: titles[template] })
     setName('')
     setMapImage(null)
+    setMapKind('battle')
     setMenu(null)
   }
 
@@ -417,7 +419,18 @@ export default function CampaignFiles({
         const image =
           prompt.template === 'map' || sheetAcceptsPortrait(prompt.template) ? mapImage : null
         const result = await window.tabledm.createNote(prompt.folder, value, prompt.template, image)
-        if (result) onTreeChange?.(result.campaign, result.path)
+        if (result) {
+          if (prompt.template === 'map' && mapKind !== 'battle') {
+            try {
+              const body = await window.tabledm.readFile(result.path)
+              const next = setMapFenceKind(body, mapKind)
+              if (next !== body) await window.tabledm.saveFile(result.path, next)
+            } catch {
+              /* keep the battle default if rewrite fails */
+            }
+          }
+          onTreeChange?.(result.campaign, result.path)
+        }
       } else {
         const result = await window.tabledm.duplicateFile(prompt.from, value)
         if (result) onTreeChange?.(result.campaign, result.path)
@@ -635,7 +648,7 @@ export default function CampaignFiles({
                   : prompt.kind === 'create' && prompt.template === 'roster'
                   ? 'Who is travelling together. Player sheets stay in Party/; companions stay in NPCs/ and are linked in the same [!party] list. Read mode shows race, class, and AC from those sheets.'
                   : prompt.kind === 'create' && prompt.template === 'map'
-                  ? 'Pick a campaign image, or load one — loaded files go in this folder’s Art/ and are named after the map.'
+                  ? 'Battle maps use tokens and fog. Region and world maps use place pins on the player TV. Pick a campaign image, or load one — loaded files go in this folder’s Art/ and are named after the map.'
                   : prompt.kind === 'create' && prompt.template === 'place'
                     ? 'Town, site, wilderness, or dungeon. Pick default art below, or load your own.'
                     : prompt.kind === 'create' && prompt.template === 'shop'
@@ -662,6 +675,20 @@ export default function CampaignFiles({
                 className="mt-3 w-full rounded border border-line bg-ink px-2 py-1.5 text-sm outline-none focus:border-amber"
               />
             )}
+            {prompt.kind === 'create' && prompt.template === 'map' ? (
+              <label className="mt-3 block text-[11px] text-muted">
+                Map type
+                <select
+                  value={mapKind}
+                  onChange={(event) => setMapKind(event.target.value as MapCreateKind)}
+                  className="mt-1 w-full rounded border border-line bg-ink px-2 py-1.5 text-sm text-parchment outline-none focus:border-amber"
+                >
+                  <option value="battle">Battle — dungeon / encounter (tokens + fog)</option>
+                  <option value="region">Region — towns and sites (pins on the TV)</option>
+                  <option value="world">World — continents and realms (pins on the TV)</option>
+                </select>
+              </label>
+            ) : null}
             {prompt.kind === 'create' && createWantsArt ? (
               <div className="mt-3 space-y-2">
                 {stockArt.length > 0 ? (

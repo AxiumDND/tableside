@@ -561,6 +561,7 @@ export default function SessionNotes({
           onToggleTokenStatus={onToggleTokenStatus}
           onChange={(next) => void saveMapMarkdown(next)}
           onLiveView={onMapLiveView}
+          onOpenNote={onOpenNote}
           renderRoom={(text) => (
             <div className="markdown-body">
               {renderMarkdown(

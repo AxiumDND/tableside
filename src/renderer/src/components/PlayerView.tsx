@@ -276,9 +276,32 @@ function PlayerMapLayer({ src, mapView }: { src: string; mapView: PlayerMapView 
       fogCells={fogCells}
       fogOpacity={1}
       fogOnTop
-      underlay={(mapView.tokens ?? []).map((token) => (
-        <MapTokenMark key={token.id} token={token} />
-      ))}
+      underlay={
+        <>
+          {(mapView.tokens ?? []).map((token) => (
+            <MapTokenMark key={token.id} token={token} />
+          ))}
+          {(mapView.pins ?? []).map((pin) => (
+            <div
+              key={pin.id}
+              className="pointer-events-none absolute z-10 flex flex-col items-center gap-0.5 text-amber"
+              style={{
+                left: `${pin.x * 100}%`,
+                top: `${pin.y * 100}%`,
+                transform: 'translate(-50%, -100%) scale(calc(1 / var(--map-scale, 1)))'
+              }}
+            >
+              <span
+                className="block h-3 w-3 rotate-45 border border-amber bg-ink/95 shadow"
+                style={{ borderRadius: '2px 2px 2px 50%' }}
+              />
+              <span className="max-w-[8rem] truncate rounded bg-ink/90 px-1.5 py-0.5 text-[11px] font-semibold leading-none text-amber shadow">
+                {pin.label}
+              </span>
+            </div>
+          ))}
+        </>
+      }
     />
   )
 }

@@ -164,6 +164,14 @@ export interface PlayerMapToken {
   overlayTags?: PlayerOverlayTag[]
 }
 
+/** Labeled location pin on a region / world map (player TV). */
+export interface PlayerMapPin {
+  id: string
+  x: number
+  y: number
+  label: string
+}
+
 /** Crop + fog sent with a map so the player window follows the DM view. */
 export interface PlayerMapView {
   zoom: number
@@ -172,6 +180,8 @@ export interface PlayerMapView {
   fog: string
   fogSize: number
   tokens?: PlayerMapToken[]
+  /** Region / world place markers. Battle maps omit this. */
+  pins?: PlayerMapPin[]
 }
 
 export interface PlayerCrawl {

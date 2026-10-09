@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { mapArtRelativeFolder, setMapFenceImage } from './mapCreate'
+import { mapArtRelativeFolder, setMapFenceImage, setMapFenceKind } from './mapCreate'
 
 describe('mapArtRelativeFolder', () => {
   it('defaults to Maps/Art from the campaign root', () => {
@@ -26,5 +26,18 @@ describe('setMapFenceImage', () => {
   it('inserts image when the fence has none', () => {
     const body = '# Crypt\n\n```map\npins: []\n```\n'
     expect(setMapFenceImage(body, 'Crypt.png')).toContain('```map\nimage: Crypt.png\n')
+  })
+})
+
+describe('setMapFenceKind', () => {
+  it('inserts kind for region and world maps', () => {
+    const body = '# Realm\n\n```map\nimage: Realm.png\npins: []\n```\n'
+    expect(setMapFenceKind(body, 'region')).toContain('kind: region')
+    expect(setMapFenceKind(body, 'world')).toContain('kind: world')
+  })
+
+  it('omits kind for battle maps', () => {
+    const body = '# Crypt\n\n```map\nkind: region\nimage: Crypt.png\npins: []\n```\n'
+    expect(setMapFenceKind(body, 'battle')).not.toMatch(/^kind:/m)
   })
 })
