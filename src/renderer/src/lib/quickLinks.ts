@@ -1,6 +1,7 @@
 import { canonicalFolder } from '../../../shared/campaignLayout'
 import { parseSystemId } from '../../../shared/systemPack'
-import { allPartyNotes, sheetDisplayName, type CampaignNote } from './notes'
+import { portraitSrcForNote, type CampaignImage } from './images'
+import { allPartyNotes, npcNotes, sheetDisplayName, type CampaignNote } from './notes'
 import { glanceStatsFromSheet } from './partyGlance'
 import { packLookupRecords } from './systemLookup'
 
@@ -10,6 +11,13 @@ export type QuickPartyRow = {
   ac: string
   saveDc: string
   pp: string
+}
+
+export type QuickNpcRow = {
+  name: string
+  notePath: string
+  /** Display URL for the portrait, or null when none is on disk. */
+  imageSrc: string | null
 }
 
 export type QuickCondition = {
@@ -152,6 +160,25 @@ export function quickPartyRows(notes: CampaignNote[], sheets: Record<string, str
       pp: stats.pp
     }
   })
+}
+
+/** NPC sheets for the Quick bar — click shows the portrait on the player TV. */
+export function quickNpcRows(
+  notes: CampaignNote[],
+  images: CampaignImage[],
+  options?: { hideBundled?: boolean }
+): QuickNpcRow[] {
+  return npcNotes(notes).map((note) => ({
+    name: sheetDisplayName(note.stem),
+    notePath: note.relativePath,
+    imageSrc: portraitSrcForNote(note.relativePath, images, undefined, options)
+  }))
+}
+
+export function filterQuickNpcs(list: QuickNpcRow[], query: string): QuickNpcRow[] {
+  const needle = query.trim().toLowerCase()
+  if (!needle) return list
+  return list.filter((item) => item.name.toLowerCase().includes(needle))
 }
 
 export function isReferenceNotePath(path: string): boolean {

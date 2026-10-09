@@ -12,6 +12,7 @@ The header keeps Campaign / Combat / Music / Help. Mid-session facts and the old
 | --- | --- |
 | **Left / right panel** | Same sidebar and right-rail glyphs that used to sit on the header. |
 | **Party** | Every `Party/` sheet (not the roster). Name, AC, spell save DC, passive perception. Click opens the sheet. Put **Save DC** on the PC infobox when they have one. |
+| **NPCs** | Every `NPCs/` sheet. Click shows that portrait on the player TV (still fade) while you speak as the character. Filter when the list is long. No portrait → opens the sheet instead. |
 | **Conditions** | Lookup conditions for the campaign’s system pack. Filter, then click a name for the short rules text. Does not toggle combat Cnd chips. |
 | **Skills** | D&D 5e skill glance: ability tag plus a short “used for” blurb. Filter, then click a name. Stub message on non-5e packs. |
 | **Lookup** | Opens the right rail on Lookup. Click again to close. |

@@ -18,7 +18,7 @@ function token(overrides: Partial<MapToken> & { id: string; label: string }): Ma
 }
 
 function mapData(overrides: Partial<MapNoteData> = {}): MapNoteData {
-  return { image: '', pins: [], tokens: [], tokenScale: 1, gridX: 0, gridY: 0, pinsLocked: true, fog: '', fogSize: 0, ...overrides }
+  return { image: '', kind: 'battle', pins: [], tokens: [], tokenScale: 1, gridX: 0, gridY: 0, pinsLocked: true, fog: '', fogSize: 0, ...overrides }
 }
 
 function emptyCatalog(): Record<PickerTab, TokenPick[]> {

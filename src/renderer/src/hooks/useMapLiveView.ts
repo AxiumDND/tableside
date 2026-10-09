@@ -83,7 +83,8 @@ export function useMapLiveView(opts: {
           dragPosRef.current,
           hideBundledRef.current,
           combatantsRef.current,
-          systemRef.current
+          systemRef.current,
+          dataRef.current
         )
       )
     })

@@ -175,6 +175,12 @@ export function npcNotes(notes: CampaignNote[]): CampaignNote[] {
     .sort((a, b) => sheetDisplayName(a.stem).localeCompare(sheetDisplayName(b.stem)))
 }
 
+export function placeNotes(notes: CampaignNote[]): CampaignNote[] {
+  return notes
+    .filter((n) => pathHasFolder(n.relativePath, 'places') && !/^(places|index|readme)$/i.test(n.stem))
+    .sort((a, b) => sheetDisplayName(a.stem).localeCompare(sheetDisplayName(b.stem)))
+}
+
 function kindForNote(note: CampaignNote): EncounterCombatantRef['kind'] {
   if (isPartyFolderPath(note.relativePath) || /^pc\s/i.test(note.stem)) return 'pc'
   if (pathHasFolder(note.relativePath, 'bestiary')) return 'monster'

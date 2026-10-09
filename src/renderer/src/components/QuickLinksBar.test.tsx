@@ -48,7 +48,7 @@ describe('QuickLinksBar', () => {
     { relativePath: 'Calendar/Calendar.md', name: 'Calendar.md', stem: 'Calendar' }
   ]
 
-  it('shows Party, Conditions, Skills, tools, panel toggles, and the live calendar clock', async () => {
+  it('shows Party, NPCs, Conditions, Skills, tools, panel toggles, and the live calendar clock', async () => {
     render(
       <QuickLinksBar
         notes={notes}
@@ -58,6 +58,7 @@ describe('QuickLinksBar', () => {
       />
     )
     expect(screen.getByRole('button', { name: /Party/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /NPCs/ })).toBeTruthy()
     expect(screen.getByRole('button', { name: /Conditions/ })).toBeTruthy()
     expect(screen.getByRole('button', { name: /Skills/ })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Lookup' })).toBeTruthy()
@@ -142,6 +143,28 @@ describe('QuickLinksBar', () => {
     expect(row.textContent).toMatch(/15/)
     await user.click(row)
     expect(onOpenNote).toHaveBeenCalledWith('Party/PC — Ilya Song.md')
+  })
+
+  it('shows an NPC portrait to the player TV from the Quick bar', async () => {
+    const user = userEvent.setup()
+    const onShowNpcPortrait = vi.fn()
+    const onOpenNote = vi.fn()
+    render(
+      <QuickLinksBar
+        notes={[
+          ...notes,
+          { relativePath: 'NPCs/Mira.md', name: 'Mira.md', stem: 'Mira' }
+        ]}
+        images={[{ relativePath: 'NPCs/Art/Mira.webp', name: 'Mira.webp', title: 'Mira' }]}
+        onOpenNote={onOpenNote}
+        onShowNpcPortrait={onShowNpcPortrait}
+      />
+    )
+    await user.click(screen.getByRole('button', { name: /NPCs/ }))
+    await user.click(await screen.findByRole('menuitem', { name: /Mira/ }))
+    expect(onShowNpcPortrait).toHaveBeenCalled()
+    expect(String(onShowNpcPortrait.mock.calls[0]?.[1])).toBe('Mira')
+    expect(onOpenNote).not.toHaveBeenCalled()
   })
 
   it('shows a condition description without leaving the bar', async () => {

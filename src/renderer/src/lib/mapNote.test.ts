@@ -8,8 +8,10 @@ import {
   isMapNote,
   mapOverviewMarkdown,
   mapRoomMarkdown,
+  mapShowsPinsToPlayers,
   nextPinLabel,
   parseCreatureSpace,
+  parseMapKind,
   parseMapYaml,
   replaceMapFence,
   TOKEN_SCALE_MAX,
@@ -180,6 +182,33 @@ tokens:
     const next = replaceMapFence('# Map\n\n```map\nimage: x.png\npins: []\n```\n', data)
     expect(next).toContain('gridX: 0.03')
     expect(next).toContain('gridY: 0.11')
+  })
+
+  it('round-trips region maps with place-linked pins and player pins', () => {
+    const data = parseMapYaml(`image: Realm.png
+kind: region
+pins:
+  - id: greystead
+    x: 0.4
+    y: 0.55
+    label: Greystead
+    note: Greystead
+showPins: true
+`)
+    expect(parseMapKind(data.kind)).toBe('region')
+    expect(data.pins[0].note).toBe('Greystead')
+    expect(mapShowsPinsToPlayers(data)).toBe(true)
+    const next = replaceMapFence('# Realm\n\n```map\nimage: Realm.png\npins: []\n```\n', data)
+    expect(next).toContain('kind: region')
+    expect(next).toContain('note: Greystead')
+    expect(next).not.toContain('tokens:')
+    expect(extractMapNote(next)?.pins[0].note).toBe('Greystead')
+  })
+
+  it('defaults battle maps to DM-only pins', () => {
+    const data = parseMapYaml('image: Crypt.png\npins: []\n')
+    expect(data.kind).toBe('battle')
+    expect(mapShowsPinsToPlayers(data)).toBe(false)
   })
 
   it('resolves a PC token portrait from the character name, not the PC — prefix', () => {

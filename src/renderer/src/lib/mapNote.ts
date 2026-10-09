@@ -4,12 +4,33 @@ import { campaignFileUrl, portraitForNote, resolveImageRef, srdPortraitUrl, type
 import { DEFAULT_FOG_SIZE } from './mapFog'
 import { extractStatblock } from './statblock'
 
+/** Battle = dungeon / encounter. Region / world = travel maps with place pins. */
+export type MapKind = 'battle' | 'region' | 'world'
+
 export interface MapPin {
   id: string
   x: number
   y: number
   label: string
+  /** Same-note `##` section (battle maps / room keys). */
   heading: string
+  /** Optional wikilink stem to a Place (or other) note — used on region / world maps. */
+  note?: string
+}
+
+export function parseMapKind(value: string | undefined | null): MapKind {
+  const text = (value ?? '').trim().toLowerCase()
+  if (text === 'region' || text === 'regional') return 'region'
+  if (text === 'world' || text === 'overworld' || text === 'continent') return 'world'
+  return 'battle'
+}
+
+export function isBattleMap(kind: MapKind | undefined | null): boolean {
+  return parseMapKind(kind) === 'battle'
+}
+
+export function pinDisplayTitle(pin: MapPin): string {
+  return (pin.note || pin.heading || pin.label || '').trim()
 }
 
 export type CreatureSpace = 'tiny' | 'small' | 'medium' | 'large' | 'huge' | 'gargantuan'
@@ -29,6 +50,8 @@ export interface MapToken {
 
 export interface MapNoteData {
   image: string
+  /** battle (default) | region | world */
+  kind: MapKind
   pins: MapPin[]
   tokens: MapToken[]
   /** One 5 ft square as a fraction of map width (Medium token diameter). */
@@ -37,8 +60,19 @@ export interface MapNoteData {
   gridX: number
   gridY: number
   pinsLocked: boolean
+  /**
+   * When true, labeled pins are sent to the player TV with the map.
+   * Default: false for battle, true for region / world.
+   */
+  showPins?: boolean
   fog: string
   fogSize: number
+}
+
+/** Region / world maps show labeled pins on the player TV by default. */
+export function mapShowsPinsToPlayers(data: Pick<MapNoteData, 'kind' | 'showPins'>): boolean {
+  if (typeof data.showPins === 'boolean') return data.showPins
+  return !isBattleMap(data.kind)
 }
 
 /**
@@ -127,12 +161,14 @@ function parsePins(lines: string[], start: number): { pins: MapPin[]; next: numb
     if (!current) return
     const label = (current.label ?? current.id ?? nextPinLabel(pins)).trim()
     const id = (current.id ?? slug(label)).trim() || uniquePinId(pins, label)
+    const note = (current.note ?? '').trim()
     pins.push({
       id,
       x: clamp01(current.x ?? 0.5),
       y: clamp01(current.y ?? 0.5),
       label,
-      heading: (current.heading ?? '').trim()
+      heading: (current.heading ?? '').trim(),
+      ...(note ? { note } : {})
     })
     current = null
   }
@@ -159,6 +195,9 @@ function parsePins(lines: string[], start: number): { pins: MapPin[]; next: numb
       else if (key === 'y') current.y = Number(value)
       else if (key === 'label') current.label = value
       else if (key === 'heading') current.heading = value
+      else if (key === 'note' || key === 'link' || key === 'place') {
+        current.note = value.replace(/^\[\[|\]\]$/g, '')
+      }
       i += 1
       continue
     }
@@ -246,6 +285,7 @@ export function parseMapYaml(raw: string): MapNoteData {
   const lines = raw.replace(/\r/g, '').split('\n')
   const data: MapNoteData = {
     image: '',
+    kind: 'battle',
     pins: [],
     tokens: [],
     tokenScale: TOKEN_SCALE_DEFAULT,
@@ -270,6 +310,16 @@ export function parseMapYaml(raw: string): MapNoteData {
     const value = unquote(kv[2])
     if (key === 'image') {
       data.image = value.replace(/^\[\[|\]\]$/g, '')
+      i += 1
+      continue
+    }
+    if (key === 'kind' || key === 'mapkind' || key === 'type') {
+      data.kind = parseMapKind(value)
+      i += 1
+      continue
+    }
+    if (key === 'showpins' || key === 'playerpins') {
+      data.showPins = !/^(false|no|0)$/i.test(value)
       i += 1
       continue
     }
@@ -338,7 +388,9 @@ export function extractMapNote(markdown: string): MapNoteData | null {
 }
 
 export function serializeMapYaml(data: MapNoteData): string {
+  const kind = parseMapKind(data.kind)
   const lines = [`image: ${data.image || ''}`]
+  if (kind !== 'battle') lines.push(`kind: ${kind}`)
   if (data.pins.length === 0) {
     lines.push('pins: []')
   } else {
@@ -349,31 +401,38 @@ export function serializeMapYaml(data: MapNoteData): string {
       lines.push(`    y: ${clamp01(pin.y)}`)
       lines.push(`    label: ${pin.label}`)
       if (pin.heading) lines.push(`    heading: ${pin.heading}`)
+      if (pin.note) lines.push(`    note: ${pin.note}`)
     }
   }
-  if ((data.tokens ?? []).length === 0) {
-    lines.push('tokens: []')
-  } else {
-    lines.push('tokens:')
-    for (const token of data.tokens) {
-      lines.push(`  - id: ${token.id}`)
-      lines.push(`    kind: ${token.kind}`)
-      if (token.source) lines.push(`    source: ${token.source}`)
-      lines.push(`    x: ${clamp01(token.x)}`)
-      lines.push(`    y: ${clamp01(token.y)}`)
-      if (token.space !== 'medium') lines.push(`    space: ${token.space}`)
-      lines.push(`    label: ${token.label}`)
-      if (token.image) lines.push(`    image: ${token.image}`)
-      if (token.combatantId) lines.push(`    combatantId: ${token.combatantId}`)
+  if (kind === 'battle') {
+    if ((data.tokens ?? []).length === 0) {
+      lines.push('tokens: []')
+    } else {
+      lines.push('tokens:')
+      for (const token of data.tokens) {
+        lines.push(`  - id: ${token.id}`)
+        lines.push(`    kind: ${token.kind}`)
+        if (token.source) lines.push(`    source: ${token.source}`)
+        lines.push(`    x: ${clamp01(token.x)}`)
+        lines.push(`    y: ${clamp01(token.y)}`)
+        if (token.space !== 'medium') lines.push(`    space: ${token.space}`)
+        lines.push(`    label: ${token.label}`)
+        if (token.image) lines.push(`    image: ${token.image}`)
+        if (token.combatantId) lines.push(`    combatantId: ${token.combatantId}`)
+      }
     }
-  }
-  lines.push(`tokenScale: ${clampTokenScale(data.tokenScale ?? TOKEN_SCALE_DEFAULT)}`)
-  if ((data.gridX ?? 0) !== 0 || (data.gridY ?? 0) !== 0) {
-    lines.push(`gridX: ${clamp01(data.gridX ?? 0)}`)
-    lines.push(`gridY: ${clamp01(data.gridY ?? 0)}`)
+    lines.push(`tokenScale: ${clampTokenScale(data.tokenScale ?? TOKEN_SCALE_DEFAULT)}`)
+    if ((data.gridX ?? 0) !== 0 || (data.gridY ?? 0) !== 0) {
+      lines.push(`gridX: ${clamp01(data.gridX ?? 0)}`)
+      lines.push(`gridY: ${clamp01(data.gridY ?? 0)}`)
+    }
   }
   lines.push(`pinsLocked: ${data.pinsLocked ? 'true' : 'false'}`)
-  if (data.fog) {
+  if (typeof data.showPins === 'boolean') {
+    const defaultShow = !isBattleMap(kind)
+    if (data.showPins !== defaultShow) lines.push(`showPins: ${data.showPins ? 'true' : 'false'}`)
+  }
+  if (kind === 'battle' && data.fog) {
     lines.push(`fogSize: ${data.fogSize || DEFAULT_FOG_SIZE}`)
     lines.push(`fog: ${data.fog}`)
   }

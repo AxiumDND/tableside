@@ -1,4 +1,4 @@
-import { type MapPin } from '../lib/mapNote'
+import { type MapKind, type MapPin } from '../lib/mapNote'
 import { BRUSH_MAX, BRUSH_MIN } from '../lib/mapFog'
 import { MAX_ZOOM, MIN_ZOOM } from '../lib/mapCamera'
 import { toolButton, type MapTool, type PinAction, type PickerTab, type TokenPick } from './MapViewHelpers'
@@ -7,10 +7,21 @@ import { MEASURE_FEET_MAX, MEASURE_FEET_MIN } from '../lib/mapMeasure'
 
 export function MapPrimaryToolbar({
   primary,
-  onSelectPrimary
+  onSelectPrimary,
+  battleTools = true,
+  kind = 'battle',
+  onKindChange,
+  showPinsToPlayers,
+  onToggleShowPins
 }: {
   primary: 'pan' | 'pin' | 'token' | 'fog'
   onSelectPrimary: (tool: 'pan' | 'pin' | 'token' | 'fog') => void
+  /** When false (region / world), hide Token and Fog. */
+  battleTools?: boolean
+  kind?: MapKind
+  onKindChange?: (kind: MapKind) => void
+  showPinsToPlayers?: boolean
+  onToggleShowPins?: () => void
 }) {
   return (
     <div className="flex flex-wrap items-center gap-1.5 border-b border-line px-3 py-1.5 text-[11px] text-muted">
@@ -20,12 +31,43 @@ export function MapPrimaryToolbar({
       <button type="button" onClick={() => onSelectPrimary('pin')} className={toolButton(primary === 'pin')}>
         Pin
       </button>
-      <button type="button" onClick={() => onSelectPrimary('token')} className={toolButton(primary === 'token')}>
-        Token
-      </button>
-      <button type="button" onClick={() => onSelectPrimary('fog')} className={toolButton(primary === 'fog')}>
-        Fog
-      </button>
+      {battleTools ? (
+        <>
+          <button type="button" onClick={() => onSelectPrimary('token')} className={toolButton(primary === 'token')}>
+            Token
+          </button>
+          <button type="button" onClick={() => onSelectPrimary('fog')} className={toolButton(primary === 'fog')}>
+            Fog
+          </button>
+        </>
+      ) : null}
+      {onKindChange ? (
+        <>
+          <span className="text-line">·</span>
+          <label className="flex items-center gap-1" title="Battle maps use tokens and fog. Region and world maps use place pins on the TV.">
+            Map
+            <select
+              value={kind}
+              onChange={(event) => onKindChange(event.target.value as MapKind)}
+              className="h-6 rounded border border-line bg-ink px-1 text-parchment"
+            >
+              <option value="battle">Battle</option>
+              <option value="region">Region</option>
+              <option value="world">World</option>
+            </select>
+          </label>
+        </>
+      ) : null}
+      {!battleTools && onToggleShowPins ? (
+        <button
+          type="button"
+          onClick={onToggleShowPins}
+          title="Show labeled pins on the player TV with this map"
+          className={toolButton(Boolean(showPinsToPlayers))}
+        >
+          {showPinsToPlayers ? 'Pins on TV' : 'Pins DM-only'}
+        </button>
+      ) : null}
     </div>
   )
 }
@@ -42,7 +84,8 @@ export function MapPanToolbar({
   onToggleScale,
   onScaleFeetChange,
   onMeasureKind,
-  onMeasureFeetChange
+  onMeasureFeetChange,
+  battleTools = true
 }: {
   zoom: number
   scaleArmed: boolean
@@ -56,75 +99,83 @@ export function MapPanToolbar({
   onScaleFeetChange: (feet: number) => void
   onMeasureKind: (kind: MeasureKind) => void
   onMeasureFeetChange: (feet: number) => void
+  /** When false, hide scale and spell templates (region / world maps). */
+  battleTools?: boolean
 }) {
   return (
     <div className="flex flex-wrap items-center gap-1.5 border-b border-line bg-panel px-3 py-1.5 text-[11px] text-muted">
-      <span>{scaleHint}</span>
-      <button
-        type="button"
-        onClick={onToggleScale}
-        title="Click two printed grid corners that are this many feet apart. The overlay lines up with the first click."
-        className={toolButton(scaleArmed)}
-      >
-        Scale map
-      </button>
-      <label className="flex items-center gap-1" title="Length of the span you will click">
-        <input
-          type="number"
-          min={5}
-          max={200}
-          step={5}
-          value={scaleFeet}
-          onChange={(event) => onScaleFeetChange(Number(event.target.value))}
-          className="h-6 w-12 rounded border border-line bg-ink px-1 text-parchment tabular-nums"
-        />
-        ft
-      </label>
-      <span className="text-line">·</span>
-      <button
-        type="button"
-        title="5 ft wide line"
-        onClick={() => onMeasureKind('line')}
-        className={toolButton(measureKind === 'line')}
-      >
-        Line
-      </button>
-      <button
-        type="button"
-        title="90° cone"
-        onClick={() => onMeasureKind('cone')}
-        className={toolButton(measureKind === 'cone')}
-      >
-        Cone
-      </button>
-      <button
-        type="button"
-        title="Radius circle"
-        onClick={() => onMeasureKind('round')}
-        className={toolButton(measureKind === 'round')}
-      >
-        Round
-      </button>
-      <button
-        type="button"
-        title="Cube — side length in feet, centered on the click"
-        onClick={() => onMeasureKind('square')}
-        className={toolButton(measureKind === 'square')}
-      >
-        Square
-      </button>
-      <label className="flex items-center gap-1" title="Template length or radius">
-        <input
-          type="number"
-          min={MEASURE_FEET_MIN}
-          max={MEASURE_FEET_MAX}
-          step={5}
-          value={measureFeet}
-          onChange={(event) => onMeasureFeetChange(Number(event.target.value))}
-          className="h-6 w-12 rounded border border-line bg-ink px-1 text-parchment tabular-nums"
-        />
-        ft
-      </label>
+      {battleTools ? (
+        <>
+          <span>{scaleHint}</span>
+          <button
+            type="button"
+            onClick={onToggleScale}
+            title="Click two printed grid corners that are this many feet apart. The overlay lines up with the first click."
+            className={toolButton(scaleArmed)}
+          >
+            Scale map
+          </button>
+          <label className="flex items-center gap-1" title="Length of the span you will click">
+            <input
+              type="number"
+              min={5}
+              max={200}
+              step={5}
+              value={scaleFeet}
+              onChange={(event) => onScaleFeetChange(Number(event.target.value))}
+              className="h-6 w-12 rounded border border-line bg-ink px-1 text-parchment tabular-nums"
+            />
+            ft
+          </label>
+          <span className="text-line">·</span>
+          <button
+            type="button"
+            title="5 ft wide line"
+            onClick={() => onMeasureKind('line')}
+            className={toolButton(measureKind === 'line')}
+          >
+            Line
+          </button>
+          <button
+            type="button"
+            title="90° cone"
+            onClick={() => onMeasureKind('cone')}
+            className={toolButton(measureKind === 'cone')}
+          >
+            Cone
+          </button>
+          <button
+            type="button"
+            title="Radius circle"
+            onClick={() => onMeasureKind('round')}
+            className={toolButton(measureKind === 'round')}
+          >
+            Round
+          </button>
+          <button
+            type="button"
+            title="Cube — side length in feet, centered on the click"
+            onClick={() => onMeasureKind('square')}
+            className={toolButton(measureKind === 'square')}
+          >
+            Square
+          </button>
+          <label className="flex items-center gap-1" title="Template length or radius">
+            <input
+              type="number"
+              min={MEASURE_FEET_MIN}
+              max={MEASURE_FEET_MAX}
+              step={5}
+              value={measureFeet}
+              onChange={(event) => onMeasureFeetChange(Number(event.target.value))}
+              className="h-6 w-12 rounded border border-line bg-ink px-1 text-parchment tabular-nums"
+            />
+            ft
+          </label>
+        </>
+      ) : (
+        <span>Drag to pan · place pins mark towns and sites</span>
+      )}
       <label className="flex items-center gap-1.5" title="Scroll also zooms toward the cursor">
         Zoom
         <input
@@ -455,9 +506,13 @@ export function MapPinEditorForm({
   heading,
   newHeading,
   headings,
+  note,
+  placeOptions = [],
+  linkPlaces = false,
   onLabelChange,
   onHeadingChange,
   onNewHeadingChange,
+  onNoteChange,
   onSubmit
 }: {
   placing: boolean
@@ -466,9 +521,14 @@ export function MapPinEditorForm({
   heading: string
   newHeading: string
   headings: string[]
+  note?: string
+  /** Place (and other) note stems for region / world pin links. */
+  placeOptions?: string[]
+  linkPlaces?: boolean
   onLabelChange: (label: string) => void
   onHeadingChange: (heading: string) => void
   onNewHeadingChange: (newHeading: string) => void
+  onNoteChange?: (note: string) => void
   onSubmit: () => void
 }) {
   return (
@@ -487,39 +547,63 @@ export function MapPinEditorForm({
           className="mt-0.5 block w-20 rounded border border-line bg-ink px-1.5 py-1 text-sm outline-none focus:border-amber"
         />
       </label>
-      <label className="min-w-40 flex-1 text-[11px] text-muted">
-        Room heading
-        <select
-          value={newHeading || headings.length === 0 ? '__new__' : heading}
-          onChange={(event) => {
-            if (event.target.value === '__new__') {
-              onNewHeadingChange(newHeading || `Room ${label}`)
-              return
-            }
-            onNewHeadingChange('')
-            onHeadingChange(event.target.value)
-          }}
-          className="mt-0.5 block w-full rounded border border-line bg-ink px-1.5 py-1 text-sm outline-none focus:border-amber"
-        >
-          {headings.map((name) => (
-            <option key={name} value={name}>
-              {name}
-            </option>
-          ))}
-          <option value="__new__">New heading…</option>
-        </select>
-      </label>
-      {newHeading || headings.length === 0 ? (
-        <label className="min-w-40 flex-1 text-[11px] text-muted">
-          New heading
+      {linkPlaces ? (
+        <label className="min-w-48 flex-1 text-[11px] text-muted">
+          Link to place
           <input
-            value={newHeading}
-            onChange={(event) => onNewHeadingChange(event.target.value)}
-            placeholder={`Room ${label}`}
+            list="map-pin-place-options"
+            value={note ?? ''}
+            onChange={(event) => {
+              const value = event.target.value
+              onNoteChange?.(value)
+              if (!label.trim() || placeOptions.includes(label)) onLabelChange(value)
+            }}
+            placeholder="Greystead"
             className="mt-0.5 block w-full rounded border border-line bg-ink px-1.5 py-1 text-sm outline-none focus:border-amber"
           />
+          <datalist id="map-pin-place-options">
+            {placeOptions.map((name) => (
+              <option key={name} value={name} />
+            ))}
+          </datalist>
         </label>
-      ) : null}
+      ) : (
+        <>
+          <label className="min-w-40 flex-1 text-[11px] text-muted">
+            Room heading
+            <select
+              value={newHeading || headings.length === 0 ? '__new__' : heading}
+              onChange={(event) => {
+                if (event.target.value === '__new__') {
+                  onNewHeadingChange(newHeading || `Room ${label}`)
+                  return
+                }
+                onNewHeadingChange('')
+                onHeadingChange(event.target.value)
+              }}
+              className="mt-0.5 block w-full rounded border border-line bg-ink px-1.5 py-1 text-sm outline-none focus:border-amber"
+            >
+              {headings.map((name) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+              <option value="__new__">New heading…</option>
+            </select>
+          </label>
+          {newHeading || headings.length === 0 ? (
+            <label className="min-w-40 flex-1 text-[11px] text-muted">
+              New heading
+              <input
+                value={newHeading}
+                onChange={(event) => onNewHeadingChange(event.target.value)}
+                placeholder={`Room ${label}`}
+                className="mt-0.5 block w-full rounded border border-line bg-ink px-1.5 py-1 text-sm outline-none focus:border-amber"
+              />
+            </label>
+          ) : null}
+        </>
+      )}
       <button type="submit" className="rounded bg-amber px-2.5 py-1 text-xs font-semibold text-on-amber">
         {placing && draft ? 'Place' : 'Save'}
       </button>

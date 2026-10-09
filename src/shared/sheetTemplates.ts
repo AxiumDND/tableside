@@ -433,9 +433,9 @@ Who is actually with the group, who is away, and what would split them.
 `
 
 const MAP = `<!--
-  Map note template. Right-click Maps/ → New map… to pick an existing image or load one.
-  Loaded art is copied to Maps/Art/ and named like this note. Pins are DM-only.
-  Tokens (Party / NPCs / Bestiary) show to players. Show to players follows zoom, fog, and tokens.
+  Map note template. Right-click Maps/ → New map… to pick Battle, Region, or World.
+  Battle: pins are DM-only room keys; tokens and fog show to players.
+  Region / World: set kind: region (or world); pins link to Places and show on the TV.
   See docs/MARKDOWN.md.
 -->
 # Map Name

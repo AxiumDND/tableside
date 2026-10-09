@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type Dispatch, type MutableRefObject, type SetStateAction } from 'react'
 import {
   ensureHeading,
+  isBattleMap,
   nextPinLabel,
   uniquePinId,
   type MapNoteData,
@@ -22,6 +23,8 @@ export interface MapPins {
   setHeading: Dispatch<SetStateAction<string>>
   newHeading: string
   setNewHeading: Dispatch<SetStateAction<string>>
+  note: string
+  setNote: Dispatch<SetStateAction<string>>
   placing: boolean
   startAddPin: () => void
   startEditPin: () => void
@@ -31,7 +34,7 @@ export interface MapPins {
   movePin: (id: string, x: number, y: number) => void
   deletePin: (id: string) => void
   togglePinLock: () => void
-  /** Copy a pin's label/heading into the edit form (clicking a pin while editing). */
+  /** Copy a pin's fields into the edit form (clicking a pin while editing). */
   fillForm: (pin: MapPin) => void
   /** Clear the draft and return to view (call when the open map changes). */
   reset: () => void
@@ -41,7 +44,7 @@ export interface MapPins {
  * Owns map-pin selection, the add/edit form, and pin CRUD. Persistence is
  * injected so the caller can write pins/lock through the shared map-note
  * commit path (including current fog). `sourceMarkdown` is used when a new
- * heading must be appended to the note.
+ * heading must be appended to the note (battle maps only).
  */
 export function useMapPins(opts: {
   pins: MapPin[]
@@ -62,6 +65,7 @@ export function useMapPins(opts: {
   const [label, setLabel] = useState('')
   const [heading, setHeading] = useState('')
   const [newHeading, setNewHeading] = useState('')
+  const [note, setNote] = useState('')
 
   const persistRef = useRef(persist)
   const getMarkdownRef = useRef(getMarkdown)
@@ -85,6 +89,7 @@ export function useMapPins(opts: {
     setLabel(nextPinLabel(pins))
     setHeading(headings[0] ?? '')
     setNewHeading('')
+    setNote('')
   }
 
   function startEditPin(): void {
@@ -108,41 +113,66 @@ export function useMapPins(opts: {
     setLabel(pin.label)
     setHeading(pin.heading)
     setNewHeading(headings.includes(pin.heading) ? '' : pin.heading)
+    setNote(pin.note ?? '')
   }
 
   function addPin(): void {
     const current = dataRef.current
     if (!current || !draft) return
     if (current.pinsLocked && current.pins.length > 0) return
-    const headingName = newHeading.trim() || heading.trim() || `Room ${label || nextPinLabel(current.pins)}`
+    const battle = isBattleMap(current.kind)
+    const noteName = note.trim()
+    const headingName = battle
+      ? newHeading.trim() || heading.trim() || `Room ${label || nextPinLabel(current.pins)}`
+      : ''
+    const pinLabel = (
+      label ||
+      noteName ||
+      headingName ||
+      nextPinLabel(current.pins)
+    ).trim()
     const pin: MapPin = {
-      id: uniquePinId(current.pins, label || headingName),
+      id: uniquePinId(current.pins, pinLabel),
       x: draft.x,
       y: draft.y,
-      label: (label || nextPinLabel(current.pins)).trim(),
-      heading: headingName
+      label: pinLabel,
+      heading: headingName,
+      ...(noteName ? { note: noteName } : {})
     }
-    persistRef.current({ pins: [...current.pins, pin] }, ensureHeading(getMarkdownRef.current(), headingName))
+    const source = battle && headingName ? ensureHeading(getMarkdownRef.current(), headingName) : undefined
+    persistRef.current({ pins: [...current.pins, pin] }, source)
     setSelectedId(pin.id)
     setDraft(null)
     setLabel(nextPinLabel([...current.pins, pin]))
     setHeading(headings[0] ?? headingName)
     setNewHeading('')
+    setNote('')
     if (current.pinsLocked && current.pins.length === 0) setPinAction('view')
   }
 
   function savePin(): void {
     const current = dataRef.current
     if (!current || !selected || current.pinsLocked) return
-    const headingName = newHeading.trim() || heading.trim() || selected.heading
-    const nextLabel = label.trim() || selected.label
+    const battle = isBattleMap(current.kind)
+    const noteName = note.trim()
+    const headingName = battle
+      ? newHeading.trim() || heading.trim() || selected.heading
+      : selected.heading
+    const nextLabel = (label.trim() || noteName || selected.label).trim()
     persistRef.current(
       {
         pins: current.pins.map((pin) =>
-          pin.id === selected.id ? { ...pin, label: nextLabel, heading: headingName } : pin
+          pin.id === selected.id
+            ? {
+                ...pin,
+                label: nextLabel,
+                heading: headingName,
+                ...(noteName ? { note: noteName } : { note: undefined })
+              }
+            : pin
         )
       },
-      ensureHeading(getMarkdownRef.current(), headingName)
+      battle && headingName ? ensureHeading(getMarkdownRef.current(), headingName) : undefined
     )
   }
 
@@ -189,6 +219,8 @@ export function useMapPins(opts: {
     setHeading,
     newHeading,
     setNewHeading,
+    note,
+    setNote,
     placing,
     startAddPin,
     startEditPin,

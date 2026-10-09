@@ -2,10 +2,12 @@ import { describe, expect, it } from 'vitest'
 import {
   DND5E_QUICK_SKILLS,
   filterQuickConditions,
+  filterQuickNpcs,
   filterQuickSkills,
   lookupConditions,
   lookupSkills,
   quickCalendarNotes,
+  quickNpcRows,
   quickPartyRows
 } from './quickLinks'
 
@@ -25,6 +27,23 @@ describe('quickPartyRows', () => {
     expect(rows).toEqual([
       { name: 'Ilya', notePath: 'Party/PC — Ilya.md', ac: '13', saveDc: '14', pp: '15' }
     ])
+  })
+})
+
+describe('quickNpcRows', () => {
+  it('lists NPC sheets with portrait URLs when Art matches', () => {
+    const rows = quickNpcRows(
+      [
+        { relativePath: 'NPCs/Mira.md', name: 'Mira.md', stem: 'Mira' },
+        { relativePath: 'NPCs/README.md', name: 'README.md', stem: 'README' },
+        { relativePath: 'Party/PC — Ilya.md', name: 'PC — Ilya.md', stem: 'PC — Ilya' }
+      ],
+      [{ relativePath: 'NPCs/Art/Mira.webp', name: 'Mira.webp', title: 'Mira' }]
+    )
+    expect(rows).toHaveLength(1)
+    expect(rows[0]?.name).toBe('Mira')
+    expect(rows[0]?.imageSrc).toContain('NPCs%2FArt%2FMira.webp')
+    expect(filterQuickNpcs(rows, 'mi').map((row) => row.name)).toEqual(['Mira'])
   })
 })
 

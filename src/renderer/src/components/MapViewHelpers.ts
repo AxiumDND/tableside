@@ -2,7 +2,14 @@ import type { Combatant, PlayerMapView } from '../../../shared/types'
 import { campaignFileUrl, portraitForNote, type CampaignImage } from '../lib/images'
 import { fogAllClear, encodeFog, fogSizeOf } from '../lib/mapFog'
 import type { MapCamera } from '../lib/mapCamera'
-import { toPlayerMapToken, type CreatureSpace, type MapToken } from '../lib/mapNote'
+import {
+  mapShowsPinsToPlayers,
+  toPlayerMapToken,
+  type CreatureSpace,
+  type MapNoteData,
+  type MapPin,
+  type MapToken
+} from '../lib/mapNote'
 import { tokenOverlayTags } from '../lib/mapTokenCombat'
 import {
   allPartyNotes,
@@ -33,8 +40,22 @@ export function liveView(
   dragPos: { id: string; x: number; y: number } | null,
   hideBundled = false,
   combatants: Combatant[] = [],
-  system?: string | null
+  system?: string | null,
+  mapData?: Pick<MapNoteData, 'kind' | 'showPins' | 'pins'> | null
 ): PlayerMapView {
+  const usePins = Boolean(mapData && mapShowsPinsToPlayers(mapData))
+  if (usePins && mapData) {
+    const pinDrag = dragPos && mapData.pins.some((pin) => pin.id === dragPos.id) ? dragPos : null
+    return {
+      zoom: camera.zoom,
+      centerX: camera.centerX,
+      centerY: camera.centerY,
+      fog: '',
+      fogSize: fogSizeOf(cells),
+      tokens: [],
+      pins: toPlayerMapPins(mapData.pins, pinDrag)
+    }
+  }
   const placed = dragPos
     ? tokens.map((token) => (token.id === dragPos.id ? { ...token, x: dragPos.x, y: dragPos.y } : token))
     : tokens
@@ -54,6 +75,22 @@ export function liveView(
       )
     )
   }
+}
+
+export function toPlayerMapPins(
+  pins: MapPin[],
+  dragPos: { id: string; x: number; y: number } | null = null
+): NonNullable<PlayerMapView['pins']> {
+  return pins.map((pin) => {
+    const x = dragPos?.id === pin.id ? dragPos.x : pin.x
+    const y = dragPos?.id === pin.id ? dragPos.y : pin.y
+    return {
+      id: pin.id,
+      x,
+      y,
+      label: (pin.label || pin.note || pin.heading || '?').trim()
+    }
+  })
 }
 
 export function toolButton(active: boolean): string {
