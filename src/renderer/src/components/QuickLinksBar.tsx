@@ -17,12 +17,16 @@ import {
   writeCalendarIntoNote
 } from '../../../shared/calendarNote'
 import { calendarPreset } from '../../../shared/calendarPresets'
+import type { CampaignImage } from '../lib/images'
+import { useHideBundledArtwork } from '../hooks/useBundledArtwork'
 import { allPartyNotes, type CampaignNote } from '../lib/notes'
 import {
   filterQuickConditions,
+  filterQuickNpcs,
   filterQuickSkills,
   lookupConditions,
   lookupSkills,
+  quickNpcRows,
   quickPartyRows
 } from '../lib/quickLinks'
 import CalendarSettings from './CalendarSettings'
@@ -44,8 +48,10 @@ function toolButtonClass(active: boolean): string {
 
 export default function QuickLinksBar({
   notes,
+  images = [],
   system,
   onOpenNote,
+  onShowNpcPortrait,
   onCampaignChange,
   onNotesReload,
   toolsTab = null,
@@ -57,8 +63,11 @@ export default function QuickLinksBar({
   onToggleRightPanel
 }: {
   notes: CampaignNote[]
+  images?: CampaignImage[]
   system?: string | null
   onOpenNote: (path: string) => void
+  /** Show an NPC portrait on the player TV (still image). */
+  onShowNpcPortrait?: (src: string, title: string) => void
   onCampaignChange?: (campaign: CampaignInfo) => void
   onNotesReload?: () => void
   toolsTab?: ToolsTabId | null
@@ -69,12 +78,14 @@ export default function QuickLinksBar({
   onToggleSidebar?: () => void
   onToggleRightPanel?: () => void
 }) {
+  const hideBundled = useHideBundledArtwork()
   const [openId, setOpenId] = useState<string | null>(null)
   const [sheets, setSheets] = useState<Record<string, string>>({})
   const [conditionQuery, setConditionQuery] = useState('')
   const [pickedCondition, setPickedCondition] = useState<string | null>(null)
   const [skillQuery, setSkillQuery] = useState('')
   const [pickedSkill, setPickedSkill] = useState<string | null>(null)
+  const [npcQuery, setNpcQuery] = useState('')
   const [calendarMarkdown, setCalendarMarkdown] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [busy, setBusy] = useState(false)
@@ -83,6 +94,11 @@ export default function QuickLinksBar({
   const calendarPrefsTouched = useRef(false)
 
   const party = useMemo(() => quickPartyRows(notes, sheets), [notes, sheets])
+  const npcs = useMemo(
+    () => quickNpcRows(notes, images, { hideBundled }),
+    [notes, images, hideBundled]
+  )
+  const shownNpcs = useMemo(() => filterQuickNpcs(npcs, npcQuery), [npcs, npcQuery])
   const conditions = useMemo(() => lookupConditions(system), [system])
   const shownConditions = useMemo(
     () => filterQuickConditions(conditions, conditionQuery),
@@ -284,6 +300,68 @@ export default function QuickLinksBar({
               </button>
             ))}
           </div>
+        )}
+      </QuickMenu>
+      <QuickMenu id="npcs" label="NPCs" openId={openId} onOpenId={setOpenId} menuClassName="w-[22rem]">
+        {npcs.length === 0 ? (
+          <p className="px-3 py-2 text-[13px] text-muted">No NPC sheets yet.</p>
+        ) : (
+          <>
+            <div className="px-2 pb-1">
+              <input
+                type="search"
+                value={npcQuery}
+                onChange={(event) => setNpcQuery(event.target.value)}
+                placeholder="Filter…"
+                aria-label="Filter NPCs"
+                className="w-full rounded border border-line bg-ink px-2 py-1 text-[13px] outline-none focus:border-amber"
+              />
+            </div>
+            <ul className="max-h-80 overflow-auto">
+              {shownNpcs.length === 0 ? (
+                <li className="px-3 py-2 text-[13px] text-muted">No matching NPCs</li>
+              ) : (
+                shownNpcs.map((row) => (
+                  <li key={row.notePath}>
+                    <button
+                      type="button"
+                      role="menuitem"
+                      title={
+                        row.imageSrc
+                          ? `Show ${row.name} on the player TV`
+                          : `${row.name} has no portrait — open the sheet`
+                      }
+                      onClick={() => {
+                        setOpenId(null)
+                        if (row.imageSrc && onShowNpcPortrait) {
+                          onShowNpcPortrait(row.imageSrc, row.name)
+                          return
+                        }
+                        onOpenNote(row.notePath)
+                      }}
+                      className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-[13px] text-parchment/90 hover:bg-panel-2 hover:text-amber"
+                    >
+                      {row.imageSrc ? (
+                        <img
+                          src={row.imageSrc}
+                          alt=""
+                          className="h-8 w-8 shrink-0 rounded object-cover"
+                        />
+                      ) : (
+                        <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded border border-line text-[10px] text-muted">
+                          —
+                        </span>
+                      )}
+                      <span className="min-w-0 flex-1 truncate font-semibold">{row.name}</span>
+                      <span className="shrink-0 text-[10px] uppercase tracking-wider text-muted">
+                        {row.imageSrc ? 'Show' : 'Open'}
+                      </span>
+                    </button>
+                  </li>
+                ))
+              )}
+            </ul>
+          </>
         )}
       </QuickMenu>
       <QuickMenu

@@ -428,8 +428,12 @@ export default function DmApp() {
       />
       <QuickLinksBar
         notes={campaign ? flattenNotes(campaign.tree) : []}
+        images={campaign ? flattenImages(campaign.tree) : []}
         system={campaign?.system}
         onOpenNote={openNote}
+        onShowNpcPortrait={(src, title) => {
+          void window.tabledm.showImage(src, title, null, null).then(setPlayer)
+        }}
         onCampaignChange={setCampaign}
         onNotesReload={() => setNoteReloadToken((n) => n + 1)}
         toolsTab={toolsTab}
