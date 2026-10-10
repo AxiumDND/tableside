@@ -49,7 +49,10 @@ describe('OpeningDice3d', () => {
     })
     expect(mountPlayerDice3d).toHaveBeenCalledTimes(1)
 
-    rerender(<OpeningDice3d show={{ ...initial, stoppingAt: 99 }} />)
+    // Electron IPC structured-clones PlayerState — new groups/kept identities, same startedAt.
+    const faded = structuredClone({ ...initial, stoppingAt: 99 })
+    expect(faded.groups).not.toBe(initial.groups)
+    rerender(<OpeningDice3d show={faded} />)
     await waitFor(() => {
       expect(container.querySelector('.player-dice-3d.is-out')).toBeTruthy()
     })
@@ -68,7 +71,8 @@ describe('OpeningDice3d', () => {
     const firstDie = container.querySelector('.player-dice-3d-css-die')
     expect(firstDie).toBeTruthy()
 
-    rerender(<OpeningDice3d show={{ ...initial, stoppingAt: 99 }} />)
+    const faded = structuredClone({ ...initial, stoppingAt: 99 })
+    rerender(<OpeningDice3d show={faded} />)
     await waitFor(() => {
       expect(container.querySelector('.player-dice-3d.is-out')).toBeTruthy()
     })
