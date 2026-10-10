@@ -60,12 +60,14 @@ function CssDiceThrow({
 
 export default function OpeningDice3d({ show }: { show: PlayerDiceShow }) {
   const hostRef = useRef<HTMLDivElement>(null)
-  // Plan inputs only — not `stoppingAt`. Spreading a fade onto the show must not
-  // rebuild `dice` or remount WebGL (that replays the throw while opacity fades).
+  // Plan once per throw (`startedAt`). Fade-out sends a cloned PlayerState over IPC,
+  // so `groups` / `kept` get new object identities for the same roll — depending on
+  // those refs remounts WebGL and replays the throw while opacity fades.
   const { groups, mode: rollMode, kept, startedAt } = show
   const dice = useMemo(
     () => planPlayerDice3dThrow({ groups, mode: rollMode, kept }),
-    [groups, rollMode, kept]
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- identity is the roll clock, not IPC-cloned arrays
+    [startedAt]
   )
   const [mode, setMode] = useState<'webgl' | 'css' | null>(null)
   const [lookPreset, setLookPreset] = useState<DiceLookPresetId | null>(null)
@@ -108,7 +110,7 @@ export default function OpeningDice3d({ show }: { show: PlayerDiceShow }) {
       cancelled = true
       handle?.dispose()
     }
-    // `dice` is stable across fade-out (see useMemo above); remount only on new roll / look.
+    // Remount only on a new roll or bag look — not when IPC clones fade-out state.
   }, [dice, lookPreset, startedAt])
 
   if (dice.length === 0) return null
